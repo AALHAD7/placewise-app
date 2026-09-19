@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script type="module">
+      // Registers <morph-icon>, a zero-dependency custom element (morphicons.com)
+      // that spring-morphs an SVG path from one icon shape into another - used
+      // for the handful of icons that genuinely flip state (pass/fail, expand/
+      // collapse), not as a general icon set. Ported from frontend/index.html.
+      import { defineMorphIcon } from "https://cdn.jsdelivr.net/npm/morphicons@1.7.1/dist/element.js";
+      defineMorphIcon();
+    </script>
+    <title>Placement Mastery Hub</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+/* Real :hover rules replacing the old app's runtime-generated style-hover="..."
+   attribute (support.js createPseudoSheet(), always !important). None of the
+   ported sites set the same CSS property both inline and on hover, so plain
+   classes (no !important) work - except .nav-item, where the old runtime's
+   !important made hover win over the .active background too; placed after
+   .nav-item.active here so source order preserves that same precedence.
+   Filled in phase-by-phase as each component/page is ported - see the
+   migration plan §0.3 for the full 50-site inventory this works through. */
+
+/* --- Phase 0: TopNav --- */
+.brand-left:hover{ opacity:.85; }
+.nav-item:hover{ background:#F5F5FF; }
+
+/* --- Phase 0.5: Selector dropdown option rows --- */
+.selector-option:hover{ background:#f3f4f6; }
+
+/* --- Phase 3: Company page --- */
+.company-link:hover{ color:#4F46E5; border-bottom-color:#BBD3F7; }
+
+/* --- Phase 4: Role page / ProbeChat --- */
+.probe-trigger:hover{ background:#f3f4f6; border-color:#d1d5db; }
+.probe-trigger-why:hover{ background:#EAF1FE; border-color:#BBD3F7; }
+.probe-trigger-how:hover{ background:#effaf4; border-color:#a7ddc4; }
+.probe-close:hover{ color:#374151; }
+.probe-input:focus{ border-color:#BBD3F7; background:#fff; }
+.role-skill-link:hover{ opacity:.7; }
+.practise-btn:hover{ background:#EAF1FE; }
+
+/* --- Phase 7: Resume page --- */
+.link-darken:hover{ color:#111827; }
+.link-indigo-dark:hover{ color:#4338CA; }
+.btn-outline-indigo:hover{ border-color:#BBD3F7; color:#4F46E5; }
+.btn-primary-darken:hover{ background:#4338CA; }
+.btn-border-indigo:hover{ border-color:#BBD3F7; }
+.btn-border-green:hover{ border-color:#a7e3c8; }
+.result-card:hover{ box-shadow:0 4px 14px rgba(16,24,40,.08); }
+.copy-icon:hover{ opacity:1; }
+
+/* --- Phase 6: Skill page --- */
+.skill-concept-link:hover{ color:#1e40af; }
+.code-textarea:focus{ border-color:#BBD3F7; background:#fff; }
+.code-textarea-plain:focus{ border-color:#BBD3F7; background:#fff; }
+
+/* --- Phase 8: Tone Shifter (real port, not the /api/tone/shift redesign) --- */
+.tone-input:focus{ border-color:#BBD3F7; background:#fff; }
+.tone-remove-bullet:hover{ background:#f3f4f6; color:#6b7280; }
+.tone-add-bullet:hover{ background:#EAF1FE; border-color:#BBD3F7; }

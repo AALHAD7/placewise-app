@@ -1,0 +1,27 @@
+# Dependencies and build output
+node_modules/
+dist/
+dist-ssr/
+
+# Secrets - only the .env.example templates are committed
+.env
+.env.*
+!.env.example
+
+# Source casebooks (large, third-party). Already ingested into Supabase,
+# not needed to build or run either app.
+Data/
+
+# Third-party reference libraries kept alongside the frontend for design
+# reference only - not imported by the app (see frontend-react/vite.config.ts)
+frontend-react/Components/
+frontend-react/Icons/
+frontend-react/Transitions/
+
+# Local tooling state
+.gstack/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.vscode/
+.DS_Store
+*.log
