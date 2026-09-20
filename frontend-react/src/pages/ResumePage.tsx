@@ -358,6 +358,72 @@ export default function ResumePage() {
     <>
       <PageHeader title="Resume Interrogation" subtitle="" />
 
+      {!resumeFile && (
+        <>
+          <div className="section-title" style={{ marginTop: 34 }}>
+            What you'll find here
+          </div>
+          <div className="grid-3">
+            <div className="feature-card" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+                  <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+                  <path d="M10 9H8" />
+                  <path d="M16 13H8" />
+                  <path d="M16 17H8" />
+                </svg>
+              </div>
+              <div className="feature-title">Questions from your actual resume</div>
+              <div className="feature-desc" style={{ marginBottom: 0 }}>
+                Upload a PDF, DOC or DOCX - we parse what's really on the page and build questions from it, not a generic template.
+              </div>
+            </div>
+            <div className="feature-card" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <circle cx="12" cy="12" r="5" />
+                  <circle cx="12" cy="12" r="1" />
+                </svg>
+              </div>
+              <div className="feature-title">Behavioural, technical, or situational</div>
+              <div className="feature-desc" style={{ marginBottom: 0 }}>
+                Pick what to generate - or turn your whole resume into one coherent story for the walkthrough round.
+              </div>
+            </div>
+            <div className="feature-card" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+              </div>
+              <div className="feature-title">Answer, then get feedback</div>
+              <div className="feature-desc" style={{ marginBottom: 0 }}>
+                Type or speak each answer and get feedback on what worked, what to fix, and a stronger sample response.
+              </div>
+            </div>
+          </div>
+          <div className="grid-full">
+            <div className="feature-card wide" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 3" />
+                </svg>
+              </div>
+              <div className="fc-body">
+                <div className="feature-title">Prep track</div>
+                <div className="feature-desc" style={{ marginBottom: 0 }}>
+                  Pick a domain - Consulting, Product Management, or general - so the questions and evaluation match what you're actually preparing for.
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: 18 }}>
         <input
           type="file"

@@ -50,6 +50,54 @@ export default function FrameworksPage() {
     <>
       <PageHeader title="Frameworks" subtitle="Frameworks tuned to your target loops" />
 
+      <div className="section-title" style={{ marginTop: 34 }}>
+        What you'll find here
+      </div>
+      <div className="grid-3">
+        <div className="feature-card" style={{ cursor: "default" }}>
+          <div className="fc-icon icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+          </div>
+          <div className="feature-title">Ready-made structures</div>
+          <div className="feature-desc" style={{ marginBottom: 0 }}>
+            RICE, CIRCLES, MECE and more - the structures interviewers expect you to reach for, tagged by role and level.
+          </div>
+        </div>
+        <div className="feature-card" style={{ cursor: "default" }}>
+          <div className="fc-icon icon-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+              <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+              <path d="M9 15l2 2 4-4" />
+            </svg>
+          </div>
+          <div className="feature-title">Steps, not just a name</div>
+          <div className="feature-desc" style={{ marginBottom: 0 }}>
+            Click Review on any framework to expand it into the actual steps to walk through when you use it live.
+          </div>
+        </div>
+        <div className="feature-card" style={{ cursor: "default" }}>
+          <div className="fc-icon icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+              <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+              <path d="M10 9H8" />
+              <path d="M16 13H8" />
+              <path d="M16 17H8" />
+            </svg>
+          </div>
+          <div className="feature-title">Real worked examples</div>
+          <div className="feature-desc" style={{ marginBottom: 0 }}>
+            Where available, a real excerpt from our casebooks shows the framework applied to an actual case - not a toy example.
+          </div>
+        </div>
+      </div>
       {loading && <div style={{ marginTop: 26, color: "var(--text-gray2)", fontSize: "0.84375rem" }}>Loading frameworks…</div>}
       {error && <div style={{ marginTop: 26, color: "var(--red-dark)", fontSize: "0.8125rem" }}>{error}</div>}
       {empty && <div style={{ marginTop: 26, color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>No frameworks yet.</div>}

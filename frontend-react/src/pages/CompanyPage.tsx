@@ -206,6 +206,71 @@ export default function CompanyPage() {
         </div>
       </div>
 
+      {!companyInfo && (
+        <>
+          <div className="section-title" style={{ marginTop: 34 }}>
+            What you'll find here
+          </div>
+          <div className="grid-3">
+            <div className="feature-card" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+                  <path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2" />
+                </svg>
+              </div>
+              <div className="feature-title">Company overview</div>
+              <div className="feature-desc" style={{ marginBottom: 0 }}>
+                Pick a company to see what it does, how it makes money, and the key facts - sector, HQ, founded, headcount.
+              </div>
+            </div>
+            <div className="feature-card" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <polyline points="12 7 12 12 16 14" />
+                </svg>
+              </div>
+              <div className="feature-title">Company timeline</div>
+              <div className="feature-desc" style={{ marginBottom: 0 }}>
+                A history of the company's major milestones since founding - funding rounds, acquisitions, pivots.
+              </div>
+            </div>
+            <div className="feature-card" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+                  <path d="M18 14h-4" />
+                  <path d="M18 18h-4" />
+                  <path d="M10 6h4" />
+                  <path d="M10 10h4" />
+                </svg>
+              </div>
+              <div className="feature-title">Live news &amp; investments</div>
+              <div className="feature-desc" style={{ marginBottom: 0 }}>
+                Recent news pulled live, plus what the company is actually investing in right now - not a static snapshot.
+              </div>
+            </div>
+          </div>
+          <div className="grid-full">
+            <div className="feature-card wide" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+              </div>
+              <div className="fc-body">
+                <div className="feature-title">Recruitment process &amp; interview experiences</div>
+                <div className="feature-desc" style={{ marginBottom: 0 }}>
+                  See the interview process - pick a job role too and it's researched specifically for that role at this company - plus real interview experiences shared by other candidates in the Community.
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {companyInfo && (
         <>
           {companyInfo.loading && <div style={{ marginTop: 28, color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Loading company info…</div>}

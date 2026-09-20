@@ -147,6 +147,56 @@ export default function ToneShifterPage() {
     <>
       <PageHeader title="Tone Shifter" subtitle="Rewrite answers for the room you are in" />
 
+      {!out && (
+        <>
+          <div className="section-title" style={{ marginTop: 34 }}>
+            What you'll find here
+          </div>
+          <div className="grid-3">
+            <div className="feature-card" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 6h13" />
+                  <path d="M8 12h13" />
+                  <path d="M8 18h13" />
+                  <path d="M3 6h.01" />
+                  <path d="M3 12h.01" />
+                  <path d="M3 18h.01" />
+                </svg>
+              </div>
+              <div className="feature-title">Paste your bullets</div>
+              <div className="feature-desc" style={{ marginBottom: 0 }}>
+                Drop in up to 3 bullets from your resume or story - we rewrite them, we don't summarize or shorten them.
+              </div>
+            </div>
+            <div className="feature-card" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+              </div>
+              <div className="feature-title">Pick domain &amp; format</div>
+              <div className="feature-desc" style={{ marginBottom: 0 }}>
+                Choose the room you're walking into - consulting, product, finance - and the output shape and length per bullet.
+              </div>
+            </div>
+            <div className="feature-card" style={{ cursor: "default" }}>
+              <div className="fc-icon icon-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+              </div>
+              <div className="feature-title">Same facts, new voice</div>
+              <div className="feature-desc" style={{ marginBottom: 0 }}>
+                No invented numbers, no filler - just the same achievement, reworded for the audience you specify.
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       <div style={{ marginTop: 26, display: "grid", gridTemplateColumns: "minmax(0,1.55fr) minmax(300px,.85fr)", gap: 22, alignItems: "start" }}>
         <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 20px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>

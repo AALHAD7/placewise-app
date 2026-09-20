@@ -106,6 +106,50 @@ export default function CommunityPage() {
     <>
       <PageHeader title="Community" subtitle="Real interview questions, case debriefs, and frameworks shared by other candidates" />
 
+      <div className="section-title" style={{ marginTop: 34 }}>
+        What you'll find here
+      </div>
+      <div className="grid-3">
+        <div className="feature-card" style={{ cursor: "default" }}>
+          <div className="fc-icon icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M16 3.128a4 4 0 0 1 0 7.744" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            </svg>
+          </div>
+          <div className="feature-title">Share what you learned</div>
+          <div className="feature-desc" style={{ marginBottom: 0 }}>
+            Post a real interview question, a case debrief, or a framework that worked for you - tag the company and role.
+          </div>
+        </div>
+        <div className="feature-card" style={{ cursor: "default" }}>
+          <div className="fc-icon icon-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          </div>
+          <div className="feature-title">Browse what others shared</div>
+          <div className="feature-desc" style={{ marginBottom: 0 }}>
+            See real interview Q&amp;As, case debriefs and frameworks from other candidates, most recent first.
+          </div>
+        </div>
+        <div className="feature-card" style={{ cursor: "default" }}>
+          <div className="fc-icon icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+          </div>
+          <div className="feature-title">It shows up on Company too</div>
+          <div className="feature-desc" style={{ marginBottom: 0 }}>
+            A contribution tagged with a company also appears in that company's "Interview experiences" section.
+          </div>
+        </div>
+      </div>
+
       <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
         <div style={{ fontSize: "0.96875rem", fontWeight: 700, color: "var(--text-900)" }}>Share something with the community</div>
         <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
