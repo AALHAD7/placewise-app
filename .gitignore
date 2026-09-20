@@ -22,6 +22,7 @@ frontend-react/Transitions/
 .gstack/
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+.claude/launch.json
 .vscode/
 .DS_Store
 *.log
