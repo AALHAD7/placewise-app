@@ -2,7 +2,7 @@
 ## How to Build a Self-Improving Knowledge Base Without Fine-Tuning
 
 **Version:** 1.0  
-**Context:** IMH (Interview Mastery Hub) — placement prep platform  
+**Context:** Placewise — placement prep platform  
 **Goal:** Grow knowledge base from 500 initial resources (case books, handbooks) to 10,000+ Q&As via community contribution
 
 ---

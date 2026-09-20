@@ -1,4 +1,4 @@
-# Interview Mastery Hub — Build Documentation
+# Placewise — Build Documentation
 
 > This file tracks every step of the development process in order.
 > Updated after each feature, decision, or milestone.
@@ -698,7 +698,7 @@ File: `backend/scripts/ingest.js` (`npm run ingest`)
 
 ### Step 24 — Deploy Frontend to Vercel ⬜
 - Connect GitHub repo to Vercel
-- Set environment variable: `REACT_APP_BACKEND_URL=https://imh-backend.onrender.com`
+- Set environment variable: `REACT_APP_BACKEND_URL=https://placement-mastery-hub-api.onrender.com`
 - Verify app loads at Vercel URL
 
 ### Step 25 — End-to-End Testing ⬜
@@ -867,7 +867,7 @@ Last page in the plan's Phase 9. Not yet requested by the user.
 | 2026-09-03 | The fix above re-fetches `/api/roles/:title` and `/api/roles/:title/topics` (Gemini-backed, rate-limited to 30 requests/15min) on every single return trip to the Role page, which exhausted that limiter after a handful of Role↔Skill round trips and surfaced as "Too many requests to this AI-backed endpoint." | Added a module-level (not React state, so it survives the component unmounting) cache in `RolePage.tsx`, keyed by role — a role already fetched this session is reused instead of re-hit. Only successful loads are cached; a failed fetch is not, so a later visit retries rather than getting stuck on the old error. |
 | 2026-09-03 | Tone Shifter's new batched rewrite prompt (fixed ruleset + up to 3 pasted bullets, all in one `/api/chat` message) exceeded that route's 4000-character-per-message validation cap with realistic bullet lengths, failing every rewrite request with a 400. | Raised the cap to 8000 characters in `backend/src/routes/chat.js` (see Decisions Log) — measured the actual prompt at ~4900 chars even with 3 unusually long bullets, well inside the new limit. |
 | 2026-09-19 | `scripts/ingestImages.js` failed 6 of 1913 candidate images with Supabase Storage error "Invalid key" — all from `Equity_Derivatives_A_Beginner's_Module.pdf`, whose filename contains a curly/smart apostrophe (`'`, U+2019). Supabase Storage keys reject non-ASCII characters, and the storage path was built directly from the PDF's basename with no sanitization. | Storage path now runs the basename through `.replace(/[^A-Za-z0-9._-]/g, "_")` before use (the `document_chunks.source_file` column, a separate DB write, is untouched and keeps the real filename). Re-ran ingestion — all 6 images ingested; full run now 1913/1913 (100%) across Finance/General Management/HR/Marketing:Sales. |
-| 2026-09-19 | `scripts/ingest.js` crashed the Finance-domain text ingestion mid-run (6540/~13000+ chunks in) on `Valuation Session Rel Val.txt` with Postgres error `22P05: unsupported Unicode escape sequence` / "  cannot be converted to text." Root cause: a stray NUL byte survived that file's PDF→text extraction; Postgres `text` columns reject ` ` outright, and `ingest.js` read files with no sanitization. | `ingestFile()` now strips ` ` from the file content immediately after reading, before chunking — same class of fix as `snapSurrogateBoundary()` (Step 21a's bug), a PDF-extraction artifact Postgres won't silently accept. Ingestion restarted; existing dedup logic resumed correctly. |
+| 2026-09-19 | `scripts/ingest.js` crashed the Finance-domain text ingestion mid-run (6540/~13000+ chunks in) on `Valuation Session Rel Val.txt` with Postgres error `22P05: unsupported Unicode escape sequence` / "the NUL byte (code point U+0000) cannot be converted to text." Root cause: a stray NUL byte survived that file's PDF→text extraction; Postgres `text` columns reject the NUL byte outright, and `ingest.js` read files with no sanitization. | `ingestFile()` now strips the NUL byte from the file content immediately after reading, before chunking — same class of fix as `snapSurrogateBoundary()` (Step 21a's bug), a PDF-extraction artifact Postgres won't silently accept. Ingestion restarted; existing dedup logic resumed correctly. (Follow-up, 2026-09-20: the fix itself was first written as a `\\u0000` regex literal typed through a tool call — that literal escape text was silently decoded into an actual embedded NUL byte in `ingest.js`'s own source by the JSON encoding underneath the tool call, corrupting the file and, separately, 3 occurrences of the same text in this log. Rewritten using `String.fromCharCode(0)` instead, which can't be misinterpreted the same way.) |
 
 ---
 

@@ -132,7 +132,7 @@ export default function TopNav() {
           <span></span>
           <span></span>
         </div>
-        <span className="brand-name">PMH</span>
+        <span className="brand-name">Placewise</span>
       </div>
 
       <nav className="topnav-links">

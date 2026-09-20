@@ -1,5 +1,5 @@
 # PRODUCT REQUIREMENTS DOCUMENT
-## Placement Prep Platform: Interview Mastery Hub
+## Placement Prep Platform: Placewise
 
 **Version:** 1.0  
 **Date:** August 2026  
@@ -11,7 +11,7 @@
 
 ## 1. EXECUTIVE SUMMARY
 
-**Product Name:** Interview Mastery Hub (IMH)
+**Product Name:** Placewise
 
 **One-Liner:** A personalized, AI-powered interview prep platform that connects skill development, company research, framework learning, and narrative building into a seamless workflow—eliminating the need for students to manually research, synthesize, and practice across multiple platforms.
 
@@ -62,7 +62,7 @@
 
 ## 3. SOLUTION OVERVIEW
 
-### 3.1 What IMH Solves
+### 3.1 What Placewise Solves
 
 **Unified Workflow**
 User flows through a single platform:
@@ -361,7 +361,7 @@ User flows through a single platform:
 ### 6.1 Scenario 1: "I have an interview with Razorpay PM in 3 days. What do I do?"
 
 **Flow:**
-1. Open IMH
+1. Open Placewise
 2. Select "Quick Prep" → Role: Product | Company: Razorpay | Timeline: 3 days
 3. System generates 3-day prep plan:
    - Day 1: Learn product management frameworks + Razorpay company profile (2 hours)
@@ -378,7 +378,7 @@ User flows through a single platform:
 ### 6.2 Scenario 2: "I'm sitting for 5 companies across 3 roles. Where do I start?"
 
 **Flow:**
-1. Open IMH → "General Prep Mode"
+1. Open Placewise → "General Prep Mode"
 2. Add roles: Operations, Consulting, Product
 3. Add companies: McKinsey, Bain, Razorpay, PhonePe, CRED
 4. System generates: Prioritized prep framework
@@ -396,7 +396,7 @@ User flows through a single platform:
 ### 6.3 Scenario 3: "I don't know how to talk about my Thermax experience in a PM interview."
 
 **Flow:**
-1. Open IMH → Feature: Story Building
+1. Open Placewise → Feature: Story Building
 2. Upload resume + select role (Product)
 3. Fill questionnaire: "What did you do at Thermax? What did you learn?"
 4. Claude analyzes: analytics work + process optimization
@@ -503,7 +503,7 @@ User flows through a single platform:
 - **Interview Success Rate:** % of users who advance to next round at their target companies
 - **Placement Rate:** % who get offers from target companies
 - **User Testimonials:** "This helped me get into Razorpay"
-- **Referral Rate:** % of users who recommend IMH to peers
+- **Referral Rate:** % of users who recommend Placewise to peers
 
 ### Business Metrics
 - **Free-to-Premium Conversion:** % converting to paid tier (target: 20-30%)
@@ -564,7 +564,7 @@ User flows through a single platform:
 | Glassdoor | Company reviews | Structured interview prep, personalized coaching, story weaving |
 | Senior WhatsApp Groups | Crowdsourced Q&As | Structured learning, feedback rubric, scalable platform |
 
-**IMH Differentiator:** Integrated workflow + resume interrogation + story building + company intel all in one place, personalized to *your* background and target role/company.
+**Placewise Differentiator:** Integrated workflow + resume interrogation + story building + company intel all in one place, personalized to *your* background and target role/company.
 
 ---
 
@@ -575,7 +575,7 @@ User flows through a single platform:
 **Mitigation:**
 - Launch with high-profile beta testers (top case comp winners, students who got into target companies)
 - Get placement cell endorsement
-- Show concrete outcomes: "30 students using IMH got interviews; only 10% of non-users did."
+- Show concrete outcomes: "30 students using Placewise got interviews; only 10% of non-users did."
 
 ### Risk 2: Crowdsourced Data Quality
 **Why:** Interview Q&As from students might be inaccurate/incomplete  

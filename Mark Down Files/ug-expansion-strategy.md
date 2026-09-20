@@ -134,7 +134,7 @@ Combined (B-school + UG):
   
 ✓ UI/UX (optional branding)
   - Same platform, different landing page
-  - "Interview Mastery Hub for Engineers" vs "IMH for MBAs"
+  - "Placewise for Engineers" vs "Placewise for MBAs"
 ```
 
 **Database changes: MINIMAL**

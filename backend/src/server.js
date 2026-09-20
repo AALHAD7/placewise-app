@@ -28,7 +28,7 @@ if (missing.length) {
 const isProd = process.env.NODE_ENV === "production";
 
 // Comma-separated list of allowed browser origins in production, e.g.
-// "https://placementmasteryhub.com,https://www.placementmasteryhub.com".
+// "https://your-frontend.vercel.app,https://www.your-domain.com".
 // Falls back to allowing any origin in development so the design-canvas
 // frontend (opened as a local file / from any dev port) keeps working
 // without extra setup.
@@ -97,4 +97,4 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`PMH backend listening on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Placewise backend listening on http://localhost:${PORT}`));

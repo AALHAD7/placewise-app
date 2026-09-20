@@ -1,5 +1,5 @@
 # TECHNICAL ARCHITECTURE DOCUMENT
-## Interview Mastery Hub (IMH) — Complete End-to-End Guide
+## Placewise — Complete End-to-End Guide
 
 **Version:** 1.0  
 **Date:** August 2026  
@@ -1569,7 +1569,7 @@ const monitoring = {
     if (detected) {
       datadog.increment('hallucination.detected', 1);
       // Alert: "Potential hallucination detected in Claude response"
-      slack.notify('Hallucination detected in IMH Claude call');
+      slack.notify('Hallucination detected in Placewise Claude call');
     }
   },
   
@@ -1914,7 +1914,7 @@ When an interviewer asks about your architecture:
 ### "Tell me about your tech stack"
 
 **Answer:**
-"I built Interview Mastery Hub with three layers:
+"I built Placewise with three layers:
 
 **Frontend:** React + Lovable (component-based, state management, fast deployment to global CDN)
 

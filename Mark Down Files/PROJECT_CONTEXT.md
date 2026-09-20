@@ -1,4 +1,4 @@
-# PROJECT CONTEXT: Interview Mastery Hub
+# PROJECT CONTEXT: Placewise
 ## Master Reference Document for AI Agents
 
 **Last Updated:** August 12, 2026  
@@ -34,7 +34,7 @@
 ## 1. PROJECT OVERVIEW
 
 ### 1.1 Project Name
-**Interview Mastery Hub (IMH)**
+**Placewise**
 
 ### 1.2 What Is It?
 An integrated AI-powered interview preparation platform that:
@@ -702,7 +702,7 @@ CREATE TABLE mock_interview_sessions (
 ### 8.1 Base URL
 ```
 Development: http://localhost:3001
-Production: https://imh-backend.onrender.com
+Production: https://placement-mastery-hub-api.onrender.com
 ```
 
 ### 8.2 Authentication
@@ -1213,7 +1213,7 @@ Step 1: Connect GitHub
 
 Step 2: Environment Variables
   Settings → Environment Variables → Add:
-    REACT_APP_BACKEND_URL = https://imh-backend.onrender.com
+    REACT_APP_BACKEND_URL = https://placement-mastery-hub-api.onrender.com
 
 Step 3: Deploy
   Push to main branch → Vercel auto-deploys
@@ -1240,7 +1240,7 @@ Step 2: Environment Variables
 Step 3: Deploy
   Push to main branch → Render auto-deploys
 
-URL: https://imh-backend.onrender.com
+URL: https://placement-mastery-hub-api.onrender.com
 ```
 
 ### 11.3 Database Deployment (Supabase)
@@ -1612,7 +1612,7 @@ Claude Code will:
 This CONTEXT.md file has everything they need.
 
 When asking Claude, GPT, or other AI:
-"I'm building Interview Mastery Hub. Here's my project context: [paste relevant sections]
+"I'm building Placewise. Here's my project context: [paste relevant sections]
 
 I need help with: [specific ask]"
 
