@@ -1,16 +1,16 @@
 // Backend integration - ported from frontend/index.html lines 1731-1816.
-// There is still no real login screen (see getAuthToken below) - this must
-// be replaced before real users are invited.
+
+import { supabase } from "./supabaseClient";
 
 export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
 
 export class ApiError extends Error {}
 
-// Raised when a request needs a session and none can be had. Until a real
-// login screen exists the only session source is the dev-only
-// /api/dev/test-login route, which the backend 404s in production - so on a
-// deployed build every sign-in-only feature raises this, while public reads
-// (optionalAuth routes on the backend) keep working without a token.
+// Raised when a request needs a session and the visitor isn't signed in
+// (not even as a guest) - the AppShell's auth guard means this should be
+// rare in practice, but sign-in-only routes still need a clear error for
+// the brief window before that guard redirects, or for a session that
+// expired (e.g. the 3-hour guest cutoff) mid-page.
 export class AuthUnavailableError extends ApiError {
   constructor() {
     super("This feature needs sign-in, which isn't available yet.");
@@ -18,33 +18,13 @@ export class AuthUnavailableError extends ApiError {
   }
 }
 
-let _devToken: string | null = null;
-let _devTokenRequest: Promise<string> | null = null;
-let _devLoginDisabled = false;
-
-// getAuthToken() grabs a session from the dev-only /api/dev/test-login
-// endpoint (backend/src/routes/dev.js) - which must be replaced by real
-// login before real users are invited.
+// Real Supabase session (email/password, Google, or anonymous guest - see
+// contexts/AuthContext.tsx) - supabase-js persists it in localStorage and
+// auto-refreshes it, so this just reads whatever's current.
 export async function getAuthToken(): Promise<string> {
-  if (_devToken) return _devToken;
-  if (_devLoginDisabled) throw new AuthUnavailableError();
-  // Share one in-flight request - a page fires several API calls at once.
-  _devTokenRequest ??= (async () => {
-    try {
-      const res = await fetch(API_BASE + "/api/dev/test-login", { method: "POST" });
-      if (res.status === 404) {
-        _devLoginDisabled = true; // route is off on this deployment - stop asking
-        throw new AuthUnavailableError();
-      }
-      if (!res.ok) throw new Error("Could not get a dev auth token - is the backend running on " + API_BASE + "?");
-      const data = await res.json();
-      _devToken = data.access_token as string;
-      return _devToken;
-    } finally {
-      _devTokenRequest = null;
-    }
-  })();
-  return _devTokenRequest;
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) throw new AuthUnavailableError();
+  return data.session.access_token;
 }
 
 // For requests that work with or without a session: a token if one is
@@ -64,6 +44,7 @@ async function getOptionalAuthToken(): Promise<string | null> {
 export function decodeSessionDisplayName(token: string): string {
   try {
     const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    if (payload.is_anonymous || payload.app_metadata?.provider === "anonymous") return "Guest";
     const local = (payload.email || "").split("@")[0] || "there";
     return local
       .split(/[._-]+/)

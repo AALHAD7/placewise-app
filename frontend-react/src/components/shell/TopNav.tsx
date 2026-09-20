@@ -1,6 +1,7 @@
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../hooks/useDashboard";
+import { useAuth } from "../../contexts/AuthContext";
 
 // Ported from frontend/index.html lines 226-292. Active-state styling uses
 // NavLink's isActive instead of the old item() method's per-item JS-computed
@@ -104,9 +105,18 @@ function NavIcon({ entry }: { entry: NavEntry }) {
   );
 }
 
+function formatCountdown(msLeft: number): string {
+  if (msLeft <= 0) return "expired";
+  const totalMinutes = Math.ceil(msLeft / 60000);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return h > 0 ? `${h}h ${m}m left` : `${m}m left`;
+}
+
 export default function TopNav() {
   const navigate = useNavigate();
   const { data, sessionName, reload } = useDashboard();
+  const { isGuest, guestExpiresAt, signOut } = useAuth();
   const streak = data?.streak || 0;
   const hasStreak = streak > 0;
   const initials =
@@ -118,10 +128,24 @@ export default function TopNav() {
       .join("")
       .toUpperCase() || "U";
 
+  // Ticks every 30s so the guest countdown stays roughly live without a
+  // per-second re-render - the actual sign-out is enforced by a real timer
+  // in AuthContext, this is display only.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!isGuest) return;
+    const id = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, [isGuest]);
+
   const goHome = () => navigate("/");
   const viewStats = () => {
     navigate("/");
     reload();
+  };
+  const doSignOut = () => {
+    signOut();
+    navigate("/login");
   };
 
   return (
@@ -174,12 +198,16 @@ export default function TopNav() {
           <div className="avatar">{initials}</div>
           <div className="user-meta">
             <div className="user-name">{sessionName}</div>
-            <div className="user-sub">Keep building 🎉</div>
+            <div className="user-sub">{isGuest && guestExpiresAt ? formatCountdown(guestExpiresAt - now) : "Keep building 🎉"}</div>
           </div>
-          <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
         </div>
+        <button
+          onClick={doSignOut}
+          title="Sign out"
+          style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12.5, color: "#6b7280", fontWeight: 600, padding: "0 4px" }}
+        >
+          Sign out
+        </button>
       </div>
     </header>
   );

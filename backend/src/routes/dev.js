@@ -6,11 +6,14 @@ import { devLoginLimiter } from "../middleware/rateLimit.js";
 const router = Router();
 
 // DEV/TEST ONLY. Hands out a valid Supabase session for a fixed local test
-// account with no credentials required, so the frontend can be smoke-tested
-// against auth-protected endpoints before a real login screen exists.
-// This is an intentional auth bypass — it must never be reachable in
-// production. Remove this route entirely once real login exists on the
-// frontend.
+// account with no credentials required. The frontend has a real login screen
+// now (Google / email-password / anonymous guest, see LoginPage.tsx +
+// contexts/AuthContext.tsx) and no longer calls this route — its only
+// remaining consumer is backend/test/api.test.js, which needs some way to
+// get an authenticated token for its own requests without going through a
+// browser-based OAuth flow. Kept rather than deleted for that reason, but
+// still an intentional auth bypass that must never be reachable in
+// production.
 //
 // Two independent gates, both required: NODE_ENV !== "production", AND
 // ENABLE_DEV_LOGIN=true explicitly set. A single misconfigured/missing
