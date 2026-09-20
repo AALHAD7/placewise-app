@@ -130,6 +130,18 @@ button{font:inherit;color:inherit}
 .bell-btn:active, .probe-close:active, .view-stats:active { transform: scale(.94); }
 
 .nav-item:hover:not(.active){ background:#F4F5F9; }
+/* Hover lift - "pop off the stack": a small rise + scale + shadow reads as
+   the item coming toward the user, not just a color swap underneath it.
+   Kept subtle (Apple's own nav/card hovers use small values, not dramatic
+   ones - a 6% scale already reads clearly at this size) and z-index'd above
+   its siblings so the shadow isn't clipped by the next item's flat edge.
+   Reuses .nav-item's existing transform/box-shadow transition (--t-press,
+   --t-ease) rather than adding new timing - the base already fires fast. */
+.nav-item:hover{ transform:translateY(-2px) scale(1.06); box-shadow:0 10px 22px -8px rgba(16,24,40,.18); position:relative; z-index:1; }
+.nav-item.active:hover{ box-shadow:0 10px 22px -8px rgba(79,70,229,.35); }
+/* Pressing a lifted item should feel like pushing it back down, not just
+   the generic press state riding on top of the lift unopposed. */
+.nav-item:hover:active{ transform:translateY(-1px) scale(.98); }
 .selector-option:hover{ background:var(--surface-sunken); }
 .probe-trigger:hover, .probe-trigger-why:hover, .probe-trigger-how:hover{ background:var(--bg); border-color:#d6d9e0; }
 .btn-primary:hover{ box-shadow:0 12px 26px -8px rgba(99,80,240,0.62); }
@@ -195,6 +207,7 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
   .t-check, .t-check svg path { transition:none !important; }
   .indeterminate-bar-fill { animation:none !important; opacity:.6; }
   .feature-card:hover { transform:none; }
+  .nav-item:hover, .nav-item:hover:active { transform:none; box-shadow:none; }
   .app-shell, .app-shell[data-modal="true"] { transition:none; transform:none; filter:none; }
   *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; }
 }
