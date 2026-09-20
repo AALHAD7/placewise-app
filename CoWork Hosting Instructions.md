@@ -45,5 +45,16 @@ Repo folder: `frontend-react/` — Vite + React 18 + TypeScript, builds to stati
 
 1. Back in Render, set the backend's `FRONTEND_ORIGIN` env var to the Vercel URL from Step 2 (comma-separated if there's more than one, e.g. a custom domain too). Redeploy the backend so CORS picks it up — without this step, the browser blocks every API call with a CORS error.
 2. Open the Vercel URL and click through Home, Role, Company, and Skill pages — they should load without "Load failed" errors.
-3. Expected known gap: Resume upload, Mock Interview, and Community submit will fail with 401 until a real login screen replaces the dev bypass — this is expected, not a deploy bug.
-4. Once verified, treat this as a staging/private link. Do not share it as a public launch until real login exists.
+3. A real login screen now exists (Google / email-password / guest — see Step 4). Resume upload, Mock Interview, and Community submit all need a signed-in session, which the login screen provides — no more dev-bypass gap.
+4. Once verified, treat this as a staging/private link until you're ready for a public launch.
+
+## Step 4 — Wire up the login screen's Supabase env vars (required, deployed build is currently broken without this)
+
+The frontend code for Google/email-password/guest sign-in is already deployed at `https://placewise-io.vercel.app`, but Vercel doesn't have the Supabase client credentials set yet, so every sign-in attempt on the live site currently fails silently (confirmed by inspecting the deployed JS bundle — the real project URL isn't baked in).
+
+1. In the Vercel project (`placewise-io`) → **Settings → Environment Variables**, add:
+   - `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` — same two values already sitting in `frontend-react/.env` on the project owner's machine (that file is gitignored, deliberately never committed — copy the values from there, or ask the project owner for them). The anon key is the public one, safe to paste into Vercel's env settings; it's meant to ship inside the built frontend bundle anyway.
+   - `VITE_API_BASE` = the actual deployed backend URL from Step 1, if not already set — confirm it's not still pointing at `localhost:4000`
+2. Environment variable changes don't apply to the current build — trigger a fresh one: Vercel → **Deployments** → the latest deployment's `⋯` menu → **Redeploy**.
+3. Verify: open the live site, confirm the login page appears, and that "Continue as guest" actually creates a session (not a silent failure) — this is the concrete sign the env vars took effect.
+4. Guest sign-in and Google sign-in already work against the real Supabase project (both were tested live and confirmed working on 2026-09-20 — see `Mark Down Files/DOCUMENT.md` Step 39) — this step is purely about getting Vercel's build to use those same credentials, no further Supabase/Google Cloud configuration needed.
