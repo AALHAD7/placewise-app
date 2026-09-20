@@ -6,7 +6,7 @@ import { POPULAR_COMPANIES } from "../lib/constants";
 import { useSelectorOpenState } from "../hooks/useSelector";
 import Selector, { type SelectorOption } from "../components/Selector";
 import PageHeader from "../components/PageHeader";
-import type { CompanyNewsResponse, CompanyOverview, CompanyOverviewResponse, CompanyRolesResponse, CompanyTimelineEvent, CompanyTimelineResponse, RoleOverviewResponse } from "../types/api";
+import type { CompanyNewsResponse, CompanyOverview, CompanyOverviewResponse, CompanyRolesResponse, CompanyTimelineEvent, CompanyTimelineResponse, CompanyValueChainResponse, CompanyValueChainStage, RoleOverviewResponse } from "../types/api";
 
 // Ported from frontend/index.html: companySelector() (3762-3815),
 // companyInfo() (3924-3970), roleInCompanySel (4030-4037, a lightSelector()
@@ -21,6 +21,7 @@ interface OverviewState { loading: boolean; error: string; data: CompanyOverview
 interface RolesState { loading: boolean; error: string; roles: string[] }
 interface RoleAtCompanyState { loading: boolean; error: string; process: string[] }
 interface TimelineState { loading: boolean; error: string; events: CompanyTimelineEvent[] }
+interface ValueChainState { loading: boolean; error: string; stages: CompanyValueChainStage[] }
 
 export default function CompanyPage() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function CompanyPage() {
   const [rolesByCompany, setRolesByCompany] = useState<Record<string, RolesState>>({});
   const [roleAtCompany, setRoleAtCompany] = useState<Record<string, RoleAtCompanyState>>({});
   const [timelineByCompany, setTimelineByCompany] = useState<Record<string, TimelineState>>({});
+  const [valueChainByCompany, setValueChainByCompany] = useState<Record<string, ValueChainState>>({});
 
   const companySel = useSelectorOpenState();
   const roleSel = useSelectorOpenState();
@@ -76,6 +78,13 @@ export default function CompanyPage() {
       .catch((e) => setTimelineByCompany((s) => ({ ...s, [c]: { loading: false, error: e instanceof Error ? e.message : "Could not load company timeline.", events: [] } })));
   }
 
+  function loadCompanyValueChain(c: string) {
+    setValueChainByCompany((s) => ({ ...s, [c]: { loading: true, error: "", stages: [] } }));
+    apiFetch<CompanyValueChainResponse>("/api/companies/" + encodeURIComponent(c) + "/value-chain", {}, "Failed to load company value chain.")
+      .then((data) => setValueChainByCompany((s) => ({ ...s, [c]: { loading: false, error: "", stages: data.stages || [] } })))
+      .catch((e) => setValueChainByCompany((s) => ({ ...s, [c]: { loading: false, error: e instanceof Error ? e.message : "Could not load company value chain.", stages: [] } })));
+  }
+
   function pickCompany(title: string) {
     setCompany(title);
     setCompanyRole("");
@@ -84,6 +93,7 @@ export default function CompanyPage() {
     loadCompanyOverview(title);
     loadCompanyRoles(title);
     loadCompanyTimeline(title);
+    loadCompanyValueChain(title);
   }
 
   // --- companySelector() port ---
@@ -126,6 +136,7 @@ export default function CompanyPage() {
   const ov = overviewByCompany[company] || { loading: false, error: "", data: null };
   const news = newsByCompany[company];
   const timelineInfo = timelineByCompany[company] || { loading: false, error: "", events: [] };
+  const valueChainInfo = valueChainByCompany[company] || { loading: false, error: "", stages: [] };
   // Once a role is picked, the process card switches from the generic
   // company-wide rounds (ov.data.rounds) to real research for this exact
   // role at this company (see loadRoleAtCompany) - previously `companyRole`
@@ -219,9 +230,9 @@ export default function CompanyPage() {
                   <path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2" />
                 </svg>
               </div>
-              <div className="feature-title">Company overview</div>
+              <div className="feature-title">Company overview &amp; value chain</div>
               <div className="feature-desc" style={{ marginBottom: 0 }}>
-                Pick a company to see what it does, how it makes money, and the key facts - sector, HQ, founded, headcount.
+                What it does, how it makes money, the key facts - and a stage-by-stage diagram of how it actually creates value.
               </div>
             </div>
             <div className="feature-card" style={{ cursor: "default" }}>
@@ -312,6 +323,44 @@ export default function CompanyPage() {
                       <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-900)" }}>{ev.title}</div>
                       <div style={{ marginTop: 4, color: "var(--text-gray2)", fontSize: "0.84375rem", lineHeight: 1.5 }}>{ev.description}</div>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginTop: 14, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
+            <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Value chain</div>
+            <div style={{ marginTop: 5, color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>How {company} actually creates and captures value, stage by stage.</div>
+            {valueChainInfo.loading && (
+              <div role="status" aria-live="polite" style={{ marginTop: 12, maxWidth: 420 }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Researching {company}'s value chain…</div>
+                <IndeterminateProgressBar />
+              </div>
+            )}
+            {valueChainInfo.error && <div style={{ marginTop: 12, color: "var(--red-dark)", fontSize: "0.84375rem" }}>{valueChainInfo.error}</div>}
+            {!valueChainInfo.loading && !valueChainInfo.error && valueChainInfo.stages.length === 0 && (
+              <div style={{ marginTop: 12, color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>No value chain available for this company yet.</div>
+            )}
+            {valueChainInfo.stages.length > 0 && (
+              <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", alignItems: "stretch", gap: 4 }}>
+                {valueChainInfo.stages.map((st, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "stretch", gap: 4 }}>
+                    <div style={{ width: 220, border: "1px solid #eceef2", borderRadius: "var(--r-md)", padding: "14px 15px", background: "#fcfcfe" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ flex: "none", width: 22, height: 22, borderRadius: "var(--r-pill)", background: "#EAF1FE", color: "var(--indigo)", fontSize: "0.71875rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
+                        <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-900)" }}>{st.name}</div>
+                      </div>
+                      <div style={{ marginTop: 8, color: "var(--text-gray2)", fontSize: "0.8125rem", lineHeight: 1.5 }}>{st.description}</div>
+                    </div>
+                    {i < valueChainInfo.stages.length - 1 && (
+                      <div style={{ flex: "none", alignSelf: "center", color: "var(--text-lightgray)" }} aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                          <polyline points="12 5 19 12 12 19" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

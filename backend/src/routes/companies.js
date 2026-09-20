@@ -4,6 +4,7 @@ import { getNews } from "../lib/news.js";
 import { getCompanyOverview } from "../lib/companyOverview.js";
 import { getCompanyRoles } from "../lib/companyRoles.js";
 import { getCompanyTimeline } from "../lib/companyTimeline.js";
+import { getCompanyValueChain } from "../lib/companyValueChain.js";
 import { optionalAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
@@ -127,6 +128,26 @@ router.get("/:companyName/timeline", aiLimiter, optionalAuth, async (req, res) =
   } catch (err) {
     console.error("[companies/:companyName/timeline]", err);
     res.status(500).json({ success: false, error: "Failed to fetch company timeline.", detail: errorDetail(err) });
+  }
+});
+
+// How the company actually creates/captures value, stage by stage - separate
+// endpoint (same reasoning as /timeline) so it loads in parallel and can use
+// its own grounded-research prompt (companyValueChain.js) rather than the
+// main overview's recent-news-focused context.
+router.get("/:companyName/value-chain", aiLimiter, optionalAuth, async (req, res) => {
+  const { companyName } = req.params;
+  const trimmed = (companyName || "").trim();
+  if (!trimmed || trimmed.length > 100) {
+    return res.status(400).json({ success: false, error: "companyName is required (max 100 characters)." });
+  }
+
+  try {
+    const { stages } = await getCompanyValueChain(trimmed);
+    res.json({ success: true, company: trimmed, stages });
+  } catch (err) {
+    console.error("[companies/:companyName/value-chain]", err);
+    res.status(500).json({ success: false, error: "Failed to fetch company value chain.", detail: errorDetail(err) });
   }
 });
 

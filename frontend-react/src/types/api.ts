@@ -102,6 +102,16 @@ export interface CompanyTimelineResponse {
   events: CompanyTimelineEvent[];
 }
 
+// GET /api/companies/:name/value-chain
+export interface CompanyValueChainStage {
+  name: string;
+  description: string;
+}
+export interface CompanyValueChainResponse {
+  success: true;
+  stages: CompanyValueChainStage[];
+}
+
 // GET /api/roles/:title[?company=] - backend/src/routes/roles.js
 // `companies` (who hires, plural) is only present in the role-wide response;
 // `company`/`process` are only present when ?company= was passed - a single
