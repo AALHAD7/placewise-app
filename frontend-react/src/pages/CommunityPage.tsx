@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import { useSearchParams } from "react-router-dom";
 import { apiFetch } from "../lib/apiClient";
 import PageHeader from "../components/PageHeader";
@@ -22,9 +23,9 @@ function statusLabel(status: string): string {
 }
 
 function statusColor(status: string): string {
-  if (status === "verified" || status === "approved" || status === "auto_approved") return "#059669";
-  if (status === "rejected") return "#b91c1c";
-  return "#9ca3af";
+  if (status === "verified" || status === "approved" || status === "auto_approved") return "var(--green)";
+  if (status === "rejected") return "var(--red-dark)";
+  return "var(--text-lightgray)";
 }
 
 export default function CommunityPage() {
@@ -105,21 +106,21 @@ export default function CommunityPage() {
     <>
       <PageHeader title="Community" subtitle="Real interview questions, case debriefs, and frameworks shared by other candidates" />
 
-      <div style={{ marginTop: 26, background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
-        <div style={{ fontSize: 15.5, fontWeight: 700, color: "#111827" }}>Share something with the community</div>
+      <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+        <div style={{ fontSize: "0.96875rem", fontWeight: 700, color: "var(--text-900)" }}>Share something with the community</div>
         <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
           {TYPES.map((t) => (
             <button
               key={t}
               onClick={() => setType(t)}
               style={{
-                border: "1px solid " + (type === t ? "#4F46E5" : "#e0e1e6"),
-                borderRadius: 9,
+                border: "1px solid " + (type === t ? "var(--indigo)" : "var(--border-strong)"),
+                borderRadius: "var(--r-sm)",
                 padding: "8px 12px",
                 cursor: "pointer",
-                font: "600 12.5px 'Instrument Sans',sans-serif",
-                color: type === t ? "#4F46E5" : "#374151",
-                background: "#fff"
+                font: "600 0.78125rem 'Instrument Sans',sans-serif",
+                color: type === t ? "var(--indigo)" : "var(--text-700)",
+                background: "var(--surface)"
               }}
             >
               {TYPE_LABELS[t]}
@@ -132,14 +133,14 @@ export default function CommunityPage() {
             value={company}
             onChange={(e) => setCompany(e.target.value)}
             placeholder="Company (optional)"
-            style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: 9, padding: "9px 12px", outline: "none", fontSize: 13.5, color: "#111827", background: "#fcfcfd" }}
+            style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
           />
           <input
             type="text"
             value={role}
             onChange={(e) => setRole(e.target.value)}
             placeholder="Role (optional)"
-            style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: 9, padding: "9px 12px", outline: "none", fontSize: 13.5, color: "#111827", background: "#fcfcfd" }}
+            style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
           />
         </div>
         <textarea
@@ -151,13 +152,13 @@ export default function CommunityPage() {
             height: 96,
             resize: "vertical",
             border: "1px solid #e0e1e6",
-            borderRadius: 9,
+            borderRadius: "var(--r-sm)",
             padding: "11px 13px",
             outline: "none",
-            fontSize: 14.5,
+            fontSize: "0.90625rem",
             lineHeight: 1.55,
-            color: "#111827",
-            background: "#fcfcfd",
+            color: "var(--text-900)",
+            background: "var(--field-bg)",
             marginTop: 10,
             font: "inherit"
           }}
@@ -168,36 +169,41 @@ export default function CommunityPage() {
             disabled={submitDisabled}
             style={{
               border: 0,
-              borderRadius: 9,
+              borderRadius: "var(--r-sm)",
               padding: "10px 16px",
-              font: "600 13.5px 'Instrument Sans',sans-serif",
+              font: "600 0.84375rem 'Instrument Sans',sans-serif",
               cursor: submitDisabled ? "default" : "pointer",
               opacity: submitDisabled ? 0.6 : 1,
-              background: "#4F46E5",
-              color: "#fff"
+              background: "var(--indigo)",
+              color: "var(--surface)"
             }}
           >
             {submitting ? "Submitting…" : "Share with the community"}
           </button>
-          {submitError && <span style={{ fontSize: 12.5, color: "#b91c1c" }}>{submitError}</span>}
-          {submitMessage && <span style={{ fontSize: 12.5, color: "#059669" }}>{submitMessage}</span>}
+          {submitError && <span style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{submitError}</span>}
+          {submitMessage && <span style={{ fontSize: "0.78125rem", color: "var(--green)" }}>{submitMessage}</span>}
         </div>
       </div>
 
-      {loading && <div style={{ marginTop: 20, color: "#6b7280", fontSize: 13.5 }}>Loading…</div>}
-      {error && <div style={{ marginTop: 20, color: "#b91c1c", fontSize: 13 }}>{error}</div>}
-      {empty && <div style={{ marginTop: 20, color: "#9ca3af", fontSize: 13.5 }}>No contributions yet - be the first.</div>}
+      {loading && (
+        <div role="status" aria-live="polite" style={{ marginTop: 20, maxWidth: 420 }}>
+          <div style={{ color: "var(--text-gray2)", fontSize: "0.84375rem" }}>Loading contributions…</div>
+          <IndeterminateProgressBar />
+        </div>
+      )}
+      {error && <div style={{ marginTop: 20, color: "var(--red-dark)", fontSize: "0.8125rem" }}>{error}</div>}
+      {empty && <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>No contributions yet - be the first.</div>}
 
       <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
         {list.map((c) => {
           const meta = [TYPE_LABELS[c.type] || c.type, c.company, c.role].filter(Boolean).join(" · ");
           return (
-            <div key={c.id} style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "18px 20px" }}>
+            <div key={c.id} style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "18px 20px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                <span style={{ color: "#9ca3af", fontSize: 12.5 }}>{meta}</span>
-                <span style={{ fontSize: 11.5, fontWeight: 600, color: statusColor(c.status) }}>{statusLabel(c.status)}</span>
+                <span style={{ color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>{meta}</span>
+                <span style={{ fontSize: "0.71875rem", fontWeight: 600, color: statusColor(c.status) }}>{statusLabel(c.status)}</span>
               </div>
-              <p style={{ margin: "10px 0 0", fontSize: 14.5, lineHeight: 1.6, color: "#111827", textWrap: "pretty" as const }}>{c.content}</p>
+              <p style={{ margin: "10px 0 0", fontSize: "0.90625rem", lineHeight: 1.6, color: "var(--text-900)", textWrap: "pretty" as const }}>{c.content}</p>
             </div>
           );
         })}

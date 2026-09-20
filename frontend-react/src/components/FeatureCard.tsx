@@ -1,4 +1,6 @@
 // Ported from frontend/index.html's .feature-card usage (lines 386-411),
+// rendered as a real <button> (it is a control, not a decorative box) so it
+// is reachable by keyboard, shows a focus ring and can take a press state.
 // CSS at global.css's .feature-card/.fc-icon block. iconClass is one of the
 // 6 color variants defined there.
 
@@ -15,7 +17,7 @@ interface FeatureCardProps {
 
 export default function FeatureCard({ name, body, iconClass, iconPath, wide, onClick }: FeatureCardProps) {
   return (
-    <div className={"feature-card" + (wide ? " wide" : "")} onClick={onClick}>
+    <button type="button" className={"unbutton feature-card" + (wide ? " wide" : "")} onClick={onClick}>
       <div className={"fc-icon " + iconClass}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d={iconPath} />
@@ -50,6 +52,6 @@ export default function FeatureCard({ name, body, iconClass, iconPath, wide, onC
           </svg>
         </div>
       )}
-    </div>
+    </button>
   );
 }

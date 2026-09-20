@@ -11,7 +11,7 @@ export default function RequireAuth() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280", fontSize: 13.5 }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-gray2)", fontSize: "0.84375rem" }}>
         Loading…
       </div>
     );

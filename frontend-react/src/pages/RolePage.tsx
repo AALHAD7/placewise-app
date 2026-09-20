@@ -36,9 +36,9 @@ function overviewKey(title: string, company: string) {
 }
 
 const DIFFICULTY_TAG_STYLE: Record<string, React.CSSProperties> = {
-  Easy: { background: "#e7f6ee", color: "#047857" },
-  Medium: { background: "#fdf3e3", color: "#b45309" },
-  Hard: { background: "#fdeaea", color: "#b91c1c" }
+  Easy: { background: "#e7f6ee", color: "var(--green-dark)" },
+  Medium: { background: "#fdf3e3", color: "var(--amber-ink)" },
+  Hard: { background: "#fdeaea", color: "var(--red-dark)" }
 };
 
 export default function RolePage() {
@@ -239,8 +239,8 @@ export default function RolePage() {
             onQuery={companySel.onQuery}
             onClear={clearCompany}
           />
-          {!role && <div style={{ marginTop: 6, color: "#9ca3af", fontSize: 12.5 }}>Pick a role first</div>}
-          {role && company && <div style={{ marginTop: 6, color: "#9ca3af", fontSize: 12.5 }}>Showing everything tailored to {role} at {company}</div>}
+          {!role && <div style={{ marginTop: 6, color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>Pick a role first</div>}
+          {role && company && <div style={{ marginTop: 6, color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>Showing everything tailored to {role} at {company}</div>}
         </div>
       </div>
 
@@ -312,18 +312,18 @@ export default function RolePage() {
 
       {roleInfo && (
         <>
-          {roleInfo.loading && <div style={{ marginTop: 28, color: "#9ca3af", fontSize: 13.5 }}>Loading role info…</div>}
-          {roleInfo.error && <div className="t-shake" style={{ marginTop: 28, color: "#b91c1c", fontSize: 13.5 }}>{roleInfo.error}</div>}
+          {roleInfo.loading && <div style={{ marginTop: 28, color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Loading role info…</div>}
+          {roleInfo.error && <div className="t-shake" style={{ marginTop: 28, color: "var(--red-dark)", fontSize: "0.84375rem" }}>{roleInfo.error}</div>}
 
           <div style={{ marginTop: 28, display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(320px,420px)", gap: 16, alignItems: "start" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
-                <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>What this role is</div>
-                <p style={{ margin: "9px 0 0", fontSize: 15.5, lineHeight: 1.6, color: "#111827" }}>{roleInfo.what}</p>
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>What this role is</div>
+                <p style={{ margin: "9px 0 0", fontSize: "0.96875rem", lineHeight: 1.6, color: "var(--text-900)" }}>{roleInfo.what}</p>
               </div>
 
-              <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px 22px" }}>
-                <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Topics to prepare</div>
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px 22px" }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Topics to prepare</div>
                 <div style={{ position: "relative", marginTop: 12, maxWidth: 420 }}>
                   <Selector
                     value={roleTopic || topicPlaceholder}
@@ -342,15 +342,15 @@ export default function RolePage() {
 
                 {current && (
                   <>
-                    <p style={{ margin: "16px 0 0", fontSize: 14.5, lineHeight: 1.6, color: "#111827" }}>
+                    <p style={{ margin: "16px 0 0", fontSize: "0.90625rem", lineHeight: 1.6, color: "var(--text-900)" }}>
                       What interviewers are testing when they open {current.name.toLowerCase()} for a {role}.
                     </p>
-                    <div style={{ marginTop: 16, color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>What gets tested</div>
+                    <div style={{ marginTop: 16, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>What gets tested</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 10 }}>
                       {current.points.map((t, i) => (
                         <div key={i}>
-                          <div style={{ display: "flex", gap: 9, fontSize: 14, lineHeight: 1.45, color: "#374151" }}>
-                            <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "#4F46E5", marginTop: 7 }}></span>
+                          <div style={{ display: "flex", gap: 9, fontSize: "0.875rem", lineHeight: 1.45, color: "var(--text-700)" }}>
+                            <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--indigo)", marginTop: 7 }}></span>
                             <span>{t}</span>
                           </div>
                           <ProbeChat probe={probeFor(role, current.name, "p" + i, t)} />
@@ -360,23 +360,23 @@ export default function RolePage() {
 
                     {current.concept && (
                       <>
-                        <div style={{ marginTop: 20, color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Concept</div>
-                        <p style={{ margin: "10px 0 0", fontSize: 14.5, lineHeight: 1.65, color: "#111827" }}>{current.concept}</p>
+                        <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Concept</div>
+                        <p style={{ margin: "10px 0 0", fontSize: "0.90625rem", lineHeight: 1.65, color: "var(--text-900)" }}>{current.concept}</p>
                         <ProbeChat probe={probeFor(role, current.name, "concept", current.concept)} />
                       </>
                     )}
 
                     {current.frameworks && current.frameworks.length > 0 && (
                       <>
-                        <div style={{ marginTop: 20, color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Frameworks</div>
+                        <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Frameworks</div>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 10, marginTop: 11 }}>
                           {current.frameworks.map((f, i) => (
-                            <div key={i} style={{ border: "1px solid #eceef2", borderRadius: 14, padding: "13px 15px", background: "#fcfcfe" }}>
-                              <div style={{ fontSize: 14.5, fontWeight: 700, color: "#111827" }}>{f.name}</div>
-                              <div style={{ marginTop: 8, fontSize: 10.5, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#9ca3af" }}>Answers</div>
-                              <p style={{ margin: "4px 0 0", fontSize: 13.5, lineHeight: 1.55, color: "#374151" }}>{f.answers}</p>
-                              <div style={{ marginTop: 9, fontSize: 10.5, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#9ca3af" }}>When not to use</div>
-                              <p style={{ margin: "4px 0 0", fontSize: 13.5, lineHeight: 1.55, color: "#374151" }}>{f.whenNotToUse}</p>
+                            <div key={i} style={{ border: "1px solid #eceef2", borderRadius: "var(--r-md)", padding: "13px 15px", background: "#fcfcfe" }}>
+                              <div style={{ fontSize: "0.90625rem", fontWeight: 700, color: "var(--text-900)" }}>{f.name}</div>
+                              <div style={{ marginTop: 8, fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>Answers</div>
+                              <p style={{ margin: "4px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>{f.answers}</p>
+                              <div style={{ marginTop: 9, fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>When not to use</div>
+                              <p style={{ margin: "4px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>{f.whenNotToUse}</p>
                               <ProbeChat probe={probeFor(role, current.name, "f" + i, f.name + " - " + f.answers)} showHow showQuote={false} />
                             </div>
                           ))}
@@ -386,13 +386,13 @@ export default function RolePage() {
 
                     {current.modelAnswer && (
                       <>
-                        <div style={{ marginTop: 20, color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Model answer</div>
-                        <div style={{ marginTop: 11, padding: "12px 14px", borderLeft: "2px solid #4338CA", background: "#F3F7FE", fontSize: 14.5, lineHeight: 1.55, fontWeight: 600, color: "#111827" }}>{current.modelAnswer.prompt}</div>
+                        <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Model answer</div>
+                        <div style={{ marginTop: 11, padding: "12px 14px", borderLeft: "2px solid var(--indigo-700)", background: "var(--blue-wash)", fontSize: "0.90625rem", lineHeight: 1.55, fontWeight: 600, color: "var(--text-900)" }}>{current.modelAnswer.prompt}</div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 13, marginTop: 13 }}>
                           {current.modelAnswer.walkthrough.map((w, i) => (
                             <div key={i}>
-                              <div style={{ display: "flex", gap: 9, fontSize: 14, lineHeight: 1.6, color: "#374151" }}>
-                                <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "#059669", marginTop: 8 }}></span>
+                              <div style={{ display: "flex", gap: 9, fontSize: "0.875rem", lineHeight: 1.6, color: "var(--text-700)" }}>
+                                <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--green)", marginTop: 8 }}></span>
                                 <span>{w}</span>
                               </div>
                               <ProbeChat probe={probeFor(role, current.name, "w" + i, w)} />
@@ -404,11 +404,11 @@ export default function RolePage() {
 
                     {current.pitfalls && current.pitfalls.length > 0 && (
                       <>
-                        <div style={{ marginTop: 20, color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Common pitfalls</div>
+                        <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Common pitfalls</div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 11 }}>
                           {current.pitfalls.map((pf, i) => (
-                            <div key={i} style={{ display: "flex", gap: 9, fontSize: 14, lineHeight: 1.55, color: "#374151" }}>
-                              <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "#b91c1c", marginTop: 8 }}></span>
+                            <div key={i} style={{ display: "flex", gap: 9, fontSize: "0.875rem", lineHeight: 1.55, color: "var(--text-700)" }}>
+                              <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--red-dark)", marginTop: 8 }}></span>
                               <span>{pf}</span>
                             </div>
                           ))}
@@ -418,16 +418,16 @@ export default function RolePage() {
 
                     {current.practicePrompts && current.practicePrompts.length > 0 && (
                       <>
-                        <div style={{ marginTop: 20, color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Practice prompts</div>
+                        <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Practice prompts</div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 11 }}>
                           {current.practicePrompts.map((q, i) => (
-                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, border: "1px solid #eceef2", borderRadius: 9, padding: "11px 13px", background: "#fcfcfe" }}>
-                              <span style={{ flex: "none", padding: "3px 9px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", ...(DIFFICULTY_TAG_STYLE[q.difficulty] || { background: "#f3f4f6", color: "#4b5563" }) }}>{q.difficulty}</span>
-                              <span style={{ flex: 1, minWidth: 0, fontSize: 14, lineHeight: 1.5, color: "#374151" }}>{q.question}</span>
+                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, border: "1px solid #eceef2", borderRadius: "var(--r-sm)", padding: "11px 13px", background: "#fcfcfe" }}>
+                              <span style={{ flex: "none", padding: "3px 9px", borderRadius: "var(--r-pill)", fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", ...(DIFFICULTY_TAG_STYLE[q.difficulty] || { background: "var(--surface-sunken)", color: "var(--text-600)" }) }}>{q.difficulty}</span>
+                              <span style={{ flex: 1, minWidth: 0, fontSize: "0.875rem", lineHeight: 1.5, color: "var(--text-700)" }}>{q.question}</span>
                               <button
                                 onClick={() => navigate("/mock-interview?prefillQuestion=" + encodeURIComponent(q.question) + "&prefillFrom=" + encodeURIComponent((role || "") + " · " + (roleTopic || "")))}
                                 className="practise-btn"
-                                style={{ flex: "none", border: "1px solid #C7DCF9", borderRadius: 9, background: "#fff", color: "#4F46E5", font: "600 12.5px 'Instrument Sans',sans-serif", padding: "8px 12px", cursor: "pointer" }}
+                                style={{ flex: "none", border: "1px solid #C7DCF9", borderRadius: "var(--r-sm)", background: "var(--surface)", color: "var(--indigo)", font: "600 0.78125rem 'Instrument Sans',sans-serif", padding: "8px 12px", cursor: "pointer" }}
                               >
                                 Practise
                               </button>
@@ -439,11 +439,11 @@ export default function RolePage() {
 
                     {current.companyNotes && current.companyNotes.length > 0 && (
                       <>
-                        <div style={{ marginTop: 20, color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>How this shows up by company</div>
+                        <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>How this shows up by company</div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 11 }}>
                           {current.companyNotes.map((cn, i) => (
-                            <div key={i} style={{ display: "flex", gap: 11, fontSize: 13.5, lineHeight: 1.55, color: "#374151" }}>
-                              <span style={{ flex: "none", width: 118, fontWeight: 700, color: "#111827" }}>{cn.company}</span>
+                            <div key={i} style={{ display: "flex", gap: 11, fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>
+                              <span style={{ flex: "none", width: 118, fontWeight: 700, color: "var(--text-900)" }}>{cn.company}</span>
                               <span style={{ flex: 1 }}>{cn.note}</span>
                             </div>
                           ))}
@@ -453,29 +453,29 @@ export default function RolePage() {
 
                     {current.samples && current.samples.length > 0 && (
                       <>
-                        <div style={{ marginTop: 18, color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Questions you should expect</div>
+                        <div style={{ marginTop: 18, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Questions you should expect</div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
                           {current.samples.map((q, i) => (
-                            <div key={i} style={{ border: "1px solid #eceef2", borderRadius: 9, padding: "11px 13px", background: "#fcfcfe", fontSize: 14, lineHeight: 1.5, color: "#374151" }}>{q}</div>
+                            <div key={i} style={{ border: "1px solid #eceef2", borderRadius: "var(--r-sm)", padding: "11px 13px", background: "#fcfcfe", fontSize: "0.875rem", lineHeight: 1.5, color: "var(--text-700)" }}>{q}</div>
                           ))}
                         </div>
                       </>
                     )}
                   </>
                 )}
-                {!current && !td.loading && !td.error && <p style={{ margin: "14px 0 0", fontSize: 13.5, color: "#9ca3af" }}>Pick a topic to see what interviewers test within it.</p>}
+                {!current && !td.loading && !td.error && <p style={{ margin: "14px 0 0", fontSize: "0.84375rem", color: "var(--text-lightgray)" }}>Pick a topic to see what interviewers test within it.</p>}
               </div>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
                 {company ? (
                   <>
-                    <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Interview process at {company}</div>
+                    <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Interview process at {company}</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
                       {roleInfo.process.map((step, i) => (
-                        <div key={i} style={{ display: "flex", gap: 9, fontSize: 14, lineHeight: 1.45, color: "#374151" }}>
-                          <span style={{ flex: "none", width: 20, height: 20, borderRadius: 999, background: "#EAF1FE", color: "#1656D9", fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
+                        <div key={i} style={{ display: "flex", gap: 9, fontSize: "0.875rem", lineHeight: 1.45, color: "var(--text-700)" }}>
+                          <span style={{ flex: "none", width: 20, height: 20, borderRadius: "var(--r-pill)", background: "#EAF1FE", color: "#1656D9", fontSize: "0.71875rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
                           <span>{step}</span>
                         </div>
                       ))}
@@ -483,40 +483,40 @@ export default function RolePage() {
                   </>
                 ) : (
                   <>
-                    <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Who hires for it</div>
+                    <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Who hires for it</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
                       {roleInfo.companies.map((c, i) => (
-                        <span key={i} style={{ padding: "5px 11px", borderRadius: 9, background: "#f3f4f6", color: "#374151", fontSize: 13, fontWeight: 500 }}>{c}</span>
+                        <span key={i} style={{ padding: "5px 11px", borderRadius: "var(--r-sm)", background: "var(--surface-sunken)", color: "var(--text-700)", fontSize: "0.8125rem", fontWeight: 500 }}>{c}</span>
                       ))}
                     </div>
                   </>
                 )}
               </div>
 
-              <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
-                <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Salary range</div>
-                <div style={{ marginTop: 11, fontSize: 26, fontWeight: 700, letterSpacing: "-.02em", color: "#111827" }}>{roleInfo.salary}</div>
-                <div style={{ marginTop: 6, color: "#6b7280", fontSize: 13.5 }}>{roleInfo.salaryNote}</div>
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Salary range</div>
+                <div style={{ marginTop: 11, fontSize: "1.625rem", fontWeight: 700, letterSpacing: "-.02em", color: "var(--text-900)" }}>{roleInfo.salary}</div>
+                <div style={{ marginTop: 6, color: "var(--text-gray2)", fontSize: "0.84375rem" }}>{roleInfo.salaryNote}</div>
               </div>
 
-              <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
-                <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Skills required</div>
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Skills required</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
                   {roleInfo.skills.map((sk, i) => (
-                    <div key={i} onClick={sk.click} className="role-skill-link" style={{ display: "flex", gap: 9, fontSize: 14, lineHeight: 1.45, color: "#4F46E5", cursor: "pointer" }}>
-                      <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "#4F46E5", marginTop: 7 }}></span>
+                    <button type="button" key={i} onClick={sk.click} className="unbutton role-skill-link" style={{ display: "flex", gap: 9, fontSize: "0.875rem", lineHeight: 1.45, color: "var(--indigo)", cursor: "pointer" }}>
+                      <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--indigo)", marginTop: 7 }}></span>
                       <span style={{ textDecoration: "underline", textUnderlineOffset: 2 }}>{sk.text}</span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
-                <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Exit opportunities</div>
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Exit opportunities</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
                   {roleInfo.exits.map((ex, i) => (
-                    <div key={i} style={{ display: "flex", gap: 9, fontSize: 14, lineHeight: 1.45, color: "#374151" }}>
-                      <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "#059669", marginTop: 7 }}></span>
+                    <div key={i} style={{ display: "flex", gap: 9, fontSize: "0.875rem", lineHeight: 1.45, color: "var(--text-700)" }}>
+                      <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--green)", marginTop: 7 }}></span>
                       <span>{ex}</span>
                     </div>
                   ))}

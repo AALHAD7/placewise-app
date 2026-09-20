@@ -45,12 +45,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
-      <div style={{ width: 380, background: "#fff", border: "1px solid #e9eaee", borderRadius: 16, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "32px 30px" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
+      <div style={{ width: 380, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "32px 30px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9, justifyContent: "center" }}>
-          <span style={{ fontSize: 20, fontWeight: 700, color: "#111827" }}>Placewise</span>
+          <span style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-900)" }}>Placewise</span>
         </div>
-        <p style={{ margin: "8px 0 24px", textAlign: "center", color: "#6b7280", fontSize: 13.5 }}>
+        <p style={{ margin: "8px 0 24px", textAlign: "center", color: "var(--text-gray2)", fontSize: "0.84375rem" }}>
           {mode === "signin" ? "Sign in to continue" : "Create your account"}
         </p>
 
@@ -63,12 +63,12 @@ export default function LoginPage() {
             justifyContent: "center",
             gap: 10,
             border: "1px solid #e0e1e6",
-            borderRadius: 9,
+            borderRadius: "var(--r-sm)",
             padding: "10px 14px",
-            background: "#fff",
+            background: "var(--surface)",
             cursor: "pointer",
-            font: "600 13.5px 'Instrument Sans',sans-serif",
-            color: "#111827"
+            font: "600 0.84375rem 'Instrument Sans',sans-serif",
+            color: "var(--text-900)"
           }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24">
@@ -81,9 +81,9 @@ export default function LoginPage() {
         </button>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "18px 0" }}>
-          <div style={{ flex: 1, height: 1, background: "#eceef2" }} />
-          <span style={{ fontSize: 11.5, color: "#9ca3af" }}>or</span>
-          <div style={{ flex: 1, height: 1, background: "#eceef2" }} />
+          <div style={{ flex: 1, height: 1, background: "var(--track)" }} />
+          <span style={{ fontSize: "0.71875rem", color: "var(--text-lightgray)" }}>or</span>
+          <div style={{ flex: 1, height: 1, background: "var(--track)" }} />
         </div>
 
         <form onSubmit={submitEmail} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -93,7 +93,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            style={{ border: "1px solid #e0e1e6", borderRadius: 9, padding: "10px 12px", outline: "none", fontSize: 13.5, color: "#111827", background: "#fcfcfd" }}
+            style={{ border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "10px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
           />
           <input
             type="password"
@@ -102,22 +102,22 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            style={{ border: "1px solid #e0e1e6", borderRadius: 9, padding: "10px 12px", outline: "none", fontSize: 13.5, color: "#111827", background: "#fcfcfd" }}
+            style={{ border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "10px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
           />
-          {error && <div style={{ fontSize: 12.5, color: "#b91c1c" }}>{error}</div>}
-          {signupMessage && <div style={{ fontSize: 12.5, color: "#059669" }}>{signupMessage}</div>}
+          {error && <div style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{error}</div>}
+          {signupMessage && <div style={{ fontSize: "0.78125rem", color: "var(--green)" }}>{signupMessage}</div>}
           <button
             type="submit"
             disabled={submitting}
             style={{
               border: 0,
-              borderRadius: 9,
+              borderRadius: "var(--r-sm)",
               padding: "10px 16px",
-              font: "600 13.5px 'Instrument Sans',sans-serif",
+              font: "600 0.84375rem 'Instrument Sans',sans-serif",
               cursor: submitting ? "default" : "pointer",
               opacity: submitting ? 0.6 : 1,
-              background: "#4F46E5",
-              color: "#fff",
+              background: "var(--indigo)",
+              color: "var(--surface)",
               marginTop: 2
             }}
           >
@@ -125,30 +125,30 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p style={{ margin: "16px 0 0", textAlign: "center", fontSize: 12.5, color: "#6b7280" }}>
+        <p style={{ margin: "16px 0 0", textAlign: "center", fontSize: "0.78125rem", color: "var(--text-gray2)" }}>
           {mode === "signin" ? (
             <>
               Don't have an account?{" "}
-              <span onClick={() => switchMode("signup")} style={{ color: "#4F46E5", fontWeight: 600, cursor: "pointer" }}>
+              <button type="button" className="unbutton" onClick={() => switchMode("signup")} style={{ color: "var(--indigo)", fontWeight: 600, cursor: "pointer" }}>
                 Sign up
-              </span>
+              </button>
             </>
           ) : (
             <>
               Already have an account?{" "}
-              <span onClick={() => switchMode("signin")} style={{ color: "#4F46E5", fontWeight: 600, cursor: "pointer" }}>
+              <button type="button" className="unbutton" onClick={() => switchMode("signin")} style={{ color: "var(--indigo)", fontWeight: 600, cursor: "pointer" }}>
                 Sign in
-              </span>
+              </button>
             </>
           )}
         </p>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "18px 0 10px" }}>
-          <div style={{ flex: 1, height: 1, background: "#eceef2" }} />
+          <div style={{ flex: 1, height: 1, background: "var(--track)" }} />
         </div>
         <button
           onClick={continueAsGuest}
-          style={{ width: "100%", border: "none", background: "none", cursor: "pointer", fontSize: 12.5, color: "#6b7280", textDecoration: "underline" }}
+          style={{ width: "100%", border: "none", background: "none", cursor: "pointer", fontSize: "0.78125rem", color: "var(--text-gray2)", textDecoration: "underline" }}
         >
           Continue as guest (3-hour session)
         </button>

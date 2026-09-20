@@ -166,8 +166,8 @@ export function useProbe() {
         text: m.who === "ai" ? plain(m.text) : m.text,
         who: m.who === "ai" ? "Interviewer" : "You",
         style: {
-          borderRadius: 9, padding: "11px 13px", fontSize: 13.5, lineHeight: 1.6, whiteSpace: "pre-wrap" as const,
-          ...(m.who === "ai" ? { background: "#f6f6fb", color: "#111827" } : { background: "#4338CA", color: "#fff", alignSelf: "flex-end" as const, maxWidth: "88%" })
+          borderRadius: "var(--r-sm)", padding: "11px 13px", fontSize: "0.84375rem", lineHeight: 1.6, whiteSpace: "pre-wrap" as const,
+          ...(m.who === "ai" ? { background: "#f6f6fb", color: "var(--text-900)" } : { background: "var(--indigo-700)", color: "var(--surface)", alignSelf: "flex-end" as const, maxWidth: "88%" })
         }
       })),
       loading: p.loading,

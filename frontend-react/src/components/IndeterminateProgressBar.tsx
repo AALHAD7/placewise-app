@@ -6,8 +6,8 @@
 
 export default function IndeterminateProgressBar() {
   return (
-    <div style={{ height: 6, borderRadius: 999, background: "#eceef2", overflow: "hidden", marginTop: 10 }}>
-      <div className="indeterminate-bar-fill" style={{ height: "100%", width: "40%", borderRadius: 999, background: "#4F46E5" }}></div>
+    <div style={{ height: 6, borderRadius: "var(--r-pill)", background: "var(--track)", overflow: "hidden", marginTop: 10 }}>
+      <div className="indeterminate-bar-fill" style={{ height: "100%", width: "40%", borderRadius: "var(--r-pill)", background: "var(--indigo)" }}></div>
     </div>
   );
 }

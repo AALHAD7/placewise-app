@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import { useNavigate } from "react-router-dom";
 import { useDashboard } from "../hooks/useDashboard";
 import FeatureCard, { type IconClass } from "../components/FeatureCard";
@@ -33,7 +34,7 @@ const TYPE_BADGE: Record<ActivityType, { bg: string; color: string; iconPath: st
   },
   mock_interview: {
     bg: "#E0E7FF",
-    color: "#4F46E5",
+    color: "var(--indigo)",
     iconPath: "M12 19v3M19 10v2a7 7 0 0 1-14 0v-2M12 15a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v7a3 3 0 0 0 3 3z"
   },
   tone_shift: {
@@ -47,7 +48,7 @@ const TYPE_BADGE: Record<ActivityType, { bg: string; color: string; iconPath: st
     iconPath: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"
   }
 };
-const DEFAULT_BADGE = { bg: "#F3F4F6", color: "#6b7280", iconPath: "M12 8v4l3 3" };
+const DEFAULT_BADGE = { bg: "var(--surface-sunken)", color: "var(--text-gray2)", iconPath: "M12 8v4l3 3" };
 
 function timeAgo(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
@@ -133,10 +134,10 @@ export default function HomePage() {
         label: p.label,
         minutesLabel: p.done ? "Done" : "~" + p.minutes + " min",
         done: p.done,
-        badgeBg: p.done ? "#F3F4F6" : badge.bg,
-        badgeColor: p.done ? "#9ca3af" : badge.color,
+        badgeBg: p.done ? "var(--surface-sunken)" : badge.bg,
+        badgeColor: p.done ? "var(--text-lightgray)" : badge.color,
         iconPath: badge.iconPath,
-        labelStyle: { fontSize: 13.5, color: p.done ? "#9ca3af" : "#111827", textDecoration: p.done ? "line-through" : "none" },
+        labelStyle: { fontSize: "0.84375rem", color: p.done ? "var(--text-lightgray)" : "var(--text-900)", textDecoration: p.done ? "line-through" : "none" },
         open: () => navigate(TYPE_PAGE[p.type] || "/")
       };
     });
@@ -209,22 +210,22 @@ export default function HomePage() {
                 guessed.
               </p>
               <div className="hero-actions">
-                <div className="btn btn-primary" onClick={() => navigate("/resume")}>
+                <button type="button" className="unbutton btn btn-primary" onClick={() => navigate("/resume")}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M7 16a4 4 0 0 1-.4-8A5.5 5.5 0 0 1 17.4 9 4.5 4.5 0 0 1 17 16" />
                     <polyline points="12 12 12 21" />
                     <polyline points="9 15 12 12 15 15" />
                   </svg>
                   Upload your resume
-                </div>
-                <div className="btn btn-secondary" onClick={() => navigate("/role")}>
+                </button>
+                <button type="button" className="unbutton btn btn-secondary" onClick={() => navigate("/role")}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="9" />
                     <circle cx="12" cy="12" r="5" />
                     <circle cx="12" cy="12" r="1" />
                   </svg>
                   Set your target
-                </div>
+                </button>
               </div>
             </div>
 
@@ -285,7 +286,7 @@ export default function HomePage() {
                 )}
                 {dash.noReadiness && (
                   <div className="ring-outer-empty">
-                    <span style={{ fontSize: 7, color: "#8A8B94", fontWeight: 600, textAlign: "center", lineHeight: 1.2 }}>
+                    <span style={{ fontSize: "0.4375rem", color: "#8A8B94", fontWeight: 600, textAlign: "center", lineHeight: 1.2 }}>
                       No data
                       <br />
                       yet
@@ -341,11 +342,16 @@ export default function HomePage() {
 
           <div className="rp-card">
             <div className="rp-title">Today's plan</div>
-            {dash.loading && <div style={{ color: "#9ca3af", fontSize: 12.5 }}>Loading…</div>}
-            {dash.hasError && <div style={{ color: "#b91c1c", fontSize: 12.5 }}>{dash.error}</div>}
+            {dash.loading && (
+              <div role="status" aria-live="polite">
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>Loading your plan…</div>
+                <IndeterminateProgressBar />
+              </div>
+            )}
+            {dash.hasError && <div style={{ color: "var(--red-dark)", fontSize: "0.78125rem" }}>{dash.error}</div>}
             {dash.hasPlan &&
               dash.plan.map((p, i) => (
-                <div className="plan-row" onClick={p.open} key={i}>
+                <button type="button" className="unbutton plan-row" onClick={p.open} key={i}>
                   <div className="row-icon" style={{ background: p.badgeBg, color: p.badgeColor }}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d={p.iconPath} />
@@ -357,9 +363,9 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="row-time">{p.minutesLabel}</div>
-                </div>
+                </button>
               ))}
-            {dash.allPlanDone && <div style={{ color: "#374151", fontSize: 12.5 }}>Nice work — you've covered today's core prep already. 🎉</div>}
+            {dash.allPlanDone && <div style={{ color: "var(--text-700)", fontSize: "0.78125rem" }}>Nice work — you've covered today's core prep already. 🎉</div>}
           </div>
 
           <div className="rp-card">
@@ -379,7 +385,7 @@ export default function HomePage() {
                   <div className="row-time">{r.ago}</div>
                 </div>
               ))}
-            {dash.noRecent && <div style={{ color: "#9ca3af", fontSize: 12.5 }}>Nothing logged yet — start with today's plan above.</div>}
+            {dash.noRecent && <div style={{ color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>Nothing logged yet — start with today's plan above.</div>}
           </div>
 
           <div className="rp-card quote-card">

@@ -177,32 +177,32 @@ export default function SkillPage() {
 
   return (
     <div style={{ marginTop: 26, width: "100%" }}>
-      <div onClick={() => navigate("/role?role=" + encodeURIComponent(role))} className="link-darken" style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", color: "#6b7280", fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
+      <button type="button" onClick={() => navigate("/role?role=" + encodeURIComponent(role))} className="unbutton link-darken" style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", color: "var(--text-gray2)", fontSize: "0.8125rem", fontWeight: 600, marginBottom: 14 }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flex: "none" }}>
           <path d="m12 19-7-7 7-7" />
           <path d="M19 12H5" />
         </svg>
         <span>Back to Role</span>
-      </div>
-      <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{role}</div>
-      <h1 style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 700, letterSpacing: "-.02em", color: "#111827" }}>{skill}</h1>
+      </button>
+      <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{role}</div>
+      <h1 style={{ margin: "6px 0 0", fontSize: "1.625rem", fontWeight: 700, letterSpacing: "-.02em", color: "var(--text-900)" }}>{skill}</h1>
 
       {loading && (
-        <div style={{ marginTop: 20, maxWidth: 420 }}>
-          <div style={{ color: "#9ca3af", fontSize: 13.5 }}>Generating core concepts…</div>
+        <div role="status" aria-live="polite" style={{ marginTop: 20, maxWidth: 420 }}>
+          <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Generating core concepts…</div>
           <IndeterminateProgressBar />
         </div>
       )}
-      {error && <div className="t-shake" style={{ marginTop: 20, color: "#b91c1c", fontSize: 13.5 }}>{error}</div>}
+      {error && <div className="t-shake" style={{ marginTop: 20, color: "var(--red-dark)", fontSize: "0.84375rem" }}>{error}</div>}
 
       {hasConcepts && (
-        <div style={{ marginTop: 24, background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
-          <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Core concepts</div>
+        <div style={{ marginTop: 24, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+          <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Core concepts</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 14 }}>
             {concepts.map((c, i) => (
               <div key={i}>
                 {c.link ? (
-                  <a href={c.link} target="_blank" rel="noopener noreferrer" className="skill-concept-link" style={{ fontSize: 14.5, fontWeight: 700, color: "#1d4ed8", textDecoration: "underline", textUnderlineOffset: 2 }}>
+                  <a href={c.link} target="_blank" rel="noopener noreferrer" className="skill-concept-link" style={{ fontSize: "0.90625rem", fontWeight: 700, color: "#1d4ed8", textDecoration: "underline", textUnderlineOffset: 2 }}>
                     {c.title}{" "}
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline", verticalAlign: -1 }}>
                       <path d="M15 3h6v6" />
@@ -211,9 +211,9 @@ export default function SkillPage() {
                     </svg>
                   </a>
                 ) : (
-                  <div style={{ fontSize: 14.5, fontWeight: 700, color: "#111827" }}>{c.title}</div>
+                  <div style={{ fontSize: "0.90625rem", fontWeight: 700, color: "var(--text-900)" }}>{c.title}</div>
                 )}
-                <p style={{ margin: "4px 0 0", fontSize: 13.5, lineHeight: 1.55, color: "#4b5563" }}>{c.explanation}</p>
+                <p style={{ margin: "4px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-600)" }}>{c.explanation}</p>
               </div>
             ))}
           </div>
@@ -221,12 +221,12 @@ export default function SkillPage() {
       )}
 
       {showDifficultyPicker && (
-        <div style={{ marginTop: 22, background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 13.5, fontWeight: 700, color: "#111827" }}>Choose a difficulty to generate 6 practice problems</span>
+        <div style={{ marginTop: 22, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          <span style={{ fontSize: "0.84375rem", fontWeight: 700, color: "var(--text-900)" }}>Choose a difficulty to generate 6 practice problems</span>
           <select
             value={difficulty}
             onChange={(e) => onDifficultyChange(e.target.value as SkillDifficulty | "")}
-            style={{ border: "1px solid #e5e7eb", borderRadius: 9, padding: "8px 12px", font: "600 13px 'Instrument Sans',sans-serif", color: "#111827", background: "#fbfbfd", outline: "none", cursor: "pointer" }}
+            style={{ border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", padding: "8px 12px", font: "600 0.8125rem 'Instrument Sans',sans-serif", color: "var(--text-900)", background: "var(--field-bg-alt)", outline: "none", cursor: "pointer" }}
           >
             <option value="">Select difficulty…</option>
             <option value="Easy">Easy</option>
@@ -237,21 +237,21 @@ export default function SkillPage() {
       )}
 
       {problemsLoading && (
-        <div style={{ marginTop: 20, maxWidth: 420 }}>
-          <div style={{ color: "#9ca3af", fontSize: 13.5 }}>Generating 6 practice problems… this can take a bit longer for SQL/Python skills.</div>
+        <div role="status" aria-live="polite" style={{ marginTop: 20, maxWidth: 420 }}>
+          <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Generating 6 practice problems… this can take a bit longer for SQL/Python skills.</div>
           <IndeterminateProgressBar />
         </div>
       )}
-      {problemsError && <div className="t-shake" style={{ marginTop: 20, color: "#b91c1c", fontSize: 13.5 }}>{problemsError}</div>}
+      {problemsError && <div className="t-shake" style={{ marginTop: 20, color: "var(--red-dark)", fontSize: "0.84375rem" }}>{problemsError}</div>}
 
       {hasProblems && (
         <>
           <div style={{ marginTop: 22, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14 }}>
-            <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Practice problems</div>
+            <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Practice problems</div>
             <button
               onClick={() => difficulty && loadProblems(difficulty, true)}
               className="link-darken"
-              style={{ border: "1px solid #e5e7eb", borderRadius: 9, background: "#fff", color: "#374151", font: "600 12.5px 'Instrument Sans',sans-serif", padding: "7px 12px", cursor: "pointer" }}
+              style={{ border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", background: "var(--surface)", color: "var(--text-700)", font: "600 0.78125rem 'Instrument Sans',sans-serif", padding: "7px 12px", cursor: "pointer" }}
             >
               ↻ Generate new questions
             </button>
@@ -309,9 +309,9 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
   const passed = run.passed === true;
   const showAnswer = !!run.showAnswer;
   const showVerdict = ran && !hasError;
-  const verdictColor = passed ? "#047857" : "#b91c1c";
+  const verdictColor = passed ? "var(--green-dark)" : "var(--red-dark)";
 
-  const tagStyle: Record<string, string> = { Easy: "background:#e7f6ee;color:#047857", Medium: "background:#fdf3e3;color:#b45309", Hard: "background:#fdeaea;color:#b91c1c" };
+  const tagStyle: Record<string, string> = { Easy: "background:#e7f6ee;color:#047857", Medium: "background:#fdf3e3;color:#b45309", Hard: "background:#fdeaea;color:var(--red-dark)" };
   const tagCss = tagStyle[p.difficulty] || "background:#f3f4f6;color:#4b5563";
   const [tagBg, tagColor] = tagCss.split(";").map((s) => s.split(":")[1]);
 
@@ -343,12 +343,12 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
   const modelAnswerSegments = !isCode ? parseBold(p.modelAnswer || "") : [];
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "18px 20px" }}>
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "18px 20px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <span style={{ flex: "none", padding: "3px 9px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", background: tagBg, color: tagColor }}>{p.difficulty}</span>
-        {p.concept && <span style={{ flex: "none", fontSize: 11, fontWeight: 700, color: "#4338ca", background: "#eef0ff", padding: "3px 9px", borderRadius: 999 }}>Tests: {p.concept}</span>}
+        <span style={{ flex: "none", padding: "3px 9px", borderRadius: "var(--r-pill)", fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", background: tagBg, color: tagColor }}>{p.difficulty}</span>
+        {p.concept && <span style={{ flex: "none", fontSize: "0.6875rem", fontWeight: 700, color: "var(--indigo-700)", background: "#eef0ff", padding: "3px 9px", borderRadius: "var(--r-pill)" }}>Tests: {p.concept}</span>}
       </div>
-      <p style={{ margin: "10px 0 0", fontSize: 14.5, lineHeight: 1.6, color: "#111827" }}>
+      <p style={{ margin: "10px 0 0", fontSize: "0.90625rem", lineHeight: 1.6, color: "var(--text-900)" }}>
         {promptSegments.map((seg: BoldSegment, i: number) => (
           <span key={i} style={{ fontWeight: seg.weight }}>{seg.text}</span>
         ))}
@@ -362,59 +362,59 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
             onKeyDown={onCodeKeyDown}
             spellCheck={false}
             className="code-textarea"
-            style={{ marginTop: 14, width: "100%", minHeight: 120, border: "1px solid #e5e7eb", borderRadius: 9, padding: "12px 14px", font: "400 13px/1.5 'SF Mono',Menlo,Consolas,monospace", color: "#111827", background: "#fbfbfd", outline: "none", resize: "vertical", boxSizing: "border-box" }}
+            style={{ marginTop: 14, width: "100%", minHeight: 120, border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", padding: "12px 14px", font: "400 0.8125rem/1.5 'SF Mono',Menlo,Consolas,monospace", color: "var(--text-900)", background: "var(--field-bg-alt)", outline: "none", resize: "vertical", boxSizing: "border-box" }}
           />
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 10 }}>
-            <button onClick={onRun} style={{ border: 0, borderRadius: 9, background: "#4338CA", color: "#fff", font: "600 13px 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}>
+            <button onClick={onRun} style={{ border: 0, borderRadius: "var(--r-sm)", background: "var(--indigo-700)", color: "var(--surface)", font: "600 0.8125rem 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}>
               {run.running ? "Running…" : "Run"}
             </button>
-            <button onClick={() => onRunChange({ showAnswer: !showAnswer })} style={{ border: "1px solid #e5e7eb", borderRadius: 9, background: "#fff", color: "#374151", font: "600 13px 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}>
+            <button onClick={() => onRunChange({ showAnswer: !showAnswer })} style={{ border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", background: "var(--surface)", color: "var(--text-700)", font: "600 0.8125rem 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}>
               {showAnswer ? "Hide answer" : "Show answer"}
             </button>
             {showVerdict && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 700, color: verdictColor }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: "0.78125rem", fontWeight: 700, color: verdictColor }}>
                 <morph-icon icon={passed ? ICON_D.CHECK : ICON_D.X} style={{ width: 14, height: 14, color: verdictColor }}></morph-icon>
                 {passed ? "Passed" : "Not quite"}
               </span>
             )}
           </div>
 
-          {hasError && <div style={{ marginTop: 10, padding: "10px 12px", background: "#fdeaea", borderRadius: 9, fontSize: 12.5, color: "#b91c1c", whiteSpace: "pre-wrap" }}>{run.error}</div>}
+          {hasError && <div style={{ marginTop: 10, padding: "10px 12px", background: "#fdeaea", borderRadius: "var(--r-sm)", fontSize: "0.78125rem", color: "var(--red-dark)", whiteSpace: "pre-wrap" }}>{run.error}</div>}
 
           {isSql && ran && !hasError && (
             <div style={{ marginTop: 12, overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78125rem" }}>
                 <tbody>
                   {rows.length > 0 && (
                     <tr>
                       {Object.keys(rows[0]).map((col) => (
-                        <th key={col} style={{ textAlign: "left", padding: "6px 10px", borderBottom: "1px solid #e5e7eb", color: "#6b7280", fontWeight: 600 }}>{col}</th>
+                        <th key={col} style={{ textAlign: "left", padding: "6px 10px", borderBottom: "1px solid var(--border-soft)", color: "var(--text-gray2)", fontWeight: 600 }}>{col}</th>
                       ))}
                     </tr>
                   )}
                   {rows.map((r, i) => (
                     <tr key={i}>
                       {Object.values(r).map((v, j) => (
-                        <td key={j} style={{ padding: "6px 10px", borderBottom: "1px solid #f1f2f6", color: "#374151" }}>{String(v)}</td>
+                        <td key={j} style={{ padding: "6px 10px", borderBottom: "1px solid #f1f2f6", color: "var(--text-700)" }}>{String(v)}</td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {rows.length === 0 && <div style={{ padding: "8px 0", color: "#9ca3af", fontSize: 12.5 }}>No rows returned.</div>}
+              {rows.length === 0 && <div style={{ padding: "8px 0", color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>No rows returned.</div>}
             </div>
           )}
 
           {isPython && ran && !hasError && (
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
               {testResults.map((t, i) => (
-                <div key={i} style={{ border: "1px solid " + (t.pass ? "#cdeeda" : "#f6d5d5"), background: t.pass ? "#f0faf5" : "#fdf3f3", borderRadius: 9, padding: "10px 12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, color: t.pass ? "#047857" : "#b91c1c" }}>
-                    <morph-icon icon={t.pass ? ICON_D.CHECK : ICON_D.X} style={{ width: 13, height: 13, color: t.pass ? "#047857" : "#b91c1c" }}></morph-icon>
+                <div key={i} style={{ border: "1px solid " + (t.pass ? "#cdeeda" : "#f6d5d5"), background: t.pass ? "#f0faf5" : "#fdf3f3", borderRadius: "var(--r-sm)", padding: "10px 12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.78125rem", fontWeight: 700, color: t.pass ? "var(--green-dark)" : "var(--red-dark)" }}>
+                    <morph-icon icon={t.pass ? ICON_D.CHECK : ICON_D.X} style={{ width: 13, height: 13, color: t.pass ? "var(--green-dark)" : "var(--red-dark)" }}></morph-icon>
                     <span>{t.label}</span>
                   </div>
-                  <div style={{ marginTop: 6, font: "400 12px/1.5 'SF Mono',Menlo,Consolas,monospace", color: "#4b5563", wordBreak: "break-word" }}>got: {JSON.stringify(t.got)}</div>
-                  {!t.pass && <div style={{ marginTop: 3, font: "400 12px/1.5 'SF Mono',Menlo,Consolas,monospace", color: "#4b5563", wordBreak: "break-word" }}>expected: {JSON.stringify(t.expected)}</div>}
+                  <div style={{ marginTop: 6, font: "400 0.75rem/1.5 'SF Mono',Menlo,Consolas,monospace", color: "var(--text-600)", wordBreak: "break-word" }}>got: {JSON.stringify(t.got)}</div>
+                  {!t.pass && <div style={{ marginTop: 3, font: "400 0.75rem/1.5 'SF Mono',Menlo,Consolas,monospace", color: "var(--text-600)", wordBreak: "break-word" }}>expected: {JSON.stringify(t.expected)}</div>}
                 </div>
               ))}
             </div>
@@ -422,8 +422,8 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
 
           {showAnswer && (
             <>
-              {isSql && <pre className="t-panel-in" style={{ margin: "12px 0 0", padding: "12px 14px", background: "#161B22", color: "#e5e7eb", borderRadius: 9, font: "400 12.5px/1.55 'SF Mono',Menlo,Consolas,monospace", whiteSpace: "pre-wrap", overflowX: "auto" }}>{p.solutionSql}</pre>}
-              {isPython && <pre className="t-panel-in" style={{ margin: "12px 0 0", padding: "12px 14px", background: "#161B22", color: "#e5e7eb", borderRadius: 9, font: "400 12.5px/1.55 'SF Mono',Menlo,Consolas,monospace", whiteSpace: "pre-wrap", overflowX: "auto" }}>{p.solutionCode}</pre>}
+              {isSql && <pre className="t-panel-in" style={{ margin: "12px 0 0", padding: "12px 14px", background: "#161B22", color: "var(--border-soft)", borderRadius: "var(--r-sm)", font: "400 0.78125rem/1.55 'SF Mono',Menlo,Consolas,monospace", whiteSpace: "pre-wrap", overflowX: "auto" }}>{p.solutionSql}</pre>}
+              {isPython && <pre className="t-panel-in" style={{ margin: "12px 0 0", padding: "12px 14px", background: "#161B22", color: "var(--border-soft)", borderRadius: "var(--r-sm)", font: "400 0.78125rem/1.55 'SF Mono',Menlo,Consolas,monospace", whiteSpace: "pre-wrap", overflowX: "auto" }}>{p.solutionCode}</pre>}
             </>
           )}
         </>
@@ -436,56 +436,56 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
             onChange={(e) => onRunChange({ answerDraft: e.target.value })}
             placeholder="Type your answer, or record it and we will transcribe."
             className="code-textarea-plain"
-            style={{ marginTop: 14, width: "100%", minHeight: 90, border: "1px solid #e5e7eb", borderRadius: 9, padding: "12px 14px", font: "400 13.5px/1.55 'Instrument Sans',sans-serif", color: "#111827", background: "#fbfbfd", outline: "none", resize: "vertical", boxSizing: "border-box" }}
+            style={{ marginTop: 14, width: "100%", minHeight: 90, border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", padding: "12px 14px", font: "400 0.84375rem/1.55 'Instrument Sans',sans-serif", color: "var(--text-900)", background: "var(--field-bg-alt)", outline: "none", resize: "vertical", boxSizing: "border-box" }}
           />
           <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 11 }}>
             <VoiceRecordButton recording={recording} onClick={onToggleMic} />
             <button
               onClick={onScore}
               disabled={!!run.scoring || !(run.answerDraft || "").trim()}
-              style={{ border: 0, borderRadius: 9, background: "#4338CA", color: "#fff", font: "600 13.5px 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}
+              style={{ border: 0, borderRadius: "var(--r-sm)", background: "var(--indigo-700)", color: "var(--surface)", font: "600 0.84375rem 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}
             >
               {run.scoring ? "Scoring…" : "Get AI feedback"}
             </button>
-            <button onClick={() => onRunChange({ showAnswer: !showAnswer })} style={{ border: "1px solid #e5e7eb", borderRadius: 9, background: "#fff", color: "#374151", font: "600 13.5px 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}>
+            <button onClick={() => onRunChange({ showAnswer: !showAnswer })} style={{ border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", background: "var(--surface)", color: "var(--text-700)", font: "600 0.84375rem 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}>
               {showAnswer ? "Hide answer" : "Show answer"}
             </button>
-            <span style={{ fontSize: 12.5, color: "#b91c1c" }}>{micError}{run.scoreError || ""}</span>
+            <span style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{micError}{run.scoreError || ""}</span>
           </div>
 
           {!!run.feedback && (
             <div className="t-panel-in" style={{ marginTop: 16, borderTop: "1px solid #f1f2f5", paddingTop: 14 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#9ca3af" }}>AI feedback · Score</span>
-                <span style={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>{run.feedback.score}/10</span>
+                <span style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>AI feedback · Score</span>
+                <span style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-900)" }}>{run.feedback.score}/10</span>
               </div>
               <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 10 }}>
-                <div style={{ border: "1px solid #d9f2e5", background: "#f4fcf8", borderRadius: 9, padding: "12px 14px" }}>
-                  <div style={{ color: "#059669", fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 700 }}>Strengths</div>
+                <div style={{ border: "1px solid #d9f2e5", background: "var(--green-wash)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                  <div style={{ color: "var(--green)", fontSize: "0.625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 700 }}>Strengths</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 8 }}>
                     {run.feedback.strengths.map((s, i) => (
-                      <div key={i} style={{ fontSize: 13, lineHeight: 1.5, color: "#14532d" }}>{s}</div>
+                      <div key={i} style={{ fontSize: "0.8125rem", lineHeight: 1.5, color: "var(--green-ink)" }}>{s}</div>
                     ))}
                   </div>
                 </div>
-                <div style={{ border: "1px solid #f6dede", background: "#fffaf9", borderRadius: 9, padding: "12px 14px" }}>
-                  <div style={{ color: "#b91c1c", fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 700 }}>To improve</div>
+                <div style={{ border: "1px solid #f6dede", background: "var(--red-wash)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                  <div style={{ color: "var(--red-dark)", fontSize: "0.625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 700 }}>To improve</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 8 }}>
                     {run.feedback.improvements.map((im, i) => (
-                      <div key={i} style={{ fontSize: 13, lineHeight: 1.5, color: "#7f1d1d" }}>{im}</div>
+                      <div key={i} style={{ fontSize: "0.8125rem", lineHeight: 1.5, color: "var(--red-ink)" }}>{im}</div>
                     ))}
                   </div>
                 </div>
               </div>
-              <div style={{ marginTop: 10, background: "#f8f8fb", border: "1px solid #eceef2", borderRadius: 9, padding: "12px 14px" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#4F46E5" }}>A stronger version</div>
-                <p style={{ margin: "7px 0 0", fontSize: 13, lineHeight: 1.55, color: "#374151" }}>{run.feedback.sampleBetterAnswer}</p>
+              <div style={{ marginTop: 10, background: "var(--surface-alt)", border: "1px solid #eceef2", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                <div style={{ fontSize: "0.625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--indigo)" }}>A stronger version</div>
+                <p style={{ margin: "7px 0 0", fontSize: "0.8125rem", lineHeight: 1.55, color: "var(--text-700)" }}>{run.feedback.sampleBetterAnswer}</p>
               </div>
             </div>
           )}
 
           {showAnswer && (
-            <p className="t-panel-in" style={{ margin: "10px 0 0", padding: "12px 14px", background: "#fbfbfd", border: "1px solid #e5e7eb", borderRadius: 9, fontSize: 13.5, lineHeight: 1.6, color: "#374151" }}>
+            <p className="t-panel-in" style={{ margin: "10px 0 0", padding: "12px 14px", background: "var(--field-bg-alt)", border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", fontSize: "0.84375rem", lineHeight: 1.6, color: "var(--text-700)" }}>
               {modelAnswerSegments.map((seg: BoldSegment, i: number) => (
                 <span key={i} style={{ fontWeight: seg.weight }}>{seg.text}</span>
               ))}

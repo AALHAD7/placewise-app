@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../lib/apiClient";
 import { POPULAR_COMPANIES } from "../lib/constants";
@@ -207,39 +208,44 @@ export default function CompanyPage() {
 
       {companyInfo && (
         <>
-          {companyInfo.loading && <div style={{ marginTop: 28, color: "#9ca3af", fontSize: 13.5 }}>Loading company info…</div>}
-          {companyInfo.error && <div className="t-shake" style={{ marginTop: 28, color: "#b91c1c", fontSize: 13.5 }}>{companyInfo.error}</div>}
+          {companyInfo.loading && <div style={{ marginTop: 28, color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Loading company info…</div>}
+          {companyInfo.error && <div className="t-shake" style={{ marginTop: 28, color: "var(--red-dark)", fontSize: "0.84375rem" }}>{companyInfo.error}</div>}
 
-          <div style={{ marginTop: 28, background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
-            <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>About the company</div>
-            <p style={{ margin: "9px 0 0", fontSize: 15.5, lineHeight: 1.6, color: "#111827" }}>{companyInfo.about}</p>
+          <div style={{ marginTop: 28, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
+            <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>About the company</div>
+            <p style={{ margin: "9px 0 0", fontSize: "0.96875rem", lineHeight: 1.6, color: "var(--text-900)" }}>{companyInfo.about}</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 18, borderTop: "1px solid #f1f2f5", paddingTop: 16 }}>
               {companyInfo.facts.map((f, i) => (
                 <div key={i} style={{ flex: 1, minWidth: 130 }}>
-                  <div style={{ color: "#9ca3af", fontSize: 11, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase" }}>{f.k}</div>
-                  <div style={{ marginTop: 4, fontSize: 14.5, fontWeight: 600, color: "#111827" }}>{f.v}</div>
+                  <div style={{ color: "var(--text-lightgray)", fontSize: "0.6875rem", fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase" }}>{f.k}</div>
+                  <div style={{ marginTop: 4, fontSize: "0.90625rem", fontWeight: 600, color: "var(--text-900)" }}>{f.v}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ marginTop: 14, background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
-            <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Company timeline</div>
-            {timelineInfo.loading && <div style={{ marginTop: 12, color: "#9ca3af", fontSize: 13.5 }}>Researching {company}'s history…</div>}
-            {timelineInfo.error && <div style={{ marginTop: 12, color: "#b91c1c", fontSize: 13.5 }}>{timelineInfo.error}</div>}
+          <div style={{ marginTop: 14, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
+            <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Company timeline</div>
+            {timelineInfo.loading && (
+              <div role="status" aria-live="polite" style={{ marginTop: 12, maxWidth: 420 }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Researching {company}'s history…</div>
+                <IndeterminateProgressBar />
+              </div>
+            )}
+            {timelineInfo.error && <div style={{ marginTop: 12, color: "var(--red-dark)", fontSize: "0.84375rem" }}>{timelineInfo.error}</div>}
             {!timelineInfo.loading && !timelineInfo.error && timelineInfo.events.length === 0 && (
-              <div style={{ marginTop: 12, color: "#9ca3af", fontSize: 13.5 }}>No timeline available for this company yet.</div>
+              <div style={{ marginTop: 12, color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>No timeline available for this company yet.</div>
             )}
             {timelineInfo.events.length > 0 && (
               <div style={{ marginTop: 16, position: "relative" }}>
-                <div style={{ position: "absolute", left: 71, top: 6, bottom: 6, width: 2, background: "#eceef2" }}></div>
+                <div style={{ position: "absolute", left: 71, top: 6, bottom: 6, width: 2, background: "var(--track)" }}></div>
                 {timelineInfo.events.map((ev, i) => (
                   <div key={i} style={{ display: "flex", gap: 18, paddingBottom: i === timelineInfo.events.length - 1 ? 0 : 22, position: "relative" }}>
-                    <div style={{ flex: "none", width: 60, textAlign: "right", paddingTop: 2, fontSize: 12.5, fontWeight: 700, color: "#6b7280", letterSpacing: "-.01em" }}>{ev.year}</div>
-                    <span style={{ flex: "none", width: 10, height: 10, borderRadius: "50%", background: "#4F46E5", marginTop: 5, boxShadow: "0 0 0 3px #EAF1FE", zIndex: 1 }}></span>
+                    <div style={{ flex: "none", width: 60, textAlign: "right", paddingTop: 2, fontSize: "0.78125rem", fontWeight: 700, color: "var(--text-gray2)", letterSpacing: "-.01em" }}>{ev.year}</div>
+                    <span style={{ flex: "none", width: 10, height: 10, borderRadius: "50%", background: "var(--indigo)", marginTop: 5, boxShadow: "0 0 0 3px #EAF1FE", zIndex: 1 }}></span>
                     <div style={{ minWidth: 0, paddingBottom: 2 }}>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: "#111827" }}>{ev.title}</div>
-                      <div style={{ marginTop: 4, color: "#6b7280", fontSize: 13.5, lineHeight: 1.5 }}>{ev.description}</div>
+                      <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-900)" }}>{ev.title}</div>
+                      <div style={{ marginTop: 4, color: "var(--text-gray2)", fontSize: "0.84375rem", lineHeight: 1.5 }}>{ev.description}</div>
                     </div>
                   </div>
                 ))}
@@ -248,17 +254,17 @@ export default function CompanyPage() {
           </div>
 
           <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 14 }}>
-            <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Recent news</div>
-                <span style={{ color: "#9ca3af", fontSize: 11, fontWeight: 500 }}>{companyInfo.newsStatus}</span>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Recent news</div>
+                <span style={{ color: "var(--text-lightgray)", fontSize: "0.6875rem", fontWeight: 500 }}>{companyInfo.newsStatus}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 14 }}>
                 {companyInfo.news.map((n, i) => (
                   <div key={i} style={{ display: "flex", gap: 10 }}>
-                    <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "#4F46E5", marginTop: 7 }}></span>
+                    <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--indigo)", marginTop: 7 }}></span>
                     <div>
-                      <a href={n.url} target="_blank" rel="noopener" className="company-link" style={{ display: "block", fontSize: 14.5, fontWeight: 600, lineHeight: 1.4, color: "#111827", textDecoration: "none", borderBottom: "1px solid transparent" }}>
+                      <a href={n.url} target="_blank" rel="noopener" className="company-link" style={{ display: "block", fontSize: "0.90625rem", fontWeight: 600, lineHeight: 1.4, color: "var(--text-900)", textDecoration: "none", borderBottom: "1px solid transparent" }}>
                         {n.t}{" "}
                         <svg width="10.5" height="10.5" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline", verticalAlign: 1 }}>
                           <path d="M15 3h6v6" />
@@ -266,21 +272,21 @@ export default function CompanyPage() {
                           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                         </svg>
                       </a>
-                      <div style={{ marginTop: 3, color: "#6b7280", fontSize: 13.5, lineHeight: 1.45 }}>{n.d}</div>
+                      <div style={{ marginTop: 3, color: "var(--text-gray2)", fontSize: "0.84375rem", lineHeight: 1.45 }}>{n.d}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
-              <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Major investments</div>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+              <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Major investments</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 14 }}>
                 {companyInfo.investments.map((iv, i) => (
                   <div key={i} style={{ display: "flex", gap: 10 }}>
-                    <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "#059669", marginTop: 7 }}></span>
+                    <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--green)", marginTop: 7 }}></span>
                     <div>
-                      <a href={iv.url} target="_blank" rel="noopener" className="company-link" style={{ display: "block", fontSize: 14.5, fontWeight: 600, lineHeight: 1.4, color: "#111827", textDecoration: "none", borderBottom: "1px solid transparent" }}>
+                      <a href={iv.url} target="_blank" rel="noopener" className="company-link" style={{ display: "block", fontSize: "0.90625rem", fontWeight: 600, lineHeight: 1.4, color: "var(--text-900)", textDecoration: "none", borderBottom: "1px solid transparent" }}>
                         {iv.t}{" "}
                         <svg width="10.5" height="10.5" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline", verticalAlign: 1 }}>
                           <path d="M15 3h6v6" />
@@ -288,7 +294,7 @@ export default function CompanyPage() {
                           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                         </svg>
                       </a>
-                      <div style={{ marginTop: 3, color: "#6b7280", fontSize: 13.5, lineHeight: 1.45 }}>{iv.d}</div>
+                      <div style={{ marginTop: 3, color: "var(--text-gray2)", fontSize: "0.84375rem", lineHeight: 1.45 }}>{iv.d}</div>
                     </div>
                   </div>
                 ))}
@@ -296,42 +302,42 @@ export default function CompanyPage() {
             </div>
           </div>
 
-          <div style={{ marginTop: 14, background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
+          <div style={{ marginTop: 14, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16 }}>
               <div>
-                <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{companyInfo.procTitle}</div>
-                <div style={{ marginTop: 5, color: "#9ca3af", fontSize: 12.5 }}>{companyInfo.procHint}</div>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{companyInfo.procTitle}</div>
+                <div style={{ marginTop: 5, color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>{companyInfo.procHint}</div>
               </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", marginTop: 16 }}>
               {companyInfo.rounds.map((rd, i) => (
                 <div key={i} style={{ display: "flex", gap: 14, padding: "13px 0", borderTop: "1px solid #f4f4f7" }}>
-                  <span style={{ flex: "none", width: 30, height: 30, borderRadius: 9, background: "#EAF1FE", color: "#4F46E5", font: "700 12px 'JetBrains Mono',monospace", display: "flex", alignItems: "center", justifyContent: "center" }}>{rd.n}</span>
+                  <span style={{ flex: "none", width: 30, height: 30, borderRadius: "var(--r-sm)", background: "#EAF1FE", color: "var(--indigo)", font: "700 0.75rem 'JetBrains Mono',monospace", display: "flex", alignItems: "center", justifyContent: "center" }}>{rd.n}</span>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: "#111827" }}>{rd.name}</div>
-                    <div style={{ marginTop: 4, color: "#6b7280", fontSize: 13.5, lineHeight: 1.5 }}>{rd.detail}</div>
+                    <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-900)" }}>{rd.name}</div>
+                    <div style={{ marginTop: 4, color: "var(--text-gray2)", fontSize: "0.84375rem", lineHeight: 1.5 }}>{rd.detail}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ marginTop: 14, background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
+          <div style={{ marginTop: 14, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16 }}>
-              <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Interview experiences</div>
-              <span onClick={goAddExperience} style={{ color: "#4F46E5", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Add yours</span>
+              <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Interview experiences</div>
+              <button type="button" className="unbutton" onClick={goAddExperience} style={{ color: "var(--indigo)", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}>Add yours</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 16 }}>
               {companyInfo.experiences.map((e, i) => (
                 <div key={i} style={{ borderLeft: "2px solid #e5e5f0", padding: "2px 0 2px 16px" }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>{e.who}</span>
-                    <span style={{ color: "#9ca3af", fontSize: 12.5 }}>{e.when}</span>
+                    <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-900)" }}>{e.who}</span>
+                    <span style={{ color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>{e.when}</span>
                   </div>
-                  <p style={{ margin: "7px 0 0", fontSize: 14.5, lineHeight: 1.6, color: "#374151" }}>{e.text}</p>
+                  <p style={{ margin: "7px 0 0", fontSize: "0.90625rem", lineHeight: 1.6, color: "var(--text-700)" }}>{e.text}</p>
                 </div>
               ))}
-              {companyInfo.showNoExperiences && <div style={{ color: "#9ca3af", fontSize: 13.5 }}>No experiences shared for this company yet - be the first.</div>}
+              {companyInfo.showNoExperiences && <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>No experiences shared for this company yet - be the first.</div>}
             </div>
           </div>
         </>

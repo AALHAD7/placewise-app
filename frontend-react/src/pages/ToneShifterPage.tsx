@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent } from "react";
+import { useExitTransition } from "../hooks/useExitTransition";
 import { callClaude, logActivity } from "../lib/apiClient";
 import { parseToneShiftResponse, toneShiftPrompt } from "../lib/prompts";
 import { useSelectorOpenState } from "../hooks/useSelector";
@@ -22,24 +23,25 @@ const UNIT_OPTIONS = ["Characters", "Words"];
 interface DropdownOption { label: string; selected: boolean; pick: () => void }
 
 function LabeledDropdown({ label, value, hasValue, open, toggle, options }: { label: string; value: string; hasValue: boolean; open: boolean; toggle: () => void; options: DropdownOption[] }) {
+  const { rendered, exiting } = useExitTransition(open, 160);
   return (
     <div style={{ position: "relative" }}>
-      <div style={{ background: "#fff", border: "1px solid " + (open ? "#BBD3F7" : "#e9eaee"), borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", overflow: "hidden" }}>
-        <div onClick={toggle} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "15px 18px", cursor: "pointer" }}>
+      <div style={{ background: "var(--surface)", border: "1px solid " + (open ? "var(--border-focus)" : "var(--border-input)"), borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", overflow: "hidden" }}>
+        <button type="button" onClick={toggle} aria-expanded={open} aria-haspopup="listbox" className="unbutton selector-trigger" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "15px 18px", cursor: "pointer" }}>
           <div style={{ minWidth: 0 }}>
-            <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{label}</div>
-            <div style={{ marginTop: 3, fontSize: 15.5, fontWeight: 600, color: hasValue ? "#111827" : "#9ca3af" }}>{value}</div>
+            <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{label}</div>
+            <div style={{ marginTop: 3, fontSize: "0.96875rem", fontWeight: 600, color: hasValue ? "var(--text-900)" : "var(--text-lightgray)" }}>{value}</div>
           </div>
-          <span style={{ flex: "none", color: "#9ca3af", fontSize: 12, transition: "transform .18s", transform: `rotate(${open ? 180 : 0}deg)` }}>▾</span>
-        </div>
+          <span style={{ flex: "none", color: "var(--text-lightgray)", fontSize: "0.75rem", transition: "transform .18s var(--t-ease)", transform: `rotate(${open ? 180 : 0}deg)` }}>▾</span>
+        </button>
       </div>
-      {open && (
-        <div className="t-pop-in" style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 20, background: "#fff", border: "1px solid #e0e1e6", borderRadius: 9, boxShadow: "0 14px 34px -12px rgba(16,24,40,.28)", padding: 8, display: "flex", flexDirection: "column", gap: 2, maxHeight: 280, overflow: "auto" }}>
+      {rendered && (
+        <div role="listbox" className={exiting ? "t-pop-out" : "t-pop-in"} style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 20, background: "var(--surface)", border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", boxShadow: "0 14px 34px -12px rgba(16,24,40,.28)", padding: 8, display: "flex", flexDirection: "column", gap: 2, maxHeight: 280, overflow: "auto" }}>
           {options.map((o, i) => (
-            <div key={i} onClick={o.pick} className="selector-option" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: 9, cursor: "pointer", fontSize: 14, color: o.selected ? "#111827" : "#4b5563", fontWeight: o.selected ? 600 : 400, background: o.selected ? "#f3f4f6" : "transparent" }}>
+            <button type="button" key={i} onClick={o.pick} role="option" aria-selected={o.selected} className="unbutton selector-option" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: "var(--r-sm)", cursor: "pointer", fontSize: "0.875rem", color: o.selected ? "var(--text-900)" : "var(--text-600)", fontWeight: o.selected ? 600 : 400, background: o.selected ? "var(--surface-sunken)" : "transparent" }}>
               <span>{o.label}</span>
-              <span style={{ color: "#059669", fontSize: 12, opacity: o.selected ? 1 : 0 }}>✓</span>
-            </div>
+              <span style={{ color: "var(--green)", fontSize: "0.75rem", opacity: o.selected ? 1 : 0 }}>✓</span>
+            </button>
           ))}
         </div>
       )}
@@ -62,6 +64,7 @@ export default function ToneShifterPage() {
   const domainSel = useSelectorOpenState();
   const formatSel = useSelectorOpenState();
   const unitSel = useSelectorOpenState();
+  const { rendered: unitRendered, exiting: unitExiting } = useExitTransition(unitSel.open, 160);
 
   const filled = bullets.filter((b) => b.trim());
   const ready = filled.length > 0 && !!domain && !!format;
@@ -145,41 +148,41 @@ export default function ToneShifterPage() {
       <PageHeader title="Tone Shifter" subtitle="Rewrite answers for the room you are in" />
 
       <div style={{ marginTop: 26, display: "grid", gridTemplateColumns: "minmax(0,1.55fr) minmax(300px,.85fr)", gap: 22, alignItems: "start" }}>
-        <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 20px 16px" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 20px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#9ca3af" }}>Your bullet points</span>
-            <span style={{ fontSize: 12, color: "#9ca3af" }}>{filled.length + " of " + bullets.length + " filled"}</span>
+            <span style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>Your bullet points</span>
+            <span style={{ fontSize: "0.75rem", color: "var(--text-lightgray)" }}>{filled.length + " of " + bullets.length + " filled"}</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 14 }}>
             {bullets.map((b, i) => (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                <span style={{ flex: "none", marginTop: 13, width: 6, height: 6, borderRadius: "50%", background: "#BBD3F7" }}></span>
+                <span style={{ flex: "none", marginTop: 13, width: 6, height: 6, borderRadius: "50%", background: "var(--border-focus)" }}></span>
                 <textarea
                   value={b}
                   onChange={(e) => setBullet(i, e.target.value)}
                   placeholder={i === 0 ? "e.g. Led a 4-member team to redesign the onboarding flow, cutting drop-off by 18%" : "Add another bullet from your resume"}
                   rows={2}
                   className="tone-input"
-                  style={{ flex: 1, resize: "vertical", border: "1px solid #e5e7eb", borderRadius: 9, padding: "10px 12px", font: "400 14px/1.5 'Instrument Sans',sans-serif", color: "#111827", outline: "none", background: "#fbfbfd" }}
+                  style={{ flex: 1, resize: "vertical", border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", padding: "10px 12px", font: "400 0.875rem/1.5 'Instrument Sans',sans-serif", color: "var(--text-900)", outline: "none", background: "var(--field-bg-alt)" }}
                 />
-                <span onClick={() => removeBullet(i)} title="Remove" className="tone-remove-bullet" style={{ flex: "none", marginTop: 10, width: 24, height: 24, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", color: "#c2c4cc", fontSize: 14, cursor: "pointer" }}>
+                <button type="button" onClick={() => removeBullet(i)} title="Remove" className="unbutton tone-remove-bullet" style={{ flex: "none", marginTop: 10, width: 24, height: 24, borderRadius: "var(--r-sm)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-disabled)", fontSize: "0.875rem", cursor: "pointer" }}>
                   ×
-                </span>
+                </button>
               </div>
             ))}
           </div>
-          <div onClick={() => setBullets((arr) => arr.concat(""))} className="tone-add-bullet" style={{ marginTop: 14, display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 14px", border: "1px dashed #d5d6dd", borderRadius: 9, cursor: "pointer", color: "#4F46E5", fontSize: 13.5, fontWeight: 600 }}>
-            <span style={{ fontSize: 15 }}>+</span>
+          <button type="button" onClick={() => setBullets((arr) => arr.concat(""))} className="unbutton tone-add-bullet" style={{ marginTop: 14, display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 14px", border: "1px dashed #d5d6dd", borderRadius: "var(--r-sm)", cursor: "pointer", color: "var(--indigo)", fontSize: "0.84375rem", fontWeight: 600 }}>
+            <span style={{ fontSize: "0.9375rem" }}>+</span>
             <span>Add bullet point</span>
-          </div>
+          </button>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <LabeledDropdown label="Domain" value={domain || "Select a domain"} hasValue={!!domain} open={domainSel.open} toggle={domainSel.toggle} options={domainOptions} />
           <LabeledDropdown label="Format" value={format || "Select a format"} hasValue={!!format} open={formatSel.open} toggle={formatSel.toggle} options={formatOptions} />
 
-          <div style={{ background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "13px 16px 15px" }}>
-            <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Length per bullet</div>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "13px 16px 15px" }}>
+            <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Length per bullet</div>
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
               <input
                 value={length}
@@ -187,20 +190,20 @@ export default function ToneShifterPage() {
                 inputMode="numeric"
                 placeholder="e.g. 40"
                 className="code-textarea-plain"
-                style={{ flex: 1, minWidth: 0, border: "1px solid #e5e7eb", borderRadius: 9, padding: "9px 11px", font: "600 14.5px 'Instrument Sans',sans-serif", color: "#111827", outline: "none", background: "#fbfbfd" }}
+                style={{ flex: 1, minWidth: 0, border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", padding: "9px 11px", font: "600 0.90625rem 'Instrument Sans',sans-serif", color: "var(--text-900)", outline: "none", background: "var(--field-bg-alt)" }}
               />
               <div style={{ position: "relative", flex: "none", width: 126 }}>
-                <div onClick={unitSel.toggle} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "9px 11px", border: "1px solid " + (unitSel.open ? "#BBD3F7" : "#e5e7eb"), borderRadius: 9, background: "#fbfbfd", cursor: "pointer" }}>
-                  <span style={{ fontSize: 15.5, fontWeight: 600, color: "#111827" }}>{unit}</span>
-                  <span style={{ flex: "none", color: "#9ca3af", fontSize: 12, transition: "transform .18s", transform: `rotate(${unitSel.open ? 180 : 0}deg)` }}>▾</span>
-                </div>
-                {unitSel.open && (
-                  <div className="t-pop-in" style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 20, background: "#fff", border: "1px solid #e0e1e6", borderRadius: 9, boxShadow: "0 14px 34px -12px rgba(16,24,40,.28)", padding: 6, display: "flex", flexDirection: "column", gap: 2 }}>
+                <button type="button" onClick={unitSel.toggle} aria-expanded={unitSel.open} aria-haspopup="listbox" className="unbutton selector-trigger" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "9px 11px", border: "1px solid " + (unitSel.open ? "var(--border-focus)" : "var(--border-soft)"), borderRadius: "var(--r-sm)", background: "var(--field-bg-alt)", cursor: "pointer" }}>
+                  <span style={{ fontSize: "0.96875rem", fontWeight: 600, color: "var(--text-900)" }}>{unit}</span>
+                  <span style={{ flex: "none", color: "var(--text-lightgray)", fontSize: "0.75rem", transition: "transform .18s var(--t-ease)", transform: `rotate(${unitSel.open ? 180 : 0}deg)` }}>▾</span>
+                </button>
+                {unitRendered && (
+                  <div role="listbox" className={unitExiting ? "t-pop-out" : "t-pop-in"} style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 20, background: "var(--surface)", border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", boxShadow: "0 14px 34px -12px rgba(16,24,40,.28)", padding: 6, display: "flex", flexDirection: "column", gap: 2 }}>
                     {unitOptions.map((o, i) => (
-                      <div key={i} onClick={o.pick} className="selector-option" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: 9, cursor: "pointer", fontSize: 14, color: o.selected ? "#111827" : "#4b5563", fontWeight: o.selected ? 600 : 400, background: o.selected ? "#f3f4f6" : "transparent" }}>
+                      <button type="button" key={i} onClick={o.pick} role="option" aria-selected={o.selected} className="unbutton selector-option" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: "var(--r-sm)", cursor: "pointer", fontSize: "0.875rem", color: o.selected ? "var(--text-900)" : "var(--text-600)", fontWeight: o.selected ? 600 : 400, background: o.selected ? "var(--surface-sunken)" : "transparent" }}>
                         <span>{o.label}</span>
-                        <span style={{ color: "#059669", fontSize: 12, opacity: o.selected ? 1 : 0 }}>✓</span>
-                      </div>
+                        <span style={{ color: "var(--green)", fontSize: "0.75rem", opacity: o.selected ? 1 : 0 }}>✓</span>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -212,37 +215,37 @@ export default function ToneShifterPage() {
             onClick={confirm}
             style={{
               border: 0,
-              borderRadius: 9,
+              borderRadius: "var(--r-sm)",
               padding: "14px 20px",
-              font: "600 14.5px 'Instrument Sans',sans-serif",
-              background: ready && !loading ? "#4338CA" : "#eceef2",
-              color: ready && !loading ? "#fff" : "#a9acb6",
+              font: "600 0.90625rem 'Instrument Sans',sans-serif",
+              background: ready && !loading ? "var(--indigo-700)" : "var(--track)",
+              color: ready && !loading ? "var(--surface)" : "var(--text-muted)",
               cursor: ready && !loading ? "pointer" : "not-allowed"
             }}
           >
             Confirm and rephrase
           </button>
-          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: "#9ca3af" }}>{hint}</p>
-          <p style={{ margin: "-6px 0 0", fontSize: 12, lineHeight: 1.5, color: "#9ca3af" }}>Note: The character count includes white spaces.</p>
+          <p style={{ margin: 0, fontSize: "0.75rem", lineHeight: 1.5, color: "var(--text-lightgray)" }}>{hint}</p>
+          <p style={{ margin: "-6px 0 0", fontSize: "0.75rem", lineHeight: 1.5, color: "var(--text-lightgray)" }}>Note: The character count includes white spaces.</p>
         </div>
       </div>
 
-      <div style={{ marginTop: 22, background: "#fff", border: "1px solid #e9eaee", borderRadius: 14, boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px 22px" }}>
+      <div style={{ marginTop: 22, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px 22px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#9ca3af" }}>Output</span>
-          <span style={{ fontSize: 12, color: "#9ca3af" }}>{outMeta}</span>
+          <span style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>Output</span>
+          <span style={{ fontSize: "0.75rem", color: "var(--text-lightgray)" }}>{outMeta}</span>
         </div>
         {out && out.length ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 11, marginTop: 14 }}>
             {out.map((o, i) => (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
-                <span style={{ flex: "none", marginTop: 9, width: 6, height: 6, borderRadius: "50%", background: "#4F46E5" }}></span>
-                <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: "#111827" }}>{o.text}</p>
+                <span style={{ flex: "none", marginTop: 9, width: 6, height: 6, borderRadius: "50%", background: "var(--indigo)" }}></span>
+                <p style={{ margin: 0, fontSize: "0.90625rem", lineHeight: 1.6, color: "var(--text-900)" }}>{o.text}</p>
               </div>
             ))}
           </div>
         ) : (
-          <p style={{ margin: "12px 0 0", fontSize: 14, color: "#9ca3af" }}>Add your bullet points, pick a domain and a format, then hit confirm. The rephrased version appears here.</p>
+          <p style={{ margin: "12px 0 0", fontSize: "0.875rem", color: "var(--text-lightgray)" }}>Add your bullet points, pick a domain and a format, then hit confirm. The rephrased version appears here.</p>
         )}
       </div>
     </>

@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
+import { useExitTransition } from "../../hooks/useExitTransition";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../contexts/AuthContext";
@@ -21,7 +22,7 @@ interface NavEntry {
 const NAV: NavEntry[] = [
   {
     to: "/",
-    label: "Home",
+    label: "Progress",
     paths: [
       "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8",
       "M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
@@ -143,21 +144,37 @@ export default function TopNav() {
     navigate("/");
     reload();
   };
+  // Signing out is irreversible for a guest - the 3h session and everything
+  // in it is gone, with no account to sign back into. That is exactly the
+  // narrow case a confirmation step is for; the popover is anchored to the
+  // button so it reads as coming from the control it belongs to.
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const { rendered: confirmRendered, exiting: confirmExiting } = useExitTransition(confirmOpen, 160);
   const doSignOut = () => {
+    setConfirmOpen(false);
     signOut();
     navigate("/login");
   };
 
+  useEffect(() => {
+    if (!confirmOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setConfirmOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [confirmOpen]);
+
   return (
     <header className="topnav">
-      <div onClick={goHome} title="Back to home" className="brand-left" style={{ cursor: "pointer", flex: "none" }}>
+      <button type="button" onClick={goHome} title="Back to your progress" className="unbutton brand-left" style={{ cursor: "pointer", flex: "none" }}>
         <div className="brand-bars">
           <span></span>
           <span></span>
           <span></span>
         </div>
         <span className="brand-name">Placewise</span>
-      </div>
+      </button>
 
       <nav className="topnav-links">
         {NAV.map((entry, i) => (
@@ -179,35 +196,79 @@ export default function TopNav() {
             </svg>
             {streak} day streak
             <span className="divider"></span>
-            <div className="view-stats" onClick={viewStats}>
+            <button type="button" className="unbutton view-stats" onClick={viewStats}>
               View stats
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
-            </div>
+            </button>
           </div>
         )}
-        <div className="bell-btn" title="Notifications">
+        <button type="button" className="unbutton bell-btn" title="Notifications" aria-label="Notifications">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.7 21a2 2 0 0 1-3.4 0" />
           </svg>
-        </div>
-        <div className="user-block" onClick={goHome} title="Back to home">
+        </button>
+        <button type="button" className="unbutton user-block" onClick={goHome} title="Back to your progress">
           <div className="avatar">{initials}</div>
           <div className="user-meta">
             <div className="user-name">{sessionName}</div>
             <div className="user-sub">{isGuest && guestExpiresAt ? formatCountdown(guestExpiresAt - now) : "Keep building 🎉"}</div>
           </div>
-        </div>
-        <button
-          onClick={doSignOut}
-          title="Sign out"
-          style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12.5, color: "#6b7280", fontWeight: 600, padding: "0 4px" }}
-        >
-          Sign out
         </button>
+        <div style={{ position: "relative", flex: "none" }}>
+          <button
+            type="button"
+            onClick={() => setConfirmOpen((v) => !v)}
+            title="Sign out"
+            aria-expanded={confirmOpen}
+            className="unbutton"
+            style={{ cursor: "pointer", fontSize: "0.78125rem", color: "var(--text-gray2)", fontWeight: 600, padding: "6px 6px", borderRadius: "var(--r-sm)" }}
+          >
+            Sign out
+          </button>
+          {confirmRendered && (
+            <div
+              role="dialog"
+              aria-label="Confirm sign out"
+              className={confirmExiting ? "t-pop-out" : "t-pop-in"}
+              style={{
+                ["--pop-origin" as string]: "top right",
+                position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 30, width: 244,
+                background: "var(--surface)", border: "1px solid #e0e1e6", borderRadius: "var(--r-md)",
+                boxShadow: "0 14px 34px -12px rgba(16,24,40,.28)", padding: 14
+              }}
+            >
+              <div style={{ fontSize: "0.84375rem", fontWeight: 700, color: "var(--text-900)" }}>Sign out?</div>
+              <div style={{ marginTop: 5, fontSize: "0.78125rem", lineHeight: 1.5, color: "var(--text-gray2)" }}>
+                {isGuest
+                  ? "This is a guest session - your work here is not saved to an account and cannot be recovered."
+                  : "You can sign back in at any time."}
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => setConfirmOpen(false)}
+                  className="unbutton"
+                  style={{ flex: 1, textAlign: "center", padding: "8px 10px", borderRadius: "var(--r-sm)", border: "1px solid #e0e1e6", background: "var(--surface)", fontSize: "0.78125rem", fontWeight: 600, color: "var(--text-700)" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={doSignOut}
+                  autoFocus
+                  className="unbutton"
+                  style={{ flex: 1, textAlign: "center", padding: "8px 10px", borderRadius: "var(--r-sm)", border: "1px solid transparent", background: isGuest ? "var(--red)" : "var(--indigo)", fontSize: "0.78125rem", fontWeight: 700, color: "var(--surface)" }}
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

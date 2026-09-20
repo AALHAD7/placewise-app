@@ -1,4 +1,5 @@
 import type { ChangeEvent, ReactNode } from "react";
+import { useExitTransition } from "../hooks/useExitTransition";
 
 // Searchable dropdown card - ported from the shared visual shape behind
 // roleSelector()/companySelector()/lightSelector() in frontend/index.html
@@ -39,6 +40,9 @@ interface SelectorProps {
 export default function Selector({
   label, value, hasValue, open, query, options, empty, emptyText, disabled, searchPlaceholder, toggle, onQuery, onClear
 }: SelectorProps) {
+  // The menu leaves along the path it arrived on rather than vanishing on
+  // the state flip - see useExitTransition.
+  const { rendered: menuRendered, exiting: menuExiting } = useExitTransition(open && !disabled, 160);
   // Enter picks the top option in the currently-filtered list - same option
   // a click would pick, just without reaching for the mouse. When nothing in
   // CANONICAL_ROLES/POPULAR_COMPANIES matches what was typed, that top (and
@@ -58,37 +62,43 @@ export default function Selector({
     <div style={{ position: "relative" }}>
       <div
         style={{
-          background: disabled ? "#f7f7f9" : "#fff",
-          border: "1px solid " + (disabled ? "#ebecf0" : open ? "#BBD3F7" : "#e9eaee"),
-          borderRadius: 14,
+          background: disabled ? "#f7f7f9" : "var(--surface)",
+          border: "1px solid " + (disabled ? "#ebecf0" : open ? "var(--border-focus)" : "var(--border-input)"),
+          borderRadius: "var(--r-md)",
           boxShadow: disabled ? undefined : "0 1px 2px rgba(16,24,40,.05)",
           overflow: "hidden",
           opacity: disabled ? 0.75 : 1
         }}
       >
-        <div
+        <button
+          type="button"
+          className="unbutton selector-trigger"
           onClick={disabled ? undefined : toggle}
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: label ? "15px 18px" : "13px 16px", cursor: disabled ? "not-allowed" : "pointer" }}
+          disabled={disabled}
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: label ? "15px 18px" : "13px 16px", cursor: disabled ? "not-allowed" : "pointer" }}
         >
           <div style={{ minWidth: 0 }}>
-            {label && <div style={{ color: "#9ca3af", fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{label}</div>}
-            <div style={{ marginTop: label ? 3 : 0, fontSize: 15.5, fontWeight: 600, color: disabled ? "#c2c4cc" : hasValue ? "#111827" : "#9ca3af" }}>{value}</div>
+            {label && <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{label}</div>}
+            <div style={{ marginTop: label ? 3 : 0, fontSize: "0.96875rem", fontWeight: 600, color: disabled ? "var(--text-disabled)" : hasValue ? "var(--text-900)" : "var(--text-lightgray)" }}>{value}</div>
           </div>
-          <span style={{ flex: "none", color: disabled ? "#d1d3da" : "#9ca3af", fontSize: 12, transition: "transform .18s", transform: `rotate(${open ? 180 : 0}deg)` }}>▾</span>
-        </div>
+          <span style={{ flex: "none", color: disabled ? "#d1d3da" : "var(--text-lightgray)", fontSize: "0.75rem", transition: "transform .18s var(--t-ease)", transform: `rotate(${open ? 180 : 0}deg)` }}>▾</span>
+        </button>
       </div>
 
-      {open && !disabled && (
+      {menuRendered && !disabled && (
         <div
-          className="t-pop-in"
-          style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 20, background: "#fff", border: "1px solid #e0e1e6", borderRadius: 9, boxShadow: "0 14px 34px -12px rgba(16,24,40,.28)", padding: 8, display: "flex", flexDirection: "column", gap: 2 }}
+          role="listbox"
+          className={menuExiting ? "t-pop-out" : "t-pop-in"}
+          style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 20, background: "var(--surface)", border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", boxShadow: "0 14px 34px -12px rgba(16,24,40,.28)", padding: 8, display: "flex", flexDirection: "column", gap: 2 }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "2px 4px 6px", padding: "9px 12px", border: "1px solid #e5e7eb", borderRadius: 9, background: "#f9fafb" }}>
-            <span style={{ color: "#9ca3af", fontSize: 12.5 }}>⌕</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "2px 4px 6px", padding: "9px 12px", border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", background: "var(--bg)" }}>
+            <span style={{ color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>⌕</span>
             {onClear && (
-              <span onClick={onClear} style={{ flex: "none", order: 2, fontSize: 12, fontWeight: 600, color: "#4F46E5", cursor: "pointer", whiteSpace: "nowrap" }}>
+              <button type="button" className="unbutton" onClick={onClear} style={{ flex: "none", order: 2, fontSize: "0.75rem", fontWeight: 600, color: "var(--indigo)", cursor: "pointer", whiteSpace: "nowrap" }}>
                 Clear selection
-              </span>
+              </button>
             )}
             <input
               value={query}
@@ -96,20 +106,23 @@ export default function Selector({
               onKeyDown={handleKeyDown}
               placeholder={searchPlaceholder}
               autoFocus
-              style={{ flex: 1, border: 0, outline: "none", background: "transparent", color: "#111827", font: "400 14px 'Instrument Sans',sans-serif" }}
+              style={{ flex: 1, border: 0, outline: "none", background: "transparent", color: "var(--text-900)", font: "400 0.875rem 'Instrument Sans',sans-serif" }}
             />
           </div>
-          {empty && <div style={{ padding: "11px 14px", color: "#9ca3af", fontSize: 13.5 }}>{emptyText}</div>}
+          {empty && <div style={{ padding: "11px 14px", color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>{emptyText}</div>}
           {options.map((o, i) => (
-            <div
+            <button
+              type="button"
               key={i}
               onClick={o.pick}
-              className="selector-option"
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: 9, cursor: "pointer", fontSize: 14, color: o.selected ? "#111827" : "#4b5563", fontWeight: o.selected ? 600 : 400, background: o.selected ? "#f3f4f6" : "transparent" }}
+              role="option"
+              aria-selected={o.selected}
+              className="unbutton selector-option"
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: "var(--r-sm)", cursor: "pointer", fontSize: "0.875rem", color: o.selected ? "var(--text-900)" : "var(--text-600)", fontWeight: o.selected ? 600 : 400, background: o.selected ? "var(--surface-sunken)" : "transparent" }}
             >
               <span>{o.label}</span>
-              <span style={{ color: "#059669", fontSize: 12, opacity: o.selected ? 1 : 0 }}>✓</span>
-            </div>
+              <span style={{ color: "var(--green)", fontSize: "0.75rem", opacity: o.selected ? 1 : 0 }}>✓</span>
+            </button>
           ))}
         </div>
       )}

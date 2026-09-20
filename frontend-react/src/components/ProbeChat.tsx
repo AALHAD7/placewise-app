@@ -1,4 +1,5 @@
 import type { ProbeVM } from "../hooks/useProbe";
+import IndeterminateProgressBar from "./IndeterminateProgressBar";
 
 // Ported from frontend/index.html's 3 near-identical probe blocks: points
 // (726-762, What?/Why?, shows quote), frameworks (781-816, What?/Why?/How to
@@ -16,30 +17,30 @@ export default function ProbeChat({ probe: p, showHow, showQuote = true }: Probe
   return (
     <>
       <div style={{ display: "flex", gap: 7, marginTop: 7, marginLeft: 14 }}>
-        <span onClick={p.what} className="probe-trigger" style={{ padding: "3px 9px", border: "1px solid #e5e7eb", borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: "#374151", cursor: "pointer" }}>
+        <button type="button" onClick={p.what} className="unbutton probe-trigger" style={{ padding: "3px 9px", border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", fontSize: "0.71875rem", fontWeight: 600, color: "var(--text-700)", cursor: "pointer" }}>
           What?
-        </span>
-        <span onClick={p.why} className="probe-trigger-why" style={{ padding: "3px 9px", border: "1px solid #e5e7eb", borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: "#4F46E5", cursor: "pointer" }}>
+        </button>
+        <button type="button" onClick={p.why} className="unbutton probe-trigger-why" style={{ padding: "3px 9px", border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", fontSize: "0.71875rem", fontWeight: 600, color: "var(--indigo)", cursor: "pointer" }}>
           Why?
-        </span>
+        </button>
         {showHow && (
-          <span onClick={p.how} className="probe-trigger-how" style={{ padding: "3px 9px", border: "1px solid #e5e7eb", borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: "#047857", cursor: "pointer" }}>
+          <button type="button" onClick={p.how} className="unbutton probe-trigger-how" style={{ padding: "3px 9px", border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", fontSize: "0.71875rem", fontWeight: 600, color: "var(--green-dark)", cursor: "pointer" }}>
             How to apply
-          </span>
+          </button>
         )}
       </div>
 
       {p.open && (
-        <div style={{ margin: "10px 0 0 14px", border: "1px solid #e0e1e6", borderRadius: 14, background: "#fff", boxShadow: "0 10px 26px -14px rgba(16,24,40,.3)", padding: "13px 14px" }}>
+        <div style={{ margin: "10px 0 0 14px", border: "1px solid #e0e1e6", borderRadius: "var(--r-md)", background: "var(--surface)", boxShadow: "0 10px 26px -14px rgba(16,24,40,.3)", padding: "13px 14px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#6b7280" }}>{p.title}</span>
-            <span onClick={p.close} className="probe-close" style={{ cursor: "pointer", color: "#9ca3af", fontSize: 15, lineHeight: 1 }}>
+            <span style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--text-gray2)" }}>{p.title}</span>
+            <button type="button" onClick={p.close} aria-label="Close" className="unbutton probe-close" style={{ cursor: "pointer", color: "var(--text-lightgray)", fontSize: "0.9375rem", lineHeight: 1, padding: "2px 4px" }}>
               ×
-            </span>
+            </button>
           </div>
-          <div style={{ marginTop: 7, fontSize: 12, color: "#9ca3af" }}>{p.context}</div>
+          <div style={{ marginTop: 7, fontSize: "0.75rem", color: "var(--text-lightgray)" }}>{p.context}</div>
           {showQuote && (
-            <div style={{ marginTop: 8, padding: "9px 11px", borderLeft: "2px solid #BBD3F7", background: "#F3F7FE", fontSize: 12.5, lineHeight: 1.5, color: "#4b5563" }}>{p.quote}</div>
+            <div style={{ marginTop: 8, padding: "9px 11px", borderLeft: "2px solid var(--border-focus)", background: "var(--blue-wash)", fontSize: "0.78125rem", lineHeight: 1.5, color: "var(--text-600)" }}>{p.quote}</div>
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 11 }}>
             {p.messages.map((m, i) => (
@@ -48,13 +49,18 @@ export default function ProbeChat({ probe: p, showHow, showQuote = true }: Probe
               </div>
             ))}
           </div>
-          {p.loading && <div style={{ marginTop: 10, fontSize: 13, color: "#9ca3af" }}>Thinking...</div>}
+          {p.loading && (
+            <div role="status" aria-live="polite" style={{ marginTop: 10 }}>
+              <div style={{ fontSize: "0.8125rem", color: "var(--text-lightgray)" }}>Thinking…</div>
+              <IndeterminateProgressBar />
+            </div>
+          )}
           {p.hasError && (
             <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 13, color: "#b91c1c" }}>{p.error}</span>
-              <span onClick={p.retry} style={{ fontSize: 12.5, fontWeight: 600, color: "#4F46E5", cursor: "pointer" }}>
+              <span role="alert" style={{ fontSize: "0.8125rem", color: "var(--red-dark)" }}>{p.error}</span>
+              <button type="button" onClick={p.retry} className="unbutton" style={{ fontSize: "0.78125rem", fontWeight: 600, color: "var(--indigo)", cursor: "pointer" }}>
                 Retry
-              </span>
+              </button>
             </div>
           )}
           {p.showInput && (
@@ -65,9 +71,9 @@ export default function ProbeChat({ probe: p, showHow, showQuote = true }: Probe
                 onKeyDown={p.onKeyDown}
                 placeholder={p.placeholder}
                 className="probe-input"
-                style={{ flex: 1, minWidth: 0, border: "1px solid #e5e7eb", borderRadius: 9, padding: "9px 11px", font: "400 13.5px 'Instrument Sans',sans-serif", color: "#111827", outline: "none", background: "#fbfbfd" }}
+                style={{ flex: 1, minWidth: 0, border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", padding: "9px 11px", font: "400 0.84375rem 'Instrument Sans',sans-serif", color: "var(--text-900)", outline: "none", background: "var(--field-bg-alt)" }}
               />
-              <button onClick={p.send} style={{ flex: "none", border: 0, borderRadius: 9, background: "#4338CA", color: "#fff", font: "600 13px 'Instrument Sans',sans-serif", padding: "0 15px", cursor: "pointer" }}>
+              <button onClick={p.send} style={{ flex: "none", border: 0, borderRadius: "var(--r-sm)", background: "var(--indigo-700)", color: "var(--surface)", font: "600 0.8125rem 'Instrument Sans',sans-serif", padding: "0 15px", cursor: "pointer" }}>
                 Send
               </button>
             </div>
