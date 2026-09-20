@@ -22,7 +22,7 @@ interface NavEntry {
 const NAV: NavEntry[] = [
   {
     to: "/",
-    label: "Progress",
+    label: "Home",
     paths: [
       "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8",
       "M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
@@ -167,7 +167,7 @@ export default function TopNav() {
 
   return (
     <header className="topnav">
-      <button type="button" onClick={goHome} title="Back to your progress" className="unbutton brand-left" style={{ cursor: "pointer", flex: "none" }}>
+      <button type="button" onClick={goHome} title="Back to home" className="unbutton brand-left" style={{ cursor: "pointer", flex: "none" }}>
         <div className="brand-bars">
           <span></span>
           <span></span>
@@ -211,7 +211,7 @@ export default function TopNav() {
             <path d="M13.7 21a2 2 0 0 1-3.4 0" />
           </svg>
         </button>
-        <button type="button" className="unbutton user-block" onClick={goHome} title="Back to your progress">
+        <button type="button" className="unbutton user-block" onClick={goHome} title="Back to home">
           <div className="avatar">{initials}</div>
           <div className="user-meta">
             <div className="user-name">{sessionName}</div>
