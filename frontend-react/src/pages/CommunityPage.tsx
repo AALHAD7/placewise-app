@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import { useSearchParams } from "react-router-dom";
-import { apiFetch } from "../lib/apiClient";
+import { apiFetch, apiUploadWithProgress } from "../lib/apiClient";
 import PageHeader from "../components/PageHeader";
 import type { CommunityContribution, CommunityContributionType, CommunityContributeResponse, CommunityListResponse } from "../types/api";
 
@@ -39,9 +39,11 @@ export default function CommunityPage() {
   const [company, setCompany] = useState(() => searchParams.get("company") || "");
   const [role, setRole] = useState("");
   const [draft, setDraft] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
+  const proofInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (searchParams.toString()) setSearchParams({}, { replace: true });
@@ -68,28 +70,26 @@ export default function CommunityPage() {
 
   function submit() {
     const content = draft.trim();
-    if (content.length < 10 || submitting) return;
+    if (content.length < 10 || !proofFile || submitting) return;
     setSubmitting(true);
     setSubmitError("");
     setSubmitMessage("");
-    apiFetch<CommunityContributeResponse>(
-      "/api/community/contribute",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          type,
-          company: company.trim() || undefined,
-          role: role.trim() || undefined,
-          content
-        })
-      },
-      "Failed to submit."
-    )
+
+    const formData = new FormData();
+    formData.append("type", type);
+    if (company.trim()) formData.append("company", company.trim());
+    if (role.trim()) formData.append("role", role.trim());
+    formData.append("content", content);
+    formData.append("proof", proofFile);
+
+    apiUploadWithProgress<CommunityContributeResponse>("/api/community/contribute", formData, () => {}, undefined, "Failed to submit.")
       .then((data) => {
         setSubmitting(false);
         setDraft("");
         setCompany("");
         setRole("");
+        setProofFile(null);
+        if (proofInputRef.current) proofInputRef.current.value = "";
         setSubmitMessage(data.message || "Thanks - submitted.");
         loadCommunity();
       })
@@ -100,7 +100,7 @@ export default function CommunityPage() {
   }
 
   const empty = !loading && !error && list.length === 0;
-  const submitDisabled = draft.trim().length < 10 || submitting;
+  const submitDisabled = draft.trim().length < 10 || !proofFile || submitting;
 
   return (
     <>
@@ -207,6 +207,31 @@ export default function CommunityPage() {
             font: "inherit"
           }}
         />
+        <div style={{ marginTop: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <input
+              ref={proofInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+              style={{ display: "none" }}
+              id="proof-upload"
+            />
+            <label
+              htmlFor="proof-upload"
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "8px 13px", cursor: "pointer", font: "600 0.8125rem 'Instrument Sans',sans-serif", color: "var(--text-700)", background: "var(--field-bg)" }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+              </svg>
+              {proofFile ? "Change proof" : "Attach proof"}
+            </label>
+            {proofFile && <span style={{ fontSize: "0.8125rem", color: "var(--text-700)" }}>{proofFile.name}</span>}
+          </div>
+          <div style={{ marginTop: 6, fontSize: "0.75rem", color: "var(--text-lightgray)", lineHeight: 1.45 }}>
+            Required: a screenshot showing you actually interviewed - an email thread, calendar invite, or offer/rejection letter works. We check it's plausible (not fake, not off-topic) before it's reviewed - it's kept private, never shown publicly.
+          </div>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 11 }}>
           <button
             onClick={submit}

@@ -1,15 +1,46 @@
 import { Router } from "express";
+import multer from "multer";
 import { supabase } from "../lib/supabase.js";
+import { checkInterviewProof } from "../lib/gemini.js";
 import { requireAuth, optionalAuth } from "../middleware/auth.js";
 import { errorDetail } from "../lib/errors.js";
 
 const router = Router();
 const ALLOWED_TYPES = ["interview_qa", "case_study", "framework"];
 
+const PROOF_BUCKET = "community-proofs";
+const ALLOWED_PROOF_MIMETYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_PROOF_MIMETYPES.includes((file.mimetype || "").split(";")[0].trim())) {
+      return cb(new Error("Unsupported file type"));
+    }
+    cb(null, true);
+  }
+});
+
+let proofBucketEnsured = false;
+async function ensureProofBucket() {
+  if (proofBucketEnsured) return;
+  const { data: buckets, error } = await supabase.storage.listBuckets();
+  if (error) throw error;
+  if (!buckets.some(b => b.name === PROOF_BUCKET)) {
+    // Private - these screenshots likely contain a real email address or
+    // name, unlike the public casebook-images bucket.
+    const { error: createError } = await supabase.storage.createBucket(PROOF_BUCKET, { public: false });
+    if (createError) throw createError;
+  }
+  proofBucketEnsured = true;
+}
+
 // No list endpoint existed before — /contribute could store a submission but
 // nothing could ever read it back, so the Community page had nothing real to
 // show. Public/optionalAuth since browsing shared prep notes shouldn't
-// require being logged in, only submitting one should.
+// require being logged in, only submitting one should. Deliberately never
+// selects proof_storage_path/proof_ai_* - that's reviewer-only context, not
+// something every visitor to this public list should see.
 router.get("/", optionalAuth, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -26,7 +57,15 @@ router.get("/", optionalAuth, async (req, res) => {
   }
 });
 
-router.post("/contribute", requireAuth, async (req, res) => {
+// A proof screenshot (email thread, calendar invite, offer letter, etc.) is
+// required for every submission - Gemini does a soft plausibility read on it
+// (checkInterviewProof, see gemini.js for exactly what that can and can't
+// tell you) and the result is stored for a human reviewer, but it never
+// blocks the submission outright: every contribution still lands as
+// 'pending' either way, same status this table already had before this
+// feature existed. The point is a real human eventually looks at real proof,
+// not that an AI call gatekeeps it.
+router.post("/contribute", requireAuth, upload.single("proof"), async (req, res) => {
   const { type, company, role, content, sources } = req.body || {};
 
   if (!ALLOWED_TYPES.includes(type)) {
@@ -44,11 +83,37 @@ router.post("/contribute", requireAuth, async (req, res) => {
   if (role !== undefined && role !== null && (typeof role !== "string" || role.length > 200)) {
     return res.status(400).json({ error: "role must be a string (max 200 characters)." });
   }
-  if (sources !== undefined && sources !== null && (!Array.isArray(sources) || sources.length > 10 || sources.some(s => typeof s !== "string" || s.length > 500))) {
+  let sourcesArr;
+  try {
+    sourcesArr = typeof sources === "string" && sources ? JSON.parse(sources) : sources;
+  } catch {
+    return res.status(400).json({ error: "sources must be a JSON array of strings." });
+  }
+  if (sourcesArr !== undefined && sourcesArr !== null && (!Array.isArray(sourcesArr) || sourcesArr.length > 10 || sourcesArr.some(s => typeof s !== "string" || s.length > 500))) {
     return res.status(400).json({ error: "sources must be an array of strings (max 10 items, 500 chars each)." });
+  }
+  if (!req.file) {
+    return res.status(400).json({ error: "proof (an image - screenshot of an interview confirmation email, calendar invite, etc.) is required." });
   }
 
   try {
+    await ensureProofBucket();
+
+    const ext = (req.file.mimetype.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const storagePath = `${req.user.id}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from(PROOF_BUCKET).upload(storagePath, req.file.buffer, {
+      contentType: req.file.mimetype,
+      upsert: false
+    });
+    if (uploadError) throw uploadError;
+
+    const proofCheck = await checkInterviewProof({
+      buffer: req.file.buffer,
+      mimeType: req.file.mimetype,
+      company: company || null,
+      role: role || null
+    });
+
     const { data, error } = await supabase
       .from("community_contributions")
       .insert({
@@ -57,7 +122,10 @@ router.post("/contribute", requireAuth, async (req, res) => {
         company: company || null,
         role: role || null,
         content,
-        sources: Array.isArray(sources) ? sources : null
+        sources: Array.isArray(sourcesArr) ? sourcesArr : null,
+        proof_storage_path: storagePath,
+        proof_ai_plausible: proofCheck.plausible,
+        proof_ai_note: proofCheck.note
       })
       .select("id")
       .single();
@@ -67,7 +135,7 @@ router.post("/contribute", requireAuth, async (req, res) => {
       success: true,
       contributionId: data.id,
       status: "pending",
-      message: "Thanks! Your contribution is being verified by our community."
+      message: "Thanks! Your contribution and proof are being reviewed by our community."
     });
   } catch (err) {
     console.error("[community/contribute]", err);

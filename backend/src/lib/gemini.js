@@ -318,6 +318,49 @@ export async function captionImage({ buffer, mimeType }) {
   return (data.candidates?.[0]?.content?.parts?.[0]?.text ?? "").trim();
 }
 
+// Same inline-image-data pattern as captionImage/transcribeAudio above, for
+// the Community page's "Add yours" proof upload. This is a soft plausibility
+// read, not forensic authentication - a screenshot is trivially fakeable in
+// any image/text editor and there's no email server, ATS, or company record
+// to cross-check against. The result is stored for a human reviewer's
+// benefit (see backend/db/migration_018_community_proof.sql); it never
+// blocks a submission outright, only flags it either way.
+const PROOF_CHECK_SYSTEM_PROMPT = `You are helping a human moderator sanity-check a piece of "proof" someone attached to a claim that they interviewed at a company for a role. This is a soft plausibility read, not forensic authentication - you cannot detect a sophisticated forgery, and you should not claim to. Look at the image and judge only: does it look like a genuine screenshot of something interview-related (an email thread, a calendar invite, an offer/rejection letter, a recruiting-portal message, a LinkedIn message, etc.) - not a random photo, meme, blank image, or obvious mockup; and does it plausibly reference the claimed company and/or role (an approximate or partial mention counts, exact wording is not required).
+
+Respond with ONLY a JSON object, no markdown fences, no commentary, in exactly this shape:
+{"plausible": true or false, "note": "One sentence for the human reviewer - what you actually saw in the image and why you judged it that way."}`;
+
+export async function checkInterviewProof({ buffer, mimeType, company, role }) {
+  const claim = [company ? `Company: ${company}` : null, role ? `Role: ${role}` : null].filter(Boolean).join(", ") || "(no company/role given)";
+  const { res } = await fetchGeminiWithRetry(
+    model => `${GEMINI_BASE}/models/${model}:generateContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+      body: JSON.stringify({
+        contents: [{
+          role: "user",
+          parts: [
+            { inline_data: { mime_type: mimeType, data: buffer.toString("base64") } },
+            { text: `Claimed interview: ${claim}\n\n${PROOF_CHECK_SYSTEM_PROMPT}` }
+          ]
+        }],
+        generationConfig: { maxOutputTokens: 300, temperature: 0.1 }
+      })
+    },
+    "proof check"
+  );
+
+  const data = await res.json();
+  const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text ?? "").trim();
+  try {
+    const parsed = extractJSON(raw);
+    return { plausible: !!parsed.plausible, note: String(parsed.note || "").slice(0, 500) };
+  } catch {
+    return { plausible: false, note: "Could not read the model's response - review the image manually." };
+  }
+}
+
 function extractJSON(raw) {
   const firstBrace = raw.indexOf("{");
   const firstBracket = raw.indexOf("[");
