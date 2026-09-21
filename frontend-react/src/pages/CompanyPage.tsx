@@ -16,6 +16,18 @@ import type { CompanyNewsResponse, CompanyOverview, CompanyOverviewResponse, Com
 // outside this page ever read across selectors, so this is a safe
 // simplification (see migration plan §0.5).
 
+// Same palette as global.css's .icon-blue/.icon-purple/etc (feature-card
+// icons) - cycling it per value-chain stage gives each one a distinct
+// identity without introducing a second color system.
+const VALUE_CHAIN_COLORS = [
+  { bg: "#DEEBFF", text: "#2563EB" },
+  { bg: "#EFE9FE", text: "#7C3AED" },
+  { bg: "#DBF8E7", text: "#059669" },
+  { bg: "#FDF0D2", text: "#D97706" },
+  { bg: "#FCE3EE", text: "#DB2777" },
+  { bg: "#D3F5F8", text: "#0891B2" }
+];
+
 interface NewsState { loading: boolean; error: string; articles: CompanyNewsResponse["articles"] }
 interface OverviewState { loading: boolean; error: string; data: CompanyOverview | null }
 interface RolesState { loading: boolean; error: string; roles: string[] }
@@ -343,26 +355,51 @@ export default function CompanyPage() {
               <div style={{ marginTop: 12, color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>No value chain available for this company yet.</div>
             )}
             {valueChainInfo.stages.length > 0 && (
-              <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", alignItems: "stretch", gap: 4 }}>
-                {valueChainInfo.stages.map((st, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "stretch", gap: 4 }}>
-                    <div style={{ width: 220, border: "1px solid #eceef2", borderRadius: "var(--r-md)", padding: "14px 15px", background: "#fcfcfe" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ flex: "none", width: 22, height: 22, borderRadius: "var(--r-pill)", background: "#EAF1FE", color: "var(--indigo)", fontSize: "0.71875rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
-                        <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-900)" }}>{st.name}</div>
+              // A numbered grid, not a chained arrow diagram - arrows between
+              // cards break the moment the row wraps (an arrow pointing right
+              // into empty space, then the next stage appears below-left of
+              // it), which happens at almost any real stage count/viewport.
+              // Sequence is conveyed by the number badge + reading order
+              // instead, which never breaks.
+              <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(228px,1fr))", gap: 14 }}>
+                {valueChainInfo.stages.map((st, i) => {
+                  const c = VALUE_CHAIN_COLORS[i % VALUE_CHAIN_COLORS.length];
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        background: "var(--surface)",
+                        border: "1px solid var(--border-input)",
+                        borderTop: `3px solid ${c.text}`,
+                        borderRadius: "var(--r-md)",
+                        boxShadow: "0 1px 3px rgba(16,24,40,.07)",
+                        padding: "16px 16px 15px"
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                        <span
+                          style={{
+                            flex: "none",
+                            width: 25,
+                            height: 25,
+                            borderRadius: "var(--r-pill)",
+                            background: c.bg,
+                            color: c.text,
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                          }}
+                        >
+                          {i + 1}
+                        </span>
+                        <div style={{ fontSize: "0.90625rem", fontWeight: 700, color: "var(--text-900)", letterSpacing: "-.006em", lineHeight: 1.3 }}>{st.name}</div>
                       </div>
-                      <div style={{ marginTop: 8, color: "var(--text-gray2)", fontSize: "0.8125rem", lineHeight: 1.5 }}>{st.description}</div>
+                      <div style={{ marginTop: 9, color: "var(--text-gray2)", fontSize: "0.8125rem", lineHeight: 1.55 }}>{st.description}</div>
                     </div>
-                    {i < valueChainInfo.stages.length - 1 && (
-                      <div style={{ flex: "none", alignSelf: "center", color: "var(--text-lightgray)" }} aria-hidden="true">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                          <polyline points="12 5 19 12 12 19" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
