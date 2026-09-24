@@ -43,20 +43,48 @@ export interface ActivitySummary {
 }
 
 // GET /api/frameworks - backend/src/routes/frameworks.js
+export interface FrameworkGridDiagram {
+  xAxis: string | null;
+  yAxis: string | null;
+  cols: string[];
+  rows: string[];
+  cells: string[][];
+}
+export interface FrameworkFunnelDiagram {
+  stages: string[];
+}
 export interface Framework {
   id: string;
   name: string;
   role?: string;
   level?: string;
+  domain?: string;
+  subdomain?: string;
   description?: string;
+  when_to_use?: string;
+  when_not_to_use?: string;
+  pitfalls?: string[];
   example?: string;
   grounded_example?: { excerpt: string; sourceFile: string };
+  grounded_image?: { url: string; caption: string; sourceFile: string };
   steps?: string[];
+  diagram_type?: "grid" | "funnel" | null;
+  diagram_data?: FrameworkGridDiagram | FrameworkFunnelDiagram | null;
 }
 
 export interface FrameworksResponse {
   success: true;
   frameworks: Framework[];
+}
+
+// GET /api/frameworks/taxonomy
+export interface FrameworkDomainTaxonomy {
+  domain: string;
+  subdomains: string[];
+}
+export interface FrameworksTaxonomyResponse {
+  success: true;
+  domains: FrameworkDomainTaxonomy[];
 }
 
 // GET /api/companies/:name - backend/src/routes/companies.js

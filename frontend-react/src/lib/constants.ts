@@ -48,24 +48,29 @@ export const POPULAR_COMPANIES = [
 // stored on document_chunks (see backend/db/schema.sql), which comes from
 // the ingested source folder name ("Prodman Files" -> "Prodman"). Most
 // domains are ingested under their selector label as-is - only Product
-// Management predates this convention and needs the explicit remap. Domains
-// with no ingested data yet (Finance, Marketing, Operations) intentionally
-// pass through unmapped: retrieval then finds zero matching chunks and falls
-// back to ungrounded generation, same as leaving domain unset.
+// Management predates this convention and needs the explicit remap.
 const DOMAIN_TO_DB: Record<string, string> = { "Product Management": "Prodman" };
 export function mapDomainForRetrieval(label?: string): string | undefined {
   return label ? DOMAIN_TO_DB[label] || label : undefined;
 }
 
 // Prep-track filter for RAG retrieval (resume questions, story generation,
-// mock interview) - restricts casebook search to one ingested domain instead
-// of searching across all of them unfiltered. Only domains with real
-// ingested data are listed (see Data/<Domain> Files/ and Step 21a in
-// DOCUMENT.md) - "" (General) preserves the original unfiltered behavior.
+// mock interview, frameworks) - restricts casebook search to one ingested
+// domain instead of searching across all of them unfiltered. "" (General)
+// preserves the original unfiltered behavior. Finance/HR/Marketing:Sales/
+// General Management were added to the ingested corpus after this list was
+// first written (Step 21c-e in DOCUMENT.md) and had been missing from here
+// since - all 6 domains below now have real ingested chunks, confirmed live
+// via Supabase counts (Consulting 9363, Finance 7779, Prodman 2550,
+// HR 1517, Marketing:Sales 441, General Management 281).
 export const RAG_DOMAIN_OPTIONS = [
   { label: "General (all domains)", value: "" },
   { label: "Product Management", value: "Product Management" },
-  { label: "Consulting", value: "Consulting" }
+  { label: "Consulting", value: "Consulting" },
+  { label: "Finance", value: "Finance" },
+  { label: "Marketing & Sales", value: "Marketing:Sales" },
+  { label: "General Management", value: "General Management" },
+  { label: "HR", value: "HR" }
 ] as const;
 
 // Lucide icon path data - pulled verbatim from lucide-static so paths are
