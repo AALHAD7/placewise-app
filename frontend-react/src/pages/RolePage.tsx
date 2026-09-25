@@ -353,7 +353,7 @@ export default function RolePage() {
                             <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--indigo)", marginTop: 7 }}></span>
                             <span>{t}</span>
                           </div>
-                          <ProbeChat probe={probeFor(role, current.name, "p" + i, t)} />
+                          <ProbeChat probe={probeFor(role, current.name, "p" + i, t)} showHow />
                         </div>
                       ))}
                     </div>

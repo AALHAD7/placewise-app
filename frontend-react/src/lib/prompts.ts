@@ -23,7 +23,7 @@ export function whyPrompt(role: string, topic: string, blockText: string): strin
 export function howPrompt(role: string, topic: string, blockText: string): string {
   return (
     "You are coaching a candidate preparing for a " + role + " interview, on the topic \"" + topic +
-    "\". Show them exactly how to apply this framework in a live interview: \"" + blockText +
+    "\". Show them exactly how to carry this out in a live interview: \"" + blockText +
     "\". Give a short numbered sequence of the steps they would say out loud, then one worked mini-example applied to a realistic prompt. Keep it under 180 words and practical - no definitions, no theory." + noMarkdown()
   );
 }
