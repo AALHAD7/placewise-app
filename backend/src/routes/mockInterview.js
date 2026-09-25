@@ -33,7 +33,7 @@ async function retrieveContext(queryText, domain) {
   }
 }
 
-router.post("/start", heavyAiLimiter, requireAuth, async (req, res) => {
+router.post("/start", requireAuth, heavyAiLimiter, async (req, res) => {
   const { company, role, difficulty, domain } = req.body || {};
   const diff = Number.isInteger(difficulty) && difficulty >= 1 && difficulty <= 3 ? difficulty : 2;
   if (domain !== undefined && domain !== null && (typeof domain !== "string" || domain.length > 100)) {
@@ -67,7 +67,7 @@ router.post("/start", heavyAiLimiter, requireAuth, async (req, res) => {
   }
 });
 
-router.post("/answer", aiLimiter, requireAuth, async (req, res) => {
+router.post("/answer", requireAuth, aiLimiter, async (req, res) => {
   const { sessionId, userAnswer, timeSpent } = req.body || {};
 
   if (!sessionId || typeof sessionId !== "string") {

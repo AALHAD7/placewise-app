@@ -19,7 +19,7 @@ const router = Router();
 // seed data per company. Any real `companies`/`company_interview_questions`
 // rows are still layered in as supplementary fields when they exist, so
 // seeding that table later still works and is never wasted.
-router.get("/:companyName", aiLimiter, optionalAuth, async (req, res) => {
+router.get("/:companyName", optionalAuth, aiLimiter, async (req, res) => {
   const { companyName } = req.params;
   if (companyName.length > 100) {
     return res.status(400).json({ success: false, error: "companyName: too long (max 100 characters)." });
@@ -93,7 +93,7 @@ router.get("/:companyName", aiLimiter, optionalAuth, async (req, res) => {
 // Backs the "job role at this company" picker on the Company page - was a
 // hardcoded map covering only 9 companies (see DOCUMENT.md); now works for
 // any company, grounded in real web search (see companyRoles.js).
-router.get("/:companyName/roles", aiLimiter, optionalAuth, async (req, res) => {
+router.get("/:companyName/roles", optionalAuth, aiLimiter, async (req, res) => {
   const { companyName } = req.params;
   const trimmed = (companyName || "").trim();
   if (!trimmed || trimmed.length > 100) {
@@ -115,7 +115,7 @@ router.get("/:companyName/roles", aiLimiter, optionalAuth, async (req, res) => {
 // /roles being its own call), and because it needs real historical-depth web
 // search (companyTimeline.js), not the recent-news context the main
 // overview call uses.
-router.get("/:companyName/timeline", aiLimiter, optionalAuth, async (req, res) => {
+router.get("/:companyName/timeline", optionalAuth, aiLimiter, async (req, res) => {
   const { companyName } = req.params;
   const trimmed = (companyName || "").trim();
   if (!trimmed || trimmed.length > 100) {
@@ -135,7 +135,7 @@ router.get("/:companyName/timeline", aiLimiter, optionalAuth, async (req, res) =
 // endpoint (same reasoning as /timeline) so it loads in parallel and can use
 // its own grounded-research prompt (companyValueChain.js) rather than the
 // main overview's recent-news-focused context.
-router.get("/:companyName/value-chain", aiLimiter, optionalAuth, async (req, res) => {
+router.get("/:companyName/value-chain", optionalAuth, aiLimiter, async (req, res) => {
   const { companyName } = req.params;
   const trimmed = (companyName || "").trim();
   if (!trimmed || trimmed.length > 100) {

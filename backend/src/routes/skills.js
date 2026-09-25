@@ -18,7 +18,7 @@ function validateParams(req, res) {
 
 // Concepts primer for this skill, in the context of this role - available
 // immediately, independent of the difficulty picked for practice problems.
-router.get("/:roleName/:skillName", aiLimiter, optionalAuth, async (req, res) => {
+router.get("/:roleName/:skillName", optionalAuth, aiLimiter, async (req, res) => {
   const params = validateParams(req, res);
   if (!params) return;
   try {
@@ -37,7 +37,7 @@ router.get("/:roleName/:skillName", aiLimiter, optionalAuth, async (req, res) =>
 // force=true bypasses the cache and overwrites it with a freshly generated
 // set (shared by every user of this role/skill/difficulty going forward,
 // same as the normal cache) - backs the "Generate new questions" button.
-router.get("/:roleName/:skillName/problems", aiLimiter, optionalAuth, async (req, res) => {
+router.get("/:roleName/:skillName/problems", optionalAuth, aiLimiter, async (req, res) => {
   const params = validateParams(req, res);
   if (!params) return;
   const difficulty = normalizeDifficulty(req.query.difficulty);
@@ -58,7 +58,7 @@ router.get("/:roleName/:skillName/problems", aiLimiter, optionalAuth, async (req
 // own written answer to an open-ended practice problem - see scoreOpenAnswer
 // in skillContent.js for why this is qualitative feedback, not a pass/fail
 // verdict. Not cached - each answer is different.
-router.post("/:roleName/:skillName/score", aiLimiter, optionalAuth, async (req, res) => {
+router.post("/:roleName/:skillName/score", optionalAuth, aiLimiter, async (req, res) => {
   const params = validateParams(req, res);
   if (!params) return;
   const { prompt, concept, userAnswer } = req.body || {};

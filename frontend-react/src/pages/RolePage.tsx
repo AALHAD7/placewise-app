@@ -353,7 +353,7 @@ export default function RolePage() {
                             <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--indigo)", marginTop: 7 }}></span>
                             <span>{t}</span>
                           </div>
-                          <ProbeChat probe={probeFor(role, current.name, "p" + i, t)} showHow />
+                          <ProbeChat probe={probeFor(role, current.name, "p" + i, t, company)} showHow />
                         </div>
                       ))}
                     </div>
@@ -362,7 +362,7 @@ export default function RolePage() {
                       <>
                         <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Concept</div>
                         <p style={{ margin: "10px 0 0", fontSize: "0.90625rem", lineHeight: 1.65, color: "var(--text-900)" }}>{current.concept}</p>
-                        <ProbeChat probe={probeFor(role, current.name, "concept", current.concept)} />
+                        <ProbeChat probe={probeFor(role, current.name, "concept", current.concept, company)} />
                       </>
                     )}
 
@@ -377,7 +377,7 @@ export default function RolePage() {
                               <p style={{ margin: "4px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>{f.answers}</p>
                               <div style={{ marginTop: 9, fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>When not to use</div>
                               <p style={{ margin: "4px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>{f.whenNotToUse}</p>
-                              <ProbeChat probe={probeFor(role, current.name, "f" + i, f.name + " - " + f.answers)} showHow showQuote={false} />
+                              <ProbeChat probe={probeFor(role, current.name, "f" + i, f.name + " - " + f.answers, company)} showHow showQuote={false} />
                             </div>
                           ))}
                         </div>
@@ -395,7 +395,7 @@ export default function RolePage() {
                                 <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--green)", marginTop: 8 }}></span>
                                 <span>{w}</span>
                               </div>
-                              <ProbeChat probe={probeFor(role, current.name, "w" + i, w)} />
+                              <ProbeChat probe={probeFor(role, current.name, "w" + i, w, company)} />
                             </div>
                           ))}
                         </div>

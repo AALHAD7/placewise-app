@@ -15,7 +15,7 @@ Respond with ONLY a JSON array, no markdown fences, no commentary, in exactly th
 
 Return exactly one entry per requested tone, in the order requested.`;
 
-router.post("/shift", aiLimiter, requireAuth, async (req, res) => {
+router.post("/shift", requireAuth, aiLimiter, async (req, res) => {
   const { text, tones } = req.body || {};
 
   if (!text || typeof text !== "string" || text.trim().length < 5) {

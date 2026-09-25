@@ -1,16 +1,32 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+
+// Keys aiLimiter/heavyAiLimiter on the authenticated Supabase user id instead
+// of IP. Originally IP-based with a comment saying per-user "would effectively
+// limit nothing" under a dev-only auth bypass - that bypass is gone, every
+// request (including guest sessions, which are real anonymous Supabase Auth
+// users) now carries a real user id. Confirmed live during QA testing this
+// session: several guest sessions from one dev machine (one shared IP)
+// exhausted the old IP-keyed 30-req/15min budget in minutes and started
+// throwing "Could not reach the model" - the same thing would happen to any
+// group of students on one campus/hostel IP during placement week, which is
+// exactly the traffic pattern this app expects. Falls back to
+// express-rate-limit's IPv6-safe ipKeyGenerator only if a request somehow has
+// no req.user (shouldn't happen - every route using these limiters runs
+// requireAuth/optionalAuth first, see each route file), so unauthenticated
+// traffic still gets a real key instead of colliding into one bucket.
+function userOrIpKey(req) {
+  return req.user?.id || ipKeyGenerator(req.ip);
+}
 
 // Applied only to routes that call Gemini (generation, embeddings, or
 // transcription) — those are the ones with a real per-request cost. Plain
 // reads (frameworks list, companies, news) aren't limited here.
-// IP-based rather than per-user: the only auth right now is a dev-only
-// bypass shared by every tester, so a per-user key would effectively limit
-// nothing. Revisit once real auth exists.
 export const aiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: userOrIpKey,
   message: { error: "Too many requests to this AI-backed endpoint. Please wait a few minutes and try again." }
 });
 
@@ -21,6 +37,7 @@ export const heavyAiLimiter = rateLimit({
   limit: 15,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: userOrIpKey,
   message: { error: "Too many requests to this AI-backed endpoint. Please wait a few minutes and try again." }
 });
 

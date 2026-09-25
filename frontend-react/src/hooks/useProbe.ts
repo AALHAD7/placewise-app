@@ -22,6 +22,7 @@ interface ProbeState {
   key: string;
   role: string;
   topic: string;
+  company: string;
   messages: ProbeMessage[];
   loading: boolean;
   error: string;
@@ -75,9 +76,12 @@ function writeProbeCache(key: string, text: string): void {
 export function useProbe() {
   const [probe, setProbe] = useState<ProbeState | null>(null);
 
-  async function runWhy(key: string, role: string, topic: string, blockText: string, mode: ProbeMode) {
+  async function runWhy(key: string, role: string, topic: string, blockText: string, mode: ProbeMode, company: string) {
     try {
-      const prompt = mode === "how" ? howPrompt(role, topic, blockText) : mode === "what" ? whatPrompt(role, topic, blockText) : whyPrompt(role, topic, blockText);
+      const prompt =
+        mode === "how" ? howPrompt(role, topic, blockText, company) :
+        mode === "what" ? whatPrompt(role, topic, blockText, company) :
+        whyPrompt(role, topic, blockText, company);
       const text = await callClaude([{ role: "user", content: prompt }]);
       writeProbeCache(key, text);
       setProbe((s) => (s ? { ...s, loading: false, error: "", messages: [{ who: "ai", text }] } : s));
@@ -86,17 +90,22 @@ export function useProbe() {
     }
   }
 
-  function openProbe(role: string, topic: string, blockId: string, blockText: string, mode: ProbeMode) {
-    const key = topic + "|" + blockId + "|" + mode;
+  function openProbe(role: string, topic: string, blockId: string, blockText: string, mode: ProbeMode, company: string) {
+    // company is part of the cache key now that prompts ground answers in it
+    // (companyGrounding in prompts.ts) - without this, switching company on
+    // the same role/topic/point would silently serve a cached answer written
+    // for a DIFFERENT company (confirmed live: re-testing this exact fix hit
+    // a stale pre-fix cached answer, which is what surfaced this).
+    const key = topic + "|" + blockId + "|" + mode + "|" + (company || "");
     const cached = readProbeCache()[key];
-    const base: ProbeState = { blockId, blockText, mode, key, role, topic, messages: [], loading: false, error: "", draft: "" };
+    const base: ProbeState = { blockId, blockText, mode, key, role, topic, company, messages: [], loading: false, error: "", draft: "" };
     if (mode !== "pushback") {
       if (cached) {
         setProbe({ ...base, messages: [{ who: "ai", text: cached }] });
         return;
       }
       setProbe({ ...base, loading: true });
-      runWhy(key, role, topic, blockText, mode);
+      runWhy(key, role, topic, blockText, mode, company);
       return;
     }
     setProbe(base);
@@ -109,12 +118,26 @@ export function useProbe() {
     if (!userText || p.loading) return;
     const firstUser = !p.messages.some((m) => m.who === "me");
     const first = p.mode === "pushback" && p.messages.length === 0;
+    const initialAnswer = p.messages[0]?.text || "";
     const history = p.messages.map((m) => ({ role: m.who === "ai" ? "assistant" : "user", content: m.text }));
-    const content = firstUser ? pushPrompt(p.role, p.topic, p.blockText, userText) : userText;
     const messages: ProbeMessage[] = [...p.messages, { who: "me", text: userText }];
     setProbe((s) => (s ? { ...s, messages, draft: "", loading: true, error: "" } : s));
     try {
-      const text = await callClaude([...history, { role: "user", content }]);
+      // The first cross-question in a thread goes out as ONE self-contained
+      // message with the initial answer embedded and explicitly attributed
+      // (see pushPrompt) rather than appended as network history - sending it
+      // as a second turn made backend/src/routes/chat.js's multi-turn path
+      // relabel the conversation "Interviewer:"/"Candidate:" by role, which
+      // buried this function's own meta-instructions inside a line literally
+      // prefixed "Candidate:" and made the model treat instructional text as
+      // something the candidate had said (confirmed root cause of the
+      // attribution bugs an external eval of 18 transcripts flagged - see
+      // crossquestion-eval.md). Later turns in the same thread are genuine
+      // back-and-forth (real AI replies, real user text), so the history-
+      // based multi-turn path is correct for those and stays as-is.
+      const text = firstUser
+        ? await callClaude([{ role: "user", content: pushPrompt(p.role, p.topic, p.blockText, initialAnswer, userText, p.company) }])
+        : await callClaude([...history, { role: "user", content: userText }]);
       if (first) writeProbeCache(p.key, text);
       setProbe((s) => (s ? { ...s, loading: false, messages: [...s.messages, { who: "ai", text }] } : s));
     } catch {
@@ -127,7 +150,7 @@ export function useProbe() {
     if (!p) return;
     if (p.mode !== "pushback") {
       setProbe((s) => (s ? { ...s, loading: true, error: "" } : s));
-      runWhy(p.key, p.role, p.topic, p.blockText, p.mode);
+      runWhy(p.key, p.role, p.topic, p.blockText, p.mode, p.company);
       return;
     }
     const last = [...p.messages].reverse().find((m) => m.who === "me");
@@ -139,15 +162,15 @@ export function useProbe() {
     sendPushback(last.text);
   }
 
-  function probeFor(role: string, topic: string, blockId: string, blockText: string): ProbeVM {
+  function probeFor(role: string, topic: string, blockId: string, blockText: string, company = ""): ProbeVM {
     const p = probe;
     const open = !!(p && p.blockId === blockId);
     const base = {
       show: !!(blockText && blockText.trim()),
-      what: () => openProbe(role, topic, blockId, blockText, "what"),
-      why: () => openProbe(role, topic, blockId, blockText, "why"),
-      how: () => openProbe(role, topic, blockId, blockText, "how"),
-      push: () => openProbe(role, topic, blockId, blockText, "pushback"),
+      what: () => openProbe(role, topic, blockId, blockText, "what", company),
+      why: () => openProbe(role, topic, blockId, blockText, "why", company),
+      how: () => openProbe(role, topic, blockId, blockText, "how", company),
+      push: () => openProbe(role, topic, blockId, blockText, "pushback", company),
       open,
       closed: !open
     };

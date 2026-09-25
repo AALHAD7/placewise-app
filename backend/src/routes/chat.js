@@ -11,7 +11,7 @@ const SYSTEM_PROMPT = "You are a helpful, direct AI assistant embedded in an int
 // Generic single/multi-turn passthrough to Gemini, for frontend features that
 // build their own fully-formed prompts client-side (framework explain/pushback
 // chat, tone rewriting) rather than needing a structured RAG pipeline.
-router.post("/", aiLimiter, requireAuth, async (req, res) => {
+router.post("/", requireAuth, aiLimiter, async (req, res) => {
   const { messages } = req.body || {};
 
   if (!Array.isArray(messages) || messages.length === 0) {

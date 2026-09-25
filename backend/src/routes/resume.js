@@ -172,7 +172,7 @@ router.post("/upload", requireAuth, upload.single("resume"), async (req, res) =>
 // response has actually landed from Gemini, not a fake timer. Pass `category`
 // (one of CATEGORIES) to regenerate just that one tab's 10 questions — used by
 // the per-tab "Refresh" button so a refresh never touches the other two tabs.
-router.post("/interrogate", heavyAiLimiter, requireAuth, async (req, res) => {
+router.post("/interrogate", requireAuth, heavyAiLimiter, async (req, res) => {
   let { resumeText, category, domain } = req.body || {};
 
   if (!resumeText || typeof resumeText !== "string" || resumeText.trim().length < 20) {
@@ -255,7 +255,7 @@ router.post("/interrogate", heavyAiLimiter, requireAuth, async (req, res) => {
 // a new example for future calls. No user_id is stored — this table exists
 // purely to make feedback quality improve as more people use the feature, not
 // to track individuals.
-router.post("/feedback", aiLimiter, requireAuth, async (req, res) => {
+router.post("/feedback", requireAuth, aiLimiter, async (req, res) => {
   const { question, answer } = req.body || {};
 
   if (!question || typeof question !== "string" || !answer || typeof answer !== "string" || answer.trim().length < 5) {
@@ -309,7 +309,7 @@ router.post("/feedback", aiLimiter, requireAuth, async (req, res) => {
 // frontend shows a "Re-ask" button instead. Nothing here needs to track any
 // of this server-side, since there's no reuse/calibration value in storing
 // these exchanges.
-router.post("/questions/clarify", aiLimiter, requireAuth, async (req, res) => {
+router.post("/questions/clarify", requireAuth, aiLimiter, async (req, res) => {
   const { question, followUp } = req.body || {};
 
   if (!question || typeof question !== "string" || question.trim().length < 5) {
@@ -334,7 +334,7 @@ router.post("/questions/clarify", aiLimiter, requireAuth, async (req, res) => {
 // user_id) so future /interrogate calls can retrieve semantically similar
 // past questions users actually valued and use them as calibration, same
 // self-improving-via-retrieval pattern as the answer feedback loop.
-router.post("/questions/helpful", aiLimiter, requireAuth, async (req, res) => {
+router.post("/questions/helpful", requireAuth, aiLimiter, async (req, res) => {
   const { question, category, tag, level } = req.body || {};
 
   if (!question || typeof question !== "string" || question.trim().length < 5) {

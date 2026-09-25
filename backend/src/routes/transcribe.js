@@ -25,7 +25,7 @@ const upload = multer({
   }
 });
 
-router.post("/", aiLimiter, requireAuth, upload.single("audio"), async (req, res) => {
+router.post("/", requireAuth, aiLimiter, upload.single("audio"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No audio uploaded — send it as multipart/form-data under the field name \"audio\"." });
   }

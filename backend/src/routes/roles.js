@@ -24,7 +24,7 @@ const router = Router();
 // company's interview rounds for this role) in that mode, since a single
 // company is already fixed. Same free-text-whatever-was-typed treatment as
 // the role-only path.
-router.get("/:roleName", aiLimiter, optionalAuth, async (req, res) => {
+router.get("/:roleName", optionalAuth, aiLimiter, async (req, res) => {
   const { roleName } = req.params;
   const trimmed = (roleName || "").trim();
   if (!trimmed || trimmed.length > 100) {
@@ -76,7 +76,7 @@ router.get("/:roleName", aiLimiter, optionalAuth, async (req, res) => {
 // practice prompts/company notes) - separate from the overview above since
 // it's a much larger generation; fetched independently so the overview can
 // render first without waiting on it.
-router.get("/:roleName/topics", aiLimiter, optionalAuth, async (req, res) => {
+router.get("/:roleName/topics", optionalAuth, aiLimiter, async (req, res) => {
   const { roleName } = req.params;
   const trimmed = (roleName || "").trim();
   if (!trimmed || trimmed.length > 100) {

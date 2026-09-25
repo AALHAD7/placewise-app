@@ -15,7 +15,7 @@ Respond with ONLY a JSON array, no markdown fences, no commentary, in exactly th
 
 Return 3 to 4 narratives, ordered by strength descending.`;
 
-router.post("/generate", heavyAiLimiter, requireAuth, async (req, res) => {
+router.post("/generate", requireAuth, heavyAiLimiter, async (req, res) => {
   const { resume, role, company, focusAreas, domain } = req.body || {};
 
   if (!resume || typeof resume !== "string" || resume.trim().length < 20) {
