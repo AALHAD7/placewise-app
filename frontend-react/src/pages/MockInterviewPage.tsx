@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { apiFetch } from "../lib/apiClient";
+import { apiFetch, apiUploadWithProgress } from "../lib/apiClient";
 import { mapDomainForRetrieval, RAG_DOMAIN_OPTIONS } from "../lib/constants";
 import { useVoiceRecording } from "../hooks/useVoiceRecording";
 import VoiceRecordButton from "../components/VoiceRecordButton";
 import PageHeader from "../components/PageHeader";
-import type { MockInterviewAnswerResponse, MockInterviewFeedback, MockInterviewStartResponse } from "../types/api";
+import DocUpload, { type DocUploadStatus } from "../components/DocUpload";
+import type { MockInterviewAnswerResponse, MockInterviewFeedback, MockInterviewStartResponse, ResumeUploadResponse } from "../types/api";
+
+type QuestionSource = "resume" | "jd" | "both";
 
 // Ported from frontend/index.html: startMockInterview/submitMockAnswer/
 // nextMockQuestion/endMockInterview/mockPanel() (2553-2661), markup
@@ -34,6 +37,22 @@ export default function MockInterviewPage() {
   const [roleInput, setRoleInput] = useState("");
   const [ragDomain, setRagDomain] = useState(searchParams.get("domain") || "");
   const [difficulty, setDifficulty] = useState(2);
+
+  // Resume is compulsory (a real interviewer always has your CV in front of
+  // them); job description is optional - when present, questionSource picks
+  // whether the opener/follow-ups ground in the resume, the JD, or both.
+  const [resumeFile, setResumeFile] = useState("");
+  const [resumeText, setResumeText] = useState("");
+  const [resumeStatus, setResumeStatus] = useState<DocUploadStatus>("idle");
+  const [resumePercent, setResumePercent] = useState(0);
+  const [resumeUploadError, setResumeUploadError] = useState("");
+
+  const [jdFile, setJdFile] = useState("");
+  const [jdText, setJdText] = useState("");
+  const [jdStatus, setJdStatus] = useState<DocUploadStatus>("idle");
+  const [jdPercent, setJdPercent] = useState(0);
+  const [jdUploadError, setJdUploadError] = useState("");
+  const [questionSource, setQuestionSource] = useState<QuestionSource>("both");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [count, setCount] = useState(0);
@@ -52,8 +71,70 @@ export default function MockInterviewPage() {
     setSearchParams(searchParams, { replace: true });
   }
 
+  async function uploadResumeFile(file: File) {
+    setResumeFile(file.name);
+    setResumeUploadError("");
+    setResumeText("");
+    setResumeStatus("uploading");
+    setResumePercent(0);
+    try {
+      const form = new FormData();
+      form.append("resume", file);
+      const data = await apiUploadWithProgress<ResumeUploadResponse>(
+        "/api/resume/upload",
+        form,
+        (pct) => setResumePercent(pct),
+        () => setResumeStatus("processing"),
+        "Network error - is the backend running?"
+      );
+      setResumeText(data.resumeText);
+      setResumeStatus("done");
+    } catch (err) {
+      setResumeStatus("error");
+      setResumeUploadError(err instanceof Error ? err.message : "Could not parse this file.");
+    }
+  }
+
+  function clearResumeFile() {
+    setResumeFile("");
+    setResumeText("");
+    setResumeStatus("idle");
+    setResumeUploadError("");
+  }
+
+  async function uploadJdFile(file: File) {
+    setJdFile(file.name);
+    setJdUploadError("");
+    setJdText("");
+    setJdStatus("uploading");
+    setJdPercent(0);
+    try {
+      const form = new FormData();
+      form.append("resume", file); // generic doc->text endpoint; field name is backend's, not semantic here
+      const data = await apiUploadWithProgress<ResumeUploadResponse>(
+        "/api/resume/upload",
+        form,
+        (pct) => setJdPercent(pct),
+        () => setJdStatus("processing"),
+        "Network error - is the backend running?"
+      );
+      setJdText(data.resumeText);
+      setJdStatus("done");
+    } catch (err) {
+      setJdStatus("error");
+      setJdUploadError(err instanceof Error ? err.message : "Could not parse this file.");
+    }
+  }
+
+  function clearJdFile() {
+    setJdFile("");
+    setJdText("");
+    setJdStatus("idle");
+    setJdUploadError("");
+  }
+
   async function startMockInterview() {
-    if (loading) return;
+    if (loading || !resumeText) return;
     setLoading(true);
     setError("");
     try {
@@ -63,7 +144,10 @@ export default function MockInterviewPage() {
           company: companyInput.trim() || undefined,
           role: roleInput.trim() || undefined,
           difficulty: difficulty || 2,
-          domain: mapDomainForRetrieval(ragDomain)
+          domain: mapDomainForRetrieval(ragDomain),
+          resumeText,
+          jdText: jdText || undefined,
+          questionSource: jdText ? questionSource : "resume"
         })
       }, "Failed to start mock interview.");
       setLoading(false);
@@ -204,6 +288,20 @@ export default function MockInterviewPage() {
                 </div>
               </div>
             </div>
+            <div className="feature-card wide" style={{ cursor: "default", marginTop: 14 }}>
+              <div className="fc-icon icon-pink">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+                  <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+                </svg>
+              </div>
+              <div className="fc-body">
+                <div className="feature-title">Grounded in your resume - and a job description if you have one</div>
+                <div className="feature-desc" style={{ marginBottom: 0 }}>
+                  Upload your resume (required) and, optionally, a job description - questions can be based on your resume, the JD, or a mix of both, so they reference real details instead of generic ones.
+                </div>
+              </div>
+            </div>
           </div>
         </>
       )}
@@ -212,6 +310,46 @@ export default function MockInterviewPage() {
         <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px", maxWidth: 520 }}>
           <div style={{ fontSize: "0.96875rem", fontWeight: 700, color: "var(--text-900)" }}>Start a mock interview</div>
           <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", color: "var(--text-gray2)" }}>A real interviewer - asks an opening question, evaluates each answer, and follows up based on what you say.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
+            <DocUpload
+              name="mock-resume"
+              label="Resume"
+              required
+              fileName={resumeFile}
+              status={resumeStatus}
+              percent={resumePercent}
+              error={resumeUploadError}
+              onFile={uploadResumeFile}
+              onClear={clearResumeFile}
+            />
+            <DocUpload
+              name="mock-jd"
+              label="Job description (optional)"
+              fileName={jdFile}
+              status={jdStatus}
+              percent={jdPercent}
+              error={jdUploadError}
+              onFile={uploadJdFile}
+              onClear={clearJdFile}
+            />
+            {jdText && (
+              <div>
+                <div style={{ fontSize: "0.78125rem", fontWeight: 600, color: "var(--text-700)" }}>Base questions on</div>
+                <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                  {([["resume", "Resume only"], ["jd", "JD only"], ["both", "Mix of both"]] as [QuestionSource, string][]).map(([val, label]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setQuestionSource(val)}
+                      style={{ border: "1px solid " + (questionSource === val ? "var(--indigo)" : "var(--border-strong)"), borderRadius: "var(--r-sm)", padding: "7px 11px", cursor: "pointer", font: "600 0.78125rem 'Instrument Sans',sans-serif", color: questionSource === val ? "var(--indigo)" : "var(--text-700)", background: "var(--surface)" }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
             <input type="text" value={companyInput} onChange={(e) => setCompanyInput(e.target.value)} placeholder="Company (optional)" style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
             <input type="text" value={roleInput} onChange={(e) => setRoleInput(e.target.value)} placeholder="Role (optional)" style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
@@ -236,7 +374,7 @@ export default function MockInterviewPage() {
               </button>
             ))}
           </div>
-          <button onClick={startMockInterview} disabled={loading} style={{ marginTop: 16, border: 0, borderRadius: "var(--r-sm)", padding: "11px 18px", font: "600 0.875rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--indigo)", color: "var(--surface)" }}>
+          <button onClick={startMockInterview} disabled={loading || !resumeText} title={!resumeText ? "Upload a resume first" : undefined} style={{ marginTop: 16, border: 0, borderRadius: "var(--r-sm)", padding: "11px 18px", font: "600 0.875rem 'Instrument Sans',sans-serif", cursor: loading || !resumeText ? "not-allowed" : "pointer", background: "var(--indigo)", color: "var(--surface)", opacity: loading || !resumeText ? 0.55 : 1 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
@@ -247,6 +385,7 @@ export default function MockInterviewPage() {
               <span>{loading ? "Starting…" : "Start mock interview"}</span>
             </span>
           </button>
+          {!resumeText && <div style={{ marginTop: 8, fontSize: "0.78125rem", color: "var(--text-lightgray)" }}>Upload a resume to enable this.</div>}
           <span style={{ marginLeft: 10, fontSize: "0.78125rem", color: "var(--red-dark)" }}>{error}</span>
         </div>
       )}
