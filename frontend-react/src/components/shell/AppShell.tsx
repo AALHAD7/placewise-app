@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { DashboardProvider } from "../../hooks/useDashboard";
 import TopNav from "./TopNav";
+import SmoothScroll from "./SmoothScroll";
 
 // Ported from frontend/index.html lines 222-224, 294 - the app is
 // deliberately desktop-only (1180px floor, see global.css's media query),
@@ -14,6 +15,7 @@ import TopNav from "./TopNav";
 export default function AppShell() {
   return (
     <DashboardProvider>
+      <SmoothScroll />
       <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
         <div className="app-shell" data-modal="false" style={{ minWidth: 1180 }}>
           <TopNav />
