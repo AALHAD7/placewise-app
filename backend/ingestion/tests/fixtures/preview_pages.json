@@ -1,0 +1,205 @@
+{
+ "_note": "Hand-written R1.04 preview fixture (FMS Consulting CaseBook 2023-24). Markdown is a test input, not ground truth: labels copied from the page text layer; VRIO 'No' edges are unlabelled because the text layer prints no 'No'. diagram_issues/diagram_label_coverage computed by diagram_schema.check_diagrams against the real text layer.",
+ "pages": [
+  {
+   "page_no": 20,
+   "markdown": "# Ansoff Matrix\n\n```placewise-diagram\n{\n \"type\": \"matrix\",\n \"title\": \"Ansoff Matrix\",\n \"source_page\": 20,\n \"xAxis\": \"Product\",\n \"yAxis\": \"Market\",\n \"cols\": [\n  \"Existing\",\n  \"New\"\n ],\n \"rows\": [\n  \"Existing\",\n  \"New\"\n ],\n \"cells\": [\n  [\n   \"Market Penetration\",\n   \"Product Development\"\n  ],\n  [\n   \"Market Development\",\n   \"Diversification\"\n  ]\n ],\n \"notes\": [\n  \"Best suitable for Growth Strategy cases, also handy for Market Entry, Revenue Expansion\"\n ]\n}\n```\n\nDiagram summary: The Ansoff Matrix crosses existing and new products with existing and new markets, giving four growth options: Market Penetration, Product Development, Market Development and Diversification.\n\n* Best suitable for Growth Strategy cases, also handy for Market Entry, Revenue Expansion\n",
+   "diagrams": [
+    {
+     "type": "matrix",
+     "title": "Ansoff Matrix",
+     "source_page": 20,
+     "xAxis": "Product",
+     "yAxis": "Market",
+     "cols": [
+      "Existing",
+      "New"
+     ],
+     "rows": [
+      "Existing",
+      "New"
+     ],
+     "cells": [
+      [
+       "Market Penetration",
+       "Product Development"
+      ],
+      [
+       "Market Development",
+       "Diversification"
+      ]
+     ],
+     "notes": [
+      "Best suitable for Growth Strategy cases, also handy for Market Entry, Revenue Expansion"
+     ]
+    }
+   ],
+   "diagram_issues": [],
+   "diagram_label_coverage": 1.0
+  },
+  {
+   "page_no": 52,
+   "markdown": "# VRIO Framework\nUsed to determine whether a resource can provide sustained competitive advantage to the company\n\n```placewise-diagram\n{\n \"type\": \"flow\",\n \"title\": \"VRIO Framework\",\n \"source_page\": 52,\n \"nodes\": [\n  {\n   \"id\": \"v\",\n   \"label\": \"Valuable\"\n  },\n  {\n   \"id\": \"r\",\n   \"label\": \"Rare\"\n  },\n  {\n   \"id\": \"i\",\n   \"label\": \"Inimitable\"\n  },\n  {\n   \"id\": \"o\",\n   \"label\": \"Organized\"\n  },\n  {\n   \"id\": \"sca\",\n   \"label\": \"Sustained Competitive Advantage\"\n  },\n  {\n   \"id\": \"cd\",\n   \"label\": \"Competitive Disadvantage\"\n  },\n  {\n   \"id\": \"cp\",\n   \"label\": \"Competitive Parity\"\n  },\n  {\n   \"id\": \"stcd\",\n   \"label\": \"Short-Term Competitive Disadvantage\"\n  },\n  {\n   \"id\": \"ucd\",\n   \"label\": \"Under-utilized Competitive Disadvantage\"\n  }\n ],\n \"edges\": [\n  {\n   \"from\": \"v\",\n   \"to\": \"r\",\n   \"label\": \"Yes\"\n  },\n  {\n   \"from\": \"r\",\n   \"to\": \"i\",\n   \"label\": \"Yes\"\n  },\n  {\n   \"from\": \"i\",\n   \"to\": \"o\",\n   \"label\": \"Yes\"\n  },\n  {\n   \"from\": \"o\",\n   \"to\": \"sca\",\n   \"label\": \"Yes\"\n  },\n  {\n   \"from\": \"v\",\n   \"to\": \"cd\",\n   \"label\": null\n  },\n  {\n   \"from\": \"r\",\n   \"to\": \"cp\",\n   \"label\": null\n  },\n  {\n   \"from\": \"i\",\n   \"to\": \"stcd\",\n   \"label\": null\n  },\n  {\n   \"from\": \"o\",\n   \"to\": \"ucd\",\n   \"label\": null\n  }\n ],\n \"notes\": [\n  \"Used to determine whether a resource can provide sustained competitive advantage to the company\"\n ]\n}\n```\n\nDiagram summary: VRIO asks in turn whether a resource is Valuable, Rare, Inimitable and Organized; four Yes answers give Sustained Competitive Advantage, and stopping earlier gives Competitive Disadvantage, Competitive Parity, Short-Term or Under-utilized Competitive Disadvantage.\n\n# AMO Framework\nEmployee productivity and effectiveness; to assess salesforce personnel\n\n```placewise-diagram\n{\n \"type\": \"issue_tree\",\n \"title\": \"AMO Framework\",\n \"source_page\": 52,\n \"notes\": [\n  \"Employee productivity and effectiveness; to assess salesforce personnel\"\n ],\n \"root\": {\n  \"label\": \"AMO Framework\",\n  \"children\": [\n   {\n    \"label\": \"Ability\",\n    \"children\": [\n     {\n      \"label\": \"Hiring\",\n      \"children\": []\n     },\n     {\n      \"label\": \"Training\",\n      \"children\": []\n     },\n     {\n      \"label\": \"Learning\",\n      \"children\": []\n     },\n     {\n      \"label\": \"Skill Development\",\n      \"children\": []\n     }\n    ]\n   },\n   {\n    \"label\": \"Motivation\",\n    \"children\": [\n     {\n      \"label\": \"Incentive structure\",\n      \"children\": []\n     },\n     {\n      \"label\": \"Performance evaluation & metrics\",\n      \"children\": []\n     }\n    ]\n   },\n   {\n    \"label\": \"Opportunity\",\n    \"children\": [\n     {\n      \"label\": \"Career planning\",\n      \"children\": []\n     },\n     {\n      \"label\": \"Fair appraisal\",\n      \"children\": []\n     },\n     {\n      \"label\": \"Recognition\",\n      \"children\": []\n     },\n     {\n      \"label\": \"Empowerment\",\n      \"children\": []\n     }\n    ]\n   }\n  ]\n }\n}\n```\n\nDiagram summary: AMO splits employee effectiveness into Ability, Motivation and Opportunity, each with its levers.\n",
+   "diagrams": [
+    {
+     "type": "flow",
+     "title": "VRIO Framework",
+     "source_page": 52,
+     "nodes": [
+      {
+       "id": "v",
+       "label": "Valuable"
+      },
+      {
+       "id": "r",
+       "label": "Rare"
+      },
+      {
+       "id": "i",
+       "label": "Inimitable"
+      },
+      {
+       "id": "o",
+       "label": "Organized"
+      },
+      {
+       "id": "sca",
+       "label": "Sustained Competitive Advantage"
+      },
+      {
+       "id": "cd",
+       "label": "Competitive Disadvantage"
+      },
+      {
+       "id": "cp",
+       "label": "Competitive Parity"
+      },
+      {
+       "id": "stcd",
+       "label": "Short-Term Competitive Disadvantage"
+      },
+      {
+       "id": "ucd",
+       "label": "Under-utilized Competitive Disadvantage"
+      }
+     ],
+     "edges": [
+      {
+       "from": "v",
+       "to": "r",
+       "label": "Yes"
+      },
+      {
+       "from": "r",
+       "to": "i",
+       "label": "Yes"
+      },
+      {
+       "from": "i",
+       "to": "o",
+       "label": "Yes"
+      },
+      {
+       "from": "o",
+       "to": "sca",
+       "label": "Yes"
+      },
+      {
+       "from": "v",
+       "to": "cd",
+       "label": null
+      },
+      {
+       "from": "r",
+       "to": "cp",
+       "label": null
+      },
+      {
+       "from": "i",
+       "to": "stcd",
+       "label": null
+      },
+      {
+       "from": "o",
+       "to": "ucd",
+       "label": null
+      }
+     ],
+     "notes": [
+      "Used to determine whether a resource can provide sustained competitive advantage to the company"
+     ]
+    },
+    {
+     "type": "issue_tree",
+     "title": "AMO Framework",
+     "source_page": 52,
+     "notes": [
+      "Employee productivity and effectiveness; to assess salesforce personnel"
+     ],
+     "root": {
+      "label": "AMO Framework",
+      "children": [
+       {
+        "label": "Ability",
+        "children": [
+         {
+          "label": "Hiring",
+          "children": []
+         },
+         {
+          "label": "Training",
+          "children": []
+         },
+         {
+          "label": "Learning",
+          "children": []
+         },
+         {
+          "label": "Skill Development",
+          "children": []
+         }
+        ]
+       },
+       {
+        "label": "Motivation",
+        "children": [
+         {
+          "label": "Incentive structure",
+          "children": []
+         },
+         {
+          "label": "Performance evaluation & metrics",
+          "children": []
+         }
+        ]
+       },
+       {
+        "label": "Opportunity",
+        "children": [
+         {
+          "label": "Career planning",
+          "children": []
+         },
+         {
+          "label": "Fair appraisal",
+          "children": []
+         },
+         {
+          "label": "Recognition",
+          "children": []
+         },
+         {
+          "label": "Empowerment",
+          "children": []
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "diagram_issues": [],
+   "diagram_label_coverage": 1.0
+  }
+ ]
+}

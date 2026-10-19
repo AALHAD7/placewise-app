@@ -26,3 +26,10 @@ frontend-react/Transitions/
 .vscode/
 .DS_Store
 *.log
+
+# Ingestion: local venv, caches and outputs containing casebook text/page images
+backend/ingestion/venv/
+backend/ingestion/**/__pycache__/
+backend/ingestion/*_output.json
+backend/ingestion/old_chunks_*.json
+backend/ingestion/out/
