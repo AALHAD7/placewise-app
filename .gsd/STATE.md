@@ -1,6 +1,6 @@
 # STATE
 
-**Position:** ▶ R1 (M1 Consulting RAG), in progress, BLOCKED at the plan-08 smoke gate. Updated 2026-10-19.
+**Position:** ▶ R1 (M1 Consulting RAG), in progress, BLOCKED at the r1-diagrams-v3 smoke gate (R1.08b). Updated 2026-10-19.
 See `.gsd/ROADMAP.md` and the top entries of `log.md` (R1.05 – R1.08).
 
 ## R1 so far
@@ -14,14 +14,14 @@ See `.gsd/ROADMAP.md` and the top entries of `log.md` (R1.05 – R1.08).
 - Fidelity review (v2): matrix p20 and flow p10 pass; all 3 issue trees failed (structure).
 - Prompt v2 smoke (p11/13/19/52/77): 13, 19, 52 pass; 11 fails (converging box moved out
   of the block; checker blind to it); 77 fails (estimated bar values; v1 fallback would cover).
-- Gemini spend in R1: ~$0.39 (≈313 vision + 393 embedding calls).
+- Gemini spend in R1: ~$0.40 (≈321 vision + 393 embedding calls).
 
-## Next (one more targeted round, needs a go-ahead per /pipeline gap-loop limit)
-1. Prompt rule + example: every box, incl. the one lines converge into, is a node in the block.
-2. Cheap check: short text-layer line among diagram labels that appears in no block label.
-3. Stronger "never estimate chart values" wording; tune convergence heuristic (false + on p13).
-4. Re-smoke (≤10 calls), then plan 09 (v3 patch of 55 pages, cap 150) and plan 10 (fidelity +
-   Aalhad spot-check).
+## Next (blocked at the r1-diagrams-v3 smoke gate; see log R1.08b)
+- v3 fix round done (commit d03cfc4): missing_box check, tuned convergence, prompt r1-diagrams-v3.
+- Re-smoke: p11, p19 pass; p13 fails (main 3C's diagram not a block, checker silent); p52 fails (AMO leaves
+  missing "children" -> invalid block); p77 fails but v1 fallback applies. R1 gap vision calls used: 16 / 150.
+- Next: free repair for leaves missing "children"; missing_box/visual-page check for p13; then re-smoke
+  (<= 10 calls) and plan 09 (cap 150 - 16 - smoke) and plan 10.
 
 ## Known gaps
 - No eval test set yet (R3, Aalhad).

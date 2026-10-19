@@ -5,6 +5,42 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-19 — R1.08b: prompt r1-diagrams-v3 fix round + re-smoke — BLOCKED (p13, p52 fail)
+**Phase:** R1 · **Type:** ingestion
+
+**What changed:** (A, commit d03cfc4) The vision prompt is now `r1-diagrams-v3`. It adds two rules: every box is a node, including the box the lines converge into, with a short flow example (Example 3); and chart values come only from printed numbers, never estimated from bar heights or slice sizes (use `null`). The prompt is +1,303 characters over v2.
+A new free check, `missing_box`, flags a short text-layer line (≤ 6 words) printed next to a diagram's labels that is in no block label and isn't body text, a bullet, a footer, a heading or part of a longer Markdown line. It maps to the review reason `diagram_missing_box` and triggers a retry.
+The convergence heuristic now flags only short, non-formula leaves printed right after the last descendant (≤ 2 unrelated words in between).
+(B) Re-smoke of p11/13/19/52/77, no DB writes, with each page checked against its page image.
+**Why:** R1.08 smoke failed on p11 (dropped converging box) and p77 (estimated bar values).
+**Files:** `backend/ingestion/{diagram_schema,fidelity,convert,config,rescore_v2}.py`, `backend/ingestion/tests/{test_missing_box,test_convert_v2}.py`,
+`tests/fixtures/r1_gap/{p11_smoke_v2,p13_smoke_v2,p102,p107}.json`, `.claude/skills/diagram-transcription/SKILL.md`
+(local: `backend/ingestion/out/smoke_r1_v3.json`, `out/smoke_r1_v3.log`, `out/r1_v2_rescore_v3checks.json`)
+**Proof:** `Ran 207 tests … OK` (193 before).
+Offline, on all 248 v2 pages:
+- `missing_box` fires on 13 of 235 converted pages (15, 78, 97, 101, 107, 111, 132, 138, 147, 153, 155, 157, 234), plus smoke-v2 p11 ("Crack the interview").
+- Before tuning, `missing_box` hit 85 pages. It does not fire on reviewed pages 10, 13, 14, 19, 20 or 52.
+- Convergence now flags only p11 (it flagged 11, 102 and 107 before). p13-smoke is cleared.
+
+Smoke (`smoke_r1.py --pages 11,13,19,52,77 --cap 10`):
+
+| page | result | evidence (vs page image) |
+|---|---|---|
+| 11 | **pass** | flow, 12 nodes; "Crack the interview" is a node with edges from HR Answers and General Awareness (the two lines on the page); 0 issues |
+| 13 | **fail** | the main 3C's diagram has NO block again. It is flat Markdown with the Company questions listed under "Government", and the title is written "3 C’s" (page: "3C’s"). Only "Other C’s" got a block. The checker is silent (needs_review=false): the one block's labels are all on one text-layer line, so `missing_box` has no label span to search |
+| 19 | **pass** | flow with all 7 chevrons, 6 stage edges, 26 stage→item edges, 0 issues |
+| 52 | **fail** | the VRIO flow matches the image (Yes edges, letter→word→outcome), but the letters are still separate nodes, not "V Valuable". The AMO issue_tree leaves have no `"children": []`, so the block is schema-invalid (`diagram_invalid`) and would not be drawn |
+| 77 | fail (allowed) | both blocks are again inside table cells (`diagram_in_table`); number_coverage 0.78 < v1 1.0, so plan 09's v1 fallback covers it. The bar chart now uses `null` instead of estimated values |
+
+**Cost:** 8 vision calls (3 retries; cap 10) ≈ $0.009. 0 embeddings. R1 gap budget used: 16 / 150.
+**Undo:** Revert d03cfc4 (`PROMPT_VERSION` back to r1-diagrams-v2). Nothing was written to the DB.
+**Open issues:** Plan 09 NOT started: the gate needs p11, p13, p19 and p52 to pass. Suggested next round:
+(a) A free repair that adds `"children": []` to tree leaves that lack it. This invents no content and would have saved p52's AMO block.
+(b) p13: let `missing_box` also run when a block's labels sit on a single text-layer line, or flag short bulleted/standalone lines that are in no block on a visual page. Also add a prompt rule that icon-plus-label boxes with question callouts form one issue_tree.
+(c) Circled letters are still separate nodes (p52). Either accept this, or add a free merge of a single-letter node with its single child word.
+
+---
+
 ## 2026-10-19 — R1.08: vision prompt r1-diagrams-v2 smoke test — BLOCKED (2 of 5 fail)
 **Phase:** R1 · **Type:** ingestion
 
