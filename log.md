@@ -5,6 +5,66 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-19 — R1 fidelity re-review (v3) (R1.10): issue tree, matrix and flow pass; 13 more pages flagged
+**Phase:** R1 · **Type:** eval
+
+**What changed:** The fidelity-reviewer checked 18 v3 pages (doc `129a2604-…`, ingestion_version 3, all `is_active=false`) against their page images. The rule was the same strict one as R1.06: every label character for character, plus every number, branch and edge.
+One page of each required type passes: issue tree **p31**, matrix **p20**, flow **p19**. They are ready for Aalhad's spot-check.
+The review set `needs_review=true` and appended a `fidelity_review:<type>` reason on 21 v3 pages; 13 of them were not flagged before.
+`review_status` is untouched (all `pending`). No pipeline code, v1/v2 row, `document_chunks` row or `is_active` flag was changed.
+**Why:** R1's done-criterion is a passing issue tree, matrix and chart-or-flow, checked against the page images. The review also had to confirm the known unflagged errors on p13 and p14 and estimate how common such errors are.
+**Files:** `log.md` (local, gitignored: `backend/ingestion/out/r1_review_v3.json`, `out/r1_spotcheck.html` = `out/r1_spotcheck_v3.html`; the old v2 sheet was kept as `out/r1_spotcheck_v2.html`)
+**Proof:**
+
+| page | type | role | items | verdict | evidence |
+|---|---|---|---|---|---|
+| 31 | issue_tree | fresh | 25 | **pass** | title, root box, 5 tools, 5 description leaves exact; 10 links correct |
+| 52 | issue_tree (AMO) | fresh | 18 | **pass** | 3 pillars, 10 leaves exact, block valid now |
+| 81 | issue_tree | fresh | 33 | fail (cosmetic) | `altered`: both roots drop the printed colon ("Some questions to prepare for:", "Use Rule of Three for the following:") |
+| 13 | issue_tree | recheck | 22 | fail | `structure_lost`: Company's 3 questions hung under "Industry", Company has no children; `missing`: "Other C’s" row is plain text, no block |
+| 14 | issue_tree | recheck | 24 | fail | `structure_lost`: "Other 3 P’s" (a separate box) under Placement; summary repeats it |
+| 11 | flow | recheck | 30 | fail | `hallucinated`: 6 edges into "Crack the interview" (page draws 2: from HR Answers and General Awareness); Prepare Hard/Smart linked to all 3 boxes (page: top box only) |
+| 19 | flow | recheck | 67 | **pass** | 7 chevrons, 26 items in the right columns, 6 chevron edges (v2: 0), 26 stage→item edges |
+| 52 | flow (VRIO) | recheck | 27 | fail (minor) | V/R/I/O now present; `altered`: summary still calls all non-sustained outcomes "competitive disadvantages" (page: Competitive Parity) |
+| 10 | flow | regression | 18 | fail (markdown only) | block still correct; markdown "Main Index)" (stray ")" from link stripping) |
+| 20 | matrix | regression | 13 | **pass** | axes Market/Product, Existing/New in order, 4 cells in position |
+| 35, 83, 105, 128, 166, 188 | flow/tree | sample | 18–27 | **pass** | every node and parent matches the page |
+| 106 | issue_tree | sample | 16 | fail (markdown only) | tree correct; markdown "Guesestimate Index" (page: Guesstimate) |
+| 238 | issue_tree | sample | 30 | fail | `structure_lost`: "Cost per week" under "Operational feasibility" (page: under "Financial Capability (B.E.P)"); the Hour/Mon-Fri/Sat table is flattened into tree nodes |
+
+v2 → v3 for the re-checked pages:
+- p11: convergence dropped → node present but over-linked.
+- p13: no block, Company Qs under Government → block exists, Company Qs now under Industry.
+- p14: apostrophe → fixed, but a new wrong parent.
+- p19: 0/6 chevron edges → pass.
+- p52: V/R/I/O missing → present, summary still over-claims.
+- p10, p20: pass → p20 pass, p10 markdown-only regression.
+
+Charts: not reviewed. They are optional and the flow covers "chart or flow"; R1.09 found no clean chart candidate.
+
+**Undetected wrong-parent rate:** random sample (seed 1010) of 8 unflagged v3 tree/flow pages: **1 of 8 (12.5%)** has a structure error (p238).
+Across all 16 unflagged tree/flow pages reviewed in this plan, 4 have one (11, 13, 14, 238). For the 55 unflagged tree/flow pages in the pool that this plan had not reviewed, that suggests roughly 7 more (wide range: 1 of 8 is a small sample).
+
+**Flagged** (`needs_review=true`, v3 only; needs_review 97 → 110):
+- `structure_lost`: 13, 14, 238
+- `hallucinated`: 11, 69, 71 (+ 56, 67, 77, 127, 203, already flagged)
+- `altered`: 10, 52, 81, 97, 106, 116, 224 (+ 88, 98, 101, already flagged)
+
+**Pipeline patterns (for R2):**
+1. Floating callout boxes with no connecting line get the wrong parent (p13, p14), and connector reading goes wrong on p238. Labels are all exact, so no checker sees it.
+2. `textnorm._LINK_RE` stops at the first `)`, so `[Main Index](javascript:history.back())` leaves "Main Index)" (p10, p224).
+3. `fallback_v1` pages skip the post-processing link strip. Invented images such as `https://via.placeholder.com/...` logos and `(chart)` targets stay on p69 and p71, which were unflagged before this review. `(#[UNREADABLE])` links stay on 56, 67, 77, 127 and 203.
+4. "Guesestimate Index" appears in the markdown on 88, 97, 98, 101, 106 and 116, but never in the text layer. Nav words are outside the coverage checks.
+5. Stacked boxes in a column are read as "all link onward" (p11).
+6. Summaries still generalise outcomes (p52 VRIO, p14).
+
+**Aalhad's spot-check:** pending. Open `backend/ingestion/out/r1_spotcheck.html` and confirm p31, p20 and p19.
+**Cost:** 0 Gemini calls.
+**Undo:** The pre-update values of the 21 rows are in `backend/ingestion/out/r1_review_v3_flags_before.json` (local). Per page, set `needs_review` back and remove the `fidelity_review:*` reason with `array_remove`. Before this review, 8 of the pages already had needs_review=true: 56, 67, 77, 88, 98, 101, 127, 203.
+**Open issues:** R1 is waiting only on Aalhad's sign-off. Patterns 1–4 should go to an ingestion-engineer fix before any other casebook runs.
+
+---
+
 ## 2026-10-19 — R1.09: affected pages patched as ingestion_version 3 (inactive) + free checks (step D)
 **Phase:** R1 · **Type:** ingestion
 
