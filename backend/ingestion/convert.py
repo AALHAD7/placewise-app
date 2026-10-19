@@ -22,7 +22,9 @@ from gemini_client import BudgetExceeded, VisionCallError, transcribe_page
 
 # Vision prompt (PROMPT_VERSION in config.py; r1-diagrams-v2 adds the R1.08
 # rules: exact quotes, no links, chevron edges, convergence -> flow, circled
-# letters in labels, no blocks in tables, literal summaries). Built from the
+# letters in labels, no blocks in tables, literal summaries; r1-diagrams-v3
+# (R1.09 fix round) adds: every box incl. the converging one is a node
+# (Example 3), and never estimate chart values). Built from the
 # diagram-transcription skill. {page_no} is substituted with str.replace, not
 # str.format, because the JSON examples contain braces.
 VISION_PROMPT = """Transcribe EVERYTHING on this page of a business-school placement casebook, exactly.
@@ -57,6 +59,9 @@ Types and their extra fields:
 - flow: "nodes": [{"id": "a", "label": "..."}], "edges": [{"from": "a", "to": "b", "label": null}]  (processes, value chains, cycles; decision trees with Yes/No branches are a flow with "Yes"/"No" edge labels). A flow must have an edge for every arrow or connector; never output a flow with no edges.
   Chevrons, arrow shapes and boxes placed in a row are a sequence: add an edge from each stage to the next, in reading order, as well as any edges to items under a stage.
 - chart: "chart_kind": "bar" | "line" | "pie", "xLabel", "yLabel", "series": [{"name": "...", "points": [["x", 12.5], ...]}]  (only values printed on the page; if no values are printed use "points": [])
+  Chart values: use ONLY numbers printed on the page as text (data labels, values written on or next to a bar, point or slice).
+  NEVER estimate a value from a bar's height, a line's position, a slice's size or the axis gridlines. If a bar, point or slice
+  has no printed number, use null for its value (["2021", null]). An estimated number is an error even if it looks close.
 - table: "header": [...], "rows": [[...], ...]  (only for tables with merged cells)
 - other: "description": "...", "labels": [...]  (only when the diagram fits none of the types above)
 
@@ -72,9 +77,16 @@ Example 2 (issue tree):
 ```
 Diagram summary: Profit splits into revenue (price and volume) and cost (fixed and variable).
 
+Example 3 (lines from two columns join into one final box, so it is a flow and the final box is a node):
+```placewise-diagram
+{"type": "flow", "title": null, "source_page": {page_no}, "notes": [], "nodes": [{"id": "a", "label": "Plan"}, {"id": "b", "label": "Build skills"}, {"id": "c", "label": "Build network"}, {"id": "d", "label": "Get the offer"}], "edges": [{"from": "a", "to": "b", "label": null}, {"from": "a", "to": "c", "label": null}, {"from": "b", "to": "d", "label": null}, {"from": "c", "to": "d", "label": null}]}
+```
+Diagram summary: Plan leads to building skills and building a network, and both lead to getting the offer.
+
 RULES FOR BLOCKS
 - Every label, number and unit inside a block must be copied exactly as printed on the page. Never invent, rename, merge, correct or complete a label.
 - Every box, node or list item that belongs to the diagram is its own node (a tree child, a flow node or a cell). Never move child boxes or list items into "notes"; "notes" are only footnotes and captions.
+- Every box in a diagram is a node in its block, including the box that lines or arrows converge into (often the last box, e.g. a final goal). Never write a diagram box as plain text outside the block. If a box has two parents (lines from two boxes reach it), use a flow (Example 3).
 - Keep each label on one line: replace line breaks inside a label with a space ("Short-Term Competitive Disadvantage", not "Short-Term\\nCompetitive\\nDisadvantage").
 - Unreadable text inside a block becomes "[UNREADABLE]".
 - A page with two diagrams gets two blocks.
@@ -109,7 +121,8 @@ MAX_FIX_HINTS = 15
 # count against the score like errors, but are not schema errors.
 # label_multiline is not retried: collapse_multiline_labels fixes it without a second paid call.
 RETRY_WARN_CODES = {"notes_flattened", "flow_no_edges", "label_flattened",
-                    "flow_disconnected", "tree_duplicate_label", "tree_convergence_suspect"}
+                    "flow_disconnected", "tree_duplicate_label", "tree_convergence_suspect",
+                    "missing_box"}
 
 
 def _retry_warns(fid: dict) -> int:
@@ -131,7 +144,8 @@ def diagram_fix_hints(fid: dict, truncated: bool, page_no: int) -> list:
         if code == "label_not_on_page":
             h = f'label "{detail}" not found on page; copy it exactly as printed'
         elif code == "number_not_on_page":
-            h = f"block {b}: number {detail} not found on page; copy numbers exactly as printed"
+            h = (f"block {b}: number {detail} is not printed on the page; copy numbers exactly as printed and never "
+                 "estimate a value from a bar height or slice size (use null when no number is printed)")
         elif code == "invalid_json":
             h = f"block {b}: invalid JSON ({detail[:120]}); use double quotes, no comments, no trailing commas"
         elif code == "missing_summary":
@@ -157,6 +171,9 @@ def diagram_fix_hints(fid: dict, truncated: bool, page_no: int) -> list:
         elif code in ("tree_duplicate_label", "tree_convergence_suspect"):
             h = (f"block {b}: '{detail}' is reached from more than one box (lines converge); use a flow "
                  "with one node per box and an edge from each parent, not an issue_tree")
+        elif code == "missing_box":
+            h = (f'the box "{detail}" is printed in the diagram but is not a node in any block; add it as '
+                 "a node with its edges (if lines from several boxes join into it, make the block a flow)")
         elif code == "block_in_table":
             h = ("never put a diagram block inside a table cell; close the table, then write the block "
                  "on its own lines")

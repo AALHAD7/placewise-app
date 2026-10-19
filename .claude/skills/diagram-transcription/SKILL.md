@@ -72,6 +72,11 @@ Always flag it `needs_review`.
 - Lines from two or more boxes joining into one box (converging) make it a flow, not an issue_tree:
   one node per box, an edge from each feeding box. Never repeat a box under two parents
   (`tree_duplicate_label`, `tree_convergence_suspect`).
+- Every box in a diagram is a node in its block, including the box the lines converge into (often the
+  last box, e.g. a final goal). Never write a diagram box as plain text outside the block; if a box has two
+  parents, use a flow (`missing_box`: a short printed line among the labels that no block holds).
+- Chart values: only numbers printed on the page. Never estimate from bar heights, line positions, slice
+  sizes or gridlines; a bar/point/slice with no printed number gets `null` (`number_not_on_page`).
 - Letters or numbers printed in circles or badges (V, R, I, O; step 1, 2, 3) are printed text: put them
   in the node label before the word they mark ("V Valuable"). Ids are short machine letters only.
 - The summary restates only what is printed: no added outcomes, judgements or branches (e.g. "No" paths).

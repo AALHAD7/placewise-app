@@ -23,7 +23,7 @@ from postprocess import postprocess_markdown
 from textnorm import normalize_exact, normalize_label
 
 HERE = Path(__file__).parent
-FLAG_REASONS = ("diagram_in_table", "diagram_structure", "diagram_label_altered")
+FLAG_REASONS = ("diagram_in_table", "diagram_structure", "diagram_label_altered", "diagram_missing_box")
 CONVERGENCE_MAX_PAGES = 15
 CONVERGENCE_MUST_NOT_FLAG = (14, 20, 32)
 

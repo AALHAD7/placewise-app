@@ -11,7 +11,8 @@ Issue codes
          block_in_table (a block inside a Markdown table cell)
   warn:  chart_no_data, missing_field, flow_no_edges, notes_flattened,
          label_multiline, label_flattened,
-         flow_disconnected, tree_duplicate_label, tree_convergence_suspect
+         flow_disconnected, tree_duplicate_label, tree_convergence_suspect,
+         missing_box (a short printed line among the labels that no block holds)
 """
 import bisect
 import json
@@ -702,14 +703,33 @@ def _descendant_labels(node, depth=0):
     return out
 
 
+# R1.09 tuning: a converging box is a short box label (not a formula or
+# sentence), printed right after the last box of the columns that feed it.
+CONVERGE_LEAF_MAX_TOKENS = 6
+# Words printed between the last descendant and the leaf that belong to no
+# label of the block (p13: the "Other C's: ..." line sits before "Government").
+CONVERGE_MAX_GAP_TOKENS = 2
+_FORMULA_RE = re.compile(r"[=+*/\d]")
+
+
 def tree_convergence_suspects(obj, text_norm):
-    """Leaf children printed AFTER every descendant of all their siblings, where
-    at least 2 siblings have children: the shape of a box that lines from
+    """Leaf children printed right AFTER every descendant of all their siblings,
+    where at least 2 siblings have children: the shape of a box that lines from
     several columns converge into, stored as one more child (FMS p11). Checked
-    under every parent node, not only the root."""
+    under every parent node, not only the root.
+
+    Not flagged (tuned on the 248 v2 pages, R1.09): leaves longer than
+    CONVERGE_LEAF_MAX_TOKENS words or holding digits/operators (formula leaves,
+    p102/p107), and leaves separated from the last descendant by more than
+    CONVERGE_MAX_GAP_TOKENS words that are in no label of the block (a sibling
+    box printed after unrelated text, p13 "Government")."""
     if not text_norm:
         return []
     padded = f" {text_norm} "
+    block_tokens = set()
+    for lab in collect_labels(obj):
+        if isinstance(lab, str):
+            block_tokens.update(normalize_label(lab).split(" "))
     out = []
 
     def visit(node, depth):
@@ -719,20 +739,177 @@ def tree_convergence_suspects(obj, text_norm):
         for leaf in kids:
             if leaf.get("children") or not isinstance(leaf.get("label"), str):
                 continue
+            norm = normalize_label(leaf["label"])
+            if (not norm or len(norm.split(" ")) > CONVERGE_LEAF_MAX_TOKENS
+                    or _FORMULA_RE.search(leaf["label"])):
+                continue
             sibs = [c for c in kids if c is not leaf]
             if sum(1 for c in sibs if c.get("children")) < 2:
                 continue
             lp = _first_pos(leaf["label"], padded)
             if lp is None:
                 continue
-            desc = [p for c in sibs for p in (_first_pos(l, padded) for l in _descendant_labels(c))
-                    if p is not None]
-            if len(desc) >= 2 and lp > max(desc):
-                out.append(leaf["label"])
+            desc = [(p, l) for c in sibs for l in _descendant_labels(c)
+                    for p in [_first_pos(l, padded)] if p is not None]
+            if len(desc) < 2:
+                continue
+            last_pos, last_label = max(desc)
+            if lp <= last_pos:
+                continue
+            gap = padded[last_pos + len(normalize_label(last_label)) + 1:lp].split()
+            if sum(1 for t in gap if t not in block_tokens) > CONVERGE_MAX_GAP_TOKENS:
+                continue
+            out.append(leaf["label"])
         for c in kids:
             visit(c, depth + 1)
 
     visit(obj.get("root"), 1)
+    return out
+
+
+# --------------------------------------------------------------------------- missing box (R1.09)
+
+# A short text-layer line printed among a diagram's labels that is in no block
+# label: a box the model left out of the block (FMS p11 "Crack the interview",
+# written as plain text under the block). Deterministic, text layer only.
+MISSING_BOX_MAX_TOKENS = 6
+MISSING_BOX_CHECK_ENABLED = True
+_TL_LINE_SPLIT_RE = re.compile(r"\r?\n|\r")
+_NAV_RE = re.compile(r"^(?:main index|index|back|home|next|previous)$")
+_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(.*)$")
+
+
+def _segmentable(tokens, label_blob):
+    """True if `tokens` split into consecutive pieces that each appear as a
+    whole-word phrase inside some label (label_blob = ' | '-joined padded
+    normalised labels). "Prepare Hard Prepare Smart" is two labels on one
+    text-layer line; a wrapped label's fragment is part of one label."""
+    n = len(tokens)
+    ok = [True] + [False] * n
+    for i in range(1, n + 1):
+        for j in range(i):
+            if ok[j] and f" {' '.join(tokens[j:i])} " in label_blob:
+                ok[i] = True
+                break
+    return ok[n]
+
+
+_BOX_REJECT_RE = re.compile(r"[:=|#\d]")
+_LINE_END_STOPWORDS = STOPWORDS | {"with", "like", "based", "such"}
+
+
+def _body_text_line(raw_line, norm):
+    """Plain body text or a list line, not a box: bullets and numbered items,
+    sentence ends, lowercase continuations, wrapped lines ending in a function
+    word or dash, lines with ':', '=', '|', '#' or digits (key-value facts,
+    formulas, headers; numbers are covered by number_coverage), and
+    footer/navigation lines."""
+    s = raw_line.strip()
+    if not s or "©" in s or "index" in norm.split(" ") or _BULLET_LINE_RE.match(s) or s[0] in "•▪●·◦‣-–*(":
+        return True
+    if _BOX_REJECT_RE.search(s) or s[-1] in ".;,–-/&(":
+        return True
+    if norm.split(" ")[-1] in _LINE_END_STOPWORDS:
+        return True
+    return s[0].islower()
+
+
+MISSING_BOX_TITLE_LINES = 3  # the first non-empty Markdown lines are the slide title zone
+
+
+def _standalone_in_markdown(norm, markdown):
+    """False if the line only appears inside longer Markdown lines (outside
+    blocks), i.e. it is part of a sentence, list item or title there, or if its
+    own Markdown line is in the title zone (first MISSING_BOX_TITLE_LINES
+    non-empty lines). True if a Markdown line after the title zone equals it
+    (p11: the dropped box written as its own line under the block), or if it is
+    not in the Markdown at all."""
+    from textnorm import _outside_blocks  # textnorm imports nothing from here at module level
+    found = False
+    seen = 0
+    for seg, is_block in _outside_blocks(markdown or ""):
+        if is_block:
+            seen = max(seen, MISSING_BOX_TITLE_LINES)
+            continue
+        for line in seg.split("\n"):
+            ln = normalize_label(line)
+            if not ln:
+                continue
+            seen += 1
+            if f" {norm} " not in f" {ln} ":
+                continue
+            found = True
+            if ln == norm and seen > MISSING_BOX_TITLE_LINES:
+                return True
+    return not found
+
+
+_BOLD_LINE_RE = re.compile(r"^\s*(?:[-*]\s+)?\*\*(.+?)\*\*:?\s*$")
+
+
+def _markdown_headings(markdown):
+    """Normalised Markdown headings and whole-line bold text (slide section
+    tabs such as "Assumptions", "Recommendations"), outside diagram blocks."""
+    from textnorm import _outside_blocks
+    out = []
+    for seg, is_block in _outside_blocks(markdown or ""):
+        if is_block:
+            continue
+        for line in seg.split("\n"):
+            m = _HEADING_RE.match(line) or _BOLD_LINE_RE.match(line)
+            if m:
+                h = normalize_label(m.group(1))
+                if h:
+                    out.append(h)
+    return out
+
+
+def missing_box_lines(objs, text_layer, markdown=""):
+    """Short text-layer lines (<= MISSING_BOX_MAX_TOKENS words, with a content
+    word) that sit between the first and last text-layer line holding a label of
+    a block, are next to a label line, are in no block label (all blocks of the
+    page, notes and titles included), are not plain body text (_body_text_line),
+    are not a Markdown heading of the output and are not only part of a longer
+    Markdown line. Returns the raw lines, in page order."""
+    objs = [o for o in objs or [] if isinstance(o, dict)]
+    if not objs or not (text_layer or "").strip():
+        return []
+    per_block = []
+    all_labels = []
+    for o in objs:
+        labs = [normalize_label(l) for l in collect_labels(o) if isinstance(l, str)]
+        labs = [l for l in labs if l]
+        per_block.append(" | ".join(f" {l} " for l in labs))
+        all_labels += labs
+    blob = " | ".join(f" {l} " for l in all_labels)
+    lines = [l for l in _TL_LINE_SPLIT_RE.split(text_layer)]
+    norms = [normalize_label(l) for l in lines]
+    covered = [bool(n) and _segmentable(n.split(" "), blob) for n in norms]
+    spans = []
+    for b_blob in per_block:
+        idx = [i for i, n in enumerate(norms)
+               if n and _has_content_token(n.split(" ")) and _segmentable(n.split(" "), b_blob)]
+        if len(idx) >= 2:
+            spans.append((idx[0], idx[-1]))
+    if not spans:
+        return []
+    heading_blob = " | ".join(f" {h} " for h in _markdown_headings(markdown))
+    out = []
+    for i, (raw, norm) in enumerate(zip(lines, norms)):
+        if covered[i] or not norm or not any(a < i < b for a, b in spans):
+            continue
+        toks = norm.split(" ")
+        if len(toks) > MISSING_BOX_MAX_TOKENS or not _has_content_token(toks):
+            continue
+        if _body_text_line(raw, norm) or (heading_blob and _segmentable(toks, heading_blob)):
+            continue
+        # Among the labels: an adjacent text-layer line is a label line.
+        if not ((i > 0 and covered[i - 1]) or (i + 1 < len(lines) and covered[i + 1])):
+            continue
+        if not _standalone_in_markdown(norm, markdown):
+            continue
+        if raw.strip() not in out:
+            out.append(raw.strip())
     return out
 
 
@@ -955,6 +1132,14 @@ def check_diagrams(markdown, text_layer, page_no, label_lines=None):
         flat = suspected_flattened_notes(b["obj"], text_norm, text_words)
         if len(flat) >= FLATTENED_NOTES_MIN:
             add(b, "notes_flattened", "warn", " | ".join(flat))
+
+    # Missing boxes (R1.09): one warn per short printed line among the labels that
+    # no block holds. Attached to the first parsed block (the check is page-wide).
+    if MISSING_BOX_CHECK_ENABLED and has_text:
+        parsed = [b for b in blocks if isinstance(b["obj"], dict) and not b.get("in_table")]
+        if parsed:
+            for line in missing_box_lines([b["obj"] for b in parsed], text_layer, markdown):
+                add(parsed[0], "missing_box", "warn", line)
 
     coverage = (labels_found / labels_checked) if (has_text and labels_checked) else None
     n_exact = sum(1 for v in key_exact.values() if v)

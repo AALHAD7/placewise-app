@@ -199,7 +199,8 @@ class TestPromptR1DiagramsV2(unittest.TestCase):
     R1_DIAGRAMS_V1_LEN = 4607  # len(VISION_PROMPT) at r1-diagrams-v1
 
     def test_version(self):
-        self.assertEqual(PROMPT_VERSION, "r1-diagrams-v2")
+        # r1-diagrams-v3 (R1.09) keeps every v2 rule; its own tests: test_missing_box.py
+        self.assertIn(PROMPT_VERSION, ("r1-diagrams-v2", "r1-diagrams-v3"))
 
     def test_rules_present(self):
         p = convert.VISION_PROMPT
@@ -217,7 +218,8 @@ class TestPromptR1DiagramsV2(unittest.TestCase):
             self.assertIn(rule, p)
 
     def test_prompt_growth_small(self):
-        self.assertLess(len(convert.VISION_PROMPT) - self.R1_DIAGRAMS_V1_LEN, 1500)
+        # v2 grew 1,130 over v1; v3 growth is checked against v2 in test_missing_box.py
+        self.assertLess(len(convert.VISION_PROMPT) - self.R1_DIAGRAMS_V1_LEN, 3000)
 
     def test_built_prompt_has_page_and_rules(self):
         p = convert.build_vision_prompt(52, "V R I O Valuable")

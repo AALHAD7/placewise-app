@@ -30,6 +30,7 @@ _DIAGRAM_WARN_REASON = {
     "flow_disconnected": "diagram_structure",
     "tree_duplicate_label": "diagram_structure",
     "tree_convergence_suspect": "diagram_structure",
+    "missing_box": "diagram_missing_box",
     # label_multiline has no reason: the converter collapses those labels.
 }
 

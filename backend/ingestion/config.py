@@ -48,7 +48,9 @@ DIAGRAM_LABEL_COVERAGE_MIN = 1.0
 # Vision prompt v2 (R1.03): placewise-diagram blocks + one validation-driven retry.
 # r1-diagrams-v2 (R1.08): exact quotes, no links, chevron edges, convergence -> flow,
 # circled letters in labels, no blocks in tables, literal summaries.
-PROMPT_VERSION = "r1-diagrams-v2"
+# r1-diagrams-v3 (R1.09 fix round): every box incl. the converging one is a node
+# (flow example), never estimate chart values (null when no number is printed).
+PROMPT_VERSION = "r1-diagrams-v3"
 VISION_MAX_TOKENS = 8192  # diagram JSON is verbose; 3000 risked truncation
 VISION_RETRY_ON_DIAGRAM_FAIL = True
 # Hard cap on vision HTTP requests per page (all models, all attempts).
