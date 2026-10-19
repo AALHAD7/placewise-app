@@ -14,8 +14,8 @@ from docling_core.types.doc import TableItem
 
 from config import (PROMPT_VERSION, RENDER_DPI, VISION_MAX_CALLS_PER_PAGE, VISION_MAX_TOKENS,
                     VISION_RETRY_ON_DIAGRAM_FAIL)
-from diagram_schema import FENCE_INFO, extract_blocks, has_bullet_lines
-from textnorm import normalize_label
+from diagram_schema import FENCE_INFO, extract_blocks, has_bullet_lines  # noqa: F401
+from textnorm import normalize_label  # noqa: F401
 from page_classify import classify_page, render_page_png
 from fidelity import check_page
 from gemini_client import BudgetExceeded, VisionCallError, transcribe_page
@@ -98,7 +98,8 @@ MAX_FIX_HINTS = 15
 # Warn codes that indicate lost structure: they trigger the one retry and
 # count against the score like errors, but are not schema errors.
 # label_multiline is not retried: collapse_multiline_labels fixes it without a second paid call.
-RETRY_WARN_CODES = {"notes_flattened", "flow_no_edges", "label_flattened"}
+RETRY_WARN_CODES = {"notes_flattened", "flow_no_edges", "label_flattened",
+                    "flow_disconnected", "tree_duplicate_label", "tree_convergence_suspect"}
 
 
 def _retry_warns(fid: dict) -> int:
@@ -140,6 +141,18 @@ def diagram_fix_hints(fid: dict, truncated: bool, page_no: int) -> list:
         elif code in ("label_multiline", "label_flattened"):
             h = (f"block {b}: keep each label on one line; list items under a box are separate child nodes "
                  f"({detail[:200]})")
+        elif code == "flow_disconnected":
+            h = (f"block {b}: the flow has separate pieces; add an edge for every arrow or chevron "
+                 "between stages, in order")
+        elif code in ("tree_duplicate_label", "tree_convergence_suspect"):
+            h = (f"block {b}: '{detail}' is reached from more than one box (lines converge); use a flow "
+                 "with one node per box and an edge from each parent, not an issue_tree")
+        elif code == "block_in_table":
+            h = ("never put a diagram block inside a table cell; close the table, then write the block "
+                 "on its own lines")
+        elif code == "label_altered":
+            h = (f'label "{detail}" differs from the page in punctuation, apostrophes or case; '
+                 "copy it character for character as printed")
         elif code == "unreadable":
             h = f"block {b}: has [UNREADABLE] values; re-read those labels carefully (keep [UNREADABLE] only if truly unreadable)"
         else:
@@ -161,63 +174,10 @@ def _score(fid: dict, truncated: bool) -> float:
             - (1.0 if truncated else 0.0))
 
 
-_HYPHEN_BREAK_RE = re.compile(r"(?<=\w)-[ \t]*\r?\n\s*")
-
-
-def _collapse_strings(v, lines_out):
-    """Collapse whitespace in every string value that spans lines and has no
-    list markers (notes are left as printed). Records the original lines of
-    each collapsed string in `lines_out`. Returns (new_value, changed)."""
-    if isinstance(v, str):
-        if "\n" in v and not has_bullet_lines(v):
-            # "Short-\nTerm" -> "Short-Term" (keep the hyphen, drop the break)
-            new = " ".join(_HYPHEN_BREAK_RE.sub("-", v).split())
-            if new != v:
-                lines_out[normalize_label(new)] = [l for l in v.strip().split("\n") if l.strip()]
-            return new, new != v
-        return v, False
-    if isinstance(v, list):
-        out, changed = [], False
-        for x in v:
-            nx, c = _collapse_strings(x, lines_out)
-            out.append(nx)
-            changed |= c
-        return out, changed
-    if isinstance(v, dict):
-        out, changed = {}, False
-        for k, x in v.items():
-            if k == "notes":
-                out[k] = x
-                continue
-            nx, c = _collapse_strings(x, lines_out)
-            out[k] = nx
-            changed |= c
-        return out, changed
-    return v, False
-
-
-def collapse_multiline_labels_with_lines(markdown: str):
-    """Deterministic post-fix after the final attempt: a label like
-    "Short-Term\\nCompetitive\\nDisadvantage" becomes one line. Only parsed
-    placewise-diagram blocks that change are re-dumped; labels with list
-    markers are left alone (they stay flagged as label_flattened).
-    Returns (markdown, label_lines) where label_lines maps
-    normalize_label(collapsed label) -> original lines, so the re-check can
-    still accept a label whose lines are printed separately on the page."""
-    md = markdown or ""
-    label_lines = {}
-    for b in reversed(extract_blocks(md)):
-        if b["fence"] != FENCE_INFO or b["obj"] is None:
-            continue
-        new_obj, changed = _collapse_strings(b["obj"], label_lines)
-        if changed:
-            block = f"```{FENCE_INFO}\n" + json.dumps(new_obj, ensure_ascii=False) + "\n```"
-            md = md[:b["start"]] + block + md[b["end"]:]
-    return md, label_lines
-
-
-def collapse_multiline_labels(markdown: str) -> str:
-    return collapse_multiline_labels_with_lines(markdown)[0]
+# The free deterministic post-pass lives in postprocess.py (no Gemini/Docling
+# imports, so offline tools such as rescore_v2.py can use it); re-exported here.
+from postprocess import (collapse_multiline_labels, collapse_multiline_labels_with_lines,  # noqa: E402,F401
+                         postprocess_markdown)
 
 
 def _vision_attempt(png, prompt, page_no, text_layer, is_scanned, call_log, reason, attempt, max_http):
@@ -239,7 +199,11 @@ def _vision_attempt(png, prompt, page_no, text_layer, is_scanned, call_log, reas
         if len(call_log) > before:
             call_log[-1]["error"] = str(e)[:200]
     http_calls = len(call_log) - before
-    fid = check_page(text_layer, md, is_scanned, page_no)
+    md, label_lines, n_quotes, n_links = postprocess_markdown(md, text_layer)
+    fid = check_page(text_layer, md, is_scanned, page_no, label_lines=label_lines)
+    fid["label_lines"] = label_lines
+    fid["quotes_restored"] = n_quotes
+    fid["links_stripped"] = n_links
     if truncated:
         fid["needs_review"] = True
         if "truncated" not in fid["review_reasons"]:
@@ -285,14 +249,8 @@ def convert_page_vision(png: bytes, page_no: int, text_layer: str, is_scanned: b
             retry_skipped = "run_cap"
             http_calls = len(call_log) - log_start
 
-    collapsed, label_lines = collapse_multiline_labels_with_lines(md)
-    if collapsed != md:
-        md = collapsed
-        fid = check_page(text_layer, md, is_scanned, page_no, label_lines=label_lines)
-        if truncated:
-            fid["needs_review"] = True
-            if "truncated" not in fid["review_reasons"]:
-                fid["review_reasons"].append("truncated")
+    # Every attempt is already post-processed (collapse, quotes, links) and
+    # checked in _vision_attempt; label_lines etc. travel inside fid.
     return {
         "markdown": md,
         "method": "gemini_vision_v2",
@@ -302,8 +260,8 @@ def convert_page_vision(png: bytes, page_no: int, text_layer: str, is_scanned: b
         "retry_skipped": retry_skipped,
         "truncated": truncated,
         "vision_model": model,
-        # collapsed label -> original lines; pass to check_page when re-checking
-        "label_lines": label_lines,
+        # fid carries label_lines (collapsed label -> original lines; pass to
+        # check_page when re-checking), quotes_restored and links_stripped.
         **fid,
     }
 

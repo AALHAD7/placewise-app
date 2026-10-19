@@ -54,3 +54,130 @@ def normalize_label(text: str) -> str:
 def label_tokens(normalized: str) -> list:
     """Content tokens (len > 1) of an already-normalised string."""
     return [tok for tok in normalized.split(" ") if len(tok) > 1]
+
+
+# --- exact label matching (R1.07) -------------------------------------------
+# The loose matcher above strips all punctuation, so it cannot see an apostrophe
+# change. normalize_exact keeps case and every punctuation mark: only Unicode
+# composition (NFC, never NFKC, which folds characters), hyphenated line breaks
+# and whitespace are normalised.
+
+_EXACT_HYPHEN_BREAK_RE = re.compile(r"(?<=\w)-[ \t]*\r?\n\s*(?=\w)")
+# Text-layer decoding artefacts, not printed characters: pdfium returns U+FFFE
+# where the page prints a hyphen ("Fast\ufffetrack" is printed "Fast-track"),
+# and zero-width characters glue onto tokens ("60%\u200b").
+_TEXT_LAYER_FIXES = str.maketrans({"\ufffe": "-", "\u200b": None, "\u200c": None, "\u200d": None,
+                                   "\u2060": None, "\ufeff": None})
+
+
+def normalize_exact(text: str) -> str:
+    """NFC, "Short-\\nTerm" -> "Short-Term" (the same breaks _HYPHEN_BREAK_RE
+    finds, joined with the hyphen kept), whitespace collapsed. Case and all
+    punctuation are kept. U+FFFE (pdfium's code for a printed hyphen) becomes
+    "-" and zero-width characters are dropped."""
+    if not text:
+        return ""
+    t = unicodedata.normalize("NFC", text).translate(_TEXT_LAYER_FIXES)
+    t = _EXACT_HYPHEN_BREAK_RE.sub("-", t)
+    return _WS_RE.sub(" ", t).strip()
+
+
+# Quote and prime characters, mapped to their ASCII form.
+QUOTE_MAP = {
+    "'": "'", "’": "'", "‘": "'", "′": "'",
+    '"': '"', "“": '"', "”": '"', "″": '"',
+}
+_QUOTE_TRANS = str.maketrans({k: v for k, v in QUOTE_MAP.items() if k != v})
+
+
+def fold_quotes(text: str) -> str:
+    """Every quote/prime character in QUOTE_MAP becomes its ASCII form."""
+    return (text or "").translate(_QUOTE_TRANS)
+
+
+# A text-layer token may carry bullet/list punctuation at its ends that a
+# diagram label omits ("• Price", "Other 3 P’s:"). Nothing inside a token is relaxed.
+EDGE_PUNCT = "•▪–-:;,.()"
+
+
+def token_variants(tok: str):
+    """tok plus every form with some of its leading and/or trailing EDGE_PUNCT
+    characters removed (never characters inside the token)."""
+    lead = len(tok) - len(tok.lstrip(EDGE_PUNCT))
+    trail = len(tok) - len(tok.rstrip(EDGE_PUNCT))
+    out = set()
+    for i in range(lead + 1):
+        for j in range(trail + 1):
+            core = tok[i:len(tok) - j] if j else tok[i:]
+            if core:
+                out.add(core)
+    return out
+
+
+def exact_token_set(text_layer: str) -> set:
+    """Every whitespace token of normalize_exact(text_layer), with its edge-punctuation variants."""
+    out = set()
+    for tok in normalize_exact(text_layer).split(" "):
+        if tok:
+            out |= token_variants(tok)
+    return out
+
+
+def label_exact_on_page(label: str, exact_tokens: set) -> bool:
+    """Every whitespace token of normalize_exact(label) is an exact token
+    (or edge-punctuation variant) of the page text layer."""
+    toks = [t for t in normalize_exact(label).split(" ") if t]
+    return bool(toks) and all(t in exact_tokens for t in toks)
+
+
+# --- invented links (R1.07) --------------------------------------------------
+
+_LINK_RE = re.compile(r"(!?)\[([^\]\n]*)\]\(([^)\n]*)\)")
+_SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.\-]*:")
+
+
+def _link_is_invented(target: str, text_layer: str) -> bool:
+    t = target.strip()
+    if t.startswith("<") and t.endswith(">"):
+        t = t[1:-1].strip()
+    t = t.split(" ")[0]  # drop a "title" part
+    if not t or t.lower().startswith("javascript:") or t.startswith("#"):
+        return True
+    if not _SCHEME_RE.match(t) and "." not in t:
+        return True
+    return t not in (text_layer or "")
+
+
+def _outside_blocks(markdown: str):
+    """Yield (segment, is_block) parts of markdown, diagram blocks (as found by
+    diagram_schema.extract_blocks, in-table ones included) kept whole."""
+    from diagram_schema import extract_blocks  # lazy: diagram_schema imports textnorm
+    md = markdown or ""
+    pos = 0
+    for b in extract_blocks(md):
+        if b["start"] < pos:
+            continue
+        yield md[pos:b["start"]], False
+        yield md[b["start"]:b["end"]], True
+        pos = b["end"]
+    yield md[pos:], False
+
+
+def strip_invented_links(markdown: str, text_layer: str):
+    """A Markdown link or image link outside diagram blocks becomes its plain
+    text when the target is javascript:, a #anchor, a bare word with no scheme
+    and no dot (e.g. main_index), or any URL that is not printed in the text
+    layer. Real printed URLs stay. Returns (markdown, n_stripped)."""
+    n = 0
+    out = []
+
+    def repl(m):
+        nonlocal n
+        if _link_is_invented(m.group(3), text_layer):
+            n += 1
+            return m.group(2)
+        return m.group(0)
+
+    for seg, is_block in _outside_blocks(markdown):
+        out.append(seg if is_block else _LINK_RE.sub(repl, seg))
+    return "".join(out), n

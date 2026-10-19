@@ -6,14 +6,21 @@ codes for the review queue; it never edits labels.
 Issue codes
   error: invalid_json, wrong_fence, unknown_type, bad_shape, source_page_mismatch,
          dangling_edge, type_other, unreadable, missing_summary,
-         label_not_on_page, number_not_on_page
+         label_not_on_page, number_not_on_page,
+         label_altered (on the page only once punctuation/case is ignored),
+         block_in_table (a block inside a Markdown table cell)
   warn:  chart_no_data, missing_field, flow_no_edges, notes_flattened,
-         label_multiline, label_flattened
+         label_multiline, label_flattened,
+         flow_disconnected, tree_duplicate_label, tree_convergence_suspect
 """
+import bisect
 import json
 import re
 
-from textnorm import extract_numbers, label_tokens, normalize_label
+from collections import Counter
+
+from textnorm import (QUOTE_MAP, exact_token_set, extract_numbers, fold_quotes, label_exact_on_page,
+                      label_tokens, normalize_exact, normalize_label, token_variants)
 
 KNOWN_TYPES = {"issue_tree", "matrix", "funnel", "flow", "chart", "table", "other"}
 CHART_KINDS = {"bar", "line", "pie"}
@@ -58,14 +65,29 @@ def _summary_after(lines, idx):
     return None
 
 
+IN_TABLE_ERROR = "block inside table cell"
+_FENCE_TOKEN = "```"
+_DIAGRAM_OPENER = "```" + FENCE_INFO
+
+
+def _is_table_row(line):
+    return line.lstrip().startswith("|")
+
+
 def extract_blocks(markdown):
     """Return every diagram fence in order.
 
-    Each dict: {index, start, end, raw, obj, parse_error, summary, fence}.
+    Each dict: {index, start, end, raw, obj, parse_error, summary, fence, in_table}.
     `fence` is the info string. Blocks with fence != 'placewise-diagram' are
     json/untagged fences whose content parsed to an object with a known `type`
     (reported as wrong_fence, never silently dropped). start/end are character
     offsets of the whole fenced block in `markdown`.
+
+    A ```placewise-diagram opener that does not start its line (it follows
+    table-cell text, e.g. `| ```placewise-diagram`), or a block whose opening
+    fence sits between two Markdown table rows, is reported with
+    parse_error = IN_TABLE_ERROR and in_table = True: it counts in
+    diagram_count but is never a valid diagram.
     """
     markdown = markdown or ""
     lines = markdown.split("\n")
@@ -74,12 +96,52 @@ def extract_blocks(markdown):
         offsets.append(pos)
         pos += len(line) + 1
 
+    def line_of(off):
+        return bisect.bisect_right(offsets, off) - 1
+
+    def parse(raw):
+        try:
+            return json.loads(raw), None
+        except (ValueError, TypeError) as e:
+            return None, f"invalid JSON: {e}"
+
     blocks = []
-    i = 0
-    while i < len(lines):
-        m = _FENCE_OPEN_RE.match(lines[i])
+    cur = 0
+    while True:
+        k = markdown.find(_FENCE_TOKEN, cur)
+        if k < 0:
+            break
+        i = line_of(k)
+        line = lines[i]
+        col = k - offsets[i]
+        if col > 0:
+            # A fence that does not start its line: only a placewise-diagram
+            # opener after cell text matters (an in-table block).
+            if markdown.startswith(_DIAGRAM_OPENER, k) and line[:col].strip():
+                body_start = k + len(_DIAGRAM_OPENER)
+                close = markdown.find(_FENCE_TOKEN, body_start)
+                end = len(markdown) if close < 0 else close + len(_FENCE_TOKEN)
+                raw = markdown[body_start:close if close >= 0 else len(markdown)].strip()
+                obj, _err = parse(raw)
+                tail = markdown[end:].split("\n", 1)[0] if close >= 0 else ""
+                tail = re.sub(r"^(?:\s|<br\s*/?>)+", "", tail)
+                summary = None
+                if tail.startswith(SUMMARY_PREFIX):
+                    summary = tail[len(SUMMARY_PREFIX):].split("|")[0].strip() or None
+                blocks.append({
+                    "index": len(blocks), "start": k, "end": end, "raw": raw, "obj": obj,
+                    "parse_error": IN_TABLE_ERROR, "summary": summary, "fence": FENCE_INFO,
+                    "in_table": True,
+                })
+                if close < 0:
+                    break
+                cur = end
+                continue
+            cur = k + len(_FENCE_TOKEN)
+            continue
+        m = _FENCE_OPEN_RE.match(line)
         if not m:
-            i += 1
+            cur = k + len(_FENCE_TOKEN)
             continue
         info = m.group(1)
         close = None
@@ -93,21 +155,27 @@ def extract_blocks(markdown):
                     "index": len(blocks), "start": offsets[i], "end": len(markdown),
                     "raw": "\n".join(lines[i + 1:]), "obj": None,
                     "parse_error": "unclosed placewise-diagram fence", "summary": None,
-                    "fence": info,
+                    "fence": info, "in_table": False,
                 })
             break
         raw = "\n".join(lines[i + 1:close])
         end = min(offsets[close] + len(lines[close]), len(markdown))
+        summary = _summary_after(lines, close + 1)
         if info == FENCE_INFO:
-            obj, err = None, None
-            try:
-                obj = json.loads(raw)
-            except (ValueError, TypeError) as e:
-                err = f"invalid JSON: {e}"
+            obj, err = parse(raw)
+            # Opening fence between two table rows (row above, row below the
+            # block and its summary line) is also a block inside the table.
+            after = close + 1
+            if after < len(lines) and lines[after].strip().startswith(SUMMARY_PREFIX):
+                after += 1
+            in_table = (i > 0 and _is_table_row(lines[i - 1])
+                        and after < len(lines) and _is_table_row(lines[after]))
+            if in_table:
+                err = IN_TABLE_ERROR
             blocks.append({
                 "index": len(blocks), "start": offsets[i], "end": end, "raw": raw,
-                "obj": obj, "parse_error": err, "summary": _summary_after(lines, close + 1),
-                "fence": info,
+                "obj": obj, "parse_error": err, "summary": summary,
+                "fence": info, "in_table": in_table,
             })
         elif info.lower() in _WRONG_FENCE_INFOS:
             try:
@@ -117,10 +185,10 @@ def extract_blocks(markdown):
             if isinstance(obj, dict) and obj.get("type") in KNOWN_TYPES:
                 blocks.append({
                     "index": len(blocks), "start": offsets[i], "end": end, "raw": raw,
-                    "obj": obj, "parse_error": None, "summary": _summary_after(lines, close + 1),
-                    "fence": info,
+                    "obj": obj, "parse_error": None, "summary": summary,
+                    "fence": info, "in_table": False,
                 })
-        i = close + 1
+        cur = end + 1
     return blocks
 
 
@@ -580,6 +648,222 @@ def has_bullet_lines(text):
     return any(_BULLET_LINE_RE.match(l) for l in (text or "").split("\n"))
 
 
+# --------------------------------------------------------------------------- structure (R1.07)
+
+TREE_DUP_IGNORE = {"Yes", "No", "Others"}
+# tree_convergence_suspect is measured on the whole FMS pilot by rescore_v2.py;
+# set to False if it produces too many false positives (see the plan 07 log entry).
+CONVERGENCE_CHECK_ENABLED = True
+
+
+def flow_components(obj):
+    """Number of weakly connected components of a flow (every node counted)."""
+    ids = [n["id"] for n in obj.get("nodes") or [] if isinstance(n, dict) and "id" in n]
+    parent = {i: i for i in ids}
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for e in obj.get("edges") or []:
+        if isinstance(e, dict) and e.get("from") in parent and e.get("to") in parent:
+            a, b = find(e["from"]), find(e["to"])
+            if a != b:
+                parent[a] = b
+    return len({find(i) for i in ids})
+
+
+def tree_duplicate_labels(obj):
+    labels = []
+    _tree_labels(obj.get("root"), 1, labels)
+    counts = Counter(normalize_exact(l) for l in labels if isinstance(l, str))
+    return [l for l, c in counts.items()
+            if c >= 2 and len(l) > 2 and l not in TREE_DUP_IGNORE]
+
+
+def _first_pos(label, padded_text_norm):
+    norm = normalize_label(label)
+    if not norm:
+        return None
+    k = padded_text_norm.find(f" {norm} ")
+    return None if k < 0 else k
+
+
+def _descendant_labels(node, depth=0):
+    out = []
+    for c in (node.get("children") or []) if isinstance(node, dict) else []:
+        if isinstance(c, dict):
+            if isinstance(c.get("label"), str):
+                out.append(c["label"])
+            if depth < TREE_DEPTH_CAP:
+                out += _descendant_labels(c, depth + 1)
+    return out
+
+
+def tree_convergence_suspects(obj, text_norm):
+    """Leaf children printed AFTER every descendant of all their siblings, where
+    at least 2 siblings have children: the shape of a box that lines from
+    several columns converge into, stored as one more child (FMS p11). Checked
+    under every parent node, not only the root."""
+    if not text_norm:
+        return []
+    padded = f" {text_norm} "
+    out = []
+
+    def visit(node, depth):
+        if depth > TREE_DEPTH_CAP or not isinstance(node, dict):
+            return
+        kids = [c for c in node.get("children") or [] if isinstance(c, dict)]
+        for leaf in kids:
+            if leaf.get("children") or not isinstance(leaf.get("label"), str):
+                continue
+            sibs = [c for c in kids if c is not leaf]
+            if sum(1 for c in sibs if c.get("children")) < 2:
+                continue
+            lp = _first_pos(leaf["label"], padded)
+            if lp is None:
+                continue
+            desc = [p for c in sibs for p in (_first_pos(l, padded) for l in _descendant_labels(c))
+                    if p is not None]
+            if len(desc) >= 2 and lp > max(desc):
+                out.append(leaf["label"])
+        for c in kids:
+            visit(c, depth + 1)
+
+    visit(obj.get("root"), 1)
+    return out
+
+
+# --------------------------------------------------------------------------- quote restore (R1.07)
+
+_MACHINE_KEYS = ("source_page", "type", "id", "from", "to", "chart_kind")
+_MD_EDGE_CHARS = "*_`#>[]|~<" + "•▪–-:;,.()!?"
+
+
+def _quote_only_diff(a, b):
+    return len(a) == len(b) and a != b and all(x == y or (x in QUOTE_MAP and y in QUOTE_MAP) for x, y in zip(a, b))
+
+
+class _QuoteFixer:
+    def __init__(self, text_layer):
+        self.exact = exact_token_set(text_layer)
+        self.folded = {}
+        for tok in normalize_exact(text_layer).split(" "):
+            for v in token_variants(tok):
+                self.folded.setdefault(fold_quotes(v), Counter())[v] += 1
+
+    def fixed(self, tok):
+        """The text-layer form of `tok` if it differs only in quote characters, else None."""
+        if tok in self.exact:
+            return None
+        cands = self.folded.get(fold_quotes(tok))
+        if not cands:
+            return None
+        best = cands.most_common(1)[0][0]
+        return best if _quote_only_diff(tok, best) else None
+
+    def fix_label(self, label):
+        """Returns (new_label, n_tokens_fixed). Only when every token is exact or
+        quote-fixable; otherwise the label is left alone (it stays flagged)."""
+        toks = re.findall(r"\S+", label)
+        if not toks or label_exact_on_page(label, self.exact):
+            return label, 0
+        plan = []
+        for t in toks:
+            tn = normalize_exact(t)
+            if tn in self.exact:
+                continue
+            f = self.fixed(tn)
+            if f is None:
+                return label, 0
+            plan.append(f)
+        it = iter(plan)
+        n = 0
+
+        def repl(m):
+            nonlocal n
+            tn = normalize_exact(m.group(0))
+            if tn in self.exact:
+                return m.group(0)
+            n += 1
+            return next(it)
+
+        return re.sub(r"\S+", repl, label), n
+
+    def fix_md_token(self, tok):
+        if not any(ch in QUOTE_MAP for ch in tok):
+            return tok, 0
+        lead = len(tok) - len(tok.lstrip(_MD_EDGE_CHARS))
+        trail = len(tok) - len(tok.rstrip(_MD_EDGE_CHARS))
+        core = tok[lead:len(tok) - trail] if trail else tok[lead:]
+        if not core or not any(ch in QUOTE_MAP for ch in core):
+            return tok, 0
+        f = self.fixed(core)
+        if f is None:
+            return tok, 0
+        return tok[:lead] + f + (tok[len(tok) - trail:] if trail else ""), 1
+
+
+def _fix_values(v, fixer, key=None):
+    if isinstance(v, str):
+        return fixer.fix_label(v) if key not in _MACHINE_KEYS else (v, 0)
+    if isinstance(v, list):
+        out, n = [], 0
+        for x in v:
+            nx, c = _fix_values(x, fixer, key)
+            out.append(nx)
+            n += c
+        return out, n
+    if isinstance(v, dict):
+        out, n = {}, 0
+        for k, x in v.items():
+            nx, c = _fix_values(x, fixer, k)
+            out[k] = nx
+            n += c
+        return out, n
+    return v, 0
+
+
+def restore_quotes(markdown, text_layer):
+    """Deterministic repair: a diagram label (title, node, note) or a Markdown
+    word outside the blocks that matches the page text layer except for its
+    quote style (4P's vs the printed 4P’s) gets the printed quote characters.
+    No other character ever changes. Changed blocks are re-serialised with
+    json.dumps(ensure_ascii=False, indent=2). Returns (markdown, n_fixed)."""
+    md = markdown or ""
+    if not (text_layer or "").strip() or not md:
+        return md, 0
+    fixer = _QuoteFixer(text_layer)
+    total = 0
+    pieces, pos = [], 0
+
+    def fix_plain(seg):
+        nonlocal total
+        def repl(m):
+            nonlocal total
+            new, c = fixer.fix_md_token(m.group(0))
+            total += c
+            return new
+        return re.sub(r"\S+", repl, seg)
+
+    for b in extract_blocks(md):
+        if b["start"] < pos:
+            continue
+        pieces.append(fix_plain(md[pos:b["start"]]))
+        seg = md[b["start"]:b["end"]]
+        if b["fence"] == FENCE_INFO and b["obj"] is not None and not b.get("in_table"):
+            new_obj, n = _fix_values(b["obj"], fixer)
+            if n:
+                total += n
+                seg = f"```{FENCE_INFO}\n" + json.dumps(new_obj, ensure_ascii=False, indent=2) + "\n```"
+        pieces.append(seg)
+        pos = b["end"]
+    pieces.append(fix_plain(md[pos:]))
+    return "".join(pieces), total
+
+
 # --------------------------------------------------------------------------- page check
 
 def check_diagrams(markdown, text_layer, page_no, label_lines=None):
@@ -597,7 +881,16 @@ def check_diagrams(markdown, text_layer, page_no, label_lines=None):
     def add(block, code, severity, detail):
         issues.append({"block": block["index"], "code": code, "severity": severity, "detail": detail})
 
+    exact_tokens = exact_token_set(text_layer) if has_text else set()
+    padded_norm = text_norm
+    key_exact = {}     # loose key -> exact so far (only for keys found loosely)
+    seen_exact = set()
+
     for b in blocks:
+        if b.get("in_table"):
+            add(b, "block_in_table", "error",
+                "diagram block inside a Markdown table cell; close the table, then write the block")
+            continue
         if b["parse_error"]:
             add(b, "invalid_json", "error", b["parse_error"])
             continue
@@ -608,8 +901,23 @@ def check_diagrams(markdown, text_layer, page_no, label_lines=None):
         schema_issues = validate_block(b["obj"], page_no)
         for it in schema_issues:
             add(b, it["code"], it["severity"], it["detail"])
-        if b["fence"] == FENCE_INFO and not any(it["severity"] == "error" for it in schema_issues):
+        schema_ok = not any(it["severity"] == "error" for it in schema_issues)
+        if b["fence"] == FENCE_INFO and schema_ok:
             diagrams.append(b["obj"])
+
+        # Structure checks (cheap, text only)
+        if schema_ok and isinstance(b["obj"], dict):
+            t = b["obj"].get("type")
+            if t == "flow":
+                n_comp = flow_components(b["obj"])
+                if n_comp > 1 and (b["obj"].get("edges") or []):
+                    add(b, "flow_disconnected", "warn", f"{n_comp} separate pieces")
+            elif t == "issue_tree":
+                for lab in tree_duplicate_labels(b["obj"]):
+                    add(b, "tree_duplicate_label", "warn", lab)
+                if CONVERGENCE_CHECK_ENABLED and has_text:
+                    for lab in tree_convergence_suspects(b["obj"], padded_norm):
+                        add(b, "tree_convergence_suspect", "warn", lab)
 
         if not has_text:
             continue
@@ -617,12 +925,23 @@ def check_diagrams(markdown, text_layer, page_no, label_lines=None):
             if _skip_label(label):
                 continue
             key = normalize_label(label)
+            ex = normalize_exact(label)
             if key in seen_labels:
+                if key_exact.get(key) is not None and ex not in seen_exact:
+                    seen_exact.add(ex)
+                    if not label_exact_on_page(label, exact_tokens):
+                        key_exact[key] = False
+                        add(b, "label_altered", "error", label)
                 continue
             seen_labels.add(key)
+            seen_exact.add(ex)
             labels_checked += 1
             if _label_on_page(label, text_norm, text_words, label_lines):
                 labels_found += 1
+                ok = label_exact_on_page(label, exact_tokens)
+                key_exact[key] = ok
+                if not ok:
+                    add(b, "label_altered", "error", label)
             else:
                 add(b, "label_not_on_page", "error", label)
         for num in collect_numbers(b["obj"]):
@@ -638,7 +957,10 @@ def check_diagrams(markdown, text_layer, page_no, label_lines=None):
             add(b, "notes_flattened", "warn", " | ".join(flat))
 
     coverage = (labels_found / labels_checked) if (has_text and labels_checked) else None
+    n_exact = sum(1 for v in key_exact.values() if v)
+    exact = (n_exact / labels_checked) if (has_text and labels_checked) else None
     return {
+        "diagram_label_exact": exact,
         "diagram_count": len(blocks),
         "diagrams": diagrams,
         "diagram_issues": issues,

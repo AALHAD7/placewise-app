@@ -17,6 +17,8 @@ _DIAGRAM_REASON = {
     "number_not_on_page": "diagram_label",
     "type_other": "diagram_other",
     "unreadable": "unreadable",
+    "label_altered": "diagram_label_altered",
+    "block_in_table": "diagram_in_table",
 }
 
 
@@ -25,6 +27,9 @@ _DIAGRAM_WARN_REASON = {
     "notes_flattened": "diagram_flattened",
     "flow_no_edges": "diagram_shape",
     "label_flattened": "diagram_flattened",
+    "flow_disconnected": "diagram_structure",
+    "tree_duplicate_label": "diagram_structure",
+    "tree_convergence_suspect": "diagram_structure",
     # label_multiline has no reason: the converter collapses those labels.
 }
 

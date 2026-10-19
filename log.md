@@ -5,6 +5,31 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-19 — R1.07: stricter diagram checks + free quote/link repairs (offline)
+**Phase:** R1 · **Type:** fix
+
+**What changed:** The fidelity checker now catches what the R1.06 review caught. (1) Labels must match the
+page character for character (`label_altered` → reason `diagram_label_altered`); presence-only coverage is
+unchanged and a new per-page `diagram_label_exact` ratio sits next to it. (2) Diagram blocks inside Markdown
+table cells (`diagram_in_table`), flows that fall apart into separate pieces, and repeated or converging
+issue-tree nodes (`diagram_structure`) are flagged and trigger the one retry with a targeted hint.
+(3) Two free repairs run on every vision output before the check: curly quotes restored from the text layer
+(only quote characters ever change) and invented links (`[Main Index](#)`, `javascript:`, `main_index`) turned
+into plain text. pdfium's U+FFFE (a printed hyphen) and zero-width spaces are normalised in the exact check.
+**Why:** All 5 pages that failed review had label coverage 1.0 and `needs_review = false`.
+**Files:** `backend/ingestion/{textnorm,diagram_schema,fidelity,convert,postprocess,rescore_v2}.py`,
+`backend/ingestion/tests/{test_label_exact,test_structure_checks,test_strip_links}.py`, `tests/fixtures/r1_gap/`
+**Proof:** `Ran 188 tests … OK` (154 before). Offline re-score of all 248 v2 pages (`rescore_v2.py`, 0 Gemini, 0 DB):
+diagram_in_table 12 (58, 59, 60, 63, 65, 67, 69, 72, 73, 74, 77, 79), diagram_structure 28 (incl. 11, 19),
+diagram_label_altered 20 after the quote restore, quotes restored on 13 and 14 (+ others), links stripped on 114
+pages (incl. 10, 20, 52), coverage below v1 on 51 pages (24 numbers, 27 words only). Convergence heuristic kept
+(flags 3 pages: 11, 102, 107; none of 14, 20, 32).
+**Cost:** 0 Gemini calls.
+**Undo:** Revert the plan 07 commit. No DB rows changed.
+**Open issues:** p102 and p107 convergence flags look like false positives (formula leaves); they only cost a retry.
+
+---
+
 ## 2026-10-19 — R1 fidelity review: 3 diagram pages (R1.06) — issue tree BLOCKED
 **Phase:** R1 · **Type:** eval
 

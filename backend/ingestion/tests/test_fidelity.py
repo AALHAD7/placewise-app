@@ -16,7 +16,7 @@ from fidelity import check_page, extract_numbers  # noqa: E402
 
 V1_KEYS = {"number_coverage", "word_coverage", "unreadable_count", "needs_review"}
 V2_KEYS = V1_KEYS | {"diagram_count", "diagrams", "diagram_issues", "diagram_label_coverage",
-                     "diagram_errors", "review_reasons"}
+                     "diagram_errors", "review_reasons", "diagram_label_exact"}
 
 ANSOFF_TEXT = (
     "Ansoff Matrix\nProduct\nExisting New\nMarket\nExisting\nMarket\nPenetration\n"

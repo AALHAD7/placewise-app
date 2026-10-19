@@ -253,7 +253,7 @@ class TestLabels(unittest.TestCase):
 
 
 class TestCheckDiagrams(unittest.TestCase):
-    KEYS = {"diagram_count", "diagrams", "diagram_issues", "diagram_label_coverage", "diagram_errors"}
+    KEYS = {"diagram_count", "diagrams", "diagram_issues", "diagram_label_coverage", "diagram_errors", "diagram_label_exact"}
 
     def test_ansoff_valid(self):
         res = check_diagrams("# Ansoff Matrix\n\n" + block(ANSOFF), ANSOFF_TEXT, 20)
