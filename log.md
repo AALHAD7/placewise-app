@@ -5,6 +5,58 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-19 — R1.09: affected pages patched as ingestion_version 3 (inactive) + free checks (step D)
+**Phase:** R1 · **Type:** ingestion
+
+**What changed:** No more prompt rounds (orchestrator decision): the bar is now "every page is faithful or flagged".
+Step D added two free fixes. A repair now adds `"children": []` to tree leaves that lack it, which makes p52's AMO block valid.
+`missing_box` also gained a page-wide pass: 3 or more short standalone lines that are in no block label get flagged, case-slide column tabs excepted. This closes the p13 hole (commit eded0b7).
+Step C wrote `run_patch.py` (commit 69c11c8). It ran plan 09: 63 affected pages were re-converted with `r1-diagrams-v3` and the other pages were carried over from v2 with the free repairs. Each page fell back to v1 where coverage dropped.
+The result is stored as v3, doc `129a2604-0221-4ba2-af50-42ac641a21a0`, `is_active=false`. Insert-only: no v1 or v2 row was touched.
+**Why:** R1's done-criterion: rebuilt diagrams that are faithful, or else flagged for review (R5).
+**Files:** `backend/ingestion/{diagram_schema,postprocess,run_patch,pilot_report}.py`, `backend/ingestion/tests/{test_missing_box,test_patch_select}.py`,
+fixtures `p13_smoke_v3`, `p52_smoke_v3` (local: `out/r1_pages_v3.jsonl`, `out/r1_embeddings_v3.json`, `patch_output.json`,
+`out/r1_pilot_report_v3.json`, `out/r1_candidates_v3.html`, `out/r1_patch_v3_run1.log`, `out/r1_v2_rescore_v3checks.json`)
+**Proof:** `Ran 223 tests … OK`.
+`missing_box` on the v2 re-score: 21 pages (was 13): 13, 15, 71, 78, 97, 101, 107, 111, 124, 132, 138, 147, 153, 155, 157, 170, 197, 202, 218, 234, 248.
+It flags failing p13 (v2 re-pilot, smoke v3) and stays clean on smoke-v2 p13 (passing), 10, 11, 14, 19 and 20.
+Smoke v3 re-score: p13 `diagram_missing_box`; p52 valid and clean; p11 and p19 clean; p77 in-table and v1-fallback.
+
+Selection: all 55 fixed pages + 8 structure/missing-box pages. 61 pages were trimmed to keep embeddings ≤ 250 (listed in `patch_output.json`); they stay as carried v2 and keep their flags.
+Of the 63 re-converted pages, v3 output was kept on 41. On the other 22, v2 or v1 captured more (15 `fallback_v1`).
+
+| metric | v3 | v2 |
+|---|---|---|
+| methods | vision 41, carried_v2 192, fallback_v1 15 | vision 235, reused_v1 13 |
+| number_coverage mean / min | 0.998 / 0.67 | 0.982 / 0.22 |
+| word_coverage mean / min | 0.998 / 0.95 | 0.992 / 0.65 |
+| needs_review | 97 | 78 |
+| reasons | diagram_label 34, label_altered 20, structure 20, flattened 17, missing_box 17, fallback_v1 12, word_cov 8, unreadable 7, other 6, in_table 6, invalid 2, number_cov 2 | diagram_label 37, number_cov 26, word_cov 19, flattened 17, unreadable 8, other 6, invalid 2, fidelity_review 7 |
+| valid blocks by type | issue_tree 150, flow 50, table 9, chart 7, matrix 5, funnel 1 (222 / 237) | 224 / 233 |
+| chunks / has_diagram | 390 / 154 | 395 / 158 |
+
+- fallback_v1 pages: 15, 56, 67, 69, 71, 77, 79, 86, 127, 129, 152, 185, 198, 203, 229.
+- Still in a table, and flagged: 58, 59, 60, 70, 72, 73. Plan 09's "no diagram_in_table" is NOT met; the pages are flagged instead.
+- Visual pages from the plan list that still have 0 blocks: 1, 8, 12, 30, 43, 53, 75, 80, 84. Now in blocks: 31, 81.
+
+Row counts before → after (queried): document_chunks 22457 → 22457; v1 248/363 unchanged; v2 248/395 unchanged; v3 0 → 248/390, all `is_active=false`, `ingestion_version=3`; active 0. `check_schema.py` PASS.
+
+Candidates (valid, label coverage 1.0, not flagged), checked by eye against the page images:
+- issue_tree: p31, p81, p52 (AMO) look faithful.
+- flow: p19 and p52 (VRIO) look faithful. p11 has a caveat: edges from all 6 column boxes to "Crack the interview", while the page draws lines only from the bottom box of each column.
+- matrix: p20 (carried v2, passed R1.06).
+- chart: NONE. The only unflagged chart, p113, uses a separate callout box ("Average no of shops visited by one person = 3") as its yLabel.
+
+**Unfaithful but NOT flagged (found by eye, the checker can't see a wrong parent):**
+- p13: the Company questions are hung under "Industry", and Company has no children.
+- p14: "Other 3 P’s" was moved under Placement. v2 had it right; `choose_page` prefers v3 on coverage alone.
+Both need a `fidelity_review` flag in plan 10. I did not edit the rows.
+**Cost:** patch 93 vision calls + 200 embeddings ≈ $0.12. R1 gap vision calls: 8 + 8 + 93 = 109 / 150. R1 total ≈ $0.52.
+**Undo:** Nothing reads v3. It is identifiable by `ingestion_version = 3` / doc `129a2604-…`, all chunks inactive.
+**Open issues:** p13 and p14 are unflagged regressions (plan 10 must flag them). There are 0 chart candidates. 6 pages are still in-table. 61 lower-priority pages were trimmed for the embedding cap.
+
+---
+
 ## 2026-10-19 — R1.08b: prompt r1-diagrams-v3 fix round + re-smoke — BLOCKED (p13, p52 fail)
 **Phase:** R1 · **Type:** ingestion
 

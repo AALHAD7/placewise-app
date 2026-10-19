@@ -1,6 +1,6 @@
 # STATE
 
-**Position:** ▶ R1 (M1 Consulting RAG), in progress, BLOCKED at the r1-diagrams-v3 smoke gate (R1.08b). Updated 2026-10-19.
+**Position:** ▶ R1 (M1 Consulting RAG), in progress, plan 09 done (v3 stored), plan 10 next. Updated 2026-10-19.
 See `.gsd/ROADMAP.md` and the top entries of `log.md` (R1.05 – R1.08).
 
 ## R1 so far
@@ -14,14 +14,14 @@ See `.gsd/ROADMAP.md` and the top entries of `log.md` (R1.05 – R1.08).
 - Fidelity review (v2): matrix p20 and flow p10 pass; all 3 issue trees failed (structure).
 - Prompt v2 smoke (p11/13/19/52/77): 13, 19, 52 pass; 11 fails (converging box moved out
   of the block; checker blind to it); 77 fails (estimated bar values; v1 fallback would cover).
-- Gemini spend in R1: ~$0.40 (≈321 vision + 393 embedding calls).
+- Gemini spend in R1: ~$0.52 (≈414 vision + 593 embedding calls).
 
-## Next (blocked at the r1-diagrams-v3 smoke gate; see log R1.08b)
-- v3 fix round done (commit d03cfc4): missing_box check, tuned convergence, prompt r1-diagrams-v3.
-- Re-smoke: p11, p19 pass; p13 fails (main 3C's diagram not a block, checker silent); p52 fails (AMO leaves
-  missing "children" -> invalid block); p77 fails but v1 fallback applies. R1 gap vision calls used: 16 / 150.
-- Next: free repair for leaves missing "children"; missing_box/visual-page check for p13; then re-smoke
-  (<= 10 calls) and plan 09 (cap 150 - 16 - smoke) and plan 10.
+## Next
+- Plan 09 done (log R1.09): v3 doc `129a2604-0221-4ba2-af50-42ac641a21a0`, 248 pages / 390 chunks, inactive.
+  R1 gap vision calls 109 / 150.
+- Plan 10 (fidelity review + Aalhad spot-check). Candidates: issue_tree p31, p81, p52 AMO; flow p19, p52, p11 (caveat);
+  matrix p20. Chart: none clean (p113 has a wrong yLabel). Must flag p13 and p14 (v3 wrong parent, unflagged).
+- No more prompt rounds: the bar is faithful-or-flagged; flagged pages go to the R5 review queue.
 
 ## Known gaps
 - No eval test set yet (R3, Aalhad).

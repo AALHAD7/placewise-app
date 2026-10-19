@@ -123,18 +123,55 @@ def diagram_summary(pages):
     }
 
 
+CANDIDATE_LIMITS = {"issue_tree": 5, "chart": 3, "flow": 3, "matrix": 1}
+RECHECK_PAGES = (11, 13, 14)
+
+
+def _clean_for_type(p, t):
+    """A page qualifies for type t only if it has a valid block of type t, page label
+    coverage 1.0, no label_altered issue and needs_review = false (R1.09 bar:
+    faithful or flagged, so only unflagged pages are sample candidates)."""
+    return (any(d.get("type") == t for d in p.get("diagrams") or [])
+            and p.get("diagram_label_coverage") is not None and _num(p["diagram_label_coverage"]) == 1.0
+            and not any(i.get("code") == "label_altered" for i in p.get("diagram_issues") or [])
+            and not p.get("needs_review"))
+
+
+def _cand(p):
+    return {"page_no": p["page_no"], "needs_review": p.get("needs_review"),
+            "review_reasons": p.get("review_reasons"), "method": p.get("method"),
+            "types_on_page": [d.get("type") for d in p.get("diagrams") or []]}
+
+
 def candidates(pages):
-    """Up to 3 pages per type whose block of that type is valid and whose label
-    coverage is 1.0; clean pages (no needs_review) first, preferred pages first."""
+    """Per type, up to CANDIDATE_LIMITS pages that pass _clean_for_type, preferred page
+    first (matrix p20, flow p52), then fresh (re-converted) pages, then by page number."""
     out = {}
     for t in CANDIDATE_TYPES:
-        pool = [p for p in pages
-                if any(d.get("type") == t for d in p.get("diagrams") or [])
-                and p.get("diagram_label_coverage") is not None and _num(p["diagram_label_coverage"]) == 1.0]
-        pool.sort(key=lambda p: (p["page_no"] != PREFERRED.get(t), bool(p.get("needs_review")), p["page_no"]))
-        out[t] = [{"page_no": p["page_no"], "needs_review": p.get("needs_review"),
-                   "review_reasons": p.get("review_reasons"),
-                   "types_on_page": [d.get("type") for d in p.get("diagrams") or []]} for p in pool[:3]]
+        pool = [p for p in pages if _clean_for_type(p, t)]
+        pool.sort(key=lambda p: (p["page_no"] != PREFERRED.get(t), p.get("method") != "gemini_vision_v2",
+                                 p["page_no"]))
+        out[t] = [_cand(p) for p in pool[:CANDIDATE_LIMITS.get(t, 3)]]
+    return out
+
+
+def rechecks(pages):
+    """The issue-tree review pages p11/p13/p14, whatever their state."""
+    return [_cand(p) | {"clean_types": [t for t in CANDIDATE_TYPES if _clean_for_type(p, t)]}
+            for p in pages if p["page_no"] in RECHECK_PAGES]
+
+
+def below_compare(pv, pb, tol=1e-9):
+    """Pages whose number or word coverage is below the compare version's."""
+    base = {p["page_no"]: p for p in pb}
+    out = {"numbers": [], "words": []}
+    for p in pv:
+        b = base.get(p["page_no"])
+        if not b:
+            continue
+        for key, name in (("number_coverage", "numbers"), ("word_coverage", "words")):
+            if p.get(key) is not None and b.get(key) is not None and _num(p[key]) < _num(b[key]) - tol:
+                out[name].append(p["page_no"])
     return out
 
 
@@ -149,7 +186,8 @@ def main(argv=None) -> int:
     ap.add_argument("--source-file", required=True)
     ap.add_argument("--version", type=int, required=True)
     ap.add_argument("--compare", type=int, default=1)
-    ap.add_argument("--run-output", default=str(INGESTION_DIR / "repilot_output.json"))
+    ap.add_argument("--run-output", default=str(INGESTION_DIR / "repilot_output.json"),
+                    help="run output with call counts (patch_output.json for a patch version)")
     ap.add_argument("--out", default=str(INGESTION_DIR / "out" / "r1_pilot_report.json"))
     args = ap.parse_args(argv)
 
@@ -220,6 +258,10 @@ def main(argv=None) -> int:
         "diagrams": diagram_summary(pv),
         "chunks": chunks, "gemini": gemini, "integrity": integrity,
         "candidates": candidates(pv),
+        "recheck": rechecks(pv),
+        "coverage_below_compare": below_compare(pv, pb),
+        "fallback_v1_pages": sorted(p["page_no"] for p in pv if p.get("method") == "fallback_v1"),
+        "in_table_pages": sorted(p["page_no"] for p in pv if "diagram_in_table" in (p.get("review_reasons") or [])),
     }
     Path(args.out).parent.mkdir(exist_ok=True)
     Path(args.out).write_text(json.dumps(report, indent=2, default=str))
@@ -258,10 +300,15 @@ def main(argv=None) -> int:
     print(md_table([[k, v] for k, v in gemini.items()], ["metric", "value"]))
     print(f"\n## Integrity ({b} and live table)\n")
     print(md_table([[k, v] for k, v in integrity.items()], ["check", "value"]))
-    print("\n## Sample candidates (valid block, label coverage 1.0)\n")
+    print(f"\n## Coverage below {b}: {report['coverage_below_compare']}")
+    print(f"fallback_v1 pages: {report['fallback_v1_pages']}; in-table pages: {report['in_table_pages']}")
+    print("\n## Sample candidates (valid block, label coverage 1.0, no label_altered, not needs_review)\n")
     for t, lst in report["candidates"].items():
         print(f"- {t}: " + (", ".join(f"p{c['page_no']}{' (needs_review: ' + ','.join(c['review_reasons']) + ')' if c['needs_review'] else ''}"
                                       for c in lst) or "NONE (finding for R2)"))
+    print("- recheck (p11/p13/p14): " + "; ".join(
+        f"p{c['page_no']} clean={c['clean_types']} needs_review={c['needs_review']} {c['review_reasons']}"
+        for c in report["recheck"]))
     print(f"\nwritten {args.out}")
     return 0
 
