@@ -134,7 +134,7 @@ class ConvertPageVisionTest(unittest.TestCase):
         self.assertFalse(res["needs_review"], res["review_reasons"])
 
     def test_prompt_has_structure_rules(self):
-        p = convert.VISION_PROMPT_V2
+        p = convert.VISION_PROMPT
         self.assertIn("Never move child boxes", p)
         self.assertIn("Keep each label on one line", p)
         self.assertIn("never output a flow with no edges", p)
@@ -190,8 +190,52 @@ class ConvertPageVisionTest(unittest.TestCase):
         self.assertEqual(lines[normalize_label("Short-Term")], ["Short-", "Term"])
 
     def test_no_nested_bullet_instruction(self):
-        self.assertNotIn("nested bullet", convert.VISION_PROMPT_V2)
-        self.assertFalse(hasattr(convert, "VISION_PROMPT"))
+        self.assertNotIn("nested bullet", convert.VISION_PROMPT)
+        self.assertIs(convert.VISION_PROMPT_V2, convert.VISION_PROMPT)  # old name kept as an alias
+
+
+class TestPromptR1DiagramsV2(unittest.TestCase):
+    """R1.08: the six rules from the R1.06 review are in the prompt."""
+    R1_DIAGRAMS_V1_LEN = 4607  # len(VISION_PROMPT) at r1-diagrams-v1
+
+    def test_version(self):
+        self.assertEqual(PROMPT_VERSION, "r1-diagrams-v2")
+
+    def test_rules_present(self):
+        p = convert.VISION_PROMPT
+        for rule in (
+            "Copy apostrophes and quotes exactly as printed: ’ is not ', “ is not \".",
+            "Never create Markdown links. Write navigation text such as Main Index as plain text.",
+            "Chevrons, arrow shapes and boxes placed in a row are a sequence: add an edge from each stage to the next",
+            "If lines from two or more boxes join into one box (they converge), the diagram is a flow, not an issue_tree",
+            "Never repeat a box under two parents.",
+            "Letters or numbers printed in circles or badges (e.g. V, R, I, O; step numbers 1, 2, 3) are printed text",
+            '(e.g. "V Valuable"). Never put printed text only in an id; ids are short letters (a, b, c).',
+            "A diagram block is never inside a table cell. If a page has a table and a diagram, close the table first",
+            "The Diagram summary only restates what is printed. Do not add outcomes, judgements or branches",
+        ):
+            self.assertIn(rule, p)
+
+    def test_prompt_growth_small(self):
+        self.assertLess(len(convert.VISION_PROMPT) - self.R1_DIAGRAMS_V1_LEN, 1500)
+
+    def test_built_prompt_has_page_and_rules(self):
+        p = convert.build_vision_prompt(52, "V R I O Valuable")
+        self.assertIn('"source_page" to 52', p)
+        self.assertIn("V Valuable", p)
+        self.assertNotIn("{page_no}", p)
+
+    def test_new_fix_hints(self):
+        fid = {"diagram_issues": [
+            {"block": 0, "code": "flow_disconnected", "severity": "warn", "detail": "7 separate pieces"},
+            {"block": 0, "code": "tree_duplicate_label", "severity": "warn", "detail": "Crack the interview"},
+            {"block": 1, "code": "block_in_table", "severity": "error", "detail": ""},
+            {"block": 1, "code": "label_altered", "severity": "error", "detail": "4P's and 7P's"}]}
+        hints = convert.diagram_fix_hints(fid, False, 14)
+        self.assertTrue(any("the flow has separate pieces" in h for h in hints))
+        self.assertTrue(any("'Crack the interview' is reached from more than one box" in h for h in hints))
+        self.assertTrue(any("never put a diagram block inside a table cell" in h for h in hints))
+        self.assertTrue(any("character for character" in h for h in hints))
 
 
 if __name__ == "__main__":

@@ -5,6 +5,38 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-19 — R1.08: vision prompt r1-diagrams-v2 smoke test — BLOCKED (2 of 5 fail)
+**Phase:** R1 · **Type:** ingestion
+
+**What changed:** The vision prompt is now `r1-diagrams-v2` (`config.PROMPT_VERSION`). It adds 6 rules from the R1.06
+review: copy quotes exactly, no Markdown links, chevrons in a row get stage-to-stage edges, converging lines make a flow
+(never repeat a box under two parents), circled letters go in the label ("V Valuable"), no blocks inside tables, and
+summaries only restate what is printed. The prompt grew by 1,130 characters. The `diagram-transcription` skill has the same rules.
+Smoke test on the 5 failure pages (no DB writes). Each result was checked against the page image.
+**Why:** Fix the failure patterns at the source before plan 09 spends the main budget.
+**Files:** `backend/ingestion/convert.py`, `backend/ingestion/config.py`, `backend/ingestion/tests/test_convert_v2.py`,
+`.claude/skills/diagram-transcription/SKILL.md` (local: `backend/ingestion/out/smoke_r1_v2.json`, `out/smoke_r1_v2.log`)
+**Proof:** `Ran 193 tests … OK`. Smoke (`smoke_r1.py --pages 11,13,19,52,77 --cap 10`):
+
+| page | expectation | result | evidence |
+|---|---|---|---|
+| 11 | "Crack the interview" fed by both columns | **fail** | the box was moved OUT of the block (plain text under it); the tree has no node or edges for it. Checker gave needs_review=false: a dropped box is invisible to the label/structure checks |
+| 13 | 3C's block, `Other C’s` (U+2019), Company questions not under Government | pass | issue_tree 3C’s → Government, Company(3 Qs), Industry, Customer(4 Qs), Competition(3 Qs) matches the image; `Other C’s:` curly in markdown. Flagged `diagram_structure` by a convergence false positive ("Government" printed last in the text layer) |
+| 19 | flow, ≥ 6 stage edges, no flow_disconnected | pass | 6 chevron edges R&D → … → Customer Service + 26 stage→item edges, 0 issues |
+| 52 | V/R/I/O present, no "No"/"disadvantage" inference | pass (caveat) | letters are separate nodes (V→R→I→O→Sustained, "Yes"), not "V Valuable"; outcomes are linked from both letter and word (redundant edges); summary literal |
+| 77 | no diagram_in_table, number_coverage ≥ v1 (1.0) | **fail** | no in-table block now, but number_coverage 0.73 (< 1.0) and the bar chart has 6 values not printed on the page (13.5, 17.5, 22.5, …: estimated bar heights) |
+
+**Cost:** 8 vision calls (3 pages needed the retry; cap 10) ≈ $0.009. 0 embeddings. R1 gap budget used: 8 / 150.
+**Undo:** Revert the plan 08 commit (`PROMPT_VERSION` back to r1-diagrams-v1). Nothing was written to the DB.
+**Open issues:** Plan 09 NOT started (gate: ≥ 2 of 5 fail). Needs the orchestrator's go-ahead for a second prompt
+iteration (≤ 10 calls). Suggested: (a) a rule plus a short example that every box in a diagram, including the one the
+lines converge into, is a node in the block (p11 as the pattern); (b) a cheap check for a short line printed between
+diagram labels in the text layer that is in no block label (it would have caught p11); (c) stronger "never estimate
+chart values from bar heights" wording (p77; `number_not_on_page` did catch it). On p77, plan 09's per-page v1 fallback would
+apply anyway.
+
+---
+
 ## 2026-10-19 — R1.07: stricter diagram checks + free quote/link repairs (offline)
 **Phase:** R1 · **Type:** fix
 

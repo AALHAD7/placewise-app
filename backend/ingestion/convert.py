@@ -20,10 +20,12 @@ from page_classify import classify_page, render_page_png
 from fidelity import check_page
 from gemini_client import BudgetExceeded, VisionCallError, transcribe_page
 
-# Vision prompt v2 (PROMPT_VERSION in config.py). Built from the
+# Vision prompt (PROMPT_VERSION in config.py; r1-diagrams-v2 adds the R1.08
+# rules: exact quotes, no links, chevron edges, convergence -> flow, circled
+# letters in labels, no blocks in tables, literal summaries). Built from the
 # diagram-transcription skill. {page_no} is substituted with str.replace, not
 # str.format, because the JSON examples contain braces.
-VISION_PROMPT_V2 = """Transcribe EVERYTHING on this page of a business-school placement casebook, exactly.
+VISION_PROMPT = """Transcribe EVERYTHING on this page of a business-school placement casebook, exactly.
 This is PDF page {page_no}; set "source_page" to {page_no} in every diagram block.
 
 TEXT
@@ -32,6 +34,8 @@ TEXT
   Diagram blocks never replace this text: anything printed outside a diagram must still appear as normal Markdown.
 - Tables become Markdown tables. Only if a table has merged cells, use a "table" diagram block instead.
 - Copy every word, number, unit and symbol exactly as printed. Do not summarise, interpret, correct, complete or add anything.
+- Copy apostrophes and quotes exactly as printed: ’ is not ', “ is not ".
+- Never create Markdown links. Write navigation text such as Main Index as plain text.
 - If any text is unreadable, write [UNREADABLE] in its place.
 
 DIAGRAMS
@@ -40,15 +44,18 @@ cycle, decision tree, bar/line/pie chart) output exactly one fenced block, opene
 and closed with ```, containing ONE valid JSON object (double quotes, no comments, no trailing commas).
 On the line right after the closing fence write:
 Diagram summary: <1-3 plain sentences saying what the diagram shows>
+The Diagram summary only restates what is printed. Do not add outcomes, judgements or branches (for example 'No' paths) that the page does not show.
 Do NOT also repeat the diagram as bullet points or a list. Text on the page that is not part of a diagram stays normal Markdown.
 
 Every block has: "type", "title" (string or null), "source_page" ({page_no}), "notes" (list of footnotes/captions exactly as printed, [] if none).
 Types and their extra fields:
 - issue_tree: "root": {"label": "...", "children": [ {"label": "...", "children": [...]} ]}  (hierarchies, MECE breakdowns, mind maps; every node has label and children, leaves have "children": []).
   Also use issue_tree when boxes or lists are grouped under headings with no arrows between them (heading = parent, items = children).
+  If lines from two or more boxes join into one box (they converge), the diagram is a flow, not an issue_tree: one node per box, an edge from each box that feeds it. Never repeat a box under two parents.
 - matrix: "xAxis", "yAxis" (string or null), "cols": [...], "rows": [...], "cells": [[...], ...]  (one inner list per row, one entry per column)
 - funnel: "stages": [...]  (ordered, widest first)
 - flow: "nodes": [{"id": "a", "label": "..."}], "edges": [{"from": "a", "to": "b", "label": null}]  (processes, value chains, cycles; decision trees with Yes/No branches are a flow with "Yes"/"No" edge labels). A flow must have an edge for every arrow or connector; never output a flow with no edges.
+  Chevrons, arrow shapes and boxes placed in a row are a sequence: add an edge from each stage to the next, in reading order, as well as any edges to items under a stage.
 - chart: "chart_kind": "bar" | "line" | "pie", "xLabel", "yLabel", "series": [{"name": "...", "points": [["x", 12.5], ...]}]  (only values printed on the page; if no values are printed use "points": [])
 - table: "header": [...], "rows": [[...], ...]  (only for tables with merged cells)
 - other: "description": "...", "labels": [...]  (only when the diagram fits none of the types above)
@@ -71,11 +78,14 @@ RULES FOR BLOCKS
 - Keep each label on one line: replace line breaks inside a label with a space ("Short-Term Competitive Disadvantage", not "Short-Term\\nCompetitive\\nDisadvantage").
 - Unreadable text inside a block becomes "[UNREADABLE]".
 - A page with two diagrams gets two blocks.
+- Letters or numbers printed in circles or badges (e.g. V, R, I, O; step numbers 1, 2, 3) are printed text: put them in the node label, before the word they mark, separated by a space, in the order printed (e.g. "V Valuable"). Never put printed text only in an id; ids are short letters (a, b, c).
+- A diagram block is never inside a table cell. If a page has a table and a diagram, close the table first, then write the block on its own lines.
 - Logos, page headers/footers, navigation buttons (e.g. "Main Index") and decorative icons are not diagrams;
   transcribe their text as normal Markdown.
 - Read axes, rows, columns and cell positions from THIS page, not from the examples above.
 
 Output Markdown only."""
+VISION_PROMPT_V2 = VISION_PROMPT  # old name, kept for existing imports
 
 
 def _text_layer_hint(text_layer: str) -> str:
@@ -86,7 +96,7 @@ def _text_layer_hint(text_layer: str) -> str:
 
 
 def build_vision_prompt(page_no: int, text_layer: str, fix_hints=None) -> str:
-    prompt = VISION_PROMPT_V2.replace("{page_no}", str(page_no)) + _text_layer_hint(text_layer)
+    prompt = VISION_PROMPT.replace("{page_no}", str(page_no)) + _text_layer_hint(text_layer)
     if fix_hints:
         prompt += ("\n\nA previous transcription of this page had these problems. Fix these problems "
                    "(never invent text to fix them; if something is truly not on the page, leave it out "
@@ -213,7 +223,7 @@ def _vision_attempt(png, prompt, page_no, text_layer, is_scanned, call_log, reas
 
 def convert_page_vision(png: bytes, page_no: int, text_layer: str, is_scanned: bool,
                         call_log: list, reason: str) -> dict:
-    """Vision-convert one page with VISION_PROMPT_V2.
+    """Vision-convert one page with VISION_PROMPT.
 
     Hard cap: VISION_MAX_CALLS_PER_PAGE HTTP requests for the page, counted at
     the HTTP level (a model-cascade hop counts). One retry (with targeted fix
