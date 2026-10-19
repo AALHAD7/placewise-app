@@ -5,6 +5,47 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-19 — R1 fidelity review: 3 diagram pages (R1.06) — issue tree BLOCKED
+**Phase:** R1 · **Type:** eval
+
+**What changed:** The fidelity-reviewer compared 7 v2 diagram pages from the FMS Consulting
+CaseBook 2023-24 (doc `e6cdd69b…`, ingestion_version 2) against their rendered page images,
+checking every label, edge, cell and axis. Matrix and flow passed. All 3 issue-tree candidates
+failed, so issue tree is **blocked** and R1's done-criterion is not yet met. The 5 failing pages are
+now `needs_review = true`. `review_status` is untouched (still `pending`), and no pipeline code was edited.
+**Why:** Part 2 of R1's done-criterion: prove the rebuilt diagrams are faithful before Aalhad signs off.
+**Files:** `log.md` (local, gitignored: `backend/ingestion/out/r1_review.json`, `backend/ingestion/out/r1_spotcheck.html`)
+**Proof:**
+
+| PDF page | type | items checked | verdict | evidence |
+|---|---|---|---|---|
+| 20 | matrix | 13 | **pass** | title, axes Market/Product, cols+rows Existing/New in order, all 4 cells in the right position |
+| 10 | flow | 17 | **pass** | 7 role labels exact, 5 hierarchy edges + Post MBA → Consultant/Associate (direction correct) |
+| 52 | flow | 24 | fail (minor) | `missing`: circle letters V/R/I/O not in the block. `altered`: summary calls Competitive Parity a "disadvantage" and assumes "No" branches the page doesn't print |
+| 19 | flow | 66 | fail | `structure_lost`: 0 of 6 chevron sequence edges (R&D → … → Customer Service) stored; all 33 labels and 26 stage→item edges correct |
+| 14 | issue_tree | 27 | fail (cosmetic) | `altered`: page "4P’s and 7P’s", block title/root "4P's and 7P's" (straight apostrophe); all 20 nodes and 19 links correct |
+| 11 | issue_tree | 25 | fail | `structure_lost`: "Crack the interview" is where both columns converge on the page, but it is stored as a 3rd child of "Prepare for the interview process" |
+| 13 | issue_tree | 24 | fail | `structure_lost`: main 3C's diagram has no block (only "Other C's" does); markdown puts the Company questions under "Government". `altered`: C’s → C's |
+
+Pass rate 2/7. Flagged `needs_review`: p11, p13, p14, p19, p52 (reasons `fidelity_review:<issue_type>`).
+Charts (p78, p79, p86) were not reviewed, because a flow passed first.
+
+**Pipeline patterns (for an ingestion-engineer gap-closure plan):**
+1. `diagram_label_coverage` (`textnorm.normalize_label`) strips all punctuation and checks only that
+   labels exist. It can't detect apostrophe changes, missing nodes, or wrong parent/child or edge
+   structure. All 5 failing pages had label coverage 1.0 and `needs_review = false`.
+2. Process shapes lose their connecting edges: converging trees (p11) and chevron chains (p19).
+3. Curly apostrophes become straight inside JSON block titles and labels (p13, p14), while the markdown keeps them.
+4. Markdown invents link targets for the slide's "Main Index" text: `javascript:history.back()` (p10),
+   `(main_index)` (p20), `(#)` (p52). Strip these before any markdown is rendered to students.
+
+**Spot-check sheet:** `backend/ingestion/out/r1_spotcheck.html` (admin-only, local, no storage URLs).
+It shows p20 and p10 for sign-off, and the 5 failures for context.
+**Aalhad's spot-check:** not done yet. Waiting for an issue tree that passes.
+**Cost:** 0 Gemini calls.
+**Undo:** `update ingest_pages set needs_review=false, review_reasons=array_remove(...)` for the 5 pages, removing the `fidelity_review:*` reasons.
+**Open issues:** issue_tree blocked (p11, p13, p14). Needs a prompt/validator fix and then a re-review. The flow sequence-edge loss (p19) and the summary over-claim (p52) should go in the same fix.
+
 ## 2026-10-19 — R1.05: FMS re-pilot stored as ingestion_version 2 (inactive)
 **Phase:** R1 · **Type:** ingestion
 
