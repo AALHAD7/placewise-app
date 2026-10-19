@@ -43,7 +43,7 @@ class TestMissingBox(unittest.TestCase):
         self.assertTrue(res["needs_review"])
 
     def test_reviewed_pages_not_flagged(self):
-        for name in ("p10", "p13", "p13_smoke_v2", "p14", "p19", "p20", "p52"):
+        for name in ("p10", "p13_smoke_v2", "p14", "p19", "p20", "p52"):  # failing p13: page-wide test
             self.assertEqual(issues(check(name), "missing_box"), [], name)
 
     def test_synthetic_box_between_labels(self):
@@ -71,6 +71,58 @@ class TestMissingBox(unittest.TestCase):
         hints = diagram_fix_hints({"diagram_issues": [
             {"block": 0, "code": "missing_box", "severity": "warn", "detail": "Crack the interview"}]}, False, 11)
         self.assertTrue(any('"Crack the interview" is printed in the diagram but is not a node' in h for h in hints))
+
+
+class TestMissingBoxPageWide(unittest.TestCase):
+    """Step D: boxes written as plain lines on a page whose block is small or whose
+    block labels sit on one text-layer line (FMS p13)."""
+
+    def test_failing_p13_outputs_flagged(self):
+        for name in ("p13", "p13_smoke_v3"):
+            res = check(name)
+            self.assertEqual(set(issues(res, "missing_box")),
+                             {"Company", "Customer Competition", "Industry", "Government"}, name)
+            self.assertIn("diagram_missing_box", res["review_reasons"], name)
+
+    def test_passing_p13_and_reviewed_pages_clean(self):
+        for name in ("p13_smoke_v2", "p10", "p14", "p19", "p20", "p11"):
+            self.assertEqual(issues(check(name), "missing_box"), [], name)
+
+    def test_needs_three_lines_and_ignores_section_tabs(self):
+        tree = {"type": "issue_tree", "title": None, "source_page": 3, "notes": [], "root": {
+            "label": "Other", "children": [{"label": "Costs", "children": []}, {"label": "Culture", "children": []}]}}
+        tl = "Alpha\nBeta\nOther Costs Culture\nApproach\nRecommendations\n"
+        md = "Title\n\nx\n\ny\n\nAlpha\n\nBeta\n\nApproach\n\nRecommendations\n\n" + block_md(tree)
+        self.assertEqual(missing_box_lines([tree], tl, md), [])
+        tl3 = "Alpha\nBeta\nGamma\nOther Costs Culture\n"
+        md3 = "Title\n\nx\n\ny\n\nAlpha\n\nBeta\n\nGamma\n\n" + block_md(tree)
+        self.assertEqual(missing_box_lines([tree], tl3, md3), ["Alpha", "Beta", "Gamma"])
+
+
+class TestRepairTreeLeaves(unittest.TestCase):
+    def test_leaves_get_empty_children(self):
+        from postprocess import repair_tree_leaves
+        tree = {"type": "issue_tree", "title": None, "source_page": 3, "notes": [], "root": {
+            "label": "A", "children": [{"label": "B"}, {"label": "C", "children": None}]}}
+        md, n = repair_tree_leaves("x\n" + block_md(tree))
+        self.assertEqual(n, 2)
+        self.assertIn('{"label": "B", "children": []}', md)
+        self.assertIn("Diagram summary: x.", md)
+
+    def test_untouched_when_valid_or_not_tree(self):
+        from postprocess import repair_tree_leaves
+        md = block_md(TREE) + block_md({"type": "flow", "nodes": [{"id": "a", "label": "B"}], "edges": []})
+        self.assertEqual(repair_tree_leaves(md), (md, 0))
+
+    def test_p52_smoke_v3_valid_after_postprocess(self):
+        from postprocess import postprocess_markdown
+        d = load("p52_smoke_v3")
+        raw = check_page(d["text_layer"], d["markdown"], False, 52, label_lines=d["label_lines"])
+        self.assertIn("diagram_invalid", raw["review_reasons"])
+        md, ll, _, _ = postprocess_markdown(d["markdown"], d["text_layer"])
+        res = check_page(d["text_layer"], md, False, 52, label_lines={**d["label_lines"], **ll})
+        self.assertEqual([x["type"] for x in res["diagrams"]], ["flow", "issue_tree"])
+        self.assertFalse(res["needs_review"], res["review_reasons"])
 
 
 class TestConvergenceTuned(unittest.TestCase):

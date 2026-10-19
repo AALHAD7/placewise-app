@@ -5,6 +5,7 @@ no DB, so offline tools can import it).
 - collapse_multiline_labels_with_lines: one-line labels (R1.03)
 - restore_quotes: curly quotes restored from the text layer (R1.07)
 - strip_invented_links: invented Markdown link targets removed (R1.07)
+- repair_tree_leaves: "children": [] added to tree leaves that lack it (R1.09)
 """
 import json
 import re
@@ -71,12 +72,49 @@ def collapse_multiline_labels(markdown: str) -> str:
     return collapse_multiline_labels_with_lines(markdown)[0]
 
 
+def _fill_leaf_children(node, depth=0):
+    """Adds "children": [] to issue_tree nodes that have a label but no
+    children key (or children null). Structure only: no label is added or
+    changed. Returns the number of nodes repaired."""
+    if not isinstance(node, dict) or depth > 12:
+        return 0
+    n = 0
+    if "label" in node and node.get("children") is None:
+        node["children"] = []
+        n += 1
+    for c in node.get("children") or []:
+        n += _fill_leaf_children(c, depth + 1)
+    return n
+
+
+def repair_tree_leaves(markdown: str):
+    """R1.09: free repair before validation. Tree leaves written without
+    "children" (FMS p52 AMO block) made the whole block invalid. Only parsed
+    issue_tree placewise-diagram blocks that change are re-dumped.
+    Returns (markdown, nodes_repaired)."""
+    md = markdown or ""
+    total = 0
+    for b in reversed(extract_blocks(md)):
+        obj = b["obj"]
+        if b["fence"] != FENCE_INFO or not isinstance(obj, dict) or obj.get("type") != "issue_tree" \
+                or b.get("in_table"):
+            continue
+        n = _fill_leaf_children(obj.get("root"))
+        if n:
+            total += n
+            block = f"```{FENCE_INFO}\n" + json.dumps(obj, ensure_ascii=False) + "\n```"
+            md = md[:b["start"]] + block + md[b["end"]:]
+    return md, total
+
+
 def postprocess_markdown(markdown: str, text_layer: str):
-    """The free deterministic repairs, in order: collapse multi-line labels,
+    """The free deterministic repairs, in order: add missing "children": [] to
+    tree leaves (R1.09), collapse multi-line labels,
     restore curly quotes from the text layer (R1.07), strip invented links
     (R1.07). Returns (markdown, label_lines, quotes_restored, links_stripped).
     Applied to every attempt before check_page."""
-    md, label_lines = collapse_multiline_labels_with_lines(markdown)
+    md, _n_leaves = repair_tree_leaves(markdown)
+    md, label_lines = collapse_multiline_labels_with_lines(md)
     md, n_quotes = restore_quotes(md, text_layer)
     md, n_links = strip_invented_links(md, text_layer)
     return md, label_lines, n_quotes, n_links

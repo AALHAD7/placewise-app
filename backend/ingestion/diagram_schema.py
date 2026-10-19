@@ -864,6 +864,35 @@ def _markdown_headings(markdown):
     return out
 
 
+MISSING_BOX_PAGE_MIN = 3
+# Case-slide column tabs (FMS case pages print "Case Facts & Notes | Approach |
+# Recommendations"): layout headers, not diagram boxes. Not counted page-wide.
+SECTION_TAB_WORDS = frozenset({"case", "facts", "notes", "approach", "recommendations", "recommendation",
+                               "analysis", "assumptions", "methodology"})
+
+
+def _standalone_short_lines(markdown):
+    """Normalised short (<= MISSING_BOX_MAX_TOKENS words) Markdown lines outside
+    diagram blocks and after the title zone, list markers and emphasis stripped:
+    text the model wrote on its own line (a box label, a list item)."""
+    from textnorm import _outside_blocks
+    out, seen = [], 0
+    for seg, is_block in _outside_blocks(markdown or ""):
+        if is_block:
+            seen = max(seen, MISSING_BOX_TITLE_LINES)
+            continue
+        for line in seg.split("\n"):
+            if line.strip().startswith(SUMMARY_PREFIX) or line.strip().startswith("|"):
+                continue
+            ln = normalize_label(line)
+            if not ln:
+                continue
+            seen += 1
+            if seen > MISSING_BOX_TITLE_LINES and len(ln.split(" ")) <= MISSING_BOX_MAX_TOKENS:
+                out.append(ln)
+    return out
+
+
 def missing_box_lines(objs, text_layer, markdown=""):
     """Short text-layer lines (<= MISSING_BOX_MAX_TOKENS words, with a content
     word) that sit between the first and last text-layer line holding a label of
@@ -891,10 +920,34 @@ def missing_box_lines(objs, text_layer, markdown=""):
                if n and _has_content_token(n.split(" ")) and _segmentable(n.split(" "), b_blob)]
         if len(idx) >= 2:
             spans.append((idx[0], idx[-1]))
-    if not spans:
-        return []
     heading_blob = " | ".join(f" {h} " for h in _markdown_headings(markdown))
     out = []
+    # Page-wide pass (R1.09 step D, FMS p13): boxes written as plain Markdown
+    # lines anywhere on a page that has a block, even when the block's labels
+    # give no span (all on one text-layer line) or the block is a small side
+    # diagram. A text-layer line counts if it is short, not body text, in no
+    # block label, and made of standalone short Markdown lines (outside blocks,
+    # after the title zone). Flagged only when >= MISSING_BOX_PAGE_MIN such lines.
+    standalone = _standalone_short_lines(markdown)
+    if standalone:
+        sblob = " | ".join(f" {l} " for l in standalone)
+        page_wide = []
+        for i, (raw, norm) in enumerate(zip(lines, norms)):
+            if covered[i] or not norm:
+                continue
+            toks = norm.split(" ")
+            if len(toks) > MISSING_BOX_MAX_TOKENS or not _has_content_token(toks):
+                continue
+            if _body_text_line(raw, norm) or (heading_blob and _segmentable(toks, heading_blob)):
+                continue
+            if all(t in SECTION_TAB_WORDS for t in toks):
+                continue
+            if _segmentable(toks, sblob) and raw.strip() not in page_wide:
+                page_wide.append(raw.strip())
+        if len(page_wide) >= MISSING_BOX_PAGE_MIN:
+            out += page_wide
+    if not spans:
+        return out
     for i, (raw, norm) in enumerate(zip(lines, norms)):
         if covered[i] or not norm or not any(a < i < b for a, b in spans):
             continue

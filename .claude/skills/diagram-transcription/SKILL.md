@@ -74,7 +74,8 @@ Always flag it `needs_review`.
   (`tree_duplicate_label`, `tree_convergence_suspect`).
 - Every box in a diagram is a node in its block, including the box the lines converge into (often the
   last box, e.g. a final goal). Never write a diagram box as plain text outside the block; if a box has two
-  parents, use a flow (`missing_box`: a short printed line among the labels that no block holds).
+  parents, use a flow (`missing_box`: a short printed line among the labels that no block holds, or 3+
+  short standalone lines anywhere on a page with a block). Tree leaves missing `"children"` get `[]` for free.
 - Chart values: only numbers printed on the page. Never estimate from bar heights, line positions, slice
   sizes or gridlines; a bar/point/slice with no printed number gets `null` (`number_not_on_page`).
 - Letters or numbers printed in circles or badges (V, R, I, O; step 1, 2, 3) are printed text: put them
