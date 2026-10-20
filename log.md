@@ -5,6 +5,41 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-21 — R2.06: v4 stored (inactive), built from review-hardened post-processing
+**Phase:** R2 · **Type:** ingestion | fix
+
+**What changed:**
+1. **Code-review hardening (before v4 was built).** The free repair rules are narrower, so they no longer change correct text in other casebooks:
+   - The stray ")" remover does nothing on a page with no text layer. It removes ")" or ";)" only after a word ending in "Index", or on a nav-bar line, and never after a list marker such as a), ii) or A).
+   - Typo repair runs only on nav-bar lines. It reads the text layer with ligatures unfolded (NFKC) and skips plural or inflected forms ("Customers" vs "customer").
+   - An invented image link's alt text (e.g. "IndiGo Logo") is dropped unless the page prints it.
+   - A printed "#" is escaped only when it starts a text-layer line. A leading number like "(40%)" is allowed, and the match continues over wrapped lines.
+   - `r2_reconcile.py` now merges before-values by page id and never overwrites them. It aborts unless the target doc is v3 and every target page exists.
+   - `r2_fixcheck.py` now checks the printed-"#" fix by its result (escaped lines present, no "# #" left), so it also passes on a version that already stores the fix.
+2. **v4 built:** v3's 248 pages + these fixes + every flag, written insert-only as `ingestion_version = 4`. Doc `d1510e35-9ecc-419b-a497-85a37e062792`, 248 pages, 384 chunks, all `is_active = false`. No vision calls.
+
+**Why:** The review found that the R2.04/R2.05 rules could corrupt correct text in other casebooks, e.g. by stripping ")" from "a) Increase price" or changing "Customers" to "Customer". v4 is the R2 candidate for the sample reviews in plans 07 and 08.
+**Files:** `backend/ingestion/textnorm.py`, `postprocess.py`, `r2_reconcile.py`, `r2_fixcheck.py`, `run_v4.py` (new), `tests/test_strip_links.py`, `tests/test_r2_fixes.py`, `tests/test_r2_reconcile.py` (new), `tests/test_v4_carry.py` (new)
+**Proof:**
+- Tests: 295 pass (270 before the hardening).
+- Hardening on v3 (`r2_fixcheck.py`, PASS): 40 pages change, down from 41. p83 dropped out because "# Non-Verkan Communication" is a heading, not a nav bar, so the Verkan→Verbal fix no longer runs and the typo stays in v4. On p56, p69 and p71 the invented image alt text is now dropped. **p56 loses the airline names ("IndiGo", "Air India", "Vistara", "AirAsia") next to ~6% / 9.4% / 9% / ~8%.** Those names come only from logo images (not in the text layer), and the page is already needs_review (`fidelity_review:hallucinated`, `fallback_v1`). Every other page's output is byte-identical to before. Before-snapshot: `out/r2_fixcheck_prereview.json`.
+- `run_v4.py --dry-run`: drift guard 1 page (p230, the intended unit-number check), limit 10. Proven in-table false positives: none (all 6 are real in-cell blocks), so no `diagram_in_table` was dropped. Visual triage k = 0 (`r2_sweep_b.json`: "0/10 missing"; R2.02 0/9), so no `visual_no_block` flag was added.
+- needs_review v3 145 → v4 146:
+  - p129 (`fallback_v1`, non-visual) is now flagged, because needs_review = any reason.
+  - p230 gains `number_coverage`.
+  - 0 pages lost any v3 reason. All 12 `structure_check:dispute` flags and all `fidelity_review:*` flags (24 structure_lost, 15 altered, 12 hallucinated, 6 missing) are carried.
+  - `review_status` is pending on all 248 pages. Every page's `reused_from_page_id` points to its v3 page, and every image path is v1's (`pages/67371722…`).
+- Chunks 390 → 384: the 6 printed-"#" lines (p107, p112 ×2, p113, p116 ×2) no longer start their own sections. No text is lost (8085 → 8089 non-space characters on those pages; the extra 4 are the escape backslashes).
+- `r2_fixcheck.py --version 4`: PASS, exit 0. A second post-process pass changes 0 of 248 pages.
+- `check_schema.py`: PASS. Row counts (queried after the write): v1 248/363, v2 248/395, v3 248/390 (all unchanged, 0 active); v4 248/384, 0 active. `document_chunks` = 22457. Active `ingest_chunks` total = 0.
+- Report: `out/r1_pilot_report_v4.json` (`--compare 3`). Its `integrity.ok = False` is only its hard-coded v1 chunk count (363) compared against v3's 390.
+**Cost:** 43 embedding calls ≈ $0.004; 0 vision calls.
+**Undo:** Nothing reads v4. To ignore it, filter it out by `ingestion_version = 4` (doc `d1510e35…`). To undo the code, revert the edits to the four files above.
+**Open issues:**
+- p56 airline names need a human decision in the review queue.
+- The p83 typo "Verkan" is back in v4.
+- `pilot_report.py` integrity constants assume `--compare 1`.
+
 ## 2026-10-20 — R2 structure sweep (R2.01–R2.05): every v3 tree/flow page is now reviewed-pass or flagged; Gemini structure check not adopted
 **Phase:** R2 · **Type:** eval
 

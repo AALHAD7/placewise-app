@@ -73,7 +73,10 @@ class TestStripLinks(unittest.TestCase):
             self.assertEqual(n, 1, md)
             self.assertNotIn("placeholder", out)
             self.assertNotIn("](", out)
-        self.assertEqual(strip_invented_links("![Pie](chart) | x", "x")[0], "Pie | x")
+        # review hardening: invented alt text is dropped unless the page prints it
+        self.assertEqual(strip_invented_links("![Pie](chart) | x", "x")[0], " | x")
+        self.assertEqual(strip_invented_links("![Pie](chart) | x", "Pie x")[0], "Pie | x")
+        self.assertEqual(strip_invented_links("![IndiGo Logo](#[UNREADABLE])", "IndiGo 55%"), ("", 1))
 
     def test_printed_url_with_parens_stays(self):
         md = "see [wiki](https://en.wikipedia.org/wiki/Mercury_(planet)) and [s](https://x.com)"
@@ -109,6 +112,29 @@ class TestStrayParens(unittest.TestCase):
         self.assertEqual(strip_stray_parens(md, "Case Index Main Index Money Heist")[1], 2)
         long_bare = "FMS | Case Index) | Main Index | Money Heist | Unconventional | Hard | McKinsey & Co."
         self.assertEqual(strip_stray_parens(long_bare, ""), (long_bare, 0))
+
+    # ---- review hardening ----------------------------------------------------
+    def test_list_markers_never_stripped(self):
+        from textnorm import strip_stray_parens
+        md = "a) Increase price\nb) Cut cost"
+        for tl in ("", "   \n", "a. Increase price"):
+            self.assertEqual(strip_stray_parens(md, tl), (md, 0), repr(tl))
+        for md in ("Option A) Enter", "i) Market size ii) Growth"):
+            for tl in ("", "Option A Enter Market size Growth"):
+                self.assertEqual(strip_stray_parens(md, tl), (md, 0), (md, tl))
+
+    def test_only_after_index_or_on_nav_bar(self):
+        from textnorm import strip_stray_parens
+        # a short content line: ")" after an ordinary word stays
+        self.assertEqual(strip_stray_parens("Revenue)", "Revenue Cost"), ("Revenue)", 0))
+        self.assertEqual(strip_stray_parens("Market Size;)", "Market Size"), ("Market Size;)", 0))
+        # "...Index)" anywhere, and any word on a nav-bar line
+        self.assertEqual(strip_stray_parens("Sector Index)", "Sector Index"), ("Sector Index", 1))
+        self.assertEqual(strip_stray_parens("Cases;) | Main Index", "Cases Main Index"), ("Cases | Main Index", 1))
+
+    def test_empty_text_layer_unchanged(self):
+        from textnorm import strip_stray_parens
+        self.assertEqual(strip_stray_parens("Main Index)", ""), ("Main Index)", 0))
 
     def test_history_back_semicolon_link_r205(self):
         out, n = strip_invented_links("FMS | [Case Index](javascript:history.back();) | [Main Index](javascript:history.back();)",

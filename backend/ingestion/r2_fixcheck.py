@@ -99,6 +99,17 @@ def hash_heading_count(md: str) -> int:
     return n
 
 
+def escaped_hash_count(md: str) -> int:
+    """Lines outside blocks that start with an escaped printed "\\# " (the fixed state).
+    Lets the check pass on a version that already stores the fix (v4), where a re-run
+    escapes nothing new."""
+    n = 0
+    for seg, is_block in _outside_blocks(md or ""):
+        if not is_block:
+            n += sum(1 for l in seg.split("\n") if l.lstrip().startswith("\\# "))
+    return n
+
+
 def typo_count(md: str) -> int:
     return (md or "").count("Guesestimate")
 
@@ -227,8 +238,10 @@ def main(argv=None) -> int:
     for n in HASH_PAGES:
         p = pages[n]
         b = sum(1 for h in hash_escapes if h["page"] == n)
+        esc = escaped_hash_count(p["md2"])
         report("printed_hash", n, hash_heading_count(p["md"]), hash_heading_count(p["md2"]),
-               b > 0 and hash_heading_count(p["md2"]) == 0, f"{b} line(s) escaped")
+               esc > 0 and hash_heading_count(p["md2"]) == 0,
+               f"{b} line(s) escaped this run; {esc} escaped line(s) in the output")
     print(f"  escapes across all pages: {len(hash_escapes)}")
     for h in hash_escapes:
         print(f"  p{h['page']:<4} {h['old'][:70]!r} -> {h['new'][:70]!r}")

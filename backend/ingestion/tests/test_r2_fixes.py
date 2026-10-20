@@ -23,8 +23,10 @@ class TestNavTypos(unittest.TestCase):
         self.assertEqual(log, [("Guesestimate", "Guesstimate")])
 
     def test_case_preserved(self):
-        self.assertEqual(fix_nav_typos("GUESESTIMATE INDEX", "Guesstimate")[0], "GUESSTIMATE INDEX")
-        self.assertEqual(fix_nav_typos("see guesestimate", "Guesstimate")[0], "see guesstimate")
+        self.assertEqual(fix_nav_typos("GUESESTIMATE Index | Main Index", "Guesstimate")[0],
+                         "GUESSTIMATE Index | Main Index")
+        self.assertEqual(fix_nav_typos("see guesestimate Index | Main", "Guesstimate")[0],
+                         "see guesstimate Index | Main")
 
     def test_two_candidates_no_change(self):
         md = "Guesestimate Index"
@@ -42,9 +44,33 @@ class TestNavTypos(unittest.TestCase):
         self.assertEqual(fix_nav_typos(md, "Guesstimate"), (md, 0))
 
     def test_short_words_and_printed_words_kept(self):
-        self.assertEqual(fix_nav_typos("Cmpany Index", "Company Index"), ("Company Index", 1))  # 6 letters
-        self.assertEqual(fix_nav_typos("Revenue Index", "Revenue Revenues Index"), ("Revenue Index", 0))
-        self.assertEqual(fix_nav_typos("Prfit Index", "Profit Index"), ("Prfit Index", 0))  # 5 letters
+        self.assertEqual(fix_nav_typos("Cmpany Index | Main", "Company Index"), ("Company Index | Main", 1))  # 6 letters
+        self.assertEqual(fix_nav_typos("Revenue Index | Main", "Revenue Revenues Index"), ("Revenue Index | Main", 0))
+        self.assertEqual(fix_nav_typos("Prfit Index | Main", "Profit Index"), ("Prfit Index | Main", 0))  # 5 letters
+
+    # ---- review hardening ----------------------------------------------------
+    def test_content_lines_untouched(self):
+        # Not nav bars: never touched, even with a near-miss word in the text layer.
+        tl = "Customer Retailers Margins Pro\ufb01t Analyses"
+        for md in ("## Customers", "| Retailer | Margin |", "# Profit Analysis"):
+            self.assertEqual(fix_nav_typos(md, tl), (md, 0), md)
+
+    def test_only_nav_bar_lines(self):
+        self.assertEqual(fix_nav_typos("Guesestimate notes", "Guesstimate"), ("Guesestimate notes", 0))
+        self.assertEqual(fix_nav_typos("Guesestimate Index | Main", "Guesstimate")[0], "Guesstimate Index | Main")
+
+    def test_inflection_not_a_typo(self):
+        # nav bar, but Customers vs customer / Retailer vs retailers are word forms
+        self.assertEqual(fix_nav_typos("Customers Index | Main", "Customer Index Main"),
+                         ("Customers Index | Main", 0))
+        self.assertEqual(fix_nav_typos("Retailer Index | Main", "Retailers Index Main"),
+                         ("Retailer Index | Main", 0))
+        self.assertEqual(fix_nav_typos("Pricing Index | Main", "Priced Index Main"), ("Pricing Index | Main", 0))
+
+    def test_nfkc_text_layer(self):
+        # "Pro\ufb01ts" (fi ligature) is the word "Profits": already printed, so no change
+        self.assertEqual(fix_nav_typos("Profits Index | Main", "Pro\ufb01ts Pro\ufb01ted Index"),
+                         ("Profits Index | Main", 0))
 
     def test_first_letter_must_match(self):
         # FMS p60: "University of Delhi" must not become "Diversity of Delhi"
@@ -123,7 +149,8 @@ class TestFallbackV1PostPass(unittest.TestCase):
         p = run_patch.v1_page(v1)
         self.assertNotIn("](", p["markdown"])
         self.assertNotIn("placeholder", p["markdown"])
-        self.assertIn("ONGC logo ONGC INR 2.1", p["markdown"])
+        self.assertIn("ONGC INR 2.1", p["markdown"])
+        self.assertNotIn("ONGC logo", p["markdown"])  # invented alt text dropped (review hardening)
         page, method, src = run_patch.choose_page(
             p, dict(p, number_coverage=0.0, word_coverage=0.0), dict(p, number_coverage=0.0, word_coverage=0.0))
         self.assertEqual((method, src), ("fallback_v1", "v1"))
@@ -180,6 +207,14 @@ class TestPrintedHash(unittest.TestCase):
     def test_real_headings_kept(self):
         for md in ("# Revenue of Dream 11", "# Frequency", "# 2M", "## population 400 M", "#people 10"):
             self.assertEqual(escape_printed_hash(md, self.TL + "\nRevenue of Dream 11 Frequency 2M"), (md, 0), md)
+
+    def test_hash_must_start_a_text_layer_line(self):
+        # "#" printed mid-sentence: the heading is a real heading, not printed "#"
+        tl = "Total Tourists in India # Tourist Spots\nTourist Spots"
+        self.assertEqual(escape_printed_hash("# Tourist Spots", tl), ("# Tourist Spots", 0))
+        # wrapped onto the next text-layer line (FMS p107)
+        tl2 = "# Potential Customer base in a \r\nyear = 5.1 million"
+        self.assertEqual(escape_printed_hash("# Potential Customer base in a year = 5.1 million", tl2)[1], 1)
 
     def test_inside_block_untouched(self):
         md = ("```placewise-diagram\n# population 400 M\n```")

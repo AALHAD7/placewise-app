@@ -207,14 +207,29 @@ def strip_invented_links(markdown: str, text_layer: str):
     """A Markdown link or image link outside diagram blocks becomes its plain
     text when the target is javascript:, a #anchor, a bare word with no scheme
     and no dot (e.g. main_index), or any URL that is not printed in the text
-    layer. Real printed URLs stay. Returns (markdown, n_stripped)."""
+    layer. Real printed URLs stay. An invented image link keeps its alt text
+    only when the page prints it (review hardening); otherwise it is dropped.
+    Returns (markdown, n_stripped)."""
     n = 0
     out = []
+
+    tl_norm = None
+
+    def alt_is_printed(alt):
+        nonlocal tl_norm
+        if tl_norm is None:
+            tl_norm = " " + normalize_label(text_layer or "") + " "
+        a = normalize_label(alt)
+        return bool(a) and f" {a} " in tl_norm
 
     def repl(m):
         nonlocal n
         if _link_is_invented(m.group(3), text_layer):
             n += 1
+            # Review fix: an image's alt text is the model's description
+            # ("IndiGo Logo", FMS p56), not page text. Keep it only if printed.
+            if m.group(1) == "!" and not alt_is_printed(m.group(2)):
+                return ""
             return m.group(2)
         return m.group(0)
 
@@ -229,12 +244,19 @@ def strip_invented_links(markdown: str, text_layer: str):
 # "Main Index;)" (both removed, R2.05). Only short lines (nav bars) are touched, only a ")"
 # with no "(" before it on the line, right after a letter, and only when that
 # token (with the ")") is not printed in the text layer.
+# Review hardening: only after a word ending in "Index", or on a nav-bar line
+# ("Index" and a "|"); never after a 1-2 letter list marker (a), ii), A)), and
+# never without a text layer to compare against.
 
 STRAY_PAREN_MAX_WORDS = 8
+STRAY_PAREN_MIN_WORD = 3
+_PAREN_NAV_BAR_RE = re.compile(r"\bIndex\b.*\||\|.*\bIndex\b")
 
 
 def strip_stray_parens(markdown: str, text_layer: str):
     """Returns (markdown, n_removed). Diagram blocks are never touched."""
+    if not (text_layer or "").strip():
+        return markdown or "", 0
     printed = exact_token_set(text_layer)
     n = 0
     out = []
@@ -247,6 +269,7 @@ def strip_stray_parens(markdown: str, text_layer: str):
         # history.back(); leftover and is removed on any line (FMS p213 nav bar
         # runs on with the case title: "FMS | Case Index;) | Main Index;) | Money Heist | ...").
         short = len(re.findall(r"[A-Za-z]+", line)) <= STRAY_PAREN_MAX_WORDS
+        nav_bar = bool(_PAREN_NAV_BAR_RE.search(line))
         res, depth, i = [], 0, 0
         for i, ch in enumerate(line):
             if ch == "(":
@@ -263,7 +286,12 @@ def strip_stray_parens(markdown: str, text_layer: str):
                         while j > 0 and not line[j - 1].isspace():
                             j -= 1
                         tok = line[j:i + 1]
-                        if tok not in printed:
+                        w = k
+                        while w > 0 and line[w - 1].isascii() and line[w - 1].isalpha():
+                            w -= 1
+                        word = line[w:k]
+                        allowed = len(word) >= STRAY_PAREN_MIN_WORD and (word.endswith("Index") or nav_bar)
+                        if allowed and tok not in printed:
                             n += 1
                             if k != i:
                                 res.pop()  # the ";" before the ")"

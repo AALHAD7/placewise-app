@@ -10,7 +10,8 @@ false-dispute rate <= 0.40.
 
 Flags: every disputed v3 page not already needs_review gets needs_review = true and the reason
 "structure_check:dispute". Never unflags, never sets review_status, never touches v1/v2 rows.
-Before-values go to out/r2_reconcile_flags_before.json (written once, never overwritten).
+Before-values go to out/r2_reconcile_flags_before.json, merged by page id (a saved row is
+never overwritten). Aborts unless DOC_ID_V3 is ingestion_version 3 or if a target page is missing.
 
     venv/bin/python r2_reconcile.py               # compute, flag, write out/r2_reconcile.json
     venv/bin/python r2_reconcile.py --dry-run     # compute and print, no DB writes
@@ -105,6 +106,14 @@ def compute(sweep_pages, check, pool=POOL, calib_bad=CALIB_BAD, calib_good=CALIB
     }
 
 
+def merge_before_rows(existing, new_rows):
+    """Review hardening: the before-values file is keyed by page id. Rows already
+    saved are never overwritten (they hold the true pre-flag values); only rows
+    for page ids not yet saved are appended. Returns the merged list."""
+    saved = {r["id"] for r in existing}
+    return list(existing) + [r for r in new_rows if r["id"] not in saved]
+
+
 def plan_flags(disputed, rows):
     """rows: {page_no: row}. Disputed pages not already needs_review -> to flag."""
     return sorted(n for n in disputed if n in rows and not rows[n].get("needs_review"))
@@ -134,6 +143,14 @@ def print_summary(r):
 
 # ---------------------------------------------------------------- main
 
+def assert_v3_doc(sb):
+    """Abort unless DOC_ID_V3 really is ingestion_version 3 (this script only ever writes v3)."""
+    d = (sb.table("ingest_documents").select("id,ingestion_version").eq("id", DOC_ID_V3)
+         .limit(1).execute().data)
+    if not d or d[0].get("ingestion_version") != 3:
+        raise SystemExit(f"ABORT: {DOC_ID_V3} is not ingestion_version 3 ({d[0].get('ingestion_version') if d else 'missing'})")
+
+
 def _rows(sb, pages):
     data = (sb.table("ingest_pages").select("id,page_no,needs_review,review_reasons,review_status")
             .eq("document_id", DOC_ID_V3).in_("page_no", pages).execute().data)
@@ -158,17 +175,26 @@ def main(argv=None) -> int:
 
     from pipeline import get_sb
     sb = get_sb()
+    assert_v3_doc(sb)
     targets = sorted(set(POOL) | set(CALIB_BAD) | set(CALIB_GOOD))
     rows = _rows(sb, targets)
+    missing = sorted(set(targets) - set(rows))
+    if missing:
+        raise SystemExit(f"ABORT: v3 has no row for page(s) {missing}")
     to_flag = plan_flags(set(r["disputed_pages"]), rows)
 
     before_path = OUT / "r2_reconcile_flags_before.json"
     written = []
     if not a.dry_run and to_flag:
-        if not before_path.exists():
-            before_path.write_text(json.dumps({
-                "document_id": DOC_ID_V3, "ingestion_version": 3, "plan": "R2.05",
-                "rows": [rows[n] for n in to_flag]}, indent=1))
+        saved = json.loads(before_path.read_text()) if before_path.exists() else {
+            "document_id": DOC_ID_V3, "ingestion_version": 3, "plan": "R2.05", "rows": []}
+        if saved.get("document_id") != DOC_ID_V3:
+            raise SystemExit(f"ABORT: {before_path.name} belongs to another document")
+        saved["rows"] = merge_before_rows(saved.get("rows") or [], [rows[n] for n in to_flag])
+        before_path.write_text(json.dumps(saved, indent=1))
+        have = {x["id"] for x in saved["rows"]}
+        if any(rows[n]["id"] not in have for n in to_flag):
+            raise SystemExit("ABORT: a page to flag has no saved before-value row")
         for n in to_flag:
             row = rows[n]
             reasons = list(row.get("review_reasons") or [])
@@ -183,17 +209,18 @@ def main(argv=None) -> int:
 
     truth = sweep_truth(sweep)
     disputed = set(r["disputed_pages"])
-    flagged = sorted(n for n in POOL if rows[n].get("needs_review"))
-    pass_und = sorted(n for n in POOL if truth.get(n) == "good" and n not in disputed and not rows[n].get("needs_review"))
-    neither = sorted(n for n in POOL if not rows[n].get("needs_review") and truth.get(n) != "good")
+    row = lambda n: rows.get(n) or {}  # noqa: E731  (guards a page missing after the re-read)
+    flagged = sorted(n for n in POOL if row(n).get("needs_review"))
+    pass_und = sorted(n for n in POOL if truth.get(n) == "good" and n not in disputed and not row(n).get("needs_review"))
+    neither = sorted(n for n in POOL if not row(n).get("needs_review") and truth.get(n) != "good")
     reasons = {}
     for n in flagged:
-        for rs in rows[n].get("review_reasons") or []:
+        for rs in row(n).get("review_reasons") or []:
             reasons.setdefault(rs, []).append(n)
     r["pool_close"] = {"pool": len(POOL), "pass_undisputed": pass_und, "flagged": flagged,
                        "neither": neither, "flag_reasons": reasons}
-    r["flags"]["carrying_reason"] = sorted(n for n in targets if REASON in (rows[n].get("review_reasons") or []))
-    r["flagged_pages_all"] = sorted(n for n in targets if rows[n].get("needs_review"))
+    r["flags"]["carrying_reason"] = sorted(n for n in targets if REASON in (row(n).get("review_reasons") or []))
+    r["flagged_pages_all"] = sorted(n for n in targets if row(n).get("needs_review"))
     if not a.dry_run:
         out_path.write_text(json.dumps(r, indent=1))
     print_summary(r)

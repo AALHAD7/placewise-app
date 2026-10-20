@@ -12,6 +12,7 @@ no DB, so offline tools can import it).
 """
 import json
 import re
+import unicodedata
 
 from diagram_schema import FENCE_INFO, extract_blocks, has_bullet_lines, restore_quotes
 from textnorm import _outside_blocks, normalize_exact, normalize_label, strip_invented_links, strip_stray_parens
@@ -110,7 +111,7 @@ def repair_tree_leaves(markdown: str):
     return md, total
 
 
-NAV_TYPO_MAX_WORDS = 6
+NAV_TYPO_MAX_WORDS = 6  # no longer used: review hardening limits typo repair to nav bars
 # A casebook nav bar ("FMS Guesestimate Index | Main Index Delhi Schools The
 # Consulting Club", FMS p97) is one line with the running header; it gets a
 # slightly longer limit. 12 already let a content line through (p134 actions -> options).
@@ -142,15 +143,41 @@ def _match_case(src: str, word: str) -> str:
     return word
 
 
+# Inflection / plural suffixes: "Customers" vs "customer" is a real word form,
+# not a typo, so such a pair is never "repaired".
+_INFLECTIONS = ("s", "es", "ed", "d", "ing", "er", "ers", "ly")
+
+
+def _stems(w: str) -> set:
+    out = {w}
+    for suf in _INFLECTIONS:
+        if w.endswith(suf) and len(w) - len(suf) >= 3:
+            out.add(w[:-len(suf)])
+    if w.endswith("ies"):
+        out.add(w[:-3] + "y")
+    if w.endswith("e") and len(w) >= 4:
+        out.add(w[:-1])  # "price" ~ "pricing", "priced"
+    return out
+
+
+def is_inflection_pair(a: str, b: str) -> bool:
+    """True when a and b differ only by a plural/inflection suffix."""
+    a, b = a.lower(), b.lower()
+    return a != b and bool(_stems(a) & _stems(b))
+
+
 def fix_nav_typos(markdown: str, text_layer: str, log=None):
-    """R2.04: on a short line (<= 6 words, or <= 10 on a nav bar: "Index" and a "|")
-    outside diagram blocks, a word of >= 6 letters that is not a text-layer word is
+    """R2.04, hardened after review: only on a nav-bar line ("Index" and a "|",
+    <= 10 words) outside diagram blocks, a word of >= 6 letters that is not a text-layer word is
     replaced by the one text-layer word with the same first letter within edit
     distance <= 2 ("Guesestimate" -> "Guesstimate"). No change when
-    zero or several text-layer words are that close, on long lines, inside
-    blocks, or inside a URL/path token. `log` (optional list) receives
+    zero or several text-layer words are that close, when the two differ only
+    by a plural/inflection suffix, on any non-nav-bar line, on long lines, inside
+    blocks, or inside a URL/path token. The text layer is NFKC-normalised first
+    (ligatures such as "ﬁ"). `log` (optional list) receives
     (old, new) pairs. Returns (markdown, n_replaced)."""
-    tl_words = {w.lower() for w in _WORD_RE.findall(text_layer or "")}
+    tl = unicodedata.normalize("NFKC", text_layer or "")
+    tl_words = {w.lower() for w in _WORD_RE.findall(tl)}
     if not tl_words or not markdown:
         return markdown or "", 0
     long_words = [w for w in tl_words if len(w) >= NAV_TYPO_MIN_LEN - NAV_TYPO_MAX_DIST]
@@ -162,13 +189,12 @@ def fix_nav_typos(markdown: str, text_layer: str, log=None):
             return None
         # same first letter: typos keep it; "University" -> "Diversity" (FMS p60) does not
         hits = [t for t in long_words if t[0] == lw[0] and abs(len(t) - len(lw)) <= NAV_TYPO_MAX_DIST
-                and levenshtein(lw, t) <= NAV_TYPO_MAX_DIST]
+                and levenshtein(lw, t) <= NAV_TYPO_MAX_DIST and not is_inflection_pair(lw, t)]
         return hits[0] if len(hits) == 1 else None
 
     def fix_line(line):
         nonlocal n
-        limit = NAV_BAR_MAX_WORDS if _NAV_BAR_RE.search(line) else NAV_TYPO_MAX_WORDS
-        if len(_WORD_RE.findall(line)) > limit:
+        if not _NAV_BAR_RE.search(line) or len(_WORD_RE.findall(line)) > NAV_BAR_MAX_WORDS:
             return line
         def repl(m):
             nonlocal n
@@ -199,6 +225,22 @@ def fix_nav_typos(markdown: str, text_layer: str, log=None):
 
 _HASH_HEADING_RE = re.compile(r"^([ \t]*)((?:#[ \t]+)+)(\S.*)$")
 HASH_MIN_WORDS = 2
+HASH_WRAP_LINES = 3  # a printed line may wrap onto this many following text-layer lines
+_LETTER_RE = re.compile(r"[^\W\d_]")
+
+
+def _printed_hash_starts(text_layer: str) -> list:
+    """Whitespace-collapsed text from every "#" that starts a text-layer line
+    (only a non-letter prefix such as "(40%)" or a bullet may come before it,
+    FMS p113), continued over the next HASH_WRAP_LINES lines (wrapped text)."""
+    lines = (text_layer or "").splitlines()
+    out = []
+    for k, line in enumerate(lines):
+        i = line.find("#")
+        if i < 0 or _LETTER_RE.search(line[:i]):
+            continue
+        out.append(normalize_exact(" ".join([line[i:]] + lines[k + 1:k + 1 + HASH_WRAP_LINES])) + " ")
+    return out
 
 
 def escape_printed_hash(markdown: str, text_layer: str, log=None):
@@ -206,12 +248,13 @@ def escape_printed_hash(markdown: str, text_layer: str, log=None):
     Markdown line it renders as a heading and the "#" disappears (FMS p112:
     "# # # Dream11 players 6 M"). A line outside diagram blocks that starts
     with one or more "# " markers becomes "\\# <text>" only when the text layer
-    prints "# <text>" (whitespace-collapsed, at a token boundary) and <text>
-    has >= 2 words, i.e. the "#" is printed content, not heading markup.
+    prints "# <text>" at the start of a text-layer line (review hardening: not
+    anywhere mid-line, see _printed_hash_starts; whitespace-collapsed, ends at a
+    token boundary) and <text> has >= 2 words, i.e. the "#" is printed content, not heading markup.
     Every other heading is left alone. `log` gets (old line, new line).
     Returns (markdown, n_escaped)."""
-    tl = " " + normalize_exact(text_layer or "") + " "
-    if "#" not in tl or not markdown:
+    starts = _printed_hash_starts(text_layer)
+    if not starts or not markdown:
         return markdown or "", 0
     n = 0
 
@@ -223,8 +266,8 @@ def escape_printed_hash(markdown: str, text_layer: str, log=None):
         rest = m.group(3).rstrip()
         if rest.startswith("#") or len(rest.split()) < HASH_MIN_WORDS:
             return line
-        printed = " # " + normalize_exact(rest) + " "
-        if printed not in tl:
+        printed = "# " + normalize_exact(rest) + " "
+        if not any(s.startswith(printed) for s in starts):
             return line
         new = m.group(1) + "\\# " + rest
         n += 1
