@@ -5,6 +5,80 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-21 — R2.08: R2 independent sample review (v4), half 2 reviewed, 40-page score: bar NOT met
+**Phase:** R2 · **Type:** eval
+
+**What changed:** The fidelity-reviewer checked half 2 of the R2.07 sample (20 pages) against the page images with the strict R1 rule. It reviewed half 2 before reading half 1's verdicts, then scored all 40 pages. On v4 only, it flagged the 3 newly found pages with errors that nothing had flagged (137, 143, 231). Nothing was approved and no code changed. **R2's bar is not met: 34 of 40 pages pass (85%, below the 95% bar), and one unflagged page (150) has a `hallucinated` issue.**
+**Why:** R2's done-criterion is a sample pass rate of at least 95% with no `hallucinated` issue. This entry closes the R2.07/R2.08 sample review.
+**Half 2 table** (page | stratum | flagged_at_draw | outcome | issue | evidence):
+
+| page | stratum | flagged | outcome | issue | evidence |
+|---|---|---|---|---|---|
+| 143 | visual | no | **missed** | missing | "quality of the coal procured" stored as "quality of coal procured" |
+| 234 | visual | yes | caught | missing, structure_lost | "Approach" heading absent; ROI formula boxes ($26, $10/ticket) loose text, not linked to 5-/20-year deal |
+| 38 | visual | yes | faithful | – | 5 stages, durations, 8 bullets match (durations merged into stage labels, info kept) |
+| 185 | visual | yes | caught | missing | "Partner Case" tag dropped |
+| 15 | visual | yes | caught | structure_lost | Porter's Five Forces as nested bullets, no diagram block (text all correct) |
+| 237 | visual | no | faithful | – | all 8 numbers and text match |
+| 23 | visual | yes | caught | hallucinated, missing | block title "PESTEL Breakdown" not printed; P/E/S/T/E/L badge letters dropped |
+| 24 | visual | yes | caught | structure_lost, altered, hallucinated | "Most/Less Competitive" stored as tree children; elasticity label in LaTeX; invented empty table row |
+| 247 | visual | no | faithful | – | 8 names + 2 role labels match |
+| 210 | visual | yes | caught | missing, unreadable | "due to our praying services" lost "our"; legible "2023-24" stored as [UNREADABLE] |
+| 206 | visual | yes | caught | altered | "extracurricula" truncated; dashes added to Electives/Sports/Flats; "Int’l –" → "Int'l -" |
+| 70 | visual | yes | caught | altered, structure_lost | "Non-Performing Asset" → "Non-Performance Asset"; chart block inside table cell |
+| 56 | text | yes | caught | structure_lost | value chain as table, no flow block; airline shares have no airline attached |
+| 3 | text | no | faithful | – | word for word |
+| 137 | text | no | **missed** | missing | "10% decline in profits for the steel industry players" → "10% decline in the steel industry players" |
+| 231 | text | no | **missed** | altered | "What would the exit process" → "What would be the exit process"; "Do we have" → "Do you have" |
+| 121 | text | no | faithful | – | 23 rows, sections, difficulties, page numbers match |
+| 85 | text | no | faithful | – | 28 items + pages match |
+| 244 | text | no | faithful | – | 15 glossary rows match |
+| 5 | text | no | faithful | – | word for word |
+
+**Proof (all 40 pages, scoring fixed in plan 08 before review):**
+- Half 2: 8 faithful, 9 caught, 3 missed. Half 1 (R2.07): 5 faithful, 12 caught, 3 missed.
+- **Pass rate (faithful + caught) = 34/40 = 0.85, Wilson 95% [0.709, 0.929].** The bar is ≥ 0.95, which allows at most 2 missed pages. There are 6 missed pages: 135, 137, 143, 150, 183, 231.
+- Raw faithful rate = 13/40 = 0.325, Wilson 95% [0.201, 0.480].
+- Hallucination gate: hallucinated on unflagged pages = [150] (invented "Candidate | Interviewer" table header), so the gate fails. Hallucinated on flagged pages (a pattern, not a gate failure): 23, 24, 67, 69, 71, 77, 228.
+- If logo placeholders ("[FMS Logo]", "[Logo]") counted as errors: 3 more unflagged pages fail (121, 243, 244). That gives 9 missed, pass rate 0.775 [0.625, 0.877], raw faithful 0.25, and 6 unflagged hallucinated pages. If leftover link brackets also counted, p120 fails too: 10 missed, pass rate 0.75.
+- Plan verify output: `40 Counter({1: 20, 2: 20}) Counter({'caught': 21, 'faithful': 13, 'missed': 6}) zero_items []`; `R2 BAR NOT MET`.
+- Flags: v4 needs_review 149 → 152 (137 and 143 get `fidelity_review:missing`, 231 gets `fidelity_review:altered`). review_status stays pending.
+**Patterns (ranked; full list in `result.patterns`):**
+1. Dropped or changed small words in dense dialogue text. This is behind all 6 missed pages (135, 137, 143, 150, 183, 231) and also appears on flagged 129, 203 and 210. `word_coverage` counts words as a set, so it can't see a dropped "the" or "profits for" when the same words appear elsewhere on the page. **Free fix:** an ordered word diff against the text layer. A throwaway diff caught all three half-2 misses, with only header/footer reordering noise to filter.
+2. Frameworks, value chains and chevrons with no diagram block: 15, 56, 67, 69, 71, 228. Needs a vision re-call or human review.
+3. A box detached from its diagram or placed under the wrong parent: 24, 116, 151, 170, 234. Needs human review (the structure check misses these).
+4. Invented titles, captions, table headers or rows: 23, 24, 67, 69, 71, 77, 150. **Free fix:** drop or flag any title, caption or header whose words are not in the text layer.
+5. Altered diagram or table labels: 22, 70, 71, 77, 116, 195, 206. Free: extend the label check to table cells.
+6. Dropped header tags or headings: 23, 185, 195, 234. Free: the word diff catches them.
+7. Single-page issues: chart values not printed (228), block inside a table (70, 71), false [UNREADABLE] (210). All have free fixes.
+**Files:** `backend/ingestion/out/r2_sample_review.json` (half 2 + `result`), `out/r2_sample_flags_before.json` (+137, 143, 231), `out/r2_sample_2.html` (all local); `log.md`. Scratch: `scratchpad/r2_plan08/`.
+**Cost:** 0 Gemini calls.
+**Undo:** Restore needs_review and review_reasons on v4 pages 135, 137, 143, 150, 183 and 231 from `out/r2_sample_flags_before.json`.
+**Open issues:**
+- **R2 is blocked.** The planner needs gap-closure plans R2.09+ for patterns 1 and 4 first (free and deterministic, and they cover every missed page and the unflagged hallucination), then 2 and 3.
+- **Aalhad, please confirm the scoring reading:** (a) pass = faithful *or* flagged when drawn (a flagged page is held for human review); (b) the hallucination gate applies only to pages that were unflagged when drawn. The result is "not met" under either reading.
+- Aalhad, please decide whether logo placeholders and leftover link brackets count as errors. They don't change the verdict.
+- p56: v4 lost the airline names next to the market shares (R2.06), so the numbers have no meaning. This needs a human decision.
+
+## 2026-10-21 — R2.07: fresh v4 sample drawn (40 pages), half 1 (20 pages) reviewed; 3 missed pages flagged
+**Phase:** R2 · **Type:** eval
+
+**What changed:** The fidelity-reviewer drew a fresh random sample of 40 v4 pages (seed 2022). It excludes all 81 pages that earlier reviews saw. The structure-check calibration and pool pages were already in that set. The sample has 24 visual and 16 text pages, and 23 of the 40 were already flagged when drawn. The reviewer checked half 1 (20 pages) against the page images, using the strict R1 rule. On v4 only, it flagged the 3 pages with errors that nothing had flagged. Nothing was approved and no code changed.
+**Why:** R2 is done when the sample pass rate is at least 95% with no `hallucinated` issue. Plan 08 reviews half 2 and scores all 40 pages.
+**Proof (half 1):**
+- Sample: 2, 22, 67, 69, 71, 77, 116, 120, 129, 135, 150, 151, 170, 183, 195, 200, 203, 223, 228, 243.
+- Outcomes: 5 faithful (2, 120, 200, 223, 243), 12 caught (already flagged: 22, 67, 69, 71, 77, 116, 129, 151, 170, 195, 203, 228), 3 missed (135, 150, 183).
+- Pages with no errors: 5/20 (25%). Of the 11 pages that were unflagged when drawn, 8 have no errors and 3 do (135, 150, 183).
+- `hallucinated` appears on 6 pages: 67, 69, 71, 77 (invented chart labels), 150 (invented "Candidate | Interviewer" table header), and 228 (chart values that are not printed on the page).
+- The missed pages are text errors in dialogue pages: a dropped "which" and "might cause" changed to "case" (150), and changed punctuation (135, 183).
+- Flags: needs_review on v4 went from 146 to 149, and each of the 3 pages got `fidelity_review:<type>` reasons. Before-values are in `out/r2_sample_flags_before.json`.
+**Files:** `backend/ingestion/out/r2_sample.json`, `out/r2_sample_review.json`, `out/r2_sample_flags_before.json`, `out/r2_sample_1.html` (all local)
+**Cost:** 0 Gemini calls.
+**Undo:** Restore needs_review and review_reasons on v4 pages 135, 150 and 183 from `out/r2_sample_flags_before.json`.
+**Open issues:**
+- The R2 bar of 95% cannot be met on half 1 alone: 15 of 20 pages have errors and 6 have `hallucinated`.
+- "[FMS Logo]" placeholders (49 v4 pages) and leftover brackets around link text (62 pages) were not counted as errors, which matches the earlier sweeps. Aalhad needs to decide whether they count.
+
 ## 2026-10-21 — R2.06: v4 stored (inactive), built from review-hardened post-processing
 **Phase:** R2 · **Type:** ingestion | fix
 
