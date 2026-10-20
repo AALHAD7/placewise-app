@@ -144,10 +144,13 @@ def base_page(v1: dict) -> dict:
 
 
 def v1_page(v1: dict) -> dict:
-    """v1 markdown re-checked with the current checker (free); prompt_version None."""
+    """v1 markdown + the free post-pass (R2.04: fallback_v1 pages used to skip it, so
+    invented links and placeholder images survived), re-checked with the current
+    checker (free); prompt_version None."""
     tl = v1.get("text_layer") or ""
-    fid = check_page(tl, v1.get("markdown") or "", bool(v1.get("is_scanned")), v1["page_no"])
-    return base_page(v1) | {"markdown": v1.get("markdown"), "prompt_version": None} | _fid_fields(fid)
+    md, ll, _q, _l = postprocess_markdown(v1.get("markdown") or "", tl)
+    fid = check_page(tl, md, bool(v1.get("is_scanned")), v1["page_no"], label_lines=ll)
+    return base_page(v1) | {"markdown": md, "prompt_version": None} | _fid_fields(fid)
 
 
 def v2_post_page(v1: dict, v2: dict, v2_label_lines: dict) -> dict:

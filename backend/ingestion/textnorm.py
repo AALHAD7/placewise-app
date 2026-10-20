@@ -132,7 +132,9 @@ def label_exact_on_page(label: str, exact_tokens: set) -> bool:
 
 # --- invented links (R1.07) --------------------------------------------------
 
-_LINK_RE = re.compile(r"(!?)\[([^\]\n]*)\]\(([^)\n]*)\)")
+# R2.04: the target may hold one level of balanced parentheses, so
+# [Main Index](javascript:history.back()) is matched whole (no stray ")" left).
+_LINK_RE = re.compile(r"(!?)\[([^\]\n]*)\]\(((?:[^()\n]|\([^()\n]*\))*)\)")
 _SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.\-]*:")
 
 
@@ -180,4 +182,46 @@ def strip_invented_links(markdown: str, text_layer: str):
 
     for seg, is_block in _outside_blocks(markdown):
         out.append(seg if is_block else _LINK_RE.sub(repl, seg))
+    return "".join(out), n
+
+
+# --- stray ")" left by the pre-R2 link regex (R2.04) ---------------------------
+# The old _LINK_RE stopped at the first ")", so [Main Index](javascript:history.back())
+# was stored as "Main Index)". Only short lines (nav bars) are touched, only a ")"
+# with no "(" before it on the line, right after a letter, and only when that
+# token (with the ")") is not printed in the text layer.
+
+STRAY_PAREN_MAX_WORDS = 8
+
+
+def strip_stray_parens(markdown: str, text_layer: str):
+    """Returns (markdown, n_removed). Diagram blocks are never touched."""
+    printed = exact_token_set(text_layer)
+    n = 0
+    out = []
+
+    def fix_line(line):
+        nonlocal n
+        if len(re.findall(r"[A-Za-z]+", line)) > STRAY_PAREN_MAX_WORDS or ")" not in line:
+            return line
+        res, depth, i = [], 0, 0
+        for i, ch in enumerate(line):
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                if depth > 0:
+                    depth -= 1
+                elif i > 0 and line[i - 1].isascii() and line[i - 1].isalpha():
+                    j = i
+                    while j > 0 and not line[j - 1].isspace():
+                        j -= 1
+                    tok = line[j:i + 1]
+                    if tok not in printed:
+                        n += 1
+                        continue
+            res.append(ch)
+        return "".join(res)
+
+    for seg, is_block in _outside_blocks(markdown):
+        out.append(seg if is_block else "\n".join(fix_line(l) for l in seg.split("\n")))
     return "".join(out), n

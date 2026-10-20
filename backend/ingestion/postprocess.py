@@ -6,12 +6,14 @@ no DB, so offline tools can import it).
 - restore_quotes: curly quotes restored from the text layer (R1.07)
 - strip_invented_links: invented Markdown link targets removed (R1.07)
 - repair_tree_leaves: "children": [] added to tree leaves that lack it (R1.09)
+- strip_stray_parens: ")" left by the pre-R2 link regex removed (R2.04)
+- fix_nav_typos: a misspelt long word on a short line, repaired from the text layer (R2.04)
 """
 import json
 import re
 
 from diagram_schema import FENCE_INFO, extract_blocks, has_bullet_lines, restore_quotes
-from textnorm import normalize_label, strip_invented_links
+from textnorm import _outside_blocks, normalize_label, strip_invented_links, strip_stray_parens
 
 _HYPHEN_BREAK_RE = re.compile(r"(?<=\w)-[ \t]*\r?\n\s*")
 
@@ -107,14 +109,105 @@ def repair_tree_leaves(markdown: str):
     return md, total
 
 
-def postprocess_markdown(markdown: str, text_layer: str):
+NAV_TYPO_MAX_WORDS = 6
+# A casebook nav bar ("FMS Guesestimate Index | Main Index Delhi Schools The
+# Consulting Club", FMS p97) is one line with the running header; it gets a
+# slightly longer limit. 12 already let a content line through (p134 actions -> options).
+NAV_BAR_MAX_WORDS = 10
+_NAV_BAR_RE = re.compile(r"\bIndex\b.*\||\|.*\bIndex\b")
+NAV_TYPO_MIN_LEN = 6
+NAV_TYPO_MAX_DIST = 2
+_WORD_RE = re.compile(r"[A-Za-z]+")
+
+
+def levenshtein(a: str, b: str) -> int:
+    """Plain edit distance (insert, delete, substitute)."""
+    if len(a) < len(b):
+        a, b = b, a
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return prev[-1]
+
+
+def _match_case(src: str, word: str) -> str:
+    if src.isupper():
+        return word.upper()
+    if src[:1].isupper():
+        return word[:1].upper() + word[1:]
+    return word
+
+
+def fix_nav_typos(markdown: str, text_layer: str, log=None):
+    """R2.04: on a short line (<= 6 words, or <= 10 on a nav bar: "Index" and a "|")
+    outside diagram blocks, a word of >= 6 letters that is not a text-layer word is
+    replaced by the one text-layer word with the same first letter within edit
+    distance <= 2 ("Guesestimate" -> "Guesstimate"). No change when
+    zero or several text-layer words are that close, on long lines, inside
+    blocks, or inside a URL/path token. `log` (optional list) receives
+    (old, new) pairs. Returns (markdown, n_replaced)."""
+    tl_words = {w.lower() for w in _WORD_RE.findall(text_layer or "")}
+    if not tl_words or not markdown:
+        return markdown or "", 0
+    long_words = [w for w in tl_words if len(w) >= NAV_TYPO_MIN_LEN - NAV_TYPO_MAX_DIST]
+    n = 0
+
+    def candidate(w):
+        lw = w.lower()
+        if len(lw) < NAV_TYPO_MIN_LEN or lw in tl_words:
+            return None
+        # same first letter: typos keep it; "University" -> "Diversity" (FMS p60) does not
+        hits = [t for t in long_words if t[0] == lw[0] and abs(len(t) - len(lw)) <= NAV_TYPO_MAX_DIST
+                and levenshtein(lw, t) <= NAV_TYPO_MAX_DIST]
+        return hits[0] if len(hits) == 1 else None
+
+    def fix_line(line):
+        nonlocal n
+        limit = NAV_BAR_MAX_WORDS if _NAV_BAR_RE.search(line) else NAV_TYPO_MAX_WORDS
+        if len(_WORD_RE.findall(line)) > limit:
+            return line
+        def repl(m):
+            nonlocal n
+            # skip words that are part of a URL, path or e-mail token
+            a, b = m.start(), m.end()
+            while a > 0 and not line[a - 1].isspace():
+                a -= 1
+            while b < len(line) and not line[b].isspace():
+                b += 1
+            tok = line[a:b]
+            if "/" in tok or "@" in tok or "." in tok.strip(".") or "_" in tok:
+                return m.group(0)
+            c = candidate(m.group(0))
+            if c is None:
+                return m.group(0)
+            new = _match_case(m.group(0), c)
+            n += 1
+            if log is not None:
+                log.append((m.group(0), new))
+            return new
+        return re.sub(r"(?<![A-Za-z])[A-Za-z]+(?![A-Za-z])", repl, line)
+
+    out = []
+    for seg, is_block in _outside_blocks(markdown):
+        out.append(seg if is_block else "\n".join(fix_line(l) for l in seg.split("\n")))
+    return "".join(out), n
+
+
+def postprocess_markdown(markdown: str, text_layer: str, typo_log=None):
     """The free deterministic repairs, in order: add missing "children": [] to
     tree leaves (R1.09), collapse multi-line labels,
     restore curly quotes from the text layer (R1.07), strip invented links
-    (R1.07). Returns (markdown, label_lines, quotes_restored, links_stripped).
-    Applied to every attempt before check_page."""
+    (R1.07; nested-paren targets and stray ")" leftovers, R2.04), fix nav-line
+    typos (R2.04). Returns (markdown, label_lines, quotes_restored, links_stripped),
+    links_stripped counting stray ")" removals too. `typo_log` (optional list)
+    receives the (old, new) typo replacements. Applied to every attempt before check_page."""
     md, _n_leaves = repair_tree_leaves(markdown)
     md, label_lines = collapse_multiline_labels_with_lines(md)
     md, n_quotes = restore_quotes(md, text_layer)
     md, n_links = strip_invented_links(md, text_layer)
-    return md, label_lines, n_quotes, n_links
+    md, n_parens = strip_stray_parens(md, text_layer)
+    md, _n_typos = fix_nav_typos(md, text_layer, log=typo_log)
+    return md, label_lines, n_quotes, n_links + n_parens
