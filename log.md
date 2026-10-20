@@ -5,6 +5,25 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-20 — R1 closed: Aalhad signed off the spot-check; wrong-parent sweep deferred to R2
+**Phase:** R1 · **Type:** eval
+
+**What changed:** Aalhad compared p31 (issue tree), p20 (Ansoff matrix) and p19 (value-chain flow) in `backend/ingestion/out/r1_spotcheck.html` against the page images, and replied: "R1 approved". R1 is marked done in `.gsd/ROADMAP.md` and ▶ moves to R2.
+**Why:** This was the last R1 done-criterion. The fidelity review passed all three pages (R1.10) and the owner confirmed them.
+**Verifier:** `.gsd/phases/R1/VERIFICATION.md`. 6/8 passed: 223 tests OK, `check_schema.py` PASS, and `document_chunks` still has 22457 rows. v1/v2/v3 are 248/363, 248/395 and 248/390, all with 0 active chunks. All 21 review flags are present in v3.
+It raised two gaps:
+1. The sign-off was not in the log. It is recorded in this entry.
+2. The faithful-or-flagged bar is not fully met: about 7 of the 55 unreviewed, unflagged tree/flow pages in v3 likely have a wrong parent (1 of 8 in the sample), and no automatic check catches it.
+**Explicit deferral to R2:** R2 starts with a full structure sweep of those 55 pages, either reviewed by eye or by a second Gemini structure-check call, and flags every wrong parent. The other R1.10 pipeline patterns are also R2 work: the link regex, link-strip on fallback pages, the "Guesestimate" typo, column-reading edges, over-claiming summaries, 6 pages with blocks inside tables and 9 visual pages with no block.
+v3 is inactive, so students see none of this until the switch-over (R9). The switch-over requires the sweep first.
+**Files:** `log.md`, `.gsd/ROADMAP.md`, `.gsd/STATE.md`, `.gsd/phases/R1/VERIFICATION.md`
+**Proof:** see the verifier report above. The owner's reply is quoted verbatim.
+**Cost:** 0 Gemini calls (R1 total ≈ $0.52).
+**Undo:** set the R1 row back to "in progress" and ▶ back to R1 in ROADMAP.md (no data changed).
+**Open issues:** Aalhad still has to rotate the Supabase DB password. R3 (eval questions) is Aalhad's task.
+
+---
+
 ## 2026-10-19 — R1 fidelity re-review (v3) (R1.10): issue tree, matrix and flow pass; 13 more pages flagged
 **Phase:** R1 · **Type:** eval
 
@@ -58,7 +77,7 @@ Across all 16 unflagged tree/flow pages reviewed in this plan, 4 have one (11, 1
 5. Stacked boxes in a column are read as "all link onward" (p11).
 6. Summaries still generalise outcomes (p52 VRIO, p14).
 
-**Aalhad's spot-check:** pending. Open `backend/ingestion/out/r1_spotcheck.html` and confirm p31, p20 and p19.
+**Aalhad's spot-check:** approved 2026-10-20 (see the R1 close-out entry above).
 **Cost:** 0 Gemini calls.
 **Undo:** The pre-update values of the 21 rows are in `backend/ingestion/out/r1_review_v3_flags_before.json` (local). Per page, set `needs_review` back and remove the `fidelity_review:*` reason with `array_remove`. Before this review, 8 of the pages already had needs_review=true: 56, 67, 77, 88, 98, 101, 127, 203.
 **Open issues:** R1 is waiting only on Aalhad's sign-off. Patterns 1–4 should go to an ingestion-engineer fix before any other casebook runs.

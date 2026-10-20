@@ -1,30 +1,28 @@
 # STATE
 
-**Position:** ▶ R1 (M1 Consulting RAG), in progress, plan 09 done (v3 stored), plan 10 next. Updated 2026-10-19.
-See `.gsd/ROADMAP.md` and the top entries of `log.md` (R1.05 – R1.08).
+**Position:** ▶ R2 (M1 Consulting RAG), not started. R1 done 2026-10-20 (Aalhad: "R1 approved").
+See `.gsd/ROADMAP.md` and the top entries of `log.md`.
 
-## R1 so far
-- Plans 01–06 done; gap plans 07–08 done; 09–10 not run. Plans live in `.gsd/phases/R1/`.
-- Commits: 8bc6a39 (validator, prompt, chunking, migration 040), e76a7d5 (v2 re-pilot),
-  48be752 (fidelity review), 98c79d2 (strict labels, structure checks, free repairs),
-  e0c024d (prompt r1-diagrams-v2).
-- Migration 040 applied to live DB 2026-10-19 (additive; versioned ingest_documents).
-- FMS 2023-24 v2 stored, inactive: doc `e6cdd69b-75be-4050-b128-d34170adcb7d`, 248 pages /
-  395 chunks. v1 (248/363) and document_chunks (22457) unchanged.
-- Fidelity review (v2): matrix p20 and flow p10 pass; all 3 issue trees failed (structure).
-- Prompt v2 smoke (p11/13/19/52/77): 13, 19, 52 pass; 11 fails (converging box moved out
-  of the block; checker blind to it); 77 fails (estimated bar values; v1 fallback would cover).
-- Gemini spend in R1: ~$0.52 (≈414 vision + 593 embedding calls).
+## Where R1 left things
+- FMS 2023-24 stored three times, all inactive (0 active chunks): v1 `67371722…` 248/363,
+  v2 `e6cdd69b…` 248/395, v3 `129a2604-0221-4ba2-af50-42ac641a21a0` 248/390 (the best one).
+  `document_chunks` unchanged at 22457. Migration 040 applied.
+- v3 needs_review: 110 pages. Review results: `backend/ingestion/out/r1_review_v3.json` (local).
+- R1 Gemini spend ≈ $0.52. 223 offline ingestion tests pass.
+- Verifier: `.gsd/phases/R1/VERIFICATION.md` (gaps closed by log entry 2026-10-20).
 
-## Next
-- Plan 09 done (log R1.09): v3 doc `129a2604-0221-4ba2-af50-42ac641a21a0`, 248 pages / 390 chunks, inactive.
-  R1 gap vision calls 109 / 150.
-- Plan 10 (fidelity review + Aalhad spot-check). Candidates: issue_tree p31, p81, p52 AMO; flow p19, p52, p11 (caveat);
-  matrix p20. Chart: none clean (p113 has a wrong yLabel). Must flag p13 and p14 (v3 wrong parent, unflagged).
-- No more prompt rounds: the bar is faithful-or-flagged; flagged pages go to the R5 review queue.
+## R2 must start with (deferred from R1, see log.md 2026-10-20)
+1. Structure sweep of the 55 unreviewed, unflagged v3 tree/flow pages (≈7 wrong parents
+   expected; checker can't see them). Eyeball review or a second Gemini structure-check call.
+2. `textnorm._LINK_RE` leaves ")" (p10, p224).
+3. fallback_v1 pages skip link-strip (p69/p71 placeholder images; `(#[UNREADABLE])` on 56/67/77/127/203).
+4. "Guesestimate Index" typo in markdown (88, 97, 98, 101, 106, 116).
+5. Column stacks read as all-link-onward (p11); over-claiming summaries (p52, p14).
+6. Blocks still inside tables (58, 59, 60, 70, 72, 73); visual pages with no block (1, 8, 12, 30, 43, 53, 75, 80, 84).
 
 ## Known gaps
-- No eval test set yet (R3, Aalhad).
-- No admin review queue (R5).
+- No eval test set yet (R3, Aalhad): 20–30 Consulting questions in `backend/eval/questions.jsonl`.
+- No admin review queue (R5). Every diagram needs a human or structure check before R9 switch-over.
 - Live document_chunks may share v1's off-by-one page_start bug; check during R7.
 - Aalhad to rotate the Supabase DB password (partially printed in session 2026-10-19).
+- `backend/ingestion/run_pilot.py` is untracked.

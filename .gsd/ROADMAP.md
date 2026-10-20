@@ -31,8 +31,8 @@ diagrams included.
 
 | ID | Task | Agent | Done when | Status |
 |---|---|---|---|---|
-| ▶ R1 | Structured diagram output in the converter (`placewise-diagram` blocks) + diagram validation in fidelity checks; re-pilot on FMS Consulting casebook | ingestion-engineer → fidelity-reviewer | Pilot report: coverage stats, `needs_review` count; `fidelity-reviewer` compares 3 sample diagram pages (an issue tree, a matrix, a chart or flow) against their page images and finds every label, number and branch matching; Aalhad spot-checks the 3 | in progress (blocked 2026-10-19: issue-tree structure, see log.md R1.08) |
-| R2 | Independent fidelity review of the pilot; fix any pipeline patterns it finds | fidelity-reviewer → ingestion-engineer | Sample pass rate ≥ 95%, no `hallucinated` issues | todo |
+| R1 | Structured diagram output in the converter (`placewise-diagram` blocks) + diagram validation in fidelity checks; re-pilot on FMS Consulting casebook | ingestion-engineer → fidelity-reviewer | Pilot report: coverage stats, `needs_review` count; `fidelity-reviewer` compares 3 sample diagram pages (an issue tree, a matrix, a chart or flow) against their page images and finds every label, number and branch matching; Aalhad spot-checks the 3 | done (2026-10-20) |
+| ▶ R2 | Independent fidelity review of the pilot; fix any pipeline patterns it finds | fidelity-reviewer → ingestion-engineer | Sample pass rate ≥ 95%, no `hallucinated` issues | todo |
 | R3 | Test question set for Consulting (20–30 real questions, a few the casebooks don't cover) | **Aalhad** | `backend/eval/questions.jsonl` exists | todo |
 | R4 | Eval runner + baseline score on the current live chunks | rag-evaluator | Baseline results file saved | todo |
 | R5 | Admin review queue: list flagged pages, approve/fix (backend endpoint + simple Admin page section) | backend-engineer, frontend-engineer | Aalhad can approve a flagged page from `/admin` | todo |
