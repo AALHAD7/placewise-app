@@ -5,6 +5,88 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-20 — R2 structure sweep (R2.01–R2.05): every v3 tree/flow page is now reviewed-pass or flagged; Gemini structure check not adopted
+**Phase:** R2 · **Type:** eval
+
+**What changed:** Two things checked the 45 v3 tree/flow pages that had not been reviewed and were not flagged. The pool is 45 live pages, not the 55 in STATE; the pool was recomputed in R2.01.
+1. A cheap Gemini flash-lite "structure check" (R2.01) looked at each page image and the stored parent-child list, and disputed any connection the page does not draw.
+2. A blind eyeball sweep by the fidelity-reviewer (R2.02: 23 pages, R2.03: 22 pages) checked the same pages and did not see the check's results.
+
+R2.05 scored the check against the sweep. It then flagged every page the check disputed on v3 (`needs_review=true`, reason `structure_check:dispute`), even where the reviewer had passed the page. Over-flagging is safe; a missed wrong parent would reach students.
+Result for the 45-page pool: **14 reviewed-pass and undisputed, 31 flagged, 0 neither**. STATE item 1 is closed.
+No pipeline code changed. `review_status`, v1/v2 rows, `is_active` and `document_chunks` were not touched.
+**Why:** R1 left about 7 likely wrong parents in unreviewed pages that no automatic check could see. R2 had to make every page faithful-or-flagged and decide whether M2 casebooks should run the check automatically.
+**Wave 1 (R2.01–R2.04):**
+- R2.01: 116 flash-lite vision calls, about $0.13 (commit de8d910). Calibration: 5/5 known-bad pages disputed, 4/8 known-good pages disputed.
+- Sweeps: R2.02 checked 23 pages (16 pass, 7 flagged). R2.03 checked 22 pages (6 pass, 16 flagged).
+- Visual-page triage: the 9 "visual, no block" pages (1, 8, 12, 30, 43, 53, 75, 80, 84) are all decorative. The 10 sampled visual pages (123, 156, 161, 176, 181, 187, 196, 214, 240, 242) are all fine. In total, 0 of 19 visual pages are missing a diagram.
+- R2.04: link-strip and typo fixes (commit f513b6f).
+
+**Sweep failures (23 of 45 = 51%; 22 are structural = 49%, against R1.10's estimate of 12.5% from 1 in 8):**
+
+| page | verdict | issue | evidence |
+|---|---|---|---|
+| 28 | fail | structure_lost | Annuity/Perpetuity and NPV/Payback/IRR hung under the definition side-box instead of the TVM / Capital Budgeting box |
+| 89 | fail | structure_lost | three "(Non-filtered)" tags lost or attached to the wrong node |
+| 91 | fail | hallucinated | 3 edges into a free-standing "Total = 221" box |
+| 92 | fail | structure_lost | spanning formula boxes placed under the first column only |
+| 95 | fail | structure_lost, altered | arrowed child boxes merged into one label; Methodology notes folded into labels; en dash became a hyphen |
+| 102 | fail | structure_lost | "Share and Cost" row-label callout stored as a child of Premium |
+| 103 | fail | structure_lost, missing | "Location Basis" merged into both branch labels; red X (excluded) not captured |
+| 109 | fail | structure_lost, missing | the 4 boxes converge into "2.51m", which is not a node |
+| 112 | fail | altered, structure_lost | callouts became Markdown H1 headings; Age table columns misaligned |
+| 113 | fail | structure_lost, missing, altered | floating callout stored as a child; callout used as the chart yLabel; "customers/hr" unit dropped |
+| 136 | fail | structure_lost, altered | 3 boxes merged into one node; callouts given parents; "Zomator" typo |
+| 149 | fail | structure_lost | Pests/Inventory under the wrong node; value-chain sequence stored as unordered siblings |
+| 160 | fail | hallucinated, structure_lost | bubble chart forced into a 2x2; invented cell label "Lower Class & BPL" |
+| 182 | fail | structure_lost, altered | 2 leaves under the wrong parent; summary says "inorganic acquisition strategies" (page: "Acquisition") |
+| 186 | fail | structure_lost, missing | floating callout stored as a child of Affordability; up-arrow not captured |
+| 191 | fail | structure_lost | unconnected "Factor" box stored under Cost Plus |
+| 193 | fail | structure_lost | unconnected subtree nested under a Cost Plus callout |
+| 199 | fail | structure_lost, hallucinated | "Factors" under Cost Plus; invented "Recommendations" root |
+| 204 | fail | structure_lost, missing | Mess/Canteen edges from the wrong node; brace edge missing; unconnected list given 4 edges |
+| 213 | fail | altered (not structural) | nav "Case Index;)" link-strip leftover; "3rd" stored as LaTeX |
+| 221 | fail | structure_lost | Transit Time under Idle Time (page: under Time Per Visit) |
+| 225 | fail | structure_lost, hallucinated, missing | split edges attached to the wrong box; badges stored as nodes |
+| 230 | fail | structure_lost, missing | separate box stored under Customer Study; 2 printed numbers absent; unconnected Total given an edge |
+
+**Check vs sweep (R2.05):**
+- Ground truth "bad" = 22 structurally failing sweep pages + 5 calibration-bad pages = 27. "Good" = 22 sweep-pass pages + 8 calibration-good pages = 30. Page 213 has a non-structural failure only, so it is left out of the metrics.
+- Recall: **21/27 = 0.78**. The check missed 89, 91, 92, 95, 103 and 191.
+- False disputes: **12/30 = 0.40**, on pages 19, 32, 33, 42, 51, 82, 83, 96, 99, 105, 188 and 233.
+- Run-to-run agreement: 51/58. The two runs disagreed on 19, 99, 186, 188, 199, 221 and 233.
+
+2x2 on the pool (reviewer × check):
+
+| | check disputed | check clean |
+|---|---|---|
+| reviewer fail | 16: 28, 102, 109, 112, 113, 136, 149, 160, 182, 186, 193, 199, 204, 221, 225, 230 | 7: 89, 91, 92, 95, 103, 191, 213 |
+| reviewer pass | 8: 32, 33, 42, 51, 82, 96, 99, 233 | 14: 26, 34, 39, 40, 41, 49, 50, 62, 87, 108, 115, 180, 245, 246 |
+
+**Adoption: NOT adopted.** The rule was fixed in the plan before any numbers were seen: recall ≥ 0.80 and false-dispute rate ≤ 0.40. Recall was 0.78, so the check fails the rule.
+`structure_check.py` stays an admin tool, and its docstring records "not adopted (R2.05)" with these numbers. Every diagram still needs a human or eyeball structure check before R9 (STATE "Known gaps").
+**Pages flagged, by reason:**
+- R2.05 `structure_check:dispute` on 12 pages: pool pages 32, 33, 42, 51, 82, 96, 99, 233 and calibration pages 19, 83, 105, 188. R1.10 or the sweep had passed all 12.
+- R2.02/R2.03 `fidelity_review:*` on 23 pool pages:
+  - structure_lost: 28, 89, 92, 95, 102, 103, 109, 112, 113, 136, 149, 160, 182, 186, 191, 193, 199, 204, 221, 225, 230
+  - hallucinated: 91, 160, 199, 225
+  - altered: 95, 112, 136, 182, 213
+  - missing: 103, 109, 113, 186, 204, 230
+**Files:** `backend/ingestion/r2_reconcile.py` (new), `backend/ingestion/structure_check.py` (docstring only), `log.md`. Local and gitignored: `backend/ingestion/out/r2_reconcile.json` and `out/r2_reconcile_flags_before.json`.
+**Proof:**
+- `venv/bin/python r2_reconcile.py --report-only` → `recall 21/27 = 0.7778`, `false-dispute 12/30 = 0.4`, `adopt = False`, `pool 45: reviewed-pass-and-undisputed 14, flagged 31, neither []`.
+- The plan's verify query prints `pool 45 flagged 31 neither_pass_nor_flagged []`.
+- A second run writes no new flags, so the flag step is idempotent.
+- Offline suite: `Ran 270 tests ... OK`.
+**Cost:** R2.01 used 116 flash-lite vision calls, about $0.13. R2.02, R2.03 and R2.05 made 0 paid calls. R2 total so far is about $0.13.
+**Undo:** `out/r2_sweep_a_flags_before.json`, `out/r2_sweep_b_flags_before.json` and `out/r2_reconcile_flags_before.json` hold the earlier `needs_review` and `review_reasons` for each row (by row id). Write those values back to restore the flags.
+**Open issues:**
+- The structural error rate (49%) is about 4 times R1.10's estimate. Pages that were never reviewed should be assumed to have wrong parents at about this rate.
+- The check misses free-standing boxes that were given invented edges (91) and boxes that were merged or folded together (95, 103, 89, 92). It also flags a lot of correct pages.
+- These patterns (floating callouts adopted as children, merged sub-boxes, invented convergence edges) are conversion-prompt work for R2 and M2.
+
+---
+
 ## 2026-10-20 — R1 closed: Aalhad signed off the spot-check; wrong-parent sweep deferred to R2
 **Phase:** R1 · **Type:** eval
 

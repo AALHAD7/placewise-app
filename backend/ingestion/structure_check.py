@@ -5,6 +5,11 @@ sends the page image plus the stored parent->child / from->to list and asks, per
 whether the page draws that connection. It never sends the text layer and never asks for
 a re-transcription (that would just be another transcription with the same blind spots).
 
+Status: not adopted (R2.05). Against the blind eyeball sweep it caught 21/27 structure-bad pages
+(recall 0.78, rule needs >= 0.80) and disputed 12/30 good pages (false-dispute 0.40, rule <= 0.40);
+run-to-run agreement 51/58. Kept as an admin tool only; pipeline.py does not call it. Every
+diagram still needs a human or eyeball structure check before R9 (see out/r2_reconcile.json).
+
 Read-only on the DB. Results go to out/r2_structure_check.jsonl (one line per call) and
 out/r2_structure_check.json (summary). Page PNGs are rendered in memory only.
 
