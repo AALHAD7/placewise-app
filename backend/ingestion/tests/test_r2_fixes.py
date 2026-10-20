@@ -4,7 +4,7 @@ import json
 import unittest
 
 from diagram_schema import extract_blocks
-from postprocess import fix_nav_typos, levenshtein, postprocess_markdown
+from postprocess import escape_printed_hash, fix_nav_typos, levenshtein, postprocess_markdown
 
 
 class TestNavTypos(unittest.TestCase):
@@ -129,6 +129,61 @@ class TestFallbackV1PostPass(unittest.TestCase):
         self.assertEqual((method, src), ("fallback_v1", "v1"))
         self.assertIn("fallback_v1", page["review_reasons"])
         self.assertEqual(page["markdown"], p["markdown"])
+
+
+
+class TestUnitNumbers(unittest.TestCase):
+    """R2.05: FMS p230 lost "20M" and "5M" but scored number_coverage 1.0."""
+
+    def test_extract(self):
+        from textnorm import extract_unit_numbers
+        got = extract_unit_numbers("Pop. of AUS= 20M\n# of households = 5M 1.2M 120K $36M 5 Cr 2 lakhs 3,000Cr")
+        self.assertEqual(got, {"20|m", "5|m", "1.2|m", "120|k", "36|m", "5|cr", "2|l", "3000|cr"})
+
+    def test_spellings_fold(self):
+        from textnorm import extract_unit_numbers
+        self.assertEqual(extract_unit_numbers("20 million, 20 Mn, 20mn, 20M"), {"20|m"})
+        self.assertEqual(extract_unit_numbers("5 crore 5 Cr 5cr"), {"5|cr"})
+
+    def test_not_units(self):
+        from textnorm import extract_unit_numbers
+        # ordinals, minutes, B2B, list letters after a space, percentages
+        self.assertEqual(extract_unit_numbers("1st 5 min B2B 2 b) 4G 30% 20 M"), set())
+
+    def test_latex_and_multiplier(self):
+        from textnorm import extract_unit_numbers
+        md = r"$3\text{x}100\text{k} = 300\text{k}$ and 150\text{k}"
+        self.assertEqual(extract_unit_numbers(md), {"100|k", "300|k", "150|k"})
+
+    def test_p230_coverage_drops(self):
+        from fidelity import number_coverage
+        tl = "Pop. of AUS= 20M\n# of households = 5M\nshots 20 and 5"
+        self.assertLess(number_coverage(tl, "Pop. of AUS\nhouseholds\nshots 20 and 5"), 1.0)
+        self.assertEqual(number_coverage(tl, "Pop. of AUS = 20 Mn, households 5M, shots 20 and 5"), 1.0)
+
+    def test_bare_number_unchanged(self):
+        from fidelity import number_coverage
+        self.assertEqual(number_coverage("Revenue 120 and 30%", "Revenue 120 and 30"), 1.0)
+
+
+class TestPrintedHash(unittest.TestCase):
+    TL = "Methodology\n# population 400 M\n# Dream11 players 6 M Dream11 Players\n(40%) # viable pickpocket\ntargets = 2700"
+
+    def test_p112_p113(self):
+        md = "## Methodology\n# population 400 M\n# # # Dream11 players 6 M\n# viable pickpocket targets = 2700"
+        log = []
+        out, n = escape_printed_hash(md, self.TL, log=log)
+        self.assertEqual(n, 3)
+        self.assertEqual(out, "## Methodology\n\\# population 400 M\n\\# Dream11 players 6 M\n"
+                              "\\# viable pickpocket targets = 2700")
+
+    def test_real_headings_kept(self):
+        for md in ("# Revenue of Dream 11", "# Frequency", "# 2M", "## population 400 M", "#people 10"):
+            self.assertEqual(escape_printed_hash(md, self.TL + "\nRevenue of Dream 11 Frequency 2M"), (md, 0), md)
+
+    def test_inside_block_untouched(self):
+        md = ("```placewise-diagram\n# population 400 M\n```")
+        self.assertEqual(escape_printed_hash(md, self.TL), (md, 0))
 
 
 if __name__ == "__main__":

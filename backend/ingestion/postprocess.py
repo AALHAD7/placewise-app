@@ -8,12 +8,13 @@ no DB, so offline tools can import it).
 - repair_tree_leaves: "children": [] added to tree leaves that lack it (R1.09)
 - strip_stray_parens: ")" left by the pre-R2 link regex removed (R2.04)
 - fix_nav_typos: a misspelt long word on a short line, repaired from the text layer (R2.04)
+- escape_printed_hash: a printed "#" ("number of") read as a Markdown heading is escaped (R2.05)
 """
 import json
 import re
 
 from diagram_schema import FENCE_INFO, extract_blocks, has_bullet_lines, restore_quotes
-from textnorm import _outside_blocks, normalize_label, strip_invented_links, strip_stray_parens
+from textnorm import _outside_blocks, normalize_exact, normalize_label, strip_invented_links, strip_stray_parens
 
 _HYPHEN_BREAK_RE = re.compile(r"(?<=\w)-[ \t]*\r?\n\s*")
 
@@ -196,18 +197,60 @@ def fix_nav_typos(markdown: str, text_layer: str, log=None):
     return "".join(out), n
 
 
-def postprocess_markdown(markdown: str, text_layer: str, typo_log=None):
+_HASH_HEADING_RE = re.compile(r"^([ \t]*)((?:#[ \t]+)+)(\S.*)$")
+HASH_MIN_WORDS = 2
+
+
+def escape_printed_hash(markdown: str, text_layer: str, log=None):
+    """R2.05: "# population 400 M" on the slide means "number of", but as a
+    Markdown line it renders as a heading and the "#" disappears (FMS p112:
+    "# # # Dream11 players 6 M"). A line outside diagram blocks that starts
+    with one or more "# " markers becomes "\\# <text>" only when the text layer
+    prints "# <text>" (whitespace-collapsed, at a token boundary) and <text>
+    has >= 2 words, i.e. the "#" is printed content, not heading markup.
+    Every other heading is left alone. `log` gets (old line, new line).
+    Returns (markdown, n_escaped)."""
+    tl = " " + normalize_exact(text_layer or "") + " "
+    if "#" not in tl or not markdown:
+        return markdown or "", 0
+    n = 0
+
+    def fix_line(line):
+        nonlocal n
+        m = _HASH_HEADING_RE.match(line)
+        if not m:
+            return line
+        rest = m.group(3).rstrip()
+        if rest.startswith("#") or len(rest.split()) < HASH_MIN_WORDS:
+            return line
+        printed = " # " + normalize_exact(rest) + " "
+        if printed not in tl:
+            return line
+        new = m.group(1) + "\\# " + rest
+        n += 1
+        if log is not None:
+            log.append((line, new))
+        return new
+
+    out = []
+    for seg, is_block in _outside_blocks(markdown):
+        out.append(seg if is_block else "\n".join(fix_line(l) for l in seg.split("\n")))
+    return "".join(out), n
+
+
+def postprocess_markdown(markdown: str, text_layer: str, typo_log=None, hash_log=None):
     """The free deterministic repairs, in order: add missing "children": [] to
     tree leaves (R1.09), collapse multi-line labels,
     restore curly quotes from the text layer (R1.07), strip invented links
     (R1.07; nested-paren targets and stray ")" leftovers, R2.04), fix nav-line
-    typos (R2.04). Returns (markdown, label_lines, quotes_restored, links_stripped),
+    typos (R2.04), escape a printed "#" read as a heading (R2.05). Returns (markdown, label_lines, quotes_restored, links_stripped),
     links_stripped counting stray ")" removals too. `typo_log` (optional list)
-    receives the (old, new) typo replacements. Applied to every attempt before check_page."""
+    receives the (old, new) typo replacements, `hash_log` the escaped lines. Applied to every attempt before check_page."""
     md, _n_leaves = repair_tree_leaves(markdown)
     md, label_lines = collapse_multiline_labels_with_lines(md)
     md, n_quotes = restore_quotes(md, text_layer)
     md, n_links = strip_invented_links(md, text_layer)
     md, n_parens = strip_stray_parens(md, text_layer)
     md, _n_typos = fix_nav_typos(md, text_layer, log=typo_log)
+    md, _n_hash = escape_printed_hash(md, text_layer, log=hash_log)
     return md, label_lines, n_quotes, n_links + n_parens

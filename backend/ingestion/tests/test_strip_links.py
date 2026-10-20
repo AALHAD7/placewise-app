@@ -96,6 +96,25 @@ class TestStrayParens(unittest.TestCase):
                        ("one two three four five six seven eight nine ten)", "")):
             self.assertEqual(strip_stray_parens(md, tl), (md, 0), md)
 
+    def test_semicolon_leftovers_r205(self):
+        from textnorm import strip_stray_parens
+        self.assertEqual(strip_stray_parens("Case Index;) | Main Index;)", "Case Index | Main Index"),
+                         ("Case Index | Main Index", 2))
+        self.assertEqual(strip_stray_parens("FMS Main Index;)", "FMS Main Index"), ("FMS Main Index", 1))
+        # printed ";)" kept; ";)" after a digit or space kept
+        self.assertEqual(strip_stray_parens("smile;)", "smile;)"), ("smile;)", 0))
+        self.assertEqual(strip_stray_parens("x 3;) y", ""), ("x 3;) y", 0))
+        # p213: the nav bar runs on with the case title (long line); ";)" still goes, a bare ")" does not
+        md = "FMS | Case Index;) | Main Index;) | Money Heist | Unconventional | Hard | McKinsey & Co. | The Consulting Club"
+        self.assertEqual(strip_stray_parens(md, "Case Index Main Index Money Heist")[1], 2)
+        long_bare = "FMS | Case Index) | Main Index | Money Heist | Unconventional | Hard | McKinsey & Co."
+        self.assertEqual(strip_stray_parens(long_bare, ""), (long_bare, 0))
+
+    def test_history_back_semicolon_link_r205(self):
+        out, n = strip_invented_links("FMS | [Case Index](javascript:history.back();) | [Main Index](javascript:history.back();)",
+                                      "Case Index Main Index")
+        self.assertEqual((out, n), ("FMS | Case Index | Main Index", 2))
+
     def test_blocks_untouched(self):
         from textnorm import strip_stray_parens
         md = "```placewise-diagram\n{\"type\": \"other\", \"description\": \"x)\", \"labels\": []}\n```"

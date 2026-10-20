@@ -26,6 +26,44 @@ def extract_numbers(text: str) -> set:
     return {_normalize_number(m.group(0)) for m in NUMBER_RE.finditer(text) if _normalize_number(m.group(0))}
 
 
+# --- numbers with a unit suffix (R2.05) ---------------------------------------
+# extract_numbers is a set of bare values, so "20M" on the page counted as
+# transcribed whenever any "20" appeared in the markdown (FMS p230 lost
+# "Pop. of AUS= 20M" with number_coverage = 1.0). A number glued to (or one
+# space before, for units longer than one letter) a scale unit is ALSO extracted as "<value>|<unit>", unit
+# spellings folded to one form, so "20M", "20 Mn" and "20 million" all match.
+_UNIT_CANON = {
+    "k": "k", "thousand": "k",
+    "m": "m", "mn": "m", "mil": "m", "mill": "m", "million": "m", "millions": "m",
+    "b": "b", "bn": "b", "billion": "b", "billions": "b",
+    "t": "t", "tn": "t", "trillion": "t",
+    "cr": "cr", "crs": "cr", "crore": "cr", "crores": "cr",
+    "l": "l", "lac": "l", "lacs": "l", "lakh": "l", "lakhs": "l",
+}
+# A number right after a multiplication "x" ("3x100k") still counts.
+# Single-letter units (K, M, B, T, L) only when glued to the number ("20M"):
+# "2 b)" in a list must not read as 2 billion. Longer units may follow one space.
+_LONG_UNITS = "|".join(sorted((u for u in _UNIT_CANON if len(u) > 1), key=len, reverse=True))
+UNIT_NUMBER_RE = re.compile(
+    r"(?:(?<=[0-9 ]x)|(?<![\w.]))(\d[\d,]*(?:\.\d+)?)(?:([kmbtl])|[ \t]?(" + _LONG_UNITS + r"))\b",
+    re.IGNORECASE)
+
+
+# Markdown math writes "150k" as $150\text{k}$ (FMS p192): unwrap before matching.
+_LATEX_TEXT_RE = re.compile(r"\\(?:text|mathrm|textrm|mbox)\{([^{}]*)\}")
+
+
+def extract_unit_numbers(text: str) -> set:
+    """{"20|m", "1.2|m", "120|k", ...}: numbers with a scale unit, unit folded."""
+    out = set()
+    text = _LATEX_TEXT_RE.sub(r"\1", text or "")
+    for m in UNIT_NUMBER_RE.finditer(text):
+        v = _normalize_number(m.group(1))
+        if v:
+            out.add(f"{v}|{_UNIT_CANON[(m.group(2) or m.group(3)).lower()]}")
+    return out
+
+
 # --- label normalisation (diagram label vs page text layer) -----------------
 
 # A hyphen at a line break ("Short-\nTerm") is a real hyphen on these slides
@@ -187,7 +225,8 @@ def strip_invented_links(markdown: str, text_layer: str):
 
 # --- stray ")" left by the pre-R2 link regex (R2.04) ---------------------------
 # The old _LINK_RE stopped at the first ")", so [Main Index](javascript:history.back())
-# was stored as "Main Index)". Only short lines (nav bars) are touched, only a ")"
+# was stored as "Main Index)" and [Main Index](javascript:history.back();) as
+# "Main Index;)" (both removed, R2.05). Only short lines (nav bars) are touched, only a ")"
 # with no "(" before it on the line, right after a letter, and only when that
 # token (with the ")") is not printed in the text layer.
 
@@ -202,8 +241,12 @@ def strip_stray_parens(markdown: str, text_layer: str):
 
     def fix_line(line):
         nonlocal n
-        if len(re.findall(r"[A-Za-z]+", line)) > STRAY_PAREN_MAX_WORDS or ")" not in line:
+        if ")" not in line:
             return line
+        # A bare ")" only on short lines; ";)" after a letter is the distinctive
+        # history.back(); leftover and is removed on any line (FMS p213 nav bar
+        # runs on with the case title: "FMS | Case Index;) | Main Index;) | Money Heist | ...").
+        short = len(re.findall(r"[A-Za-z]+", line)) <= STRAY_PAREN_MAX_WORDS
         res, depth, i = [], 0, 0
         for i, ch in enumerate(line):
             if ch == "(":
@@ -211,14 +254,20 @@ def strip_stray_parens(markdown: str, text_layer: str):
             elif ch == ")":
                 if depth > 0:
                     depth -= 1
-                elif i > 0 and line[i - 1].isascii() and line[i - 1].isalpha():
-                    j = i
-                    while j > 0 and not line[j - 1].isspace():
-                        j -= 1
-                    tok = line[j:i + 1]
-                    if tok not in printed:
-                        n += 1
-                        continue
+                else:
+                    # "Index)" (pre-R2 regex on ...history.back())) or "Index;)"
+                    # (on ...history.back();)): a letter, an optional ";", then ")".
+                    k = i - 1 if line[i - 1:i] == ";" else i
+                    if (short or k != i) and k > 0 and line[k - 1].isascii() and line[k - 1].isalpha():
+                        j = k
+                        while j > 0 and not line[j - 1].isspace():
+                            j -= 1
+                        tok = line[j:i + 1]
+                        if tok not in printed:
+                            n += 1
+                            if k != i:
+                                res.pop()  # the ";" before the ")"
+                            continue
             res.append(ch)
         return "".join(res)
 

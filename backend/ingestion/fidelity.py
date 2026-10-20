@@ -6,7 +6,7 @@ from config import DIAGRAM_LABEL_COVERAGE_MIN, NUMBER_COVERAGE_MIN, WORD_COVERAG
 from diagram_schema import SUMMARY_PREFIX, check_diagrams, extract_blocks
 # Number helpers live in textnorm (shared with diagram_schema); re-exported here
 # so existing `from fidelity import extract_numbers` callers keep working.
-from textnorm import NUMBER_RE, _normalize_number, extract_numbers  # noqa: F401
+from textnorm import NUMBER_RE, _normalize_number, extract_numbers, extract_unit_numbers  # noqa: F401
 
 WORD_RE = re.compile(r"[a-zA-Z0-9]+")
 UNREADABLE_RE = re.compile(r"\[UNREADABLE\]", re.IGNORECASE)
@@ -111,11 +111,20 @@ def extract_words(text: str) -> set:
     return {m.group(0).lower() for m in WORD_RE.finditer(text) if len(m.group(0)) > 1}
 
 
+UNIT_NUMBER_CHECK_ENABLED = True
+
+
 def number_coverage(text_layer: str, markdown: str) -> float:
+    """Share of the page's numbers found in the markdown. Bare values as before,
+    plus (R2.05) every number with a scale unit ("20M", "5 Cr") must appear
+    with the same unit (any spelling: "20 Mn", "20 million")."""
     source_numbers = extract_numbers(text_layer)
+    final_numbers = extract_numbers(markdown)
+    if UNIT_NUMBER_CHECK_ENABLED:
+        source_numbers = source_numbers | extract_unit_numbers(text_layer)
+        final_numbers = final_numbers | extract_unit_numbers(markdown)
     if not source_numbers:
         return 1.0  # nothing to lose - vacuously perfect, not a review trigger
-    final_numbers = extract_numbers(markdown)
     present = sum(1 for n in source_numbers if n in final_numbers)
     return present / len(source_numbers)
 

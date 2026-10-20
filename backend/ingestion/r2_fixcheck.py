@@ -8,6 +8,12 @@ check_page on each, and prints before -> after for the R1.10 evidence pages:
   "](" link syntax / placeholder     the 15 fallback_v1 pages (outside diagram blocks)
   "Guesestimate"                     pages 88, 97, 98, 101, 106, 116
   block_in_table                     pages 58, 59, 60, 70, 72, 73
+  ";)" leftover (R2.05)              pages 51, 123, 213, plus a sweep of all pages
+  number with unit (R2.05)           page 230 must fall below number coverage 1.0
+  printed "#" as heading (R2.05)     pages 112, 113
+
+Every printed-"#" escape and every page whose number_coverage changes because of
+the unit check is listed for audit.
 
 It also lists how many pages' markdown changes and EVERY nav-typo replacement
 (page, old -> new) for a human audit. Results: out/r2_fixcheck.json (v3) or
@@ -27,6 +33,7 @@ from pathlib import Path
 INGESTION_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(INGESTION_DIR))
 
+import fidelity  # noqa: E402
 from diagram_schema import extract_blocks  # noqa: E402
 from fidelity import check_page  # noqa: E402
 from postprocess import postprocess_markdown  # noqa: E402
@@ -37,6 +44,9 @@ PAREN_PAGES = [10, 224]
 FALLBACK_V1_PAGES = [15, 56, 67, 69, 71, 77, 79, 86, 127, 129, 152, 185, 198, 203, 229]
 TYPO_PAGES = [88, 97, 98, 101, 106, 116]
 IN_TABLE_PAGES = [58, 59, 60, 70, 72, 73]
+SEMI_PAREN_PAGES = [51, 123, 213]
+UNIT_NUMBER_PAGES = [230]
+HASH_PAGES = [112, 113]
 MAX_TYPO_REPLACEMENTS = 20
 PAGE_COLS = "page_no, is_scanned, is_visual, text_layer, markdown, method, needs_review, review_reasons"
 
@@ -72,6 +82,21 @@ def link_syntax_count(md: str) -> int:
     """'](' outside diagram blocks plus any 'placeholder' anywhere."""
     n = sum(seg.count("](") for seg, is_block in _outside_blocks(md or "") if not is_block)
     return n + (md or "").lower().count("placeholder")
+
+
+def semi_paren_count(md: str) -> int:
+    """";)" outside diagram blocks."""
+    return sum(seg.count(";)") for seg, is_block in _outside_blocks(md or "") if not is_block)
+
+
+def hash_heading_count(md: str) -> int:
+    """Lines outside blocks that start with "# # " (the p112 garble) or a heading
+    "# " whose text the page prints after a "#"; measured by the caller via the log."""
+    n = 0
+    for seg, is_block in _outside_blocks(md or ""):
+        if not is_block:
+            n += sum(1 for l in seg.split("\n") if l.lstrip().startswith("# #"))
+    return n
 
 
 def typo_count(md: str) -> int:
@@ -111,18 +136,31 @@ def main(argv=None) -> int:
     print(f"v{args.version} doc {doc['id']}: {len(rows)} pages (read-only)")
 
     pages = {}
-    typo_replacements, changed = [], []
+    typo_replacements, changed, hash_escapes, unit_cov_changes = [], [], [], []
     for r in rows:
         n, tl, md = r["page_no"], r.get("text_layer") or "", r.get("markdown") or ""
-        log = []
-        md2, _ll, _q, n_links = postprocess_markdown(md, tl, typo_log=log)
-        before = check_page(tl, md, bool(r.get("is_scanned")), n)
-        after = check_page(tl, md2, bool(r.get("is_scanned")), n)
+        scanned = bool(r.get("is_scanned"))
+        log, hlog = [], []
+        md2, _ll, _q, n_links = postprocess_markdown(md, tl, typo_log=log, hash_log=hlog)
+        before = check_page(tl, md, scanned, n)
+        after = check_page(tl, md2, scanned, n)
+        fidelity.UNIT_NUMBER_CHECK_ENABLED = False
+        after_no_unit = check_page(tl, md2, scanned, n)
+        fidelity.UNIT_NUMBER_CHECK_ENABLED = True
+        nc_old, nc_new = after_no_unit["number_coverage"], after["number_coverage"]
+        if nc_old is not None and abs(nc_old - nc_new) > 1e-9:
+            unit_cov_changes.append({"page": n, "nc_without_unit_check": round(nc_old, 4),
+                                     "nc_with_unit_check": round(nc_new, 4),
+                                     "newly_below": nc_old >= fidelity.NUMBER_COVERAGE_MIN > nc_new})
         for old, new in log:
             typo_replacements.append({"page": n, "old": old, "new": new})
+        for old, new in hlog:
+            hash_escapes.append({"page": n, "old": old, "new": new})
         if md2 != md:
-            changed.append({"page": n, "links_and_parens_stripped": n_links, "typos": len(log)})
-        pages[n] = {"md": md, "md2": md2, "before": before, "after": after, "method": r.get("method")}
+            changed.append({"page": n, "links_and_parens_stripped": n_links, "typos": len(log),
+                            "hash_escapes": len(hlog)})
+        pages[n] = {"md": md, "md2": md2, "before": before, "after": after, "method": r.get("method"),
+                    "nc_no_unit": nc_old}
 
     def flagged(f):
         return any(it["code"] == "block_in_table" for it in f["diagram_issues"])
@@ -165,9 +203,40 @@ def main(argv=None) -> int:
                   for i, real in in_table_blocks(p["md2"])]
         report("in_table", n, fb, fa, cls != "unresolved", f"{cls}; " + "; ".join(detail))
 
+    print("\n';)' leftover (outside blocks):")
+    for n in SEMI_PAREN_PAGES:
+        p = pages[n]
+        report("semi_paren", n, semi_paren_count(p["md"]), semi_paren_count(p["md2"]), semi_paren_count(p["md2"]) == 0)
+    semi_left = sorted(n for n, p in pages.items() if semi_paren_count(p["md2"]))
+    semi_before = sorted(n for n, p in pages.items() if semi_paren_count(p["md"]))
+    print(f"  all pages: {len(semi_before)} had ';)' -> {len(semi_left)} still have it {semi_left}")
+    ok &= not semi_left
+    evidence.setdefault("semi_paren", {})["all_pages"] = {"before": semi_before, "after": semi_left}
+
+    print("\nNumber with unit (number_coverage without -> with the unit check):")
+    for n in UNIT_NUMBER_PAGES:
+        p = pages[n]
+        b, a = p["nc_no_unit"], p["after"]["number_coverage"]
+        report("unit_number", n, b, a, a is not None and a < fidelity.NUMBER_COVERAGE_MIN, "must fall below 1.0")
+    print(f"  pages whose number_coverage changes: {len(unit_cov_changes)}")
+    for u in unit_cov_changes:
+        print(f"  p{u['page']:<4} {u['nc_without_unit_check']} -> {u['nc_with_unit_check']}"
+              f"{'  NEWLY BELOW' if u['newly_below'] else ''}")
+
+    print("\nPrinted '#' read as a heading:")
+    for n in HASH_PAGES:
+        p = pages[n]
+        b = sum(1 for h in hash_escapes if h["page"] == n)
+        report("printed_hash", n, hash_heading_count(p["md"]), hash_heading_count(p["md2"]),
+               b > 0 and hash_heading_count(p["md2"]) == 0, f"{b} line(s) escaped")
+    print(f"  escapes across all pages: {len(hash_escapes)}")
+    for h in hash_escapes:
+        print(f"  p{h['page']:<4} {h['old'][:70]!r} -> {h['new'][:70]!r}")
+
     print(f"\nPages with changed markdown: {len(changed)} of {len(rows)}")
     for c in changed:
-        print(f"  p{c['page']:<4} links/parens stripped={c['links_and_parens_stripped']} typos={c['typos']}")
+        print(f"  p{c['page']:<4} links/parens stripped={c['links_and_parens_stripped']} typos={c['typos']}"
+              f" hash_escapes={c['hash_escapes']}")
 
     print(f"\nNav-typo replacements across all {len(rows)} pages: {len(typo_replacements)}")
     for t in typo_replacements:
@@ -180,6 +249,7 @@ def main(argv=None) -> int:
         "version": args.version, "document_id": doc["id"], "pages": len(rows),
         "in_table": in_table, "typo_replacements": typo_replacements,
         "changed_pages": [c["page"] for c in changed], "changed_detail": changed,
+        "hash_escapes": hash_escapes, "unit_coverage_changes": unit_cov_changes,
         "evidence": evidence, "ok": ok,
     }
     out_path.parent.mkdir(parents=True, exist_ok=True)
