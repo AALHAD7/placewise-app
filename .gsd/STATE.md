@@ -1,11 +1,10 @@
 # STATE
 
-**Position:** ▶ R2 (M1 Consulting RAG), in progress, gap loop. Updated 2026-10-21.
-R2.01–08 done (log.md): pool sweep closed (45/45 passed or flagged), v4 doc `d1510e35-9ecc-419b-a497-85a37e062792`
-(inactive, 248/384, 152 flagged). Sample 34/40 pass, bar NOT met (6 unflagged word drops, p150 invented header).
-Gap plans 09–12 written (commit e3d1bf2). Plan 09 (free word-order diff + invented-text strip) was interrupted
-mid-build by usage limits: code is partial and uncommitted in backend/ingestion; resume plan 09 first, check files.
-Pending owner input: scoring reading (flagged = pass), p56 airline names, whether every unchecked tree/flow page gets flagged.
+**Position:** ▶ R2 (M1 Consulting RAG), all 12 plans done; verifier PASS conditional on owner confirming the scoring
+reading (pass = faithful or flagged at draw; hallucination gate on unflagged pages only). Updated 2026-10-21.
+Best version: v5 doc `c1521f01-bcbf-4163-923d-dc501859dc31` (inactive, 248/386, 173 flagged). Fresh sample 39/40 pass,
+raw faithful 21/40. Flagged pages 64, 90 hold hallucinations. Report: `.gsd/phases/R2/VERIFICATION.md`.
+For R5: import per-page findings from `backend/ingestion/out/r2_sample*_review.json` and sweep files into the review queue.
 R1 done 2026-10-20 (Aalhad: "R1 approved").
 See `.gsd/ROADMAP.md` and the top entries of `log.md`.
 
