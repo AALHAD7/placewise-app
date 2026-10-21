@@ -5,6 +5,33 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-21 — R2 closed: owner confirmed the scoring reading; v5 is the best FMS version
+**Phase:** R2 · **Type:** eval
+
+**What changed:** Aalhad confirmed the scoring reading (answer: "Flagged = pass"). A page that is wrong but already flagged for review counts as a pass, and the hallucination gate applies to unflagged pages only.
+On that reading the verifier's conditional pass becomes a pass (`.gsd/phases/R2/VERIFICATION.md`, 6/6), and R2 is marked done. ▶ moves to R3, which is Aalhad's task.
+Aalhad also decided: "Leave to review" for p56. The airline names that appeared only as logos stay removed, and the page stays flagged for the R5 queue.
+**Why:** This was R2's done-criterion. The fresh v5 sample scored 39/40 (Wilson [0.871, 0.996]), and no unflagged page has a hallucination.
+**Proof:**
+- The verifier re-ran 360 tests: OK. `check_schema` PASS.
+- `document_chunks` = 22457.
+- v1–v5 have 248 pages each, with 363/395/390/384/386 chunks and 0 active.
+- The sample reproduces from seed 2023.
+- Its spot checks of p236, p16 and p90 agree with the reviewer.
+**Known limits (carried forward):**
+- Raw faithful rate is 21/40 (0.525), so most correctness comes from human review in R5.
+- Flagged pages 64 and 90 hold invented content: "Cheese Burst Pets" and unprinted nodes.
+- The page-specific findings are only in the local review JSON files (`backend/ingestion/out/r2_*review*.json`, `r2_sweep_*.json`). R5 must import them into the queue.
+- The free fixes the R2.12 patterns suggest, for future casebooks (R6):
+  - flag tables with ragged rows
+  - title-strip only when the labels are printed
+  - check inner block labels for unprinted text
+  - include title lines in `seq_diff`
+**Cost:** R2 total ≈ $0.15 Gemini (116 flash-lite vision + ≈126 embedding calls).
+**Undo:** set R2 back to "todo" and ▶ back to R2 in ROADMAP.md. No data changed in this step.
+
+---
+
 ## 2026-10-21 — R2.11–R2.12: v5 fresh-sample review complete (40 holdout pages): 39/40 pass, bar MET
 **Phase:** R2 · **Type:** eval
 

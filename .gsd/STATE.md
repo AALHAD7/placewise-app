@@ -1,10 +1,10 @@
 # STATE
 
-**Position:** ▶ R2 (M1 Consulting RAG), all 12 plans done; verifier PASS conditional on owner confirming the scoring
-reading (pass = faithful or flagged at draw; hallucination gate on unflagged pages only). Updated 2026-10-21.
-Best version: v5 doc `c1521f01-bcbf-4163-923d-dc501859dc31` (inactive, 248/386, 173 flagged). Fresh sample 39/40 pass,
-raw faithful 21/40. Flagged pages 64, 90 hold hallucinations. Report: `.gsd/phases/R2/VERIFICATION.md`.
-For R5: import per-page findings from `backend/ingestion/out/r2_sample*_review.json` and sweep files into the review queue.
+**Position:** ▶ R3 (Aalhad: write 20–30 Consulting test questions in `backend/eval/questions.jsonl`). Updated 2026-10-21.
+R2 done 2026-10-21 (owner: "Flagged = pass"; p56 "Leave to review"). Best version: v5 doc
+`c1521f01-bcbf-4163-923d-dc501859dc31` (inactive, 248/386, 173 flagged); sample 39/40, raw faithful 21/40.
+For R5: import per-page findings from `backend/ingestion/out/r2_*review*.json` and `r2_sweep_*.json` into the review queue.
+For R6: add the R2.12 free fixes first (ragged tables, title-strip guard, inner-label check, titles in seq_diff).
 R1 done 2026-10-20 (Aalhad: "R1 approved").
 See `.gsd/ROADMAP.md` and the top entries of `log.md`.
 
