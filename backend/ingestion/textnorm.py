@@ -414,7 +414,12 @@ def _caption_class(line: str, pt: PageText):
     caption that may hold printed text: kept, raises invented_text)."""
     if not _is_caption_line(line, pt):
         return None
-    share = pt.word_share(_caption_inner(line))
+    inner = _caption_inner(line)
+    share = pt.word_share(inner)
+    # Never delete a printed number: a caption holding a number the page prints is flagged.
+    page_nums = extract_numbers(pt.raw)
+    if any(n in page_nums for n in extract_numbers(inner)):
+        return "flag"
     return "strip" if share is not None and share < CAPTION_DELETE_MAX else "flag"
 
 

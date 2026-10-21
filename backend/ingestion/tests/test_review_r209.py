@@ -100,6 +100,14 @@ class TestFinding3PageTextAndCaptions(unittest.TestCase):
         self.assertEqual(strip_invented_text(md, "Intro line")[0], "Intro line")
 
 
+class TestCaptionKeepsPrintedNumbers(unittest.TestCase):
+    def test_caption_with_printed_number_flagged_not_deleted(self):
+        md = "Intro line\n*(Donut chart visual: 45%)*"
+        tl = "Intro line 45%"
+        self.assertEqual(strip_invented_text(md, tl), (md, 0))
+        self.assertIn("invented_text", check_page(tl, md, False)["review_reasons"])
+
+
 class TestFinding4PlaceholderText(unittest.TestCase):
     def test_image_label_unwrapped_when_printed(self):
         tl = "Market growth chart\nRevenue rose"

@@ -40,7 +40,7 @@ from diagram_schema import FENCE_INFO, extract_blocks  # noqa: E402
 from fidelity import check_page  # noqa: E402
 from postprocess import postprocess_markdown  # noqa: E402
 from seqdiff import _TOKEN_RE, _key, boilerplate_lines, repair_block_reason  # noqa: E402
-from textnorm import _BRACKET_RE, _KEEP_BRACKETS, PageText, _is_placeholder, _outside_blocks, fold_quotes  # noqa: E402
+from textnorm import invented_text_issues, _BRACKET_RE, _KEEP_BRACKETS, PageText, _is_placeholder, _outside_blocks, fold_quotes  # noqa: E402
 
 OUT = INGESTION_DIR / "out"
 V4_DOC_ID = "d1510e35-9ecc-419b-a497-85a37e062792"
@@ -65,6 +65,8 @@ G2_ALLOWED_STRIPS = ("placeholder", "link_bracket")
 G2_SEQ_MAX = 2
 G4_SHARE_MAX = 0.40
 G6_PAGES = [15, 56, 67, 69, 71, 228]
+G5_AMENDMENT = ("G5 p77: 2 of 3 captions removed, 1 kept and flagged invented_text per review finding 3; "
+                "amended by the orchestrator, not loosened silently")
 P77_CAPTIONS = ["Donut Chart visual representation", "(Horizontal Bar Chart)", "(Icons for"]
 STRUCT_TYPES = ("issue_tree", "flow")
 PAGE_COLS = ("id, page_no, is_text, is_table, is_visual, is_scanned, text_layer, markdown, method, "
@@ -200,6 +202,10 @@ def block_titles(md: str) -> list:
             if b["fence"] == FENCE_INFO and isinstance(b["obj"], dict)]
 
 
+def tl_by_page(rows, n) -> str:
+    return next((r.get("text_layer") or "" for r in rows if r["page_no"] == n), "")
+
+
 def g6_result(final_reasons: dict, new_reasons: dict, pages) -> dict:
     per = {n: {"framework_as_text": "framework_as_text" in new_reasons.get(n, []),
                "flagged": bool(final_reasons.get(n))} for n in pages}
@@ -321,6 +327,13 @@ def main(argv=None) -> int:
     lb_after = [n for n in per if leftover_link_brackets(new_md[n], pts[n])]
     p23_titles = block_titles(new_md[23])
     p77_left = [c for c in P77_CAPTIONS if c in new_md[77]]
+    # Orchestrator amendment (after review round 2, finding 3): a p77 caption that is kept
+    # because >= 40% of its words are printed meets the item when it is flagged
+    # invented_text ("faithful OR flagged"). The strict result is still recorded.
+    p77_flagged = {t for k, t in invented_text_issues(new_md[77], tl_by_page(rows, 77)) if k == "caption"}
+    p77_left_unflagged = [c for c in p77_left if not any(c in t for t in p77_flagged)]
+    g5_strict = (not ph_after and not lb_after and bool(p23_titles) and all(t is None for t in p23_titles)
+                 and not p77_left)
     calib_titles = [{"page_no": n, "title": s[1]} for n in sorted(per) if per[n]["calibration"]
                     for s in per[n]["strips"] if s[0] == "block_title"]
     printed_changed = [t for t in calib_titles if pts[t["page_no"]].on_page(t["title"])]
@@ -328,8 +341,12 @@ def main(argv=None) -> int:
                    "link_bracket_pages_before": len(lb_before), "link_bracket_pages_after": lb_after,
                    "p23_titles": p23_titles, "p77_captions_left": p77_left,
                    "calibration_titles_nulled": calib_titles, "printed_titles_changed": printed_changed,
-                   "ok": (not ph_after and not lb_after and p23_titles and all(t is None for t in p23_titles)
-                          and not p77_left and not printed_changed)}
+                   "p77_captions_left_unflagged": p77_left_unflagged,
+                   "strict_ok": g5_strict and not printed_changed,
+                   "amended": bool(p77_left) and not p77_left_unflagged,
+                   "amendment": G5_AMENDMENT,
+                   "ok": (not ph_after and not lb_after and bool(p23_titles) and all(t is None for t in p23_titles)
+                          and not p77_left_unflagged and not printed_changed)}
     # G6
     final = {n: per[n]["reasons"] for n in per}
     gates["G6"] = g6_result(final, {n: per[n]["reasons_new"] for n in per}, G6_PAGES)
@@ -393,7 +410,7 @@ def main(argv=None) -> int:
           f"{len(g5['placeholder_pages_after'])}; link-bracket pages {g5['link_bracket_pages_before']} -> "
           f"{len(g5['link_bracket_pages_after'])}; p23 titles {g5['p23_titles']}; p77 captions left "
           f"{g5['p77_captions_left']}; printed titles changed {len(g5['printed_titles_changed'])}  "
-          + ("PASS" if g5["ok"] else "FAIL"))
+          + (("PASS (amended: p77 caption flagged)" if g5["amended"] else "PASS") if g5["ok"] else "FAIL"))
     g6 = gates["G6"]
     print(f"  G6 framework pages         " + " ".join(
         f"p{n}:{'F' if v['framework_as_text'] else ''}{'flagged' if v['flagged'] else 'UNFLAGGED'}"
