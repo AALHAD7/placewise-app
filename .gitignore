@@ -33,3 +33,4 @@ backend/ingestion/**/__pycache__/
 backend/ingestion/*_output.json
 backend/ingestion/old_chunks_*.json
 backend/ingestion/out/
+backend/ingestion/review/
