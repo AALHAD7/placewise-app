@@ -21,6 +21,10 @@ document_chunks are never read for writing.
     venv/bin/python run_v4.py --resume           # after a stopped embedding run
 
 Exit codes: 0 done (or already done), 1 abort, 2 stopped cleanly before the DB write.
+
+NOTE (R2.09): postprocess_markdown and check_page have since gained the R2.09 steps
+(invented-text strip, anchored prose repair, seq_diff / invented_text / framework_as_text).
+Re-running this script no longer reproduces the stored v4; v4 in the DB is the record.
 """
 import argparse
 import json

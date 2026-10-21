@@ -11,7 +11,8 @@ fixed in .gsd/phases/R2/09-PLAN.md before any result was seen:
   G2  the 13 faithful R2 sample pages: 0 repairs, 0 strips except logo placeholders and
       link brackets; seq_diff on <= 2 of them.
   G3  every repair on the 121 calibration pages is listed; automatic check: the repaired
-      line has fewer token trigrams the text layer does not print than before.
+      line has fewer token trigrams the text layer does not print than before, and the
+      change is not a split/join, a digit change or a Title Case splice (review finding 6).
       A human check of the same list is recorded in the report.
   G4  seq_diff newly flags <= 40% of the pages unflagged in v4.
   G5  unprinted logo placeholders 0 after; leftover link brackets 0 after; p23 block title
@@ -38,7 +39,7 @@ sys.path.insert(0, str(INGESTION_DIR))
 from diagram_schema import FENCE_INFO, extract_blocks  # noqa: E402
 from fidelity import check_page  # noqa: E402
 from postprocess import postprocess_markdown  # noqa: E402
-from seqdiff import _TOKEN_RE, _key, boilerplate_lines  # noqa: E402
+from seqdiff import _TOKEN_RE, _key, boilerplate_lines, repair_block_reason  # noqa: E402
 from textnorm import _BRACKET_RE, _KEEP_BRACKETS, PageText, _is_placeholder, _outside_blocks, fold_quotes  # noqa: E402
 
 OUT = INGESTION_DIR / "out"
@@ -129,8 +130,33 @@ def _trigram_misses(line: str, tl_grams: set) -> int:
     return sum(1 for g in zip(keys, keys[1:], keys[2:]) if g not in tl_grams)
 
 
+def repair_bad_reason(before: str, after: str):
+    """Review fix (finding 6): a repair that is a split/join, touches a digit or splices a
+    Title Case word in mid-sentence is bad whatever the trigram count says. Returns the
+    seqdiff.repair_block_reason of the first changed region, or None."""
+    from difflib import SequenceMatcher
+    ta, tb = list(_TOKEN_RE.finditer(before or "")), list(_TOKEN_RE.finditer(after or ""))
+    sm = SequenceMatcher(None, [m.group(0) for m in ta], [m.group(0) for m in tb], autojunk=False)
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            continue
+        a0 = ta[i1 - 1].end() if i1 > 0 else 0
+        a1 = ta[i2].start() if i2 < len(ta) else len(before)
+        b0 = tb[j1 - 1].end() if j1 > 0 else 0
+        b1 = tb[j2].start() if j2 < len(tb) else len(after)
+        removed = {m.group(0).lower() for m in ta[i1:i2]}
+        inserted = [m.group(0) for m in tb[j1:j2] if m.group(0).lower() not in removed]
+        why = repair_block_reason(before[a0:a1], after[b0:b1], inserted, before[:a0])
+        if why:
+            return why
+    return None
+
+
 def repair_improves(before: str, after: str, text_layer: str) -> bool:
-    """The repaired line has fewer token trigrams that the text layer does not print."""
+    """The repaired line has fewer token trigrams that the text layer does not print, and
+    the change is not a split/join, a digit change or a Title Case splice."""
+    if repair_bad_reason(before, after):
+        return False
     tl_keys = [_key(m.group(0)) for m in _TOKEN_RE.finditer(text_layer or "")]
     grams = set(zip(tl_keys, tl_keys[1:], tl_keys[2:]))
     return _trigram_misses(after, grams) < _trigram_misses(before, grams)

@@ -40,6 +40,13 @@ BOILERPLATE_MIN_PAGES = 2
 # text printed inside an image (logo subtitle, picture heading: FMS p2, p5, p85). The text
 # layer cannot judge it, so it is not counted as an insertion (captions: invented_text).
 IMAGE_LINE_MAX_WORDS = 6
+# Review fix: the exemption is for counting only. A short unmatched line with >= 2 words
+# whose content words are (almost) all absent from the page is invented prose
+# ("Approach used by the candidate") and raises `invented_text`.
+INVENTED_LINE_MIN_WORDS = 2
+INVENTED_LINE_MAX_SHARE = 0.2
+_STOPWORDS = frozenset("a an the of to in on for by and or with at from as is are be this that it its "
+                       "used use".split())
 
 _TOKEN_RE = re.compile(r"[^\W_]+(?:(?:['’‘′\-/.&]|(?<=\d),(?=\d))[^\W_]+)*%?|[.?!,;:]")
 _PUNCT = set(".?!,;:")
@@ -48,6 +55,38 @@ _LINK_RE = re.compile(r"\]\(|https?://|www\.")
 _FORBIDDEN_IN_SPAN = set("*_`[]<>|")
 # Characters a repaired text-layer span may carry besides tokens and spaces.
 _SPAN_OK_RE = re.compile(r"^[\w\s.?!,;:'’‘′\"“”()%&/\-–]*$")
+
+
+_SPLIT_JOIN_RE = re.compile(r"[\s\-/–]+")
+_SENTENCE_END = ".?!:"
+
+
+def _letters(s: str) -> str:
+    return _SPLIT_JOIN_RE.sub("", fold_quotes(unicodedata.normalize("NFKC", s or ""))).lower()
+
+
+def repair_block_reason(md_gap: str, tl_gap: str, inserted_words, before_text: str, op_lines_ok: bool = True):
+    """Why a candidate repair must NOT be applied (it is then only flagged), or None.
+    (a) split/join: both sides have the same letters once spaces, hyphens and slashes go
+        ("profit" / "pro fit", "decline" / "decli-ne", "cost/ Unit" / "cost/Unit");
+    (b) a digit on either side ("3.5%" / "35%", "1,000" / "1, 000", callout "12");
+    (c) an inserted word in Title Case mid-sentence (a callout or heading spliced in:
+        "look at Key insight the revenue side"); "I", "I'm" etc. are allowed;
+    (d) the text-layer side of the op crosses a line break (op_lines_ok False)."""
+    if _letters(md_gap) == _letters(tl_gap):
+        return "split_join"
+    if any(ch.isdigit() for ch in md_gap + tl_gap):
+        return "digit"
+    prev = (before_text or "").rstrip()
+    mid_sentence = bool(prev) and prev[-1] not in _SENTENCE_END
+    if mid_sentence:
+        for w in inserted_words:
+            core = fold_quotes(w).strip("\"'()")
+            if core[:1].isupper() and not (core == "I" or core.startswith("I'")):
+                return "title_case_insert"
+    if not op_lines_ok:
+        return "line_break"
+    return None
 
 
 def _key(tok: str) -> str:
@@ -104,9 +143,10 @@ def _is_boilerplate_line(keys, bp_vocab) -> bool:
     return bool(bp_vocab) and len(words) >= 2 and all(k in bp_vocab or k.isdigit() for k in words)
 
 
-def _md_prose_tokens(markdown: str, bp_vocab=frozenset()):
+def _md_prose_tokens(markdown: str, bp_vocab=frozenset(), line_texts=None):
     """[(key, start, end, line_id)] for prose tokens, spans in the original markdown."""
     out, pos, line_id = [], 0, 0
+    texts = {}
     for seg, is_block in _outside_blocks(markdown):
         if not is_block:
             off = pos
@@ -114,11 +154,14 @@ def _md_prose_tokens(markdown: str, bp_vocab=frozenset()):
                 if _is_prose_line(line):
                     ms = list(_TOKEN_RE.finditer(line))
                     if not _is_boilerplate_line([_key(m.group(0)) for m in ms], bp_vocab):
+                        texts[line_id] = line
                         for m in ms:
                             out.append((_key(m.group(0)), off + m.start(), off + m.end(), line_id))
                 off += len(line) + 1
                 line_id += 1
         pos += len(seg)
+    if line_texts is not None:
+        line_texts.update(texts)
     return out
 
 
@@ -177,13 +220,14 @@ def analyse(markdown: str, text_layer: str, boilerplate=None) -> dict:
     Each op: tag, md_text, tl_text, real_del, real_ins, whole_line, repairable
     (+ md_span, replacement when repairable)."""
     from fidelity import coverage_text  # lazy: fidelity imports config
-    empty = {"ops": [], "real_tokens": 0, "whole_line_deletions": 0, "flag": False}
+    empty = {"ops": [], "real_tokens": 0, "whole_line_deletions": 0, "flag": False, "invented_lines": []}
     markdown = markdown or ""
     if _no_text_layer(text_layer) or not markdown.strip():
         return empty
     tl = _prep_text_layer(text_layer)
     bp_vocab = {k for line in (boilerplate or ()) for k in _tokens(line)}
-    A = _md_prose_tokens(markdown, bp_vocab)
+    line_texts = {}
+    A = _md_prose_tokens(markdown, bp_vocab, line_texts)
     B, per_line = _tl_tokens(tl, boilerplate)
     if not A and not B:
         return empty
@@ -263,8 +307,13 @@ def analyse(markdown: str, text_layer: str, boilerplate=None) -> dict:
             hi = j2 + 1 if c["tl_after"] else j2
             tl_lines = [b[3] for b in B[j1 - 1:hi]]
             contiguous = all(y - x <= 1 for x, y in zip(tl_lines, tl_lines[1:]))
-            if contiguous and not (set(md_gap) & _FORBIDDEN_IN_SPAN) and not (set(tl_gap) & _FORBIDDEN_IN_SPAN) \
-                    and "\n" not in md_gap and _SPAN_OK_RE.match(tl_gap):
+            md_words = {a[0] for a in A[i1:i2]}
+            inserted = [tl[b[1]:b[2]] for b in B[j1:j2] if b[0] not in md_words and _is_word(b[0])]
+            op_lines_ok = len({b[3] for b in B[j1:j2]}) <= 1
+            block = repair_block_reason(md_gap, tl_gap, inserted, markdown[:md_a], op_lines_ok)
+            op["repair_blocked"] = block
+            if block is None and contiguous and not (set(md_gap) & _FORBIDDEN_IN_SPAN) \
+                    and not (set(tl_gap) & _FORBIDDEN_IN_SPAN) and "\n" not in md_gap and _SPAN_OK_RE.match(tl_gap):
                 new = re.sub(r"\s+", " ", tl_gap)
                 if not c["md_after"]:
                     new = new.rstrip()
@@ -275,8 +324,22 @@ def analyse(markdown: str, text_layer: str, boilerplate=None) -> dict:
             whole_dels += 1
         real_total += c["real_del"] + c["real_ins"]
         ops.append(op)
-    flag = real_total > SEQ_DIFF_MIN_TOKENS or whole_dels > 0
-    return {"ops": ops, "real_tokens": real_total, "whole_line_deletions": whole_dels, "flag": flag}
+    # A repair that was blocked (split/join, digit, Title Case, line break) is never silent.
+    blocked = any(op.get("repair_blocked") for op in ops)
+    flag = real_total > SEQ_DIFF_MIN_TOKENS or whole_dels > 0 or blocked
+    from textnorm import PageText
+    pt = PageText(text_layer)
+    invented = []
+    for lid in sorted(image_line):
+        text = line_texts.get(lid, "")
+        words = re.findall(r"[^\W\d_]{2,}", text)
+        content = [w for w in words if w.lower() not in _STOPWORDS]
+        if len(words) >= INVENTED_LINE_MIN_WORDS and content:
+            share = pt.word_share(" ".join(content))
+            if share is not None and share <= INVENTED_LINE_MAX_SHARE:
+                invented.append(text.strip())
+    return {"ops": ops, "real_tokens": real_total, "whole_line_deletions": whole_dels, "flag": flag,
+            "invented_lines": invented}
 
 
 def repair_prose(markdown: str, text_layer: str, boilerplate=None, log=None):
@@ -313,4 +376,5 @@ def seq_diff_ops(markdown: str, text_layer: str, boilerplate=None) -> dict:
     on the given (already repaired) markdown."""
     res = analyse(markdown, text_layer, boilerplate)
     return {"ops": len(res["ops"]), "tokens": res["real_tokens"],
-            "whole_line_deletions": res["whole_line_deletions"], "flag": res["flag"]}
+            "whole_line_deletions": res["whole_line_deletions"], "flag": res["flag"],
+            "invented_lines": res["invented_lines"]}

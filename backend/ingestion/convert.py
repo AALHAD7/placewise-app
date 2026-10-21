@@ -18,6 +18,7 @@ from diagram_schema import FENCE_INFO, extract_blocks, has_bullet_lines  # noqa:
 from textnorm import normalize_label  # noqa: F401
 from page_classify import classify_page, render_page_png
 from fidelity import check_page
+from seqdiff import boilerplate_lines
 from gemini_client import BudgetExceeded, VisionCallError, transcribe_page
 
 # Vision prompt (PROMPT_VERSION in config.py; r1-diagrams-v2 adds the R1.08
@@ -207,7 +208,8 @@ from postprocess import (collapse_multiline_labels, collapse_multiline_labels_wi
                          postprocess_markdown)
 
 
-def _vision_attempt(png, prompt, page_no, text_layer, is_scanned, call_log, reason, attempt, max_http):
+def _vision_attempt(png, prompt, page_no, text_layer, is_scanned, call_log, reason, attempt, max_http,
+                    boilerplate=None):
     """One page attempt (it may use more than one HTTP request when the model
     cascade kicks in; every request is logged by transcribe_page). Raises
     BudgetExceeded when the run cap is hit."""
@@ -226,8 +228,8 @@ def _vision_attempt(png, prompt, page_no, text_layer, is_scanned, call_log, reas
         if len(call_log) > before:
             call_log[-1]["error"] = str(e)[:200]
     http_calls = len(call_log) - before
-    md, label_lines, n_quotes, n_links = postprocess_markdown(md, text_layer)
-    fid = check_page(text_layer, md, is_scanned, page_no, label_lines=label_lines)
+    md, label_lines, n_quotes, n_links = postprocess_markdown(md, text_layer, boilerplate=boilerplate)
+    fid = check_page(text_layer, md, is_scanned, page_no, label_lines=label_lines, boilerplate=boilerplate)
     fid["label_lines"] = label_lines
     fid["quotes_restored"] = n_quotes
     fid["links_stripped"] = n_links
@@ -239,7 +241,7 @@ def _vision_attempt(png, prompt, page_no, text_layer, is_scanned, call_log, reas
 
 
 def convert_page_vision(png: bytes, page_no: int, text_layer: str, is_scanned: bool,
-                        call_log: list, reason: str) -> dict:
+                        call_log: list, reason: str, boilerplate=None) -> dict:
     """Vision-convert one page with VISION_PROMPT.
 
     Hard cap: VISION_MAX_CALLS_PER_PAGE HTTP requests for the page, counted at
@@ -250,12 +252,13 @@ def convert_page_vision(png: bytes, page_no: int, text_layer: str, is_scanned: b
     escalates the model. After the final attempt, multi-line labels without
     list markers are collapsed to one line and the page is re-checked.
     Raises BudgetExceeded if the run-level cap (set_vision_cap) is hit before
-    the first attempt; a cap hit on the retry keeps attempt 1."""
+    the first attempt; a cap hit on the retry keeps attempt 1. `boilerplate` =
+    seqdiff.boilerplate_lines of the whole document (R2.09; None = per-page only)."""
     budget = VISION_MAX_CALLS_PER_PAGE
     log_start = len(call_log)
     prompt = build_vision_prompt(page_no, text_layer)
     md, fid, truncated, model, used = _vision_attempt(png, prompt, page_no, text_layer, is_scanned,
-                                                      call_log, reason, 1, budget)
+                                                      call_log, reason, 1, budget, boilerplate)
     attempts, http_calls, retry_skipped = 1, used, None
     failed_call = md.startswith("[UNREADABLE] (vision call failed")
     wants_retry = (VISION_RETRY_ON_DIAGRAM_FAIL and not failed_call
@@ -268,7 +271,7 @@ def convert_page_vision(png: bytes, page_no: int, text_layer: str, is_scanned: b
         try:
             md2, fid2, trunc2, model2, used2 = _vision_attempt(
                 png, prompt2, page_no, text_layer, is_scanned, call_log,
-                reason + "+diagram_retry", 2, budget - used)
+                reason + "+diagram_retry", 2, budget - used, boilerplate)
             attempts, http_calls = 2, used + used2
             if _score(fid2, trunc2) > _score(fid, truncated):
                 md, fid, truncated, model = md2, fid2, trunc2, model2
@@ -363,22 +366,27 @@ def convert_document(pdf_path: Path, call_log: list) -> dict:
     docling_pages = docling_markdown_per_page(docling_result)
     docling_table_pages = docling_tables_per_page(docling_result)
 
+    # R2.09: classify every page first, so the document's running header/footer lines
+    # (seqdiff.boilerplate_lines) are known before any page is post-processed and checked.
+    classes = [classify_page(pdf[i], docling_has_table=(i + 1 in docling_table_pages)) for i in range(page_count)]
+    boilerplate = boilerplate_lines([c["text_layer"] or "" for c in classes])
+
     pages_out = []
     for i in range(page_count):
         page_no = i + 1
         page = pdf[i]
-        cls = classify_page(page, docling_has_table=(page_no in docling_table_pages))
+        cls = classes[i]
         docling_md = _strip_docling_placeholders(docling_pages.get(page_no, ""))
 
         if cls["is_table"] or (cls["is_text"] and not cls["is_visual"]):
             markdown = docling_md
             method = "docling"
-            fid = check_page(cls["text_layer"], markdown, cls["is_scanned"], page_no)
+            fid = check_page(cls["text_layer"], markdown, cls["is_scanned"], page_no, boilerplate=boilerplate)
             extra = {"prompt_version": None, "attempts": 0}
         else:
             png = render_page_png(page, RENDER_DPI)
             v = convert_page_vision(png, page_no, cls["text_layer"], cls["is_scanned"],
-                                    call_log, "visual_or_scanned")
+                                    call_log, "visual_or_scanned", boilerplate)
             markdown, method = v.pop("markdown"), v.pop("method")
             fid, extra = v, {}
 
@@ -389,7 +397,7 @@ def convert_document(pdf_path: Path, call_log: list) -> dict:
         if method == "docling" and fid["needs_review"] and not cls["is_scanned"]:
             png = render_page_png(page, RENDER_DPI)
             v = convert_page_vision(png, page_no, cls["text_layer"], False,
-                                    call_log, "docling_fidelity_retry")
+                                    call_log, "docling_fidelity_retry", boilerplate)
             if _score(v, v.get("truncated", False)) > _score(fid, False):
                 docling_debug = markdown
                 markdown = v.pop("markdown")

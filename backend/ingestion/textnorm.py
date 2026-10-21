@@ -313,9 +313,13 @@ def strip_stray_parens(markdown: str, text_layer: str):
 # printed text would be a `missing` defect.
 
 CAPTION_ON_PAGE_MIN = 0.6
+# Review fix: a caption is deleted only when < 40% of its words are printed; from 40% up it
+# may hold printed text, so it is kept and flagged (`invented_text`) instead.
+CAPTION_DELETE_MAX = 0.4
 _PLACEHOLDER_WORDS_RE = re.compile(r"\b(?:logos?|images?|icons?|photos?)\b", re.IGNORECASE)
 _BRACKET_RE = re.compile(r"(?<![\]!\\])\[([^\[\]\n]*)\](?![(\[:])")
-_KEEP_BRACKETS = {"unreadable", "", "x"}
+_KEEP_BRACKETS = {"unreadable", "", "x", "sic"}
+_NUMERIC_BRACKET_RE = re.compile(r"^[\s\d.,:;\-–]+$")   # [1], [2-4]: citation / footnote numbers
 _ALPHA_WORD_RE = re.compile(r"[^\W\d_]{2,}")
 _ITALIC_LINE_RE = re.compile(r"^\s*(?:\*(?!\*)(.+?)(?<!\*)\*|_(?!_)(.+?)(?<!_)_)\s*$")
 _PAREN_LINE_RE = re.compile(r"^\s*\((.+)\)\s*$")
@@ -329,8 +333,12 @@ class PageText:
     def __init__(self, text_layer: str):
         self.raw = text_layer or ""
         self.exact = exact_token_set(self.raw)
-        tl = unicodedata.normalize("NFKC", self.raw)
-        self.words = {w.lower() for w in _ALPHA_WORD_RE.findall(fold_quotes(tl))}
+        # Prepared like seqdiff._prep_text_layer (NFKC, pdfium fixes); a "-\n" break is read
+        # both as a hyphenated word and as one joined word ("decli-\nne" -> "decline").
+        tl = unicodedata.normalize("NFKC", self.raw).translate(_TEXT_LAYER_FIXES)
+        kept = _EXACT_HYPHEN_BREAK_RE.sub("-", tl)
+        joined = _EXACT_HYPHEN_BREAK_RE.sub("", tl)
+        self.words = {w.lower() for t in (kept, joined) for w in _ALPHA_WORD_RE.findall(fold_quotes(t))}
         self.flat = fold_quotes(normalize_exact(tl))
 
     def on_page(self, text: str) -> bool:
@@ -357,16 +365,34 @@ def _is_placeholder(inner: str) -> bool:
     return s.lower() == "logo" or bool(_PLACEHOLDER_WORDS_RE.search(s))
 
 
+_PLACEHOLDER_PREFIX_RE = re.compile(r"^\s*(?:logos?|images?|icons?|photos?)\s*[:\-–]\s*", re.IGNORECASE)
+
+
+def _placeholder_text(inner: str) -> str:
+    """"Image: Market growth chart" -> "Market growth chart" ("" when there is no text)."""
+    m = _PLACEHOLDER_PREFIX_RE.match(inner)
+    return inner[m.end():].strip() if m else ""
+
+
+def _keep_bracket(inner: str) -> bool:
+    key = inner.strip().lower()
+    return key in _KEEP_BRACKETS or bool(_NUMERIC_BRACKET_RE.match(inner))
+
+
 def _strip_brackets_line(line: str, pt: PageText, log):
     """Logo/image placeholders deleted, leftover link brackets unwrapped."""
     def repl(m):
         inner = m.group(1)
-        key = inner.strip().lower()
-        if key in _KEEP_BRACKETS or pt.prints_bracketed(inner):
+        if _keep_bracket(inner) or pt.prints_bracketed(inner):
             return m.group(0)
         if _is_placeholder(inner):
             if pt.on_page(inner):
                 return m.group(0)
+            rest = _placeholder_text(inner)
+            if rest and pt.on_page(rest):
+                if log is not None:
+                    log.append(("placeholder", m.group(0), rest))
+                return rest
             if log is not None:
                 log.append(("placeholder", m.group(0), ""))
             return ""
@@ -381,6 +407,25 @@ def _strip_brackets_line(line: str, pt: PageText, log):
     if new != line:
         new = re.sub(r"[ \t]{2,}", " ", new).rstrip()
     return new
+
+
+def _caption_class(line: str, pt: PageText):
+    """None (not a caption), "strip" (< 40% of its words printed) or "flag" (an invented
+    caption that may hold printed text: kept, raises invented_text)."""
+    if not _is_caption_line(line, pt):
+        return None
+    share = pt.word_share(_caption_inner(line))
+    return "strip" if share is not None and share < CAPTION_DELETE_MAX else "flag"
+
+
+def _caption_inner(line: str):
+    s = line.strip()
+    m = _ITALIC_LINE_RE.match(s)
+    inner = (m.group(1) or m.group(2)) if m else None
+    if inner is None:
+        m = _PAREN_LINE_RE.match(s)
+        inner = m.group(1) if m else None
+    return inner
 
 
 def _is_caption_line(line: str, pt: PageText) -> bool:
@@ -417,11 +462,11 @@ def _strip_cell_captions(line: str, pt: PageText, log) -> str:
     for ci, cell in enumerate(cells):
         parts = _BR_RE.split(cell)
         pieces = parts[0::2]
-        if not any(_is_caption_line(pc, pt) for pc in pieces):
+        if not any(_caption_class(pc, pt) == "strip" for pc in pieces):
             continue
-        kept = [pc for pc in pieces if not _is_caption_line(pc, pt)]
+        kept = [pc for pc in pieces if _caption_class(pc, pt) != "strip"]
         for pc in pieces:
-            if _is_caption_line(pc, pt):
+            if _caption_class(pc, pt) == "strip":
                 local_before = pc.strip()
                 if log is not None:
                     log.append(("caption", local_before, ""))
@@ -463,6 +508,27 @@ def _table_rows(lines):
             i += 1
 
 
+def _json_depth_at(raw: str, pos: int) -> int:
+    """Object/array nesting depth at `pos` of a fenced JSON block (strings skipped)."""
+    start = raw.find("\n") + 1
+    depth, i, in_str = 0, start, False
+    while i < pos:
+        ch = raw[i]
+        if in_str:
+            if ch == "\\":
+                i += 1
+            elif ch == '"':
+                in_str = False
+        elif ch == '"':
+            in_str = True
+        elif ch in "{[":
+            depth += 1
+        elif ch in "}]":
+            depth -= 1
+        i += 1
+    return depth
+
+
 _TITLE_LIT_RE = re.compile(r'("title"\s*:\s*)("(?:[^"\\\n]|\\.)*")')
 
 
@@ -474,6 +540,8 @@ def _null_block_title(raw_block: str, obj, pt: PageText, log):
     if not isinstance(title, str) or not title.strip() or pt.on_page(title):
         return raw_block
     for m in _TITLE_LIT_RE.finditer(raw_block):
+        if _json_depth_at(raw_block, m.start()) != 1:
+            continue  # only the block's own (top-level) title
         try:
             if json.loads(m.group(2)) != title:
                 continue
@@ -523,7 +591,7 @@ def strip_invented_text(markdown: str, text_layer: str, log=None):
             new = _strip_brackets_line(line, pt, local)
             if new is None:
                 continue
-            if _is_caption_line(new, pt):
+            if _caption_class(new, pt) == "strip":
                 local.append(("caption", new, ""))
                 continue
             if new.lstrip().startswith("|"):
@@ -555,6 +623,13 @@ def invented_text_issues(markdown: str, text_layer: str) -> list:
         if is_block:
             continue
         lines = seg.split("\n")
+        for line in lines:
+            pieces = [line]
+            if line.lstrip().startswith("|"):
+                pieces = [pc for cell in line.split("|") for pc in _BR_RE.split(cell)[0::2]]
+            for pc in pieces:
+                if _caption_class(pc, pt) == "flag":
+                    issues.append(("caption", pc.strip()))
         for a, _z in _table_rows(lines):
             cells = [_EMPHASIS_STRIP_RE.sub("", c).strip() for c in _cells(lines[a])]
             cells = [c for c in cells if c and _ALPHA_WORD_RE.search(c)]

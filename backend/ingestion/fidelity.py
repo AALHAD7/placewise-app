@@ -213,7 +213,7 @@ def check_page(text_layer: str, markdown: str, is_scanned: bool, page_no=None, l
         seq = seq_diff_ops(markdown, text_layer, boilerplate)
         if seq["flag"]:
             _add(reasons, "seq_diff")
-        if invented_text_issues(markdown, text_layer):
+        if invented_text_issues(markdown, text_layer) or seq["invented_lines"]:
             _add(reasons, "invented_text")
         diag = check_diagrams(markdown, text_layer, page_no, label_lines)
     if uc > 0:
