@@ -5,7 +5,38 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
-## 2026-10-21 — R5.1: review-queue migration 041 written (NOT applied yet); findings importer ready
+## 2026-10-21 — R5.2: admin review API built (reads live; writes wait for migration 041)
+**Phase:** R5 · **Type:** feature (admin only; nothing students see changes)
+
+**What changed:** New admin-only endpoints under `/api/admin/review/*`:
+- list the ingest documents with flagged counts;
+- list the flagged pages for one version (with filters by status and reason);
+- show one page with everything a reviewer needs;
+- stream that page's image;
+- record Approve / Mark wrong / Edit-then-approve / Reopen.
+
+The routes have their own limiter (300 per 15 min). They are mounted before `/api/admin`, so `/api/admin/usage` keeps its 60-request limiter.
+Writes go only through the migration-041 RPC. The reviewer email is always the server-verified admin, never a value from the request body.
+Page images are proxied by the backend, so no storage URL or `image_path` reaches the browser.
+
+**Also fixed a dev-only bug:** `/api/dev/test-login` signed in on the shared service-role Supabase client, which stored the dev user's session on it. After the first dev login, every server query in that process ran as the dev user under RLS, so the service-role-only `ingest_*` tables read back empty. It now signs in on a throwaway client. The route stays blocked in production, as before.
+
+**Files:** `backend/src/lib/diagramBlocks.js`, `backend/src/lib/reviewQueue.js`, `backend/src/routes/adminReview.js`, `backend/src/middleware/rateLimit.js`, `backend/src/server.js`, `backend/src/routes/dev.js`, `backend/test/reviewQueue.test.js`, `backend/test/api.test.js`
+**Proof:**
+- curl, no token: 404. Non-admin token (second server with `ADMIN_EMAILS=nobody@example.invalid`): 404 on documents, image and actions.
+- The documents list shows the 5 FMS versions, with the default set to v5 `c1521f01…`.
+- The v5 queue has 173 pending flagged pages across 21 reasons, and no `image_path` appears in any response.
+- The p46 image comes back as `image/png` with `private, no-store`. `file` reports a 2001x1125 PNG.
+- `/api/admin/usage` returns 200 with `RateLimit-Policy: 60;w=900`.
+- `reviewQueue` tests: 22/22 pass.
+- `npm test`: 68 tests, 65 pass, 2 skipped (they need migration 041), 1 failure. The failure is the known `sandbox.test.js` `__CF_USER_TEXT_ENCODING` test, which this change does not touch.
+- `/cso` scoped static run `1792591414968-ba99d91b0ac5c3ea`: no supported findings. The run is partial by design (`--paths`).
+**Cost:** 0 Gemini calls.
+**Undo:** remove the `app.use("/api/admin/review", …)` line in `server.js`.
+**Open issues:**
+- Migration 041 is still not applied, so actions return 503 ("Review storage is not set up yet"). Findings and history come back empty, with `review_schema_ready: false`.
+- After Aalhad applies it, someone must run the plan's v1 page-3 write round-trip (edit_approve, then reopen, 409/404 checks, markdown sha256 unchanged, append-only error) and record the two review ids here. That round-trip can run over REST, so an agent can do it.
+ (NOT applied yet); findings importer ready
 **Phase:** R5 · **Type:** migration
 
 **What changed:** I wrote migration 041 for the admin review queue. It adds an append-only review history table (`ingest_page_reviews`), a table for the R1/R2 reviewer findings (`ingest_page_findings`) and one atomic review RPC (`ingest_review_page`). It is additive only: it adds no column to `ingest_pages`, and the RPC changes only `review_status`.
