@@ -1,0 +1,51 @@
+/* PlacewiseDiagram (components/diagrams/PlacewiseDiagram.tsx). Tokens only, both themes. */
+.pwd{margin:12px 0;padding:14px 16px;border:1px solid var(--card-border);border-radius:var(--r-md);background:var(--surface);color:var(--text-900);font-size:var(--fs-small);line-height:1.4}
+.pwd-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.pwd-type{font-size:var(--fs-micro);text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--text-lightgray)}
+.pwd-title{font-weight:700;font-size:var(--fs-body);color:var(--text-900)}
+.pwd-meta{font-size:var(--fs-caption);color:var(--text-gray2);margin-bottom:8px}
+.pwd-missing{color:var(--text-lightgray);font-style:italic}
+.pwd-notes{margin:10px 0 0;padding:8px 0 0 18px;border-top:1px solid var(--divider);font-size:var(--fs-caption);color:var(--text-gray2)}
+
+/* issue_tree: nested lists, CSS borders as connectors */
+.pwd-tree,.pwd-tree-children{list-style:none;margin:0;padding:0}
+.pwd-tree-children{margin-left:10px;padding-left:16px;border-left:1px solid var(--border-strong)}
+.pwd-tree-node{position:relative;margin:4px 0}
+.pwd-tree-children > .pwd-tree-node::before{content:"";position:absolute;left:-16px;top:.85em;width:12px;border-top:1px solid var(--border-strong)}
+.pwd-tree-label{display:inline-block;padding:3px 9px;border:1px solid var(--card-border);border-radius:var(--r-xs);background:var(--surface-sunken)}
+
+/* flow: numbered nodes with outgoing edges */
+.pwd-flow{margin:0;padding-left:22px}
+.pwd-flow-node{margin:6px 0}
+.pwd-flow-label{font-weight:600}
+.pwd-flow-id{margin-left:8px;font-size:var(--fs-micro);color:var(--text-lightgray)}
+.pwd-flow-edges{list-style:none;margin:2px 0 0;padding-left:12px;color:var(--text-700)}
+.pwd-flow-edge-label{color:var(--text-gray2);font-style:italic}
+
+/* matrix */
+.pwd-axis{text-align:center;font-size:var(--fs-micro);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lightgray);margin-bottom:6px}
+.pwd-matrix-body{display:flex}
+.pwd-axis-y{writing-mode:vertical-rl;transform:rotate(180deg);margin:0 8px 0 0;flex:none}
+.pwd-matrix-grid{flex:1;min-width:0;display:grid;gap:6px}
+.pwd-matrix-head,.pwd-matrix-rowhead{font-size:var(--fs-caption);font-weight:600;color:var(--text-gray2);display:flex;align-items:center;justify-content:center;text-align:center}
+.pwd-matrix-rowhead{justify-content:flex-end;text-align:right;padding-right:4px}
+.pwd-matrix-cell{background:var(--surface-sunken);color:var(--indigo);border-radius:var(--r-sm);padding:10px 8px;min-height:42px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}
+
+/* funnel */
+.pwd-funnel{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pwd-funnel-stage{background:var(--surface-sunken);color:var(--indigo);border-radius:var(--r-sm);padding:8px 12px;font-weight:700;text-align:center}
+
+/* chart / table */
+.pwd-scroll{overflow-x:auto}
+.pwd-table{border-collapse:collapse;font-size:var(--fs-caption);min-width:100%}
+.pwd-table th,.pwd-table td{border:1px solid var(--card-border);padding:5px 8px;text-align:left;vertical-align:top}
+.pwd-table thead th{background:var(--surface-sunken);font-weight:600}
+
+/* other */
+.pwd-desc{margin:0 0 6px}
+.pwd-labels{margin:0;padding-left:18px;color:var(--text-700)}
+
+/* fallback */
+.pwd-fallback{border-color:var(--red-dark)}
+.pwd-fallback-title{font-weight:700;color:var(--red-dark);margin-bottom:6px}
+.pwd-json{margin:0;max-height:240px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:var(--fs-micro);background:var(--surface-sunken);padding:8px;border-radius:var(--r-xs)}
