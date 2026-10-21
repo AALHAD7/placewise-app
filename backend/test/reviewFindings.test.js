@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normaliseReviewFile } from "../src/lib/reviewFindings.js";
+import { normaliseReviewFile, entryKey } from "../src/lib/reviewFindings.js";
 
 const SRC = "The FMS Consulting CaseBook 2023-24 (1).pdf";
 
@@ -29,7 +29,23 @@ test("duplicate page_no gives two distinct entry keys", () => {
   const rows = normaliseReviewFile("r1_review_v3", r1, SRC).filter((r) => r.page_no === 31);
   assert.equal(rows.length, 2);
   assert.notEqual(rows[0].entry_key, rows[1].entry_key);
-  assert.deepEqual(rows.map((r) => r.entry_key), ["p31:0", "p31:1"]);
+  for (const r of rows) assert.match(r.entry_key, /^p31:[0-9a-f]{12}$/);
+});
+
+test("entry keys come from content, not position", () => {
+  const keys = normaliseReviewFile("r1_review_v3", r1, SRC).slice(0, 2).map((r) => r.entry_key);
+  const reordered = { ...r1, pages: [r1.pages[1], r1.pages[0]] };
+  const keys2 = normaliseReviewFile("r1_review_v3", reordered, SRC).slice(0, 2).map((r) => r.entry_key);
+  assert.deepEqual([...keys2].reverse(), keys, "reordering entries keeps each entry's key");
+  // Key order inside the entry does not matter; any content change does.
+  assert.equal(entryKey({ page_no: 3, verdict: "pass", note: "a" }), entryKey({ note: "a", verdict: "pass", page_no: 3 }));
+  assert.notEqual(entryKey({ page_no: 3, verdict: "pass" }), entryKey({ page_no: 3, verdict: "fail" }));
+  assert.equal(entryKey({ page_no: 3 }), entryKey({ page_no: 3 }));
+});
+
+test("a byte-identical duplicate entry becomes one row", () => {
+  const dup = { document_id: "d", ingestion_version: 5, pages: [{ page_no: 7, verdict: "pass" }, { verdict: "pass", page_no: 7 }] };
+  assert.equal(normaliseReviewFile("x", dup, SRC).length, 1);
 });
 
 test("mismatch types are de-duplicated and notes joined", () => {

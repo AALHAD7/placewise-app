@@ -1,6 +1,7 @@
 // Turns one local R1/R2 reviewer file (backend/ingestion/out/*.json) into rows for the
 // ingest_page_findings table (migration_041). Pure: no file, env or network access, so the
 // tests stay offline. The import script (scripts/importReviewFindings.js) does the I/O.
+import { createHash } from "node:crypto";
 
 const NOTE_FIELDS = ["checked", "note", "items_detail", "decision", "other_issues"];
 
@@ -19,6 +20,23 @@ function reviewerName(reviewer) {
   return null;
 }
 
+// JSON with object keys sorted at every level, so the same content always hashes the same.
+function stableStringify(value) {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(value ?? null);
+}
+
+// Content-based key for one pages[] entry: page_no + a short hash of the whole entry.
+// Unlike the array index, it does not shift when a review file is edited or reordered,
+// so a re-import can never attach an old row's key to a different finding.
+export function entryKey(entry) {
+  const hash = createHash("sha256").update(stableStringify(entry)).digest("hex").slice(0, 12);
+  return `p${entry?.page_no}:${hash}`;
+}
+
 export function normaliseReviewFile(sourceName, json, sourceFile) {
   const doc = json || {};
   const base = {
@@ -31,15 +49,19 @@ export function normaliseReviewFile(sourceName, json, sourceFile) {
   const rows = [];
 
   const pages = Array.isArray(doc.pages) ? doc.pages : [];
-  pages.forEach((entry, i) => {
+  const seen = new Set();
+  pages.forEach((entry) => {
     const e = entry || {};
+    const key = entryKey(e);
+    if (seen.has(key)) return; // byte-identical duplicate entry: one finding, not two
+    seen.add(key);
     const mismatches = Array.isArray(e.mismatches) ? e.mismatches : [];
     const types = [...new Set(mismatches.map((m) => m && m.type).filter(Boolean))];
     const note = NOTE_FIELDS.map((k) => asText(e[k])).filter(Boolean).join(" · ");
     rows.push({
       ...base,
       page_no: e.page_no,
-      entry_key: `p${e.page_no}:${i}`,
+      entry_key: key,
       verdict: e.verdict ?? null,
       outcome: e.outcome ?? null,
       mismatch_types: types,

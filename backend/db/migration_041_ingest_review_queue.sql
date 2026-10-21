@@ -99,6 +99,9 @@ create or replace function ingest_review_page(
   p_expected_status text
 ) returns jsonb
 language plpgsql
+-- Pinned search_path: unqualified names below always resolve to public, never to an
+-- object planted earlier in a caller's search_path.
+set search_path = public, pg_temp
 as $$
 declare
   v_page record;
@@ -115,7 +118,13 @@ begin
     raise exception 'page_not_found';
   end if;
 
-  if p_expected_status is not null and p_expected_status is distinct from v_page.review_status then
+  -- Every action must say which status the reviewer saw (optimistic concurrency), so a
+  -- stale tab can never silently overwrite a newer decision.
+  if p_expected_status is null then
+    raise exception 'expected_status_required';
+  end if;
+
+  if p_expected_status is distinct from v_page.review_status then
     raise exception 'status_conflict';
   end if;
 
@@ -132,6 +141,9 @@ begin
     end if;
     v_new_status := 'wrong';
   elsif p_action = 'reopen' then
+    if v_page.review_status = 'pending' then
+      raise exception 'already_pending';
+    end if;
     v_new_status := 'pending';
   else
     raise exception 'bad_action';

@@ -37,11 +37,13 @@ export function validateActionBody(body) {
   if (note && note.length > MAX_NOTE) return fail(`note must be at most ${MAX_NOTE} characters.`);
   if (action === "mark_wrong" && !note) return fail("mark_wrong needs a note saying what is wrong.");
 
-  let expectedStatus = null;
-  if (b.expected_status != null) {
-    if (!STATUSES.includes(b.expected_status)) return fail(`expected_status must be one of: ${STATUSES.join(", ")}.`);
-    expectedStatus = b.expected_status;
+  // Required: the status the reviewer saw. The RPC refuses the action if the page has
+  // changed since (409), so a stale tab cannot overwrite a newer decision.
+  if (!STATUSES.includes(b.expected_status)) {
+    return fail(`expected_status is required and must be one of: ${STATUSES.join(", ")}.`);
   }
+  const expectedStatus = b.expected_status;
+  if (action === "reopen" && expectedStatus === "pending") return fail("This page is already pending.");
 
   let markdown = null;
   if (action === "edit_approve") {
@@ -83,7 +85,9 @@ export function mapRpcError(message) {
   if (m.includes("status_conflict")) {
     return { status: 409, error: "This page's review status changed since you loaded it. Reload and try again." };
   }
-  if (m.includes("bad_action") || m.includes("note_required") || m.includes("markdown_required")) {
+  if (m.includes("already_pending")) return { status: 409, error: "This page is already pending." };
+  if (m.includes("bad_action") || m.includes("note_required") || m.includes("markdown_required") ||
+      m.includes("expected_status_required")) {
     return { status: 400, error: "That review action is not valid for this page." };
   }
   return { status: 500, error: "Failed to record the review." };

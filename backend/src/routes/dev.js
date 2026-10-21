@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { createClient } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase.js";
 import { errorDetail } from "../lib/errors.js";
 import { devLoginLimiter } from "../middleware/rateLimit.js";
@@ -26,17 +27,29 @@ const router = Router();
 const TEST_EMAIL = "dev-test@placementmasteryhub.local";
 const TEST_PASSWORD = "dev-test-local-only-12345!";
 
+// Sign in on a throwaway client, never on the shared service-role client: supabase-js
+// stores the signed-in session on the client it was called on and then sends the USER's
+// JWT on every later query, so signing in on lib/supabase.js silently turned every
+// subsequent server query in that process into an RLS-bound dev-user query (found in
+// R5: the service-role-only ingest_* tables read back empty after a dev login).
+function signInClient() {
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+
 router.post("/test-login", devLoginLimiter, async (req, res) => {
   if (process.env.NODE_ENV === "production" || process.env.ENABLE_DEV_LOGIN !== "true") {
     return res.status(404).end();
   }
 
   try {
-    let signIn = await supabase.auth.signInWithPassword({ email: TEST_EMAIL, password: TEST_PASSWORD });
+    const authClient = signInClient();
+    let signIn = await authClient.auth.signInWithPassword({ email: TEST_EMAIL, password: TEST_PASSWORD });
     if (signIn.error) {
       const created = await supabase.auth.admin.createUser({ email: TEST_EMAIL, password: TEST_PASSWORD, email_confirm: true });
       if (created.error) throw created.error;
-      signIn = await supabase.auth.signInWithPassword({ email: TEST_EMAIL, password: TEST_PASSWORD });
+      signIn = await authClient.auth.signInWithPassword({ email: TEST_EMAIL, password: TEST_PASSWORD });
       if (signIn.error) throw signIn.error;
     }
     res.json({ access_token: signIn.data.session.access_token });

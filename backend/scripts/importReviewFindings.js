@@ -2,7 +2,7 @@
 // (migration_041), so they show next to each page in the R5 admin review queue.
 //
 //   node scripts/importReviewFindings.js --dry-run   # per-file row counts, no writes
-//   node scripts/importReviewFindings.js             # upsert (re-runs update, never duplicate)
+//   node scripts/importReviewFindings.js             # insert-only: existing rows are never overwritten
 //
 // Reads local, gitignored files from backend/ingestion/out/. No Gemini calls.
 import "dotenv/config";
@@ -47,10 +47,12 @@ async function main() {
     for (let i = 0; i < f.rows.length; i += BATCH) {
       const { error } = await supabase
         .from("ingest_page_findings")
-        .upsert(f.rows.slice(i, i + BATCH), { onConflict: "source_name,entry_key" });
-      if (error) throw new Error(`${f.name}: upsert failed: ${error.message}`);
+        // Insert-only (ON CONFLICT DO NOTHING): a re-run skips rows that already exist and
+        // never rewrites an imported finding. entry_key is content-based (reviewFindings.js).
+        .upsert(f.rows.slice(i, i + BATCH), { onConflict: "source_name,entry_key", ignoreDuplicates: true });
+      if (error) throw new Error(`${f.name}: insert failed: ${error.message}`);
     }
-    console.log(`upserted ${f.name}: ${f.rows.length}`);
+    console.log(`inserted (new rows only) ${f.name}: ${f.rows.length} candidate rows`);
   }
 
   const { count, error } = await supabase

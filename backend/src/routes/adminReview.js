@@ -74,7 +74,8 @@ async function optionalRead(query) {
 
 function sendError(res, endpoint, err, fallback) {
   if (err instanceof HttpError) return res.status(err.status).json({ success: false, error: err.message });
-  console.error(`[admin/review/${endpoint}]`, err);
+  // Message only: the whole error object can carry request/response internals.
+  console.error(`[admin/review/${endpoint}]`, err?.message || String(err));
   return res.status(500).json({ success: false, error: fallback, detail: errorDetail(err) });
 }
 
@@ -275,11 +276,11 @@ router.post("/pages/:pageId/actions", async (req, res) => {
     });
     if (error) {
       if (isMissingSchemaError(error)) {
-        console.error("[admin/review/actions] ingest_review_page missing (migration 041 not applied)", error);
+        console.error("[admin/review/actions] ingest_review_page missing (migration 041 not applied):", error.message);
         return res.status(503).json({ success: false, error: "Review storage is not set up yet (migration 041)." });
       }
       const mapped = mapRpcError(error.message);
-      if (mapped.status === 500) console.error("[admin/review/actions]", error);
+      if (mapped.status === 500) console.error("[admin/review/actions]", error.message);
       return res.status(mapped.status).json({
         success: false, error: mapped.error, ...(mapped.status === 500 ? { detail: errorDetail(error) } : {})
       });

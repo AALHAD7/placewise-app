@@ -21,15 +21,24 @@ Page images are proxied by the backend, so no storage URL or `image_path` reache
 
 **Also fixed a dev-only bug:** `/api/dev/test-login` signed in on the shared service-role Supabase client, which stored the dev user's session on it. After the first dev login, every server query in that process ran as the dev user under RLS, so the service-role-only `ingest_*` tables read back empty. It now signs in on a throwaway client. The route stays blocked in production, as before.
 
-**Files:** `backend/src/lib/diagramBlocks.js`, `backend/src/lib/reviewQueue.js`, `backend/src/routes/adminReview.js`, `backend/src/middleware/rateLimit.js`, `backend/src/server.js`, `backend/src/routes/dev.js`, `backend/test/reviewQueue.test.js`, `backend/test/api.test.js`
+**Code-review fixes (same day, before commit):**
+- `expected_status` is now required on every action. The API returns 400 without it, and the RPC raises `expected_status_required`, so a stale tab can't overwrite a newer decision.
+- Reopening a page that is already pending is rejected: 400 in the API, `already_pending` (mapped to 409) in the RPC.
+- The RPC now has `set search_path = public, pg_temp`.
+  - Migration 041 was edited in place. That is safe only because it has not been applied anywhere.
+- The findings importer now builds `entry_key` from the content (page_no + 12 hex characters of a sha256 over the entry with sorted keys), not from the array index. A byte-identical duplicate entry collapses to one row.
+- The import is insert-only (`ignoreDuplicates: true`), so a re-run never overwrites a row. The dry-run total is still 184.
+- Review-route logs now print only `err.message`.
+- `api.test.js` now also checks a valid non-admin token: a second server is started with `ADMIN_EMAILS=nobody@example.invalid`, and all 5 review routes give 404 with an empty body.
+
+**Files:** `backend/src/lib/diagramBlocks.js`, `backend/src/lib/reviewQueue.js`, `backend/src/routes/adminReview.js`, `backend/src/middleware/rateLimit.js`, `backend/src/server.js`, `backend/src/routes/dev.js`, `backend/test/reviewQueue.test.js`, `backend/test/api.test.js`, plus the fixes above in `backend/db/migration_041_ingest_review_queue.sql`, `backend/src/lib/reviewFindings.js`, `backend/scripts/importReviewFindings.js`, `backend/test/reviewFindings.test.js`
 **Proof:**
 - curl, no token: 404. Non-admin token (second server with `ADMIN_EMAILS=nobody@example.invalid`): 404 on documents, image and actions.
 - The documents list shows the 5 FMS versions, with the default set to v5 `c1521f01…`.
 - The v5 queue has 173 pending flagged pages across 21 reasons, and no `image_path` appears in any response.
 - The p46 image comes back as `image/png` with `private, no-store`. `file` reports a 2001x1125 PNG.
 - `/api/admin/usage` returns 200 with `RateLimit-Policy: 60;w=900`.
-- `reviewQueue` tests: 22/22 pass.
-- `npm test`: 68 tests, 65 pass, 2 skipped (they need migration 041), 1 failure. The failure is the known `sandbox.test.js` `__CF_USER_TEXT_ENCODING` test, which this change does not touch.
+- `npm test` after the review fixes: 73 tests, 70 pass, 2 skipped (they need migration 041), 1 failure. `reviewQueue`: 24/24 pass. `reviewFindings`: 9/9 pass. The failure is the known `sandbox.test.js` `__CF_USER_TEXT_ENCODING` test, which this change does not touch.
 - `/cso` scoped static run `1792591414968-ba99d91b0ac5c3ea`: no supported findings. The run is partial by design (`--paths`).
 **Cost:** 0 Gemini calls.
 **Undo:** remove the `app.use("/api/admin/review", …)` line in `server.js`.

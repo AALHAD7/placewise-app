@@ -87,47 +87,63 @@ test("validateActionBody: unknown or missing action", () => {
   assert.equal(validateActionBody(null).ok, false);
 });
 
+test("validateActionBody: expected_status is required and must be a known status", () => {
+  const missing = validateActionBody({ action: "approve" });
+  assert.equal(missing.ok, false);
+  assert.match(missing.error, /expected_status is required/);
+  assert.equal(validateActionBody({ action: "approve", expected_status: null }).ok, false);
+  assert.equal(validateActionBody({ action: "approve", expected_status: "done" }).ok, false);
+});
+
 test("validateActionBody: approve and reopen, note optional", () => {
-  const a = validateActionBody({ action: "approve" });
+  const a = validateActionBody({ action: "approve", expected_status: "pending" });
   assert.equal(a.ok, true);
   assert.equal(a.note, null);
   assert.equal(a.markdown, null);
+  assert.equal(a.expectedStatus, "pending");
   const r = validateActionBody({ action: "reopen", note: "  second look  ", expected_status: "approved" });
   assert.equal(r.ok, true);
   assert.equal(r.note, "second look");
   assert.equal(r.expectedStatus, "approved");
-  assert.equal(validateActionBody({ action: "approve", expected_status: "done" }).ok, false);
-  assert.equal(validateActionBody({ action: "approve", note: 5 }).ok, false);
+  assert.equal(validateActionBody({ action: "approve", note: 5, expected_status: "pending" }).ok, false);
+});
+
+test("validateActionBody: reopen of a page that is already pending is rejected", () => {
+  const r = validateActionBody({ action: "reopen", expected_status: "pending" });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /already pending/);
 });
 
 test("validateActionBody: a body email is ignored (no reviewer field returned)", () => {
-  const r = validateActionBody({ action: "approve", email: "attacker@example.com", p_email: "x@y.z" });
+  const r = validateActionBody({ action: "approve", expected_status: "pending", email: "attacker@example.com", p_email: "x@y.z" });
   assert.equal(r.ok, true);
   assert.ok(!("email" in r) && !("p_email" in r));
 });
 
 test("validateActionBody: mark_wrong needs a non-blank note of at most 2000 chars", () => {
-  assert.equal(validateActionBody({ action: "mark_wrong" }).ok, false);
-  assert.equal(validateActionBody({ action: "mark_wrong", note: "   " }).ok, false);
-  assert.equal(validateActionBody({ action: "mark_wrong", note: "x".repeat(2001) }).ok, false);
-  const ok = validateActionBody({ action: "mark_wrong", note: "Root label wrong" });
+  const ps = { expected_status: "pending" };
+  assert.equal(validateActionBody({ action: "mark_wrong", ...ps }).ok, false);
+  assert.equal(validateActionBody({ action: "mark_wrong", note: "   ", ...ps }).ok, false);
+  assert.equal(validateActionBody({ action: "mark_wrong", note: "x".repeat(2001), ...ps }).ok, false);
+  const ok = validateActionBody({ action: "mark_wrong", note: "Root label wrong", ...ps });
   assert.equal(ok.ok, true);
   assert.equal(ok.note, "Root label wrong");
 });
 
 test("validateActionBody: edit_approve needs markdown with drawable blocks", () => {
-  assert.equal(validateActionBody({ action: "edit_approve" }).ok, false);
-  assert.equal(validateActionBody({ action: "edit_approve", markdown: "x".repeat(50001) }).ok, false);
-  const broken = validateActionBody({ action: "edit_approve", markdown: "Text\n" + fence(VALID.flow) + "\n" + fence("{bad") });
+  const ps = { expected_status: "pending" };
+  assert.equal(validateActionBody({ action: "edit_approve", ...ps }).ok, false);
+  assert.equal(validateActionBody({ action: "edit_approve", markdown: "x".repeat(50001), ...ps }).ok, false);
+  const broken = validateActionBody({ action: "edit_approve", markdown: "Text\n" + fence(VALID.flow) + "\n" + fence("{bad"), ...ps });
   assert.equal(broken.ok, false);
   assert.equal(broken.blockErrors.length, 1);
   assert.equal(broken.blockErrors[0].index, 1);
   assert.match(broken.blockErrors[0].errors[0], /invalid JSON/);
   const md = "Text\n" + fence(VALID.flow) + "\n" + fence(VALID.table);
-  const ok = validateActionBody({ action: "edit_approve", markdown: md });
+  const ok = validateActionBody({ action: "edit_approve", markdown: md, ...ps });
   assert.equal(ok.ok, true);
   assert.equal(ok.markdown, md);
-  assert.equal(validateActionBody({ action: "edit_approve", markdown: "Plain text, no diagrams" }).ok, true);
+  assert.equal(validateActionBody({ action: "edit_approve", markdown: "Plain text, no diagrams", ...ps }).ok, true);
 });
 
 test("diagramsFromMarkdown returns the parsed blocks in order", () => {
@@ -150,6 +166,8 @@ test("mapRpcError maps wrapped Postgres messages", () => {
   assert.equal(mapRpcError("P0001: status_conflict").status, 409);
   assert.equal(mapRpcError("bad_action").status, 400);
   assert.equal(mapRpcError("note_required").status, 400);
+  assert.equal(mapRpcError("ERROR: expected_status_required").status, 400);
+  assert.equal(mapRpcError("ERROR: already_pending").status, 409);
   const other = mapRpcError("connection reset by peer at 10.0.0.1");
   assert.equal(other.status, 500);
   assert.ok(!other.error.includes("10.0.0.1"));
