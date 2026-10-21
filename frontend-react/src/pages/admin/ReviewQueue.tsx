@@ -155,6 +155,12 @@ export default function ReviewQueue() {
   const [schemaReady, setSchemaReady] = useState(true);
 
   const imageCache = useRef(new Map<string, string>());
+  const imageInflight = useRef(new Map<string, Promise<string>>());
+  const shownImageId = useRef<string | null>(null);
+  const mounted = useRef(true);
+  // A message to show after the next detail load (e.g. the 409 notice), since loading
+  // a page otherwise clears actionError.
+  const pendingNotice = useRef<string | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const focusHeading = useRef(false);
   const toastTimer = useRef<number | null>(null);
@@ -204,7 +210,8 @@ export default function ReviewQueue() {
     setMode("view");
     setTab("rebuilt");
     setNote("");
-    setActionError("");
+    setActionError(pendingNotice.current ?? "");
+    pendingNotice.current = null;
     setBlockErrors([]);
     setZoom(false);
     apiFetch<AdminReviewPageResponse>(`${BASE}/pages/${selectedId}?${queueQuery()}`, {}, "Couldn't load this page.")
@@ -220,6 +227,40 @@ export default function ReviewQueue() {
   }, [selectedId, detailNonce, queueQuery]);
 
   // --- page image (blob URL, small LRU, revoked on eviction/unmount) ---
+  // One fetch per page id at a time (in-flight promises are shared), a cache entry is
+  // revoked before it is replaced, the image on screen is never evicted, and a fetch
+  // that finishes after unmount revokes its URL straight away.
+  const loadImage = useCallback((id: string): Promise<string> => {
+    const pending = imageInflight.current.get(id);
+    if (pending) return pending;
+    const p = apiFetchBlob(`${BASE}/pages/${id}/image`, "Image not available.")
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        if (!mounted.current) {
+          URL.revokeObjectURL(url);
+          throw new Error("unmounted");
+        }
+        const cache = imageCache.current;
+        const old = cache.get(id);
+        if (old && old !== url) URL.revokeObjectURL(old);
+        cache.delete(id);
+        cache.set(id, url);
+        while (cache.size > IMAGE_CACHE_MAX) {
+          let victim: string | null = null;
+          for (const key of cache.keys()) {
+            if (key !== shownImageId.current && key !== id) { victim = key; break; }
+          }
+          if (!victim) break;
+          URL.revokeObjectURL(cache.get(victim) as string);
+          cache.delete(victim);
+        }
+        return url;
+      })
+      .finally(() => imageInflight.current.delete(id));
+    imageInflight.current.set(id, p);
+    return p;
+  }, []);
+
   useEffect(() => {
     if (!selectedId) return;
     const cache = imageCache.current;
@@ -227,33 +268,32 @@ export default function ReviewQueue() {
     if (hit) {
       cache.delete(selectedId);
       cache.set(selectedId, hit);
+      shownImageId.current = selectedId;
       setImage({ state: "ready", url: hit });
       return;
     }
     let live = true;
     setImage({ state: "loading" });
-    apiFetchBlob(`${BASE}/pages/${selectedId}/image`, "Image not available.")
-      .then((blob) => {
-        const url = URL.createObjectURL(blob);
-        cache.set(selectedId, url);
-        while (cache.size > IMAGE_CACHE_MAX) {
-          const oldest = cache.keys().next().value as string;
-          URL.revokeObjectURL(cache.get(oldest) as string);
-          cache.delete(oldest);
-        }
-        if (live) setImage({ state: "ready", url });
+    loadImage(selectedId)
+      .then((url) => {
+        if (!live) return;
+        shownImageId.current = selectedId;
+        setImage({ state: "ready", url });
       })
       .catch(() => live && setImage({ state: "error" }));
     return () => {
       live = false;
     };
-  }, [selectedId]);
+  }, [selectedId, loadImage]);
 
   useEffect(() => {
+    mounted.current = true;
     const cache = imageCache.current;
     return () => {
+      mounted.current = false;
       cache.forEach((url) => URL.revokeObjectURL(url));
       cache.clear();
+      shownImageId.current = null;
       if (toastTimer.current) window.clearTimeout(toastTimer.current);
     };
   }, []);
@@ -355,7 +395,7 @@ export default function ReviewQueue() {
       }
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
-        setActionError("This page changed — reloaded.");
+        pendingNotice.current = "This page changed since you loaded it, so your action was not saved. The page has been reloaded; check it and try again.";
         setDetailNonce((n) => n + 1);
       } else {
         if (e instanceof ApiError && e.status === 503) setSchemaReady(false);
