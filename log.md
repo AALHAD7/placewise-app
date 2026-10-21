@@ -5,6 +5,126 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-21 — R2.11–R2.12: v5 fresh-sample review complete (40 holdout pages): 39/40 pass, bar MET
+**Phase:** R2 · **Type:** eval
+
+**What changed:** The fidelity-reviewer checked half 2 of the R2.11 sample (20 v5 pages, doc `c1521f01-bcbf-4163-923d-dc501859dc31`) against the page images with the same strict rule as half 1 and R2.08. It reviewed half 2 before reading half 1's verdicts, then scored all 40 pages. One page had an error nothing had flagged (p236), so it is now flagged on v5. Nothing was approved and no code changed. **R2's bar is met on v5: 39 of 40 pages pass (0.975), with 1 missed page and no `hallucinated` issue on any unflagged page.**
+**Why:** This closes the plans 11–12 re-check of v5 against R2's done-criterion: a pass rate (faithful or flagged at draw) of at least 0.95, and 0 hallucinations on unflagged pages.
+**Half 1 (R2.11)** (page | flagged at draw | outcome | issue | evidence):
+
+| page | flagged | outcome | issue | evidence |
+|---|---|---|---|---|
+| 114, 239, 94, 163, 165, 144, 7, 107, 159, 133, 235 | 114/94/107 yes, rest no | faithful | – | word for word, including punctuation (6 dense dialogue pages) |
+| 211 | yes | caught | structure_lost | wrong parents under Church; internal sequence lost |
+| 152 | yes | caught | altered | LaTeX in prose ("$1000\text{ Km}$") |
+| 197 | yes | caught | structure_lost | second tree stored as an off-schema key |
+| 209 | yes | caught | structure_lost | construction sequence stored as unordered siblings |
+| 142 | yes | caught | altered, missing, structure_lost | LaTeX in prose; lever arrows lost |
+| 59 | yes | caught | structure_lost | chart block inside a table cell |
+| 205 | yes | caught | missing, structure_lost | "now" dropped; dialogue laid out as a table |
+| 174 | yes | caught | missing, altered | formula box missing |
+| 63 | yes | caught | altered | pie values on the wrong slices |
+
+**Half 2 (R2.12):**
+
+| page | flagged | outcome | issue | evidence |
+|---|---|---|---|---|
+| 173 | no | faithful | – | dialogue word for word (only a "#of" → "# of" space and a doubled footer year, not counted) |
+| 127 | yes | faithful | – | 26 dialogue turns word for word, printed typos kept |
+| 248 | yes | faithful | – | title, 6 icon labels, address match |
+| 158 | no | faithful | – | section divider matches |
+| 100 | yes | caught | altered | "32.9 * 10⁷" stored as "32.9 * 107" (exponent lost) |
+| 37 | no | faithful | – | 60+ cheat-sheet numbers match; pie values on the right legend entries |
+| 46 | yes | caught | structure_lost | "Backward, forward, horizontal, vertical integration" box under Joint Ventures only; it sits under JV and M&A |
+| 90 | yes | caught | altered, hallucinated | title "Cheese Burst Pizzas" → "Cheese Burst Pets"; invented and partly wrong edges between calculation boxes |
+| 241 | yes | caught | missing, structure_lost | "Case Index \| Main Index" dropped; side note "Pop. of India = 1.35B" made the root of the Industry Size tree |
+| 175 | no | faithful | – | 22 dialogue turns word for word |
+| 216 | yes | caught | structure_lost, missing | "Lighting/Signs" box under Government → Other Factors; it hangs from Other Infra. "Approach" heading dropped |
+| 68 | yes | faithful | – | tables, value chain and composition values match |
+| 222 | no | faithful | – | 32 dialogue turns word for word |
+| 64 | yes | caught | hallucinated, altered | unprinted nodes "Sector Details" / "Revenue & Cost Drivers"; "–" → "-" |
+| 25 | yes | caught | missing | table title "XYZ Shoe company Income Statement (₹ (in lakhs))" gone, so the unit is lost; all 72 values match |
+| 47 | yes | caught | missing | banner "Understand the Question and Clarify the Objectives" dropped |
+| 16 | no | faithful | – | BCG matrix, 4×3 table and tagline match |
+| 55 | yes | caught | altered | printed "USD $97.7.M" → "$97.7M"; "2021-22)" lost its ")" |
+| 236 | no | **missed** | structure_lost | two side-by-side tables (hours/customers and products/prices) merged into one table with ragged rows (5/7/7 cells): "Hot Coffee 60% 40" sits under the wrong headers, and the prices 30 and 20 fall off the rows |
+| 224 | yes | faithful | – | 26 dialogue turns word for word; the R1 ")" residue is gone |
+
+**Scores (scoring fixed in plan 08, unchanged), next to R2.08:**
+
+| measure | R2.08 (v4) | R2.12 (v5) |
+|---|---|---|
+| pass rate (faithful + caught) | 34/40 = 0.85 [0.709, 0.929] | **39/40 = 0.975 [0.871, 0.996]** |
+| raw faithful rate | 13/40 = 0.325 [0.201, 0.480] | 21/40 = 0.525 [0.375, 0.671] |
+| missed pages | 6 | **1** (236) |
+| unflagged miss rate | 6/17 = 0.353 [0.173, 0.587] | **1/15 = 0.067 [0.012, 0.298]** |
+| hallucinated on unflagged pages | [150] (gate failed) | **[] (gate passes)** |
+| flagged at draw | 23/40 | 25/40 |
+
+- Intervals are plain Wilson 95%, which is conservative: the sample is n = 40 of N = 127 holdout pages, and the finite-population correction (≈ 0.83) would narrow them by about 17%. The pass-rate lower bound (0.871) is below 0.95; the bar is a point-estimate bar (at most 2 missed), as set in plan 08.
+- By half: half 1 = 11 faithful, 9 caught, 0 missed; half 2 = 10 faithful, 9 caught, 1 missed.
+- Hallucinated on flagged pages (a pattern, not a gate failure): 64, 90.
+- Flag reasons on the 25 flagged pages: structure_unreviewed 19, seq_diff 13, diagram_label 10, diagram_structure 5, diagram_flattened 5, diagram_missing_box 4, diagram_label_altered 3, framework_as_text 2, others ≤ 2. Flagged but faithful: 7 pages (94, 107, 114, 127, 224, 248, 68).
+- Plan verify: `20 Counter({'faithful': 10, 'caught': 9, 'missed': 1}) zero_items []`; all-40 check prints `R2 BAR MET`.
+
+**How much of the pass rate comes from flags:**
+- 18 of the 39 passing pages pass only because they were flagged (caught). Without any flags, the pass rate would equal the raw faithful rate (0.525).
+- 17 of the 18 caught pages were already flagged in v4 by specific checks (diagram_label/structure/missing_box/flattened, word_coverage, fallback_v1).
+- **1 caught page relied only on a plan-09 blanket flag: p205 (`framework_as_text`; unflagged in v4).** No caught page relied only on `structure_unreviewed`, although 15 of the 18 carry it.
+- Without plan-09's new flags, p205 would be missed, giving 2 missed and 38/40 = 0.95. The bar would still be met, but only just.
+
+**Plan-09 repairs and strips on sampled pages** (checked only after scoring):
+- 5 prose repairs on 4 pages (114, 173 ×2, 175, 239): all correct, and all 4 pages are faithful.
+- 10 placeholder and link-bracket strips: all correct.
+- 2 block-title strips: **p25 was wrong.** It deleted the printed table title, because the table is a raster image with an empty text layer, so "not printed" was judged on nothing. p64 was correct (unprinted "Sector Details"), but the same invented text survives as the block's root label.
+
+**Patterns (ranked; full list in `result.patterns`):**
+1. Side-by-side tables merged into one Markdown table with ragged rows (236). Every word is present, so no word check sees it. **Free fix:** flag any table whose row cell count differs from the header. 6 v5 pages have this (60, 67, 73, 89, 112, 236), all flagged now.
+2. Wrong parent, invented edges, or a note promoted to root: 46, 90, 216, 241 (+ 211, 197, 209, 142, 174). All were flagged; these need human review (R5) or a vision re-call.
+3. The block-title strip deletes printed titles on raster regions (25). **Free fix:** strip only when the block's own labels are in the text layer, otherwise flag.
+4. Invented grouping nodes inside blocks (64, 90). **Free fix:** run the unprinted-text check on root and internal labels, and flag.
+5. Printed typos or punctuation "corrected" in labels, or superscripts flattened: 55, 64, 100, 174. 10⁷ → 107 is invisible to the text layer.
+6. Dropped headings, banners or nav: 47, 216, 241, 205. Mostly caught by `seq_diff`.
+7. "Pizzas" → "Pets" in the page title (90, from v3 vision output) did not raise `seq_diff`. **Free fix:** include title lines in the diff, case-folded.
+8. LaTeX in prose (142, 152); pie values on the wrong slices (63); a word dropped inside a table cell is invisible to `seq_diff` (205).
+
+**Flag changes:** v5 p236: needs_review false → true, reasons [] → [`fidelity_review:structure_lost`]. v5 needs_review 172 → 173. review_status stays pending, approved = 0. No other version was touched.
+**Files:** `backend/ingestion/out/r2_sample_v5_review.json` (half 2 + `result`), `out/r2_sample_v5_flags_before.json` (+236), `out/r2_sample_v5_2.html` (all local); `log.md`. Scratch: `scratchpad/r2_plan12/`.
+**Cost:** 0 Gemini calls.
+**Undo:** Restore needs_review and review_reasons on v5 p236 from `out/r2_sample_v5_flags_before.json` (false, []).
+**Open issues:**
+- **Aalhad, please confirm the scoring reading:** (a) pass = faithful *or* flagged at draw (a flagged page is held for human review); (b) the hallucination gate applies only to pages unflagged at draw. Under a strict "no hallucination anywhere" reading, flagged pages 64 and 90 would fail.
+- R2 is ready for the `verifier`. ROADMAP and STATE are not marked by this plan.
+- The margin is thin: the pass rate's Wilson lower bound is 0.871, and only 21/40 pages are fully faithful. 62.5% of sampled pages (and 173/248 of v5) depend on R5 human review before students see them.
+- Free follow-ups (not started; no new fix round in this plan): ragged-table flag, the raster-safe title strip, an internal-label invented check, and title lines in `seq_diff`.
+- Still pending from earlier: p56 airline names, and whether every unchecked tree/flow page gets flagged.
+
+---
+
+## 2026-10-21 — R2.11: fresh v5 sample drawn (40 holdout pages, seed 2023), half 1 (20 pages) reviewed; 0 missed
+**Phase:** R2 · **Type:** eval
+
+**What changed:** The fidelity-reviewer drew a new random sample of 40 v5 pages (doc `c1521f01-bcbf-4163-923d-dc501859dc31`, seed 2023) from the 127 holdout pages that no earlier review, sweep or plan-09 calibration had seen. It then checked half 1 (20 pages) against the page images with the strict R1 rule. The review was done blind to `r2_gapcheck.json` and `r2_v5_output.json`. Under the plan, logo placeholders now count as `hallucinated` and leftover link brackets as `altered`. No v5 row changed because no page was missed. Nothing was approved and no code changed.
+**Why:** Plans 11–12 measure v5 independently against R2's bar: a pass rate (faithful or flagged at draw) of at least 0.95, i.e. at most 2 missed pages out of 40.
+**Proof (half 1):**
+- Draw: 248 v5 pages, pool 127, 40 drawn, 0 overlap with the excluded set. 25/40 were flagged at draw (12 of the 20 in half 1).
+- Half 1: 114, 239, 211, 94, 152, 163, 197, 165, 209, 144, 142, 59, 205, 7, 107, 159, 174, 63, 133, 235.
+- Plan verify: `20 Counter({'faithful': 11, 'caught': 9}) zero_items []`.
+- Faithful (11): 7, 94, 107, 114, 133, 144, 159, 163, 165, 235, 239. All 8 pages unflagged at draw are faithful word for word, including punctuation; 6 of them are dense dialogue pages.
+- Caught (9): 142 (LaTeX in prose, lever arrows lost), 152 (LaTeX "$1000\text{ Km}$", "$3^{\text{rd}}$"), 174 (formula box missing, "Customers-Upgrades" spaced), 197 (second tree as an off-schema key), 205 (dropped "now", dialogue as a 2-column table), 209 (construction sequence as siblings), 211 (wrong parents under Church), 59 (chart block in table cell), 63 (pie values on the wrong slices: F&B 19 / Healthcare 31 / Household 50 stored as 50/19/31).
+- Missed: 0. Hallucinated: 0. Logo placeholders and link brackets: 0 on these 20 pages.
+- Flags: none written. v5 needs_review is still 172, v4 is still 152, and approved is 0 on both.
+**Patterns:**
+- LaTeX in prose (142, 152): no free check catches it, and it changes printed text.
+- A dropped word inside a table cell (205) did not raise `seq_diff`. The page was caught only through `framework_as_text`.
+- Pie slice to legend mapping (63) and wrong parents (211) are invisible to text checks and need eyes.
+**Files:** `backend/ingestion/out/r2_sample_v5.json`, `out/r2_sample_v5_review.json`, `out/r2_sample_v5_flags_before.json` (empty page list), `out/r2_sample_v5_1.html` (all local).
+**Cost:** 0 Gemini calls.
+**Undo:** Nothing to undo in the DB. Delete the three local JSON files to discard the sample (do not redraw).
+**Open issues:** Plan 12 reviews half 2 and scores all 40 pages.
+
+---
+
 ## 2026-10-21 — R2.09–R2.10: free gap-closure fixes (word-order diff, invented-text strip, new flags) + v5 built (inactive)
 **Phase:** R2 · **Type:** ingestion | fix
 
