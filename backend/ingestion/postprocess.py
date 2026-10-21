@@ -9,13 +9,19 @@ no DB, so offline tools can import it).
 - strip_stray_parens: ")" left by the pre-R2 link regex removed (R2.04)
 - fix_nav_typos: a misspelt long word on a short line, repaired from the text layer (R2.04)
 - escape_printed_hash: a printed "#" ("number of") read as a Markdown heading is escaped (R2.05)
+- strip_invented_text: logo placeholders, link brackets, unprinted block titles, captions,
+  empty table rows removed (R2.09, pattern 4)
+- seqdiff.repair_prose: small anchored word/punctuation drift in prose repaired from the
+  text layer (R2.09, pattern 1); always the last step
 """
 import json
 import re
 import unicodedata
 
 from diagram_schema import FENCE_INFO, extract_blocks, has_bullet_lines, restore_quotes
-from textnorm import _outside_blocks, normalize_exact, normalize_label, strip_invented_links, strip_stray_parens
+from seqdiff import repair_prose
+from textnorm import (_outside_blocks, normalize_exact, normalize_label, strip_invented_links, strip_invented_text,
+                      strip_stray_parens)
 
 _HYPHEN_BREAK_RE = re.compile(r"(?<=\w)-[ \t]*\r?\n\s*")
 
@@ -281,14 +287,20 @@ def escape_printed_hash(markdown: str, text_layer: str, log=None):
     return "".join(out), n
 
 
-def postprocess_markdown(markdown: str, text_layer: str, typo_log=None, hash_log=None):
+def postprocess_markdown(markdown: str, text_layer: str, typo_log=None, hash_log=None, seq_log=None,
+                         invented_log=None, boilerplate=None):
     """The free deterministic repairs, in order: add missing "children": [] to
     tree leaves (R1.09), collapse multi-line labels,
     restore curly quotes from the text layer (R1.07), strip invented links
     (R1.07; nested-paren targets and stray ")" leftovers, R2.04), fix nav-line
-    typos (R2.04), escape a printed "#" read as a heading (R2.05). Returns (markdown, label_lines, quotes_restored, links_stripped),
+    typos (R2.04), escape a printed "#" read as a heading (R2.05), strip invented text
+    (R2.09), repair small anchored prose drift from the text layer (R2.09, last).
+    Returns (markdown, label_lines, quotes_restored, links_stripped),
     links_stripped counting stray ")" removals too. `typo_log` (optional list)
-    receives the (old, new) typo replacements, `hash_log` the escaped lines. Applied to every attempt before check_page."""
+    receives the (old, new) typo replacements, `hash_log` the escaped lines,
+    `invented_log` (kind, before, after) strips, `seq_log` (line_before, line_after)
+    prose repairs. `boilerplate` = seqdiff.boilerplate_lines of the document (optional).
+    Applied to every attempt before check_page."""
     md, _n_leaves = repair_tree_leaves(markdown)
     md, label_lines = collapse_multiline_labels_with_lines(md)
     md, n_quotes = restore_quotes(md, text_layer)
@@ -296,4 +308,6 @@ def postprocess_markdown(markdown: str, text_layer: str, typo_log=None, hash_log
     md, n_parens = strip_stray_parens(md, text_layer)
     md, _n_typos = fix_nav_typos(md, text_layer, log=typo_log)
     md, _n_hash = escape_printed_hash(md, text_layer, log=hash_log)
+    md, _n_inv = strip_invented_text(md, text_layer, log=invented_log)
+    md, _n_seq = repair_prose(md, text_layer, boilerplate, log=seq_log)
     return md, label_lines, n_quotes, n_links + n_parens

@@ -302,3 +302,277 @@ def strip_stray_parens(markdown: str, text_layer: str):
     for seg, is_block in _outside_blocks(markdown):
         out.append(seg if is_block else "\n".join(fix_line(l) for l in seg.split("\n")))
     return "".join(out), n
+
+
+# --- invented text (R2.09, pattern 4) -------------------------------------------
+# Text the model wrote that the page does not print: logo/image placeholders, link
+# brackets left around underlined text, block titles, italic or parenthetical captions,
+# empty table rows (stripped), and table headers or chart strings (flagged only).
+# "On the page" = label_exact_on_page against the text layer, or every token of >= 2
+# letters is a text-layer word. Every strip checks the text layer first: deleting
+# printed text would be a `missing` defect.
+
+CAPTION_ON_PAGE_MIN = 0.6
+_PLACEHOLDER_WORDS_RE = re.compile(r"\b(?:logos?|images?|icons?|photos?)\b", re.IGNORECASE)
+_BRACKET_RE = re.compile(r"(?<![\]!\\])\[([^\[\]\n]*)\](?![(\[:])")
+_KEEP_BRACKETS = {"unreadable", "", "x"}
+_ALPHA_WORD_RE = re.compile(r"[^\W\d_]{2,}")
+_ITALIC_LINE_RE = re.compile(r"^\s*(?:\*(?!\*)(.+?)(?<!\*)\*|_(?!_)(.+?)(?<!_)_)\s*$")
+_PAREN_LINE_RE = re.compile(r"^\s*\((.+)\)\s*$")
+_TABLE_SEP_RE = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?\s*$")
+_EMPHASIS_STRIP_RE = re.compile(r"[*_`]+")
+
+
+class PageText:
+    """The text layer, prepared once for the 'is it on the page' checks."""
+
+    def __init__(self, text_layer: str):
+        self.raw = text_layer or ""
+        self.exact = exact_token_set(self.raw)
+        tl = unicodedata.normalize("NFKC", self.raw)
+        self.words = {w.lower() for w in _ALPHA_WORD_RE.findall(fold_quotes(tl))}
+        self.flat = fold_quotes(normalize_exact(tl))
+
+    def on_page(self, text: str) -> bool:
+        t = (text or "").strip()
+        if not t:
+            return False
+        if label_exact_on_page(t, self.exact):
+            return True
+        words = _ALPHA_WORD_RE.findall(fold_quotes(unicodedata.normalize("NFKC", t)))
+        return bool(words) and all(w.lower() in self.words for w in words)
+
+    def word_share(self, text: str):
+        words = _ALPHA_WORD_RE.findall(fold_quotes(unicodedata.normalize("NFKC", text or "")))
+        if not words:
+            return None
+        return sum(1 for w in words if w.lower() in self.words) / len(words)
+
+    def prints_bracketed(self, inner: str) -> bool:
+        return f"[{fold_quotes(normalize_exact(inner))}]" in self.flat
+
+
+def _is_placeholder(inner: str) -> bool:
+    s = inner.strip()
+    return s.lower() == "logo" or bool(_PLACEHOLDER_WORDS_RE.search(s))
+
+
+def _strip_brackets_line(line: str, pt: PageText, log):
+    """Logo/image placeholders deleted, leftover link brackets unwrapped."""
+    def repl(m):
+        inner = m.group(1)
+        key = inner.strip().lower()
+        if key in _KEEP_BRACKETS or pt.prints_bracketed(inner):
+            return m.group(0)
+        if _is_placeholder(inner):
+            if pt.on_page(inner):
+                return m.group(0)
+            if log is not None:
+                log.append(("placeholder", m.group(0), ""))
+            return ""
+        if pt.on_page(inner):
+            if log is not None:
+                log.append(("link_bracket", m.group(0), inner))
+            return inner
+        return m.group(0)
+    new = _BRACKET_RE.sub(repl, line)
+    if new != line and not new.strip():
+        return None
+    if new != line:
+        new = re.sub(r"[ \t]{2,}", " ", new).rstrip()
+    return new
+
+
+def _is_caption_line(line: str, pt: PageText) -> bool:
+    s = line.strip()
+    if s.startswith("**") or s.startswith("__"):
+        return False
+    m = _ITALIC_LINE_RE.match(s)
+    inner = (m.group(1) or m.group(2)) if m else None
+    if inner is None:
+        m = _PAREN_LINE_RE.match(s)
+        inner = m.group(1) if m else None
+    if inner is None:
+        return False
+    share = pt.word_share(inner)
+    if share is None:
+        return False
+    if share < CAPTION_ON_PAGE_MIN:
+        return True
+    # R2.09 calibration (FMS p77 "*(Icons for ChatGPT, ...)*"): a caption that names a
+    # picture with a placeholder word the page does not print describes an image.
+    return any(not pt.on_page(w) for w in _PLACEHOLDER_WORDS_RE.findall(inner))
+
+
+_BR_RE = re.compile(r"(<br\s*/?>)", re.IGNORECASE)
+
+
+def _strip_cell_captions(line: str, pt: PageText, log) -> str:
+    """Inside a table row, a cell piece between <br> breaks is a line of that cell:
+    a caption piece (same rule as a caption line) is removed with its break."""
+    if "|" not in line:
+        return line
+    cells = line.split("|")
+    changed = False
+    for ci, cell in enumerate(cells):
+        parts = _BR_RE.split(cell)
+        pieces = parts[0::2]
+        if not any(_is_caption_line(pc, pt) for pc in pieces):
+            continue
+        kept = [pc for pc in pieces if not _is_caption_line(pc, pt)]
+        for pc in pieces:
+            if _is_caption_line(pc, pt):
+                local_before = pc.strip()
+                if log is not None:
+                    log.append(("caption", local_before, ""))
+        # drop empty pieces left at the ends, keep inner blank pieces (paragraph breaks)
+        while kept and not kept[0].strip():
+            kept.pop(0)
+        while kept and not kept[-1].strip():
+            kept.pop()
+        new = "<br>".join(k.strip() for k in kept)
+        lead = " " if cell.startswith(" ") else ""
+        trail = " " if cell.endswith(" ") else ""
+        cells[ci] = (lead + new + trail) if new else (" " if cell.strip() else cell)
+        changed = True
+    return "|".join(cells) if changed else line
+
+
+def _cells(row: str) -> list:
+    s = row.strip()
+    if s.startswith("|"):
+        s = s[1:]
+    if s.endswith("|"):
+        s = s[:-1]
+    return [c.strip() for c in s.split("|")]
+
+
+def _table_rows(lines):
+    """Yield (start, end) line indexes of Markdown tables: a run of "|" lines whose
+    second line is a separator."""
+    i = 0
+    while i < len(lines):
+        if lines[i].lstrip().startswith("|"):
+            j = i
+            while j < len(lines) and lines[j].lstrip().startswith("|"):
+                j += 1
+            if j - i >= 2 and _TABLE_SEP_RE.match(lines[i + 1]):
+                yield i, j
+            i = j
+        else:
+            i += 1
+
+
+_TITLE_LIT_RE = re.compile(r'("title"\s*:\s*)("(?:[^"\\\n]|\\.)*")')
+
+
+def _null_block_title(raw_block: str, obj, pt: PageText, log):
+    """`"title": "<s>"` -> `"title": null` when s is not on the page. Only the string value
+    is edited; the result must still parse with the same object apart from the title."""
+    import json
+    title = obj.get("title") if isinstance(obj, dict) else None
+    if not isinstance(title, str) or not title.strip() or pt.on_page(title):
+        return raw_block
+    for m in _TITLE_LIT_RE.finditer(raw_block):
+        try:
+            if json.loads(m.group(2)) != title:
+                continue
+        except ValueError:
+            continue
+        new = raw_block[:m.start(2)] + "null" + raw_block[m.end(2):]
+        body = new.split("\n", 1)[1].rsplit("```", 1)[0]
+        try:
+            new_obj = json.loads(body)
+        except ValueError:
+            return raw_block
+        if new_obj.get("title") is None and {k: v for k, v in new_obj.items() if k != "title"} == \
+                {k: v for k, v in obj.items() if k != "title"}:
+            if log is not None:
+                log.append(("block_title", title, None))
+            return new
+        return raw_block
+    return raw_block
+
+
+def strip_invented_text(markdown: str, text_layer: str, log=None):
+    """R2.09: delete or unwrap text the page does not print. Steps (each checks the text
+    layer first): 1 logo/image placeholders, 2 leftover link brackets, 3 unprinted block
+    titles -> null, 4 italic/parenthetical caption lines, 5 empty table body rows.
+    `log` receives (kind, before, after). Returns (markdown, n_changes). Idempotent;
+    pages with no text layer are untouched."""
+    from diagram_schema import FENCE_INFO, extract_blocks  # lazy: diagram_schema imports textnorm
+    md = markdown or ""
+    if not (text_layer or "").strip() or not md:
+        return md, 0
+    pt = PageText(text_layer)
+    local = []
+    out = []
+    blocks = {b["start"]: b for b in extract_blocks(md)}
+    pos = 0
+    for seg, is_block in _outside_blocks(md):
+        start, pos = pos, pos + len(seg)
+        if is_block:
+            b = blocks.get(start)
+            if b is not None and b["fence"] == FENCE_INFO and isinstance(b["obj"], dict) and not b.get("in_table"):
+                seg = _null_block_title(seg, b["obj"], pt, local)
+            out.append(seg)
+            continue
+        lines = seg.split("\n")
+        kept = []
+        for line in lines:
+            new = _strip_brackets_line(line, pt, local)
+            if new is None:
+                continue
+            if _is_caption_line(new, pt):
+                local.append(("caption", new, ""))
+                continue
+            if new.lstrip().startswith("|"):
+                new = _strip_cell_captions(new, pt, local)
+            kept.append(new)
+        drop = set()
+        for a, z in _table_rows(kept):
+            for r in range(a + 2, z):
+                if all(not c for c in _cells(kept[r])):
+                    drop.add(r)
+                    local.append(("empty_row", kept[r], ""))
+        out.append("\n".join(l for i, l in enumerate(kept) if i not in drop))
+    if log is not None:
+        log.extend(local)
+    return "".join(out), len(local)
+
+
+def invented_text_issues(markdown: str, text_layer: str) -> list:
+    """Flag-only checks (reason `invented_text`): a table header row where no cell's text
+    is on the page, and chart strings (axis labels, series names, legend entries) that
+    are not on the page. Returns [(kind, text)]."""
+    from diagram_schema import FENCE_INFO, extract_blocks
+    md = markdown or ""
+    if not (text_layer or "").strip() or not md:
+        return []
+    pt = PageText(text_layer)
+    issues = []
+    for seg, is_block in _outside_blocks(md):
+        if is_block:
+            continue
+        lines = seg.split("\n")
+        for a, _z in _table_rows(lines):
+            cells = [_EMPHASIS_STRIP_RE.sub("", c).strip() for c in _cells(lines[a])]
+            cells = [c for c in cells if c and _ALPHA_WORD_RE.search(c)]
+            if cells and not any(pt.on_page(c) for c in cells):
+                issues.append(("table_header", lines[a].strip()))
+    for b in extract_blocks(md):
+        obj = b["obj"]
+        if b["fence"] != FENCE_INFO or not isinstance(obj, dict) or obj.get("type") != "chart":
+            continue
+        strs = [obj.get("xLabel"), obj.get("yLabel")]
+        legend = obj.get("legend")
+        strs += legend if isinstance(legend, list) else [legend]
+        for s_ in obj.get("series") or []:
+            if isinstance(s_, dict):
+                strs.append(s_.get("name"))
+                if obj.get("chart_kind") == "pie":
+                    strs += [p[0] for p in s_.get("points") or [] if isinstance(p, list) and p]
+        for s_ in strs:
+            if isinstance(s_, str) and s_.strip() and _ALPHA_WORD_RE.search(s_) and not pt.on_page(s_):
+                issues.append(("chart_string", s_))
+    return issues

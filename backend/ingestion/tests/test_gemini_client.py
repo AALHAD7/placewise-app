@@ -208,7 +208,10 @@ class ConvertPageBudget(Base):
         res, log = self.run_page()
         self.assertEqual(res["retry_skipped"], "run_cap")
         self.assertEqual(res["http_calls"], len(log))
-        self.assertEqual(res["markdown"], BAD_PAGE)
+        # R2.09: attempt one is kept after the post-pass, which nulls its unprinted title
+        from postprocess import postprocess_markdown
+        self.assertEqual(res["markdown"], postprocess_markdown(BAD_PAGE, GOOD_TL)[0])
+        self.assertIn('"title": null', res["markdown"])
         self.assertEqual(gc.call_count["vision"], 1)
 
 

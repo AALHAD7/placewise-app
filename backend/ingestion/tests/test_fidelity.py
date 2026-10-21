@@ -17,6 +17,8 @@ from fidelity import check_page, extract_numbers  # noqa: E402
 V1_KEYS = {"number_coverage", "word_coverage", "unreadable_count", "needs_review"}
 V2_KEYS = V1_KEYS | {"diagram_count", "diagrams", "diagram_issues", "diagram_label_coverage",
                      "diagram_errors", "review_reasons", "diagram_label_exact"}
+# R2.09: check_page also reports seq_diff_ops (count of ordered-diff ops left).
+R29_KEYS = V2_KEYS | {"seq_diff_ops"}
 
 ANSOFF_TEXT = (
     "Ansoff Matrix\nProduct\nExisting New\nMarket\nExisting\nMarket\nPenetration\n"
@@ -71,7 +73,7 @@ class TestCheckPage(unittest.TestCase):
         v1 = _load_v1()
         for (tl, md, scanned), (nc, wc, uc, nr, reasons) in zip(cases, expected):
             res = check_page(tl, md, scanned)
-            self.assertEqual(set(res), V2_KEYS)
+            self.assertEqual(set(res), R29_KEYS)
             self.assertEqual(res["diagram_count"], 0)
             self.assertEqual(res["needs_review"], nr)
             self.assertEqual(res["unreadable_count"], uc)
@@ -84,7 +86,8 @@ class TestCheckPage(unittest.TestCase):
                 self.assertEqual({k: res[k] for k in V1_KEYS}, old)
         lost = check_page(*cases[1])
         self.assertLess(lost["number_coverage"], 1.0)
-        self.assertEqual(set(lost["review_reasons"]), {"number_coverage", "word_coverage"})
+        # R2.09: the dropped words are also an ordered-diff loss (seq_diff)
+        self.assertEqual(set(lost["review_reasons"]), {"number_coverage", "word_coverage", "seq_diff"})
 
     def test_valid_block_full_coverage_passes(self):
         res = check_page(ANSOFF_TEXT, page_md(ANSOFF), False, page_no=20)

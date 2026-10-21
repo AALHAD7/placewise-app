@@ -7,6 +7,7 @@ from diagram_schema import SUMMARY_PREFIX, check_diagrams, extract_blocks
 # Number helpers live in textnorm (shared with diagram_schema); re-exported here
 # so existing `from fidelity import extract_numbers` callers keep working.
 from textnorm import NUMBER_RE, _normalize_number, extract_numbers, extract_unit_numbers  # noqa: F401
+from textnorm import invented_text_issues
 
 WORD_RE = re.compile(r"[a-zA-Z0-9]+")
 UNREADABLE_RE = re.compile(r"\[UNREADABLE\]", re.IGNORECASE)
@@ -147,14 +148,52 @@ def _add(reasons: list, reason: str):
         reasons.append(reason)
 
 
-def check_page(text_layer: str, markdown: str, is_scanned: bool, page_no=None, label_lines=None) -> dict:
+_MD_TABLE_SEP_RE = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*\|")
+_ARROW_RE = re.compile(r"[→➔⟶]|(?<=\w)\s+>\s+(?=\w)")
+FRAMEWORK_SHORT_WORDS = 6
+FRAMEWORK_SHORT_RUN = 4
+_FW_WORD_RE = re.compile(r"[^\W_]+")
+
+
+def framework_as_text(markdown: str) -> bool:
+    """A framework written as text: a Markdown table, or >= 4 consecutive short lines
+    (<= 6 words: bullets or headings), or arrows between short labels, outside blocks."""
+    from textnorm import _outside_blocks
+    for seg, is_block in _outside_blocks(markdown or ""):
+        if is_block:
+            continue
+        run = 0
+        for line in seg.split("\n"):
+            s = line.strip()
+            if _MD_TABLE_SEP_RE.match(s):
+                return True
+            if _ARROW_RE.search(s):
+                parts = [p for p in re.split(r"[→➔⟶]|\s>\s", s) if p.strip()]
+                if len(parts) >= 2 and all(len(_FW_WORD_RE.findall(p)) <= FRAMEWORK_SHORT_WORDS for p in parts):
+                    return True
+            if not s or s.startswith(SUMMARY_PREFIX):
+                run = 0  # consecutive = adjacent lines; a blank line ends the run
+                continue
+            n = len(_FW_WORD_RE.findall(s))
+            run = run + 1 if 0 < n <= FRAMEWORK_SHORT_WORDS else 0
+            if run >= FRAMEWORK_SHORT_RUN:
+                return True
+    return False
+
+
+def check_page(text_layer: str, markdown: str, is_scanned: bool, page_no=None, label_lines=None,
+               boilerplate=None, is_visual=None) -> dict:
     """Fidelity of one converted page. `page_no` is the 1-based PDF page index,
     used to check each diagram block's `source_page` (skipped when None).
     `label_lines` maps a collapsed label to its original lines (see
-    convert.collapse_multiline_labels_with_lines)."""
+    convert.collapse_multiline_labels_with_lines). `boilerplate` = the document's
+    seqdiff.boilerplate_lines (optional). `is_visual` (optional) enables
+    `framework_as_text`."""
+    from seqdiff import seq_diff_ops  # lazy: seqdiff imports fidelity.coverage_text
     markdown = markdown or ""
     uc = unreadable_count(markdown)
     reasons = []
+    seq = None
     if is_scanned or not text_layer or not text_layer.strip():
         # No text layer to compare against - per the ground rule, scanned
         # pages always go to review (nothing to diff against).
@@ -171,6 +210,11 @@ def check_page(text_layer: str, markdown: str, is_scanned: bool, page_no=None, l
             _add(reasons, "number_coverage")
         if wc < WORD_COVERAGE_MIN:
             _add(reasons, "word_coverage")
+        seq = seq_diff_ops(markdown, text_layer, boilerplate)
+        if seq["flag"]:
+            _add(reasons, "seq_diff")
+        if invented_text_issues(markdown, text_layer):
+            _add(reasons, "invented_text")
         diag = check_diagrams(markdown, text_layer, page_no, label_lines)
     if uc > 0:
         _add(reasons, "unreadable")
@@ -183,11 +227,14 @@ def check_page(text_layer: str, markdown: str, is_scanned: bool, page_no=None, l
     cov = diag["diagram_label_coverage"]
     if cov is not None and cov < DIAGRAM_LABEL_COVERAGE_MIN:
         _add(reasons, "diagram_label")
+    if is_visual and not diag.get("diagrams") and framework_as_text(markdown):
+        _add(reasons, "framework_as_text")
 
     return {
         "number_coverage": nc,
         "word_coverage": wc,
         "unreadable_count": uc,
+        "seq_diff_ops": seq["ops"] if seq else None,
         "needs_review": bool(reasons),
         **diag,
         "review_reasons": reasons,

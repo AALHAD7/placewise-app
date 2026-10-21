@@ -94,7 +94,8 @@ class TestNavTypos(unittest.TestCase):
         res = postprocess_markdown(md, "FMS Guesstimate Index Main Index")
         self.assertEqual(len(res), 4)
         out, _ll, _q, n_links = res
-        self.assertEqual(out, "[FMS] Guesstimate Index | Main Index\n\nMain Index")
+        # R2.09: "[FMS]" is a leftover link bracket (FMS printed, brackets not) and is unwrapped
+        self.assertEqual(out, "FMS Guesstimate Index | Main Index\n\nMain Index")
         self.assertEqual(n_links, 2)
         log = []
         postprocess_markdown(md, "FMS Guesstimate Index Main Index", typo_log=log)
