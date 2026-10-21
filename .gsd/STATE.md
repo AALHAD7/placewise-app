@@ -29,5 +29,5 @@ See `.gsd/ROADMAP.md` and the top entries of `log.md`.
 - No eval test set yet (R3, Aalhad): 20–30 Consulting questions in `backend/eval/questions.jsonl`.
 - No admin review queue (R5). Every diagram needs a human or structure check before R9 switch-over.
 - Live document_chunks may share v1's off-by-one page_start bug; check during R7.
-- Aalhad to rotate the Supabase DB password (partially printed in session 2026-10-19).
+- Aalhad to rotate the Supabase DB password (fragment printed again 2026-10-21 by an agent's psycopg parse error). The password contains '@': parse DATABASE_URL with rpartition('@') and redact errors (see backend/scripts/apply_migration_041.py). Agents' sandbox cannot reach Postgres ports; migrations need Aalhad to run them (`! ...`) or the SQL editor.
 - `backend/ingestion/run_pilot.py` is untracked.

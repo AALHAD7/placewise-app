@@ -5,6 +5,48 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-21 — R5.1: review-queue migration 041 written (NOT applied yet); findings importer ready
+**Phase:** R5 · **Type:** migration
+
+**What changed:** I wrote migration 041 for the admin review queue. It adds an append-only review history table (`ingest_page_reviews`), a table for the R1/R2 reviewer findings (`ingest_page_findings`) and one atomic review RPC (`ingest_review_page`). It is additive only: it adds no column to `ingest_pages`, and the RPC changes only `review_status`.
+I also wrote a pure normaliser and a re-runnable import script for the five local review files.
+**The migration is not applied**, because Postgres can't be reached from the agent environment.
+- `DATABASE_URL` in `backend/.env` has an unescaped `@` in the password, so it doesn't parse as a URL. Encoding it in-process fixes the parse, but then ports 5432/6543 on the pooler time out.
+- Supabase REST still works.
+
+Because the tables don't exist yet, the findings import has not been run either.
+**Why:** The R5 queue needs somewhere to store approvals, "wrong" notes and edited pages next to the originals, and it needs to show the R1/R2 findings for each page.
+**Files:** `backend/db/migration_041_ingest_review_queue.sql`, `backend/src/lib/reviewFindings.js`,
+`backend/scripts/importReviewFindings.js`, `backend/test/reviewFindings.test.js`
+**Proof:**
+- `reviewFindings` tests: 7/7 pass.
+- `npm test`: 36/37 pass on the first run and 35/37 on the final run. The `sandbox.test.js` env test fails both times (macOS injects `__CF_USER_TEXT_ENCODING`). On the final run, the existing real-Gemini `generateOnePythonProblem` test also failed (flaky, live call). Neither is touched by this change.
+- Dry-run import counts:
+
+| file | version | rows |
+|---|---|---|
+| r1_review_v3 | v3 | 40 |
+| r2_sweep_a | v3 | 32 |
+| r2_sweep_b | v3 | 32 |
+| r2_sample_review | v4 | 40 |
+| r2_sample_v5_review | v5 | 40 |
+| **total** | | **184** |
+
+- `document_chunks` = 22457 (via REST).
+- A REST probe confirms that neither new table nor the RPC exists yet.
+
+**Security (`/cso`):**
+- Static run `1792590826151-a4d1ba3683e365ee` on the three new files: no supported findings. The run is partial by design, scoped by `--paths`.
+- The RPC is SECURITY INVOKER, and execute is revoked from public, anon and authenticated. Both tables have RLS on and no policies.
+- Hardening added afterwards: a BEFORE TRUNCATE guard on `ingest_page_reviews`.
+- Note for plan 2: `p_email` is trusted from the caller. The route must pass the server-verified admin email, never a value from the request body.
+
+**Cost:** 0 Gemini calls.
+**Undo:** nothing has been applied. After it is applied, the rollback block is in the migration file. Dropping the tables loses review decisions, so the normal undo is hiding the API/UI.
+**Open issues:**
+- Aalhad: paste `backend/db/migration_041_ingest_review_queue.sql` into the Supabase SQL editor. Run it twice; it is idempotent. Then run `cd backend && node scripts/importReviewFindings.js` twice, and expect 184 rows both times.
+- Fix `DATABASE_URL` by URL-encoding the password. psycopg's parse error printed part of the password in this session, which adds to the existing "rotate the DB password" item.
+
 ## 2026-10-21 — R2 closed: owner confirmed the scoring reading; v5 is the best FMS version
 **Phase:** R2 · **Type:** eval
 
