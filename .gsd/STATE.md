@@ -1,6 +1,12 @@
 # STATE
 
-**Position:** ▶ R2 (M1 Consulting RAG), not started. R1 done 2026-10-20 (Aalhad: "R1 approved").
+**Position:** ▶ R2 (M1 Consulting RAG), in progress, gap loop. Updated 2026-10-21.
+R2.01–08 done (log.md): pool sweep closed (45/45 passed or flagged), v4 doc `d1510e35-9ecc-419b-a497-85a37e062792`
+(inactive, 248/384, 152 flagged). Sample 34/40 pass, bar NOT met (6 unflagged word drops, p150 invented header).
+Gap plans 09–12 written (commit e3d1bf2). Plan 09 (free word-order diff + invented-text strip) was interrupted
+mid-build by usage limits: code is partial and uncommitted in backend/ingestion; resume plan 09 first, check files.
+Pending owner input: scoring reading (flagged = pass), p56 airline names, whether every unchecked tree/flow page gets flagged.
+R1 done 2026-10-20 (Aalhad: "R1 approved").
 See `.gsd/ROADMAP.md` and the top entries of `log.md`.
 
 ## Where R1 left things
