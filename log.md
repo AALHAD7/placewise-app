@@ -45,7 +45,10 @@ Page images are proxied by the backend, so no storage URL or `image_path` reache
 **Open issues:**
 - Migration 041 is still not applied, so actions return 503 ("Review storage is not set up yet"). Findings and history come back empty, with `review_schema_ready: false`.
 - After Aalhad applies it, someone must run the plan's v1 page-3 write round-trip (edit_approve, then reopen, 409/404 checks, markdown sha256 unchanged, append-only error) and record the two review ids here. That round-trip can run over REST, so an agent can do it.
- (NOT applied yet); findings importer ready
+
+---
+
+## 2026-10-21 — R5.1: review-queue migration 041 written (NOT applied yet); findings importer ready
 **Phase:** R5 · **Type:** migration
 
 **What changed:** I wrote migration 041 for the admin review queue. It adds an append-only review history table (`ingest_page_reviews`), a table for the R1/R2 reviewer findings (`ingest_page_findings`) and one atomic review RPC (`ingest_review_page`). It is additive only: it adds no column to `ingest_pages`, and the RPC changes only `review_status`.
