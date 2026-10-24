@@ -5,6 +5,34 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-24 — R5: migration 041 applied; 184 findings imported; write round-trip passed
+**Phase:** R5 · **Type:** migration
+
+**What changed:** Applied `migration_041_ingest_review_queue.sql` to the live database. This creates
+`ingest_page_reviews`, `ingest_page_findings` and the `ingest_review_page` RPC, and reloads the
+PostgREST schema. Imported the R1/R2 reviewer findings: 184 rows.
+**Why:** The admin review queue needs these tables before it can save an approve, a mark-wrong or an edit.
+**Cause of the earlier failures:** The network the Mac was on blocked outbound ports 5432 and 6543;
+port 443 was open (checked with `nc -z`). The apply ran after Aalhad switched networks.
+**Proof:**
+- Apply script: `pages 1240->1240, chunks 1918->1918, document_chunks 22457->22457`, then `APPLIED`.
+- REST probe: anon and authenticated get `42501 permission denied` on the RPC and 0 rows from both tables.
+- Import, run twice: 184 then 184 rows (insert-only, no duplicates).
+- `npm test`: 73 tests, 72 pass, 0 skipped. The 1 failure is the known sandbox `__CF_USER_TEXT_ENCODING` test.
+- Write round-trip on v1 page 3 (`9c5734aa-…`):
+  - edit_approve wrote review `0b22623f-ebb1-486a-99a7-3ea1cc23dbb4` (pending→fixed).
+  - A stale expected_status returned `status_conflict`; a random UUID returned `page_not_found`.
+  - reopen wrote review `4ff2b780-1243-4672-92b6-d76bbe177113` (fixed→pending).
+  - The page's markdown sha256 is unchanged.
+  - UPDATE and DELETE on ingest_page_reviews both fail with `append-only`.
+**Undo:** Run the `-- ROLLBACK` section at the end of the migration file. It drops only the new objects.
+**Open issues:**
+- R5 plan 04 QA is still to do.
+- The queue has no "proposed fix, awaiting owner" state, so the 7 drafted page fixes in
+  `backend/ingestion/out/fixes/` are not submitted yet (see below).
+
+---
+
 ## 2026-10-21 — R5.2: admin review API built (reads live; writes wait for migration 041)
 **Phase:** R5 · **Type:** feature (admin only; nothing students see changes)
 
