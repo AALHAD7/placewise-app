@@ -62,6 +62,22 @@ async function findGroundingV2(fw) {
   };
 }
 
+// Pure row-picking logic for the v1 (document_chunks) path, pulled out of
+// findGrounding so it's testable without a live Supabase call. Depends on
+// match_document_chunks actually returning an `image_url` column on every
+// row (migration_014 added it, migration_037's drop/recreate accidentally
+// dropped it, migration_043 restores it - see that migration's header and
+// log.md's 2026-10-30 R7 entry). If the RPC ever stops returning that
+// column again, every row's image_url is undefined and topImage silently
+// goes back to never matching - this function can't detect that on its
+// own (it only sees whatever rows it's handed), which is exactly why the
+// original regression shipped silently.
+export function pickTopTextAndImage(rows) {
+  const topText = rows.find(r => !r.image_url && r.similarity >= SIMILARITY_THRESHOLD);
+  const topImage = rows.find(r => r.image_url && r.similarity >= IMAGE_SIMILARITY_THRESHOLD);
+  return { topText, topImage };
+}
+
 // filter_domain uses the same raw value stored on document_chunks.domain
 // (e.g. "Prodman", "Marketing:Sales") - frameworks.domain is seeded with
 // those exact values (see migration_019) specifically so no remapping layer
@@ -92,8 +108,7 @@ async function findGrounding(fw) {
     const rows = chunks || [];
     // The excerpt itself, verbatim - not an LLM paraphrase - so there's
     // nothing here that could be a fabricated claim about the framework.
-    const topText = rows.find(r => !r.image_url && r.similarity >= SIMILARITY_THRESHOLD);
-    const topImage = rows.find(r => r.image_url && r.similarity >= IMAGE_SIMILARITY_THRESHOLD);
+    const { topText, topImage } = pickTopTextAndImage(rows);
 
     return {
       example: topText ? { sourceFile: topText.source_file, excerpt: topText.content, similarity: topText.similarity } : null,

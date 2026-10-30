@@ -5,6 +5,64 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-30 — Fix: match_document_chunks dropped `image_url`, silently broke Frameworks v1 image grounding
+**Phase:** R7 (follow-up) · **Type:** migration, fix
+
+**What changed:** Confirmed the bug flagged in the R7 log entry below. Read migration_014
+(added `image_url` to `match_document_chunks`'s return columns, for image chunks captioned
+and embedded alongside text chunks) and migration_037 (drop/recreate of the same function to
+add the `is_active` filter) side by side: migration_037's `RETURNS TABLE` list is `id,
+domain, source_file, content, similarity` — no `image_url`. migration_037's own comments and
+duplicate-deactivation list are entirely about `is_active`/`source_class`; nothing in it says
+image support was meant to go away, so this is an accidental regression from rebuilding the
+column list from scratch, not an intentional removal. `frameworksGrounding.js`'s v1
+`findGrounding` path (used whenever `ENABLE_CONSULTING_RAG_V2` is off, or on but the
+framework's domain isn't "Consulting" — i.e. the live path for everything except Consulting
+today) reads `r.image_url` off every row from `match_document_chunks` to pick `topImage` for
+a framework's `grounded_image`. With the column missing, `image_url` is `undefined` on every
+row, so `topImage` never matches, `grounded_image` stays `null`, and nothing throws — a
+silent miss, exactly why nobody noticed. The underlying `document_chunks.image_url` column
+(migration_014) was never touched; only the RPC's output stopped surfacing it.
+
+Wrote `migration_043_restore_image_url_rpc.sql`: drops and recreates `match_document_chunks`
+with `image_url` restored to both the return list and the select list, keeping migration_037's
+`is_active` filter intact. Pure RPC-definition fix — no `document_chunks` row is read,
+written or touched. Also pulled the row-picking logic (`topText`/`topImage` selection) out of
+`findGrounding` into an exported pure function, `pickTopTextAndImage`, so the JS-side contract
+is unit-testable without a live Supabase call.
+
+**Why:** Live-data-path bug (what students see today in Frameworks for every non-Consulting
+domain, and Consulting whenever the v2 switch is off/falls back) — images silently never
+render even when a relevant one exists and scores above threshold.
+
+**Files:** `backend/db/migration_043_restore_image_url_rpc.sql`,
+`backend/scripts/apply_migration_043.py`, `backend/src/lib/frameworksGrounding.js`,
+`backend/test/frameworksGrounding.test.js`
+
+**Proof:** `npm test` → 86/87 (4 new `frameworksGrounding.test.js` tests, all pass; the 1
+failure is the pre-existing, unrelated `sandbox.test.js` `__CF_USER_TEXT_ENCODING` flake also
+seen in the R6/R7 entries, not touched here). Compared migration_014's and migration_037's
+`RETURNS TABLE`/`select` lists directly in the SQL files to confirm the column is genuinely
+missing (not assumed).
+
+**Cost:** none (no Gemini calls).
+
+**Undo:** `migration_043`'s header includes a rollback block that restores migration_037's
+exact (no-`image_url`) shape if ever needed; otherwise this is additive and safe to leave.
+
+**Open issues:** **migration_043 is NOT applied to the live DB yet** — same sandbox
+limitation as migration_042 (can reach the Supabase REST API but not the direct Postgres
+pooler; a live-DB write attempt here was also blocked by the harness's own production-deploy
+classifier, as expected for anything touching the live DB directly). **Aalhad: paste
+`backend/db/migration_043_restore_image_url_rpc.sql` into the Supabase SQL editor and run it**
+(idempotent, safe to run twice; `backend/scripts/apply_migration_043.py` is ready if direct
+Postgres access is restored instead — it verifies `document_chunks` row counts and
+`is_active` breakdown are unchanged before committing). Until applied, `grounded_image` stays
+null for v1 Frameworks lookups exactly as it does today — this fix doesn't change current
+behavior until the migration runs, consistent with "reversible in one step."
+
+---
+
 ## 2026-10-30 — NVIDIA free-tier vision: side-by-side comparison vs Gemini, no cutover
 **Phase:** ingest-nvidia · **Type:** ingestion, eval
 
