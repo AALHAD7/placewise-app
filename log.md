@@ -5,6 +5,66 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — G3 pulled forward: Company value chain + timeline grounded in casebooks
+**Phase:** G3 (pulled forward ahead of M3 sequencing - Aalhad's explicit follow-on call after G2:
+"move on to the company pages.") · **Type:** backend, schema · **No `is_active` flip, no
+re-ingestion.**
+
+**Scope correction on the handoff brief, found by reading the actual code rather than trusting
+the guess:** the prior report named `companyRoles.js` as "best candidate" for grounding, assuming
+it had case-type/framework overlap. On inspection it's pure HR/recruiting data ("which entry-level
+roles does this company hire for in India") with no real conceptual overlap with case content -
+same false-positive risk category as Role Overview's salary field (a case narrative mentioning a
+job title in passing isn't evidence of current campus hiring). Left ungrounded, not patched on
+a guess.
+
+**What got grounded instead, after re-assessing all four Company libs on their actual content:**
+- `companyValueChain.js` - the strongest real fit. Consulting case narratives routinely walk
+  through exactly this (how a specific company creates/captures value stage by stage), and the
+  content isn't time-sensitive the way financials are.
+- `companyTimeline.js` - also a good fit. Historical milestones (founding, acquisitions) don't go
+  stale the way a "current" figure does, so a casebook's account of one stays trustworthy even if
+  the casebook itself is a few years old.
+- `companyOverview.js` - deliberately NOT touched. Its fields (share price, financials, headcount,
+  "current" sector) are exactly the time-sensitive-fact pattern that made Role Overview's salary
+  field a bad grounding candidate in the prior run - a casebook could easily be stale or flatly
+  wrong on a "current" number, and forcing a match risks presenting a case's old figure as today's
+  fact. Same reasoning, consistently applied.
+- `companyRoles.js` - deliberately NOT touched, per the scope correction above.
+
+**Fix, same posture as every prior G2/R7 switch (`ENABLE_CONSULTING_RAG_V2`, off by default):**
+both `companyValueChain.js`/`companyTimeline.js` now attempt `groundedConsultingLookup` first
+(matchCount 3, Consulting domain). Covered -> the web-research step is skipped entirely and the
+JSON extraction prompt runs against ONLY the cited casebook excerpt (never blended with outside
+knowledge); `grounded_in_casebooks`/`citation` persisted alongside the existing cached
+stages/events. Not covered or lookup fails -> falls straight through to today's exact
+Gemini+Google-Search research flow, unchanged.
+
+**Migration:** `migration_046_g3_company_citations.sql` - adds `grounded_in_casebooks`/`citation`
+columns to `company_value_chain_cache`/`company_timeline_cache` only (mirrors migration_045).
+Applied live via the Supabase Management API (same path used for 042-045), verified: both tables
+show both new columns. No existing row touched - old cached rows read as "not grounded" until
+their normal 60-day TTL refresh.
+
+**Proof:** full suite still 104/103/1 (same pre-existing unrelated sandbox flake, no regression
+from this change - no new test file added, matching this feature's own established precedent:
+`chipPanel.js`/`roleTopics.js` from the prior entry also have no dedicated test file, relying on
+`consultingRetrieval.test.js`'s existing coverage of the shared `decideCoverage`/`buildCitation`
+primitives this code calls into). Live dry-run with the flag forced on against a throwaway
+company name: both paths ran end-to-end with no crash, correctly returned
+`groundedInCasebooks: false` (expected - `ingest_chunks.is_active` is still false everywhere,
+same as every prior dry-run in this project; the grounded branch is logically verified by
+mirroring `chipPanel.js`'s already-proven shape, not yet exercised live until R9). Test rows
+cleaned up from the live cache tables afterward.
+
+**What's left for full Company-page grounding:** `companyOverview.js`/`companyRoles.js` stay
+AI/web-only by design, not because they weren't reached. If Aalhad wants partial grounding on
+`companyOverview.js`'s "about" field specifically (what the company does, not the time-sensitive
+fields) that's a real follow-up worth a separate, more careful pass - mixing one grounded field
+into an otherwise-ungrounded combined-JSON card needs its own design, not a quick bolt-on.
+
+---
+
 ## 2026-10-31 — G2 pulled forward: visible casebook citations on Role Topics, Chip panels, Company-topic notes
 **Phase:** G2 (pulled forward ahead of M3 sequencing - Aalhad's explicit call: "I want whatever's
 in the casebooks shown to users as much as possible, not just one section - even the
