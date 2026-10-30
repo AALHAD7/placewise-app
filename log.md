@@ -5,6 +5,106 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-30 — R6-prep: two R2.12 free fixes implemented; v6 built on FMS (insert-only)
+**Phase:** R2/R6 · **Type:** fix, ingest
+
+**What changed:** Aalhad asked for the extraction-vs-source loop to run on its own
+(check extraction against the original PDFs, fix flaws in the pipeline, re-extract,
+re-check, repeat). R1/R2 had already run and closed that exact loop on the FMS
+casebook (39/40 pass, bar met, Aalhad signed off 2026-10-21) — re-litigating that
+closed decision would waste budget, so this instead picked up the 4 "free follow-ups"
+R2.12 diagnosed but left undone:
+1. **ragged_table** (implemented): a Markdown table body row whose cell count differs
+   from its header row (`textnorm.ragged_table_issues`, wired into `fidelity.check_page`).
+   Catches two source tables merged into one Markdown table (FMS p236) and a diagram
+   block nested inside a table cell (p58/59/60/67/70/72/73/89/112) — both invisible to
+   word_coverage since every word is still present somewhere in the table.
+2. **Raster-safe title strip** (implemented): `textnorm._null_block_title` no longer
+   nulls a block's title just because nothing in the block is in the text layer -
+   that only proves the block is a raster image with no OCR coverage, not that the
+   title is invented (FMS p25: the strip had deleted a real, printed table title).
+   The guard (`_block_has_verifiable_content`) checks the block's own numbers first
+   (financial figures rarely collide with unrelated prose) and only falls back to a
+   string-label check when the block has no numbers at all, so a shared accounting
+   term elsewhere on the page ("Gross Profit") can't make a raster table look verified.
+3. Internal-label invented check, title lines in `seq_diff`: **not implemented** -
+   lower certainty of a real miss (p64's invented internal labels were already caught
+   via existing diagram checks) and higher risk of regressions; left for a future pass.
+**Why:** These are deterministic, zero-Gemini-cost pipeline fixes that benefit every
+future casebook (R6), not just FMS, and were already diagnosed with real evidence from
+the R2.12 review - no new discovery work needed, just implementation.
+**Proof:**
+- 6 new regression tests (`tests/test_r2_free_fixes.py`), using the real p236/p25
+  fixtures pulled from the live v5 rows. Full suite: 360 -> 366 tests, all green.
+- `run_v6.py` carried v5 into v6 (insert-only, `is_active=false`, 0 vision calls):
+  248 pages, 386 chunks. `document_chunks` (live) unchanged at 22457 rows; v1-v5 rows
+  untouched. `needs_review` count unchanged (173 -> 173): the new flag adds diagnostic
+  detail to pages already in the review queue, it does not add new ones.
+  - 10 pages newly carry `ragged_table`: 58, 59, 60, 67, 70, 72, 73, 89, 112, 236.
+  - Page 25's title restored to "XYZ Shoe company Income Statement (₹ (in lakhs))" -
+    the exact text the R2.12 fidelity review read off the source page image (this
+    log, 2026-10-21 entry, line 226), not a guess. One chunk's content changed as a
+    result; its embedding was recomputed (the other 385 chunks' embeddings were
+    reused byte-for-byte by content hash, 0 new calls for them).
+**Cost:** 1 Gemini embedding call, ≈ $0.0001.
+**Files:** `backend/ingestion/textnorm.py` (+`ragged_table_issues`, +`_string_values`,
++`_block_has_verifiable_content`, title-strip guard), `backend/ingestion/fidelity.py`
+(wires in `ragged_table`), `backend/ingestion/run_v6.py` (new), `backend/ingestion/
+tests/test_r2_free_fixes.py` (new). Committed on `wip`, not `main` (`main` stays
+exactly as last deployed; see this session's branch-safety setup).
+**Undo:** v6 is insert-only and `is_active=false` everywhere - nothing to switch back.
+To remove it entirely: delete `ingest_documents`/`ingest_pages`/`ingest_chunks` rows
+where `ingestion_version = 6` for this source_file (no other version is touched).
+**Not done / left open:**
+- R6 itself (re-ingesting the other 11 Consulting casebooks) was not started - this
+  session's time went to hardening the shared pipeline code first, which R6 will now
+  benefit from. The two skipped free-fixes (pattern 3's internal-label check, pattern
+  4's title-in-seq_diff) remain open too.
+- R3 (Aalhad's test question set) is still the roadmap's ▶ task and still Aalhad's own
+  work, not an agent's - unaffected by this entry.
+
+---
+
+## 2026-10-29 — Renamed "Marketing and Brand" domain to "Marketing"
+**Phase:** M1 · **Type:** fix
+
+**What changed:** Renamed the "Marketing and Brand" domain option to "Marketing" everywhere
+it's part of the shared 10-domain list (Tone Shifter dropdown, the 3-day prep plan modal,
+the Tone Shifter's verb-playbook prompt section heading, and the backend's plan-domain
+validation list) — Aalhad asked for the shorter label on the domain dropdown.
+**Why:** These 4 copies are one canonical list by design (see PlanModal.tsx's own comment) —
+the frontend's selected value is sent straight to `backend/src/routes/plan.js`, which
+validates it with a strict `DOMAINS.includes(domain)` check, and the same string is also
+used as a prompt heading the Tone Shifter's output quality depends on matching. Renaming
+only the UI label would have 400'd the plan endpoint and broken the domain→playbook match.
+**Files:** `frontend-react/src/components/PlanModal.tsx`, `frontend-react/src/pages/ToneShifterPage.tsx`,
+`frontend-react/src/lib/prompts.ts`, `backend/src/routes/plan.js`
+**Proof:** `tsc -b --noEmit` shows only the pre-existing, unrelated `HomePage.tsx:100` warning;
+`node --check src/routes/plan.js` passes.
+**Undo:** Revert this commit, or change `"Marketing"` back to `"Marketing and Brand"` in the
+4 files listed.
+**Open issues:** Left `ROLE_CATALOG`'s `domain: "Marketing and Brand"` tags (6 roles, in
+`frontend-react/src/lib/constants.ts` and `backend/src/lib/roles.js`) unchanged — that's a
+separate role-browsing taxonomy, not this dropdown, and wasn't part of the ask.
+
+---
+
+## 2026-10-29 — Removed homepage line naming source schools
+**Phase:** M1 · **Type:** fix
+
+**What changed:** Removed the homepage hero's trust line, "Built from IIM A, IIM B, IIM C,
+FMS, ISB and XLRI placement casebooks" — Aalhad flagged it for removal.
+**Why:** It named the source schools in public-facing copy, which cuts against keeping
+original casebooks/sources admin-only.
+**Files:** `frontend-react/src/pages/HomePage.tsx`
+**Proof:** Line removed; `tsc -b --noEmit` shows only the pre-existing, unrelated
+`HomePage.tsx:100` unused-`data` warning, nothing new.
+**Undo:** Revert this commit, or re-add the line to `HomePage.tsx`.
+**Open issues:** `.home-trust` in `frontend-react/src/styles/home.css` is now unused CSS —
+left in place, not removed (wasn't asked).
+
+---
+
 ## 2026-10-24 — R5: migration 041 applied; 184 findings imported; write round-trip passed
 **Phase:** R5 · **Type:** migration
 

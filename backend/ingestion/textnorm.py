@@ -513,6 +513,28 @@ def _table_rows(lines):
             i += 1
 
 
+def ragged_table_issues(markdown: str) -> list:
+    """R2.12 free fix (pattern 1): a Markdown table body row whose cell count differs
+    from its header row. Two side-by-side source tables written as one Markdown table
+    lose their column alignment this way (FMS p236: a 6-column header over 5- and
+    7-cell body rows) without affecting word_coverage, since every word is still
+    present somewhere in the table. Only tables outside diagram blocks are checked
+    (`_outside_blocks` already excludes fenced placewise-diagram JSON). Returns the
+    ragged rows' text, in document order."""
+    md = markdown or ""
+    issues = []
+    for seg, is_block in _outside_blocks(md):
+        if is_block:
+            continue
+        lines = seg.split("\n")
+        for a, z in _table_rows(lines):
+            header_n = len(_cells(lines[a]))
+            for r in range(a + 2, z):
+                if len(_cells(lines[r])) != header_n:
+                    issues.append(lines[r].strip())
+    return issues
+
+
 def _json_depth_at(raw: str, pos: int) -> int:
     """Object/array nesting depth at `pos` of a fenced JSON block (strings skipped)."""
     start = raw.find("\n") + 1
@@ -537,12 +559,54 @@ def _json_depth_at(raw: str, pos: int) -> int:
 _TITLE_LIT_RE = re.compile(r'("title"\s*:\s*)("(?:[^"\\\n]|\\.)*")')
 
 
+def _string_values(v, out):
+    """Every string value nested in a parsed diagram block (keys dropped)."""
+    if isinstance(v, str):
+        out.append(v)
+    elif isinstance(v, dict):
+        for x in v.values():
+            _string_values(x, out)
+    elif isinstance(v, list):
+        for x in v:
+            _string_values(x, out)
+
+
+def _block_has_verifiable_content(obj, pt: PageText) -> bool:
+    """True when the block's own non-title content is confirmed on the page. False
+    means the block's region has no overlap with the text layer at all - a raster
+    table/image with no OCR text layer for that area, not a page that prints nothing.
+    `title`/`type`/`source_page` are excluded: `title` is the value _null_block_title
+    is deciding about, the others are machine fields, never page text.
+
+    A block with numeric values (a table/chart's own figures) is judged on those
+    numbers alone: financial figures essentially never collide with unrelated prose,
+    but a single shared accounting term ("Gross Profit") can (FMS p25's raster income
+    statement sits under a bullet list that explains that very term), so a string match
+    would wrongly call a raster table verified. A block with no numbers at all (a tree,
+    flow or matrix of labels only) has no such figures to check, so any one of its own
+    labels being on the page is evidence enough, as before this fix."""
+    vals = []
+    _string_values({k: v for k, v in (obj or {}).items() if k not in ("title", "source_page", "type")}, vals)
+    vals = [v for v in vals if v.strip()]
+    nums = extract_numbers(" ".join(vals))
+    if nums:
+        return bool(nums & extract_numbers(pt.raw))
+    return any(pt.on_page(v) for v in vals)
+
+
 def _null_block_title(raw_block: str, obj, pt: PageText, log):
     """`"title": "<s>"` -> `"title": null` when s is not on the page. Only the string value
-    is edited; the result must still parse with the same object apart from the title."""
+    is edited; the result must still parse with the same object apart from the title.
+    R2.12 free fix (pattern 3): when NONE of the block's other values are on the page
+    either (FMS p25: a raster table image with no text layer under it), the title's
+    absence proves nothing - stripping it deleted a real, printed title. In that case
+    the title is left alone; the page's existing word/number coverage checks still send
+    a mismatched raster table to review."""
     import json
     title = obj.get("title") if isinstance(obj, dict) else None
     if not isinstance(title, str) or not title.strip() or pt.on_page(title):
+        return raw_block
+    if not _block_has_verifiable_content(obj, pt):
         return raw_block
     for m in _TITLE_LIT_RE.finditer(raw_block):
         if _json_depth_at(raw_block, m.start()) != 1:

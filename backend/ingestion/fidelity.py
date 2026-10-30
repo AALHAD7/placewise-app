@@ -7,7 +7,7 @@ from diagram_schema import SUMMARY_PREFIX, check_diagrams, extract_blocks
 # Number helpers live in textnorm (shared with diagram_schema); re-exported here
 # so existing `from fidelity import extract_numbers` callers keep working.
 from textnorm import NUMBER_RE, _normalize_number, extract_numbers, extract_unit_numbers  # noqa: F401
-from textnorm import invented_text_issues
+from textnorm import invented_text_issues, ragged_table_issues
 
 WORD_RE = re.compile(r"[a-zA-Z0-9]+")
 UNREADABLE_RE = re.compile(r"\[UNREADABLE\]", re.IGNORECASE)
@@ -215,6 +215,8 @@ def check_page(text_layer: str, markdown: str, is_scanned: bool, page_no=None, l
             _add(reasons, "seq_diff")
         if invented_text_issues(markdown, text_layer) or seq["invented_lines"]:
             _add(reasons, "invented_text")
+        if ragged_table_issues(markdown):
+            _add(reasons, "ragged_table")
         diag = check_diagrams(markdown, text_layer, page_no, label_lines)
     if uc > 0:
         _add(reasons, "unreadable")
