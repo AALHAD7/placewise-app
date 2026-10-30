@@ -5,6 +5,100 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — G2 pulled forward: visible casebook citations on Role Topics, Chip panels, Company-topic notes
+**Phase:** G2 (pulled forward ahead of M3 sequencing - Aalhad's explicit call: "I want whatever's
+in the casebooks shown to users as much as possible, not just one section - even the
+What/Why/How chips, use casebook data wherever it genuinely applies.") · **Type:** backend,
+schema, tests · **No `is_active` flip, no re-ingestion** - this is purely grounding/citation
+wiring on top of already-ingested, already-inactive data (R9's job is unaffected).
+
+**The actual problem being fixed:** a code trace of the live Role page (requested separately,
+same session) found two of its three casebook-touching call sites were silently blending real
+casebook content into the model's context with no visible citation at all -
+`roleTopics.js`/`roleCompanyTopicNotes.js` retrieved real chunks and told the model to use them
+"where genuinely relevant," but never required it to report which excerpt it actually used, and
+`document_chunks` (the table both queried) has no page number to cite even if it had. This is
+exactly the "never blend the two silently" violation the grounding policy (CLAUDE.md,
+`grounded-answering` skill) forbids - the student has no way to tell casebook-grounded content
+from AI-generated content on that page today. Chip panels (What?/Why?/How to apply) had no
+casebook retrieval attempt at all.
+
+**Fix, same posture as R7's `ENABLE_CONSULTING_RAG_V2` switch everywhere (off by default,
+flipping off restores today's exact v1 behavior byte-for-byte):**
+- `roleTopics.js`: v2 path replaces the per-field invisible-context approach with ONE explicit
+  covered/not-covered decision for the whole curriculum (`consultingRetrieval.js`'s
+  `groundedConsultingLookup`, same primitive R7 built). Covered -> real page citations attached
+  (`groundedInCasebooks: true`, `citations: [...]`); not covered -> `groundedInCasebooks: false`,
+  nothing faked. New columns `grounded_in_casebooks`/`citations` on `role_topics_cache`
+  (migration_045, applied live - purely additive, no row touched).
+- `chipPanel.js`: new `groundChip()` attempts a scoped lookup per (role, topic, blockId) before
+  falling back to plain generation - most chips will legitimately find nothing (Aalhad's own
+  words: "not everything would be possible"), but a real hit now gets cited and fed to the model
+  as explicit, labelled material instead of being skipped. New columns on `chip_panel_cache`
+  (migration_045).
+- `roleCompanyTopicNotes.js`: kept its existing (correct) company-mention gate - a chunk ranking
+  high on similarity still isn't "data about this company" unless its own text names the company
+  - but swapped the underlying retrieval from `document_chunks` to `ingest_chunks`
+  (`retrieveConsultingChunks`), so a real hit now carries a real citation. Attribution is at the
+  "this note set drew on these mentions" level, not per-sentence (notes is a model-written
+  summary across several mention-gated chunks at once - no finer attribution is honestly
+  possible without asking the model to self-report per-sentence sourcing, which roleTopics.js's
+  old v1 approach already showed is not reliable). New `citations` column (migration_045).
+- Routes (`roles.js`) pass `groundedInCasebooks`/`citations` through on all three endpoints -
+  no frontend UI consumes them yet (not in this task's scope, flagged below).
+
+**Deliberately NOT touched, with reasons (not silently skipped):**
+- **Role Overview card** (`roleOverview.js`: salary, hiring companies, career progression, exit
+  paths, job-posting skills) - these are current labor-market facts about external hiring, not
+  case-practice content. A case-competition casebook has no honest answer to "what does
+  Deloitte pay a first-year associate right now" - forcing a casebook-grounding attempt here
+  would either find nothing (wasted retrieval) or, worse, risk a false match (e.g. a case
+  mentioning a company's revenue getting misread as salary data). Flagging this as a considered
+  "doesn't fit" rather than an oversight; if Aalhad disagrees on a specific field (e.g. "skills"
+  mapped to frameworks the casebooks actually test), that's a product call to revisit, not
+  something this pass silently declined.
+- **Company pages** (`companyOverview.js`/`companyRoles.js`/`companyTimeline.js`/
+  `companyValueChain.js`) - not reached this pass (time-boxed), not evaluated as a bad fit the
+  way Role Overview was. `companyRoles.js` in particular looks like a plausible candidate for
+  the same company-mention-gated pattern already proven in `roleCompanyTopicNotes.js` - real
+  follow-up work, not done here.
+- **The "Management Consultant" -> "Consultant (Associate)" naming inconsistency** flagged in
+  the Role-page trace: re-read with the actual code's own comment
+  (`roleOverview.js`: "NOT snapped to a canonical role... A user typing a role outside the
+  curated 50-title list should see an overview that's actually about that role, not a
+  substituted nearest match") - this is a **documented, intentional design choice** for
+  Overview (so free-text roles like "Sales Associate" still get an accurate card), not a bug.
+  Forcing the two call sites to agree would either break that free-text support or make Topics
+  stop canonicalizing (likely breaking its curated-curriculum assumption). Left as-is; flagged
+  back to Aalhad rather than "fixed" on a guess.
+
+**Known limitation carried forward (documented in code, not fixed here):** v2 retrieval is
+hardcoded to `domain: "Consulting"` everywhere in this change, because that's the only domain
+R6 has ingested and roles have no domain field of their own (roleName is free text). Once M2
+ingests other domains, this will start pulling Consulting-only content into grounding attempts
+for every role regardless of actual domain - fine today (nothing else exists to pull), wrong
+later. Flagged in each file's comments so it isn't silently inherited as permanent.
+
+**Proof:** 5 new pure-function tests (`test/g2RoleGrounding.test.js`) covering the
+citation-map and prompt-building logic with real-shaped fixtures. Full backend suite:
+104 tests, 103 pass (the 1 failure is the same pre-existing, unrelated `sandbox.test.js`
+`__CF_USER_TEXT_ENCODING` flake noted in every prior entry this week). Dry-run proof against
+the live DB: all three new v2 call sites (`groundedConsultingLookup` x2, `retrieveConsultingChunks`
+x1) execute cleanly with real embedding calls and correctly return "not covered" - expected,
+since no `ingest_chunks` row is `is_active` yet. Cost: 3 embedding calls, effectively $0.
+
+**Migration:** `migration_045_g2_role_citations.sql` - additive columns only, applied live via
+the Supabase Management API (same token/path R7 used for 042-044), verified via
+`information_schema.columns`. No existing row read, written or altered.
+
+**What's left for G2 to be "done":** frontend rendering of the new `groundedInCasebooks`/
+`citations` fields (no UI consumes them yet); Company pages (above); the Role Overview question
+(above, pending Aalhad's call); and, same as every other G2/R7 piece, none of this actually
+changes what a student sees until R9 flips real `is_active` rows - today everything correctly
+still returns "not covered."
+
+---
+
 ## 2026-10-31 — R6 fix: per-block diagram penalty in `_score` (ISB p177); confirmed FMS's 5 pages already covered by the routing fix
 **Phase:** R6 (fix) · **Type:** ingestion, fix, tests · **No re-ingestion, no Gemini/NVIDIA
 calls in this session** - code fix + dry-run/unit-test proof only, per explicit instruction.
