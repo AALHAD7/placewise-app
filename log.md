@@ -5,6 +5,54 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-30 — R6: The FMS Consulting Casebook 2021-22 ingested; 1 network-failure page patched
+**Phase:** R6 · **Type:** ingest, fix
+
+**What changed:** Third fresh casebook past SRCC and ISB. Picked `The FMS Consulting
+Casebook 2021-22.pdf` (200 pages, confirmed `club_casebook` by querying existing
+`document_chunks` classifications, not assumed) as the smallest of the remaining 8 eligible
+Consulting casebooks. Fresh ingest v1: 200 pages, 248 chunks, 277 vision calls, 248 embedding
+calls, inserted into `ingest_*` with `is_active=false`.
+
+v1 flagged 1 page (151) with `number_coverage=0.0`, `word_coverage=0.005` - near-total loss.
+Pulled the stored page row directly rather than assuming: `markdown` was
+`"[UNREADABLE] (vision call failed: network error on gemini-3.5-flash-lite: ReadTimeout)"`,
+i.e. a transient network timeout on the API call, not a conversion/fidelity problem and not
+a page the pipeline actually got wrong - it correctly marked it `vision_failed` and excluded
+it from chunking rather than inserting a guess. Retried just that page through
+`convert_page_vision` (same pattern as the SRCC patch): came back `number_coverage=1.0`,
+`word_coverage=1.0`, `needs_review=False`. Built v2 = v1's 200 pages with only page 151
+replaced, insert-only, `is_active=false`.
+
+All other `needs_review=true` pages in this casebook (most of the 200 - it's diagram-dense)
+are routine: a page with any diagram always waits for human sign-off before going live, same
+design as FMS/SRCC/ISB, not a fidelity defect.
+**Why:** Continuing the check-against-source -> diagnose -> (fix or flag) loop. Unlike the
+ISB finding, this one had a clear, low-risk root cause (infra timeout) and no product
+tradeoff to flag, so it was fixed directly rather than left for Aalhad.
+**Proof:**
+- `out/r6_fms2122_v1.json`: per-page coverage/diagram summary for all 200 pages.
+- Direct DB read of page 151's v1 row (`markdown`, `review_reasons`) to confirm the actual
+  cause before acting, rather than assuming what a 0.0 score meant.
+- `npm test` in `backend/`: 72/73 pass. The 1 failure (`test/sandbox.test.js` - a sandboxed
+  Python process seeing a stray `__CF_USER_TEXT_ENCODING` macOS env var) is pre-existing and
+  unrelated to ingestion; no pipeline library code was touched this round.
+- `document_chunks` (live) verified unchanged: 22,457 rows, same as before this run. v2's 249
+  `ingest_chunks` rows confirmed `is_active=false`.
+**Cost:** v1: 277 vision + 248 embedding calls (≈$0.33). Patch: 1 vision + 249 embedding
+calls (≈$0.001). **≈$0.33 total** for this casebook. Cumulative R6 spend so far (SRCC + ISB +
+this one): ≈$0.72, well inside the ~$20/month budget.
+**Files:** `backend/ingestion/run_r6_fms2122.py`, `run_r6_fms2122_patch.py` (both new entry
+points). No pipeline library code changed. Committed on `wip`, not `main`.
+**Undo:** Insert-only, `is_active=false`. To remove: delete `ingest_documents`/
+`ingest_pages`/`ingest_chunks` rows where `source_file = 'The FMS Consulting Casebook
+2021-22.pdf'`.
+**Left open:** 7 casebooks remain for R6 (IIM B/Calcutta/L/K/A, ISB already done, Consulting
+Club FMS 2025-26, FMS 2024-25). A stray untracked file `backend/ingestion/run_pilot.py` was
+noticed in the working tree (not created or touched by this run) - flagged, not acted on.
+
+---
+
 ## 2026-10-30 — R6: ISB Consulting Casebook ingested; found a real scoring tradeoff, flagged for review
 **Phase:** R6 · **Type:** ingest, finding
 
