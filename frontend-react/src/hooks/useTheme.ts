@@ -14,23 +14,15 @@ const DARK_THEME_COLOR = "#0B1220";
 function readStoredMode(): ThemeMode {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
-    if (v === "light" || v === "dark" || v === "system") return v;
+    if (v === "light" || v === "dark") return v;
   } catch {
     // ignore - private browsing / blocked storage
   }
-  return "system";
-}
-
-function systemPrefersDark(): boolean {
-  try {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  } catch {
-    return false;
-  }
+  return "light";
 }
 
 function resolve(mode: ThemeMode): ResolvedTheme {
-  return mode === "system" ? (systemPrefersDark() ? "dark" : "light") : mode;
+  return mode === "dark" ? "dark" : "light";
 }
 
 function applyTheme(resolved: ResolvedTheme) {

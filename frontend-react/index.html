@@ -26,14 +26,9 @@
         try {
           var stored = null;
           try { stored = localStorage.getItem("placewise-theme"); } catch (e) {}
-          var mode = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
-          var resolved = mode;
-          if (mode === "system") {
-            try { resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
-            catch (e) { resolved = "light"; }
-          }
-          document.documentElement.setAttribute("data-theme", resolved);
-          document.documentElement.style.colorScheme = resolved;
+          var mode = stored === "dark" ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", mode);
+          document.documentElement.style.colorScheme = mode;
         } catch (e) {}
       })();
     </script>

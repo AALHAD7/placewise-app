@@ -180,7 +180,7 @@ export function useProbe() {
         who: m.who === "ai" ? "Interviewer" : "You",
         style: {
           borderRadius: "var(--r-sm)", padding: "11px 13px", fontSize: "0.84375rem", lineHeight: 1.6, whiteSpace: "pre-wrap" as const,
-          ...(m.who === "ai" ? { background: "#f6f6fb", color: "var(--text-900)" } : { background: "var(--indigo-700)", color: "var(--surface)", alignSelf: "flex-end" as const, maxWidth: "88%" })
+          ...(m.who === "ai" ? { background: "var(--surface-sunken)", color: "var(--text-900)", border: "1px solid var(--border-soft)" } : { background: "var(--indigo-700)", color: "var(--surface)", alignSelf: "flex-end" as const, maxWidth: "88%" })
         }
       })),
       loading: p.loading,
