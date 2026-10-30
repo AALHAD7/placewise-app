@@ -1,0 +1,96 @@
+"""R6 patch: retry the 5 flawed pages found in SRCC v1 (2 vision-call
+network failures, 2 dense-infographic pages that docling flattened, 1
+garbled section-divider title), then build v2 = v1 pages reused except
+these 5, insert-only, is_active=false. Mirrors run_v4.py/run_v5.py's
+reuse-unless-patched pattern for the FMS casebook."""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+import config
+from supabase import create_client
+import pypdfium2 as pdfium
+
+from convert import convert_page_vision, sha256_file
+from page_classify import render_page_png
+from chunk import chunk_document, embedding_text
+from gemini_client import embed_text, call_count, set_vision_cap
+from pipeline import write_version, lookup_classification, version_status, chunkable_pages
+
+V1_DOC_ID = "9e3501fb-0728-4944-8b78-00340f0e5c72"
+SOURCE_FILE = "SRCC Guesstimates-Book-Volume-1-6.pdf"
+TXT_SOURCE_FILE = "SRCC Guesstimates-Book-Volume-1-6.txt"
+PDF = Path("../../Data/Consulting Files/PDF Files/SRCC Guesstimates-Book-Volume-1-6.pdf")
+PATCH_PAGES = [6, 11, 12, 37, 39]
+PAGE_COLS = ("page_no, is_text, is_table, is_visual, is_scanned, text_layer, markdown, "
+             "docling_markdown, method, number_coverage, word_coverage, unreadable_count, "
+             "needs_review, review_reasons, diagrams, diagram_count, diagram_issues, "
+             "diagram_label_coverage, prompt_version")
+
+
+def main():
+    sb = create_client(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY)
+
+    if version_status(SOURCE_FILE, 2, sb) == "done":
+        print("v2 already done; skipping")
+        return
+
+    v1_pages = sb.table("ingest_pages").select(PAGE_COLS).eq("document_id", V1_DOC_ID) \
+        .order("page_no").execute().data
+    assert len(v1_pages) == 61, f"expected 61 v1 pages, got {len(v1_pages)}"
+    by_no = {p["page_no"]: p for p in v1_pages}
+
+    set_vision_cap(50)  # 5 pages x up to 2 attempts x up to 2 http calls each, generous cap
+    call_log = []
+    pdf = pdfium.PdfDocument(str(PDF))
+
+    patched = {}
+    for pno in PATCH_PAGES:
+        v1p = by_no[pno]
+        png = render_page_png(pdf[pno - 1], config.RENDER_DPI)
+        result = convert_page_vision(png, pno, v1p["text_layer"], v1p["is_scanned"], call_log,
+                                     reason="r6_patch")
+        print(f"page {pno}: number_coverage={result.get('number_coverage')} "
+              f"word_coverage={result.get('word_coverage')} needs_review={result.get('needs_review')} "
+              f"reasons={result.get('review_reasons')}")
+        patched[pno] = {
+            "page_no": pno, "is_text": v1p["is_text"], "is_table": v1p["is_table"],
+            "is_visual": v1p["is_visual"], "is_scanned": v1p["is_scanned"],
+            "text_layer": v1p["text_layer"], "markdown": result["markdown"],
+            "docling_markdown": v1p["docling_markdown"], "method": result["method"],
+            "number_coverage": result.get("number_coverage"), "word_coverage": result.get("word_coverage"),
+            "unreadable_count": result.get("unreadable_count", 0),
+            "needs_review": result.get("needs_review"), "review_reasons": result.get("review_reasons") or [],
+            "diagrams": result.get("diagrams") or [], "diagram_count": result.get("diagram_count", 0),
+            "diagram_issues": result.get("diagram_issues") or [],
+            "diagram_label_coverage": result.get("diagram_label_coverage"),
+            "prompt_version": result.get("prompt_version"),
+        }
+
+    # Assemble v2 page set: patched pages override, rest reused verbatim from v1.
+    v2_pages = []
+    reused_from = {}
+    for p in v1_pages:
+        pno = p["page_no"]
+        if pno in patched:
+            v2_pages.append(patched[pno])
+        else:
+            v2_pages.append(p)
+            reused_from[pno] = p.get("id")  # not present in PAGE_COLS; stays None, acceptable
+
+    meta = lookup_classification(TXT_SOURCE_FILE, sb)
+    chunks = chunk_document(chunkable_pages(v2_pages))
+    embeddings = [embed_text(embedding_text(c["content"])) for c in chunks]
+
+    w = write_version(meta, SOURCE_FILE, sha256_file(PDF), 61, v2_pages, chunks, version=2,
+                      prompt_version=config.PROMPT_VERSION,
+                      notes="R6 patch: pages 6,11,12,37,39 re-extracted (2 vision network failures, "
+                            "2 docling-flattened infographics, 1 garbled title)",
+                      reuse_file_id=V1_DOC_ID, embeddings=embeddings, sb=sb)
+    print(f"v2 file_id={w['file_id']} pages={len(v2_pages)} chunks={len(w['chunk_rows'])}")
+    print(f"vision_calls={call_count['vision']} embedding_calls={call_count['embedding']}")
+
+
+if __name__ == "__main__":
+    main()

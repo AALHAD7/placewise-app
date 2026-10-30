@@ -5,6 +5,69 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-30 — R6: first new casebook ingested — SRCC Guesstimates Book (insert-only)
+**Phase:** R6 · **Type:** ingest, fix
+
+**What changed:** First casebook past the FMS pilot to go through the full pipeline from
+scratch (classify -> convert -> fidelity check -> chunk -> embed -> store). Picked SRCC
+Guesstimates-Book-Volume-1-6.pdf (61 pages, already classified `club_casebook` by the
+C0.9 pass) as the smallest of the 11 remaining eligible Consulting casebooks, to get one
+fully verified before scaling up. `MIT Consulting Casebook.pdf` is excluded from R6: its
+`document_chunks` classification is `external_academic`, not `club_casebook` - confirmed
+by querying existing classifications before starting, not assumed from folder location.
+
+v1 (fresh ingest, 79 vision calls): 61 pages, 60 chunks. Automatic fidelity flagged 5
+pages for inspection: pages 6 and 37 were genuine Gemini network failures
+(`ConnectionError`/`ReadTimeout`, `[UNREADABLE]`, 0.0 coverage) - infra, not content.
+Pages 11 and 12 are dense full-page infographics ("Guesstimates Cheat Sheet",
+"Economic Variables") that `docling`/mixed conversion flattened into disconnected
+number/label fragments (word_coverage 0.75-0.79) - most of the page's content was
+simply missing from the stored markdown. Page 39 (a green section-divider page reading
+"NATION WITH NAMO") came back as "Nnation with namo" - a real transcription slip, not
+an infra failure.
+
+I compared all 5 pages directly against the rendered source PDF images myself (not
+delegated), confirmed each diagnosis, then retried all 5 through `convert_page_vision`
+and built v2 = v1 with only these 5 pages replaced (56 reused verbatim), insert-only.
+Result: pages 6/37/39 now 1.0/1.0 coverage; page 11 now 1.0/0.987; page 12 now
+0.93/0.99 (one digit-level number slip - source says "3.287 MN SQ. KM", extraction
+said "3.87 MN SQ. KM" - correctly caught by `label_not_on_page` and left `needs_review`
+for the R5 admin queue, not silently corrected). All 5 pages carry real diagrams, so
+per the existing pattern they stay in the review queue regardless of coverage - that's
+by design, not a fidelity failure.
+**Why:** Aalhad asked for the check-against-source / fix / re-extract / re-check loop
+to run on its own, extended from the FMS-only pipeline hardening in the prior entry
+into real R6 progress: an actual new casebook, not just process repairs.
+**Proof:**
+- `out/r6_srcc_v1.json`: per-page coverage/diagram summary for all 61 pages.
+- Direct visual comparison: rendered page 6/11/12/37/39 as PNGs from the source PDF
+  (`page_classify.render_page_png`) and read them against the stored markdown myself.
+- v2 patch run output: all 5 target pages' before/after coverage logged.
+- Full test suite: `366 tests, OK` (unchanged - no pipeline code touched this round).
+- `document_chunks` (live, what students see) verified unchanged at 22457 rows.
+  `ingest_documents` now carries SRCC v1 and v2 alongside the existing FMS v1-v6 rows;
+  nothing else touched.
+**Cost:** v1: 79 vision + 60 embedding calls. v2 patch: 8 vision (5 pages, 1 page used a
+retry) + 69 embedding calls (v2 re-chunked/re-embedded all 60->69 chunks since chunk
+boundaries can shift with content; costs are additive, nothing reused by hash this
+round). At flash-lite rates (~$0.0012/vision call per prior entries' figures, embeddings
+near-free): total **≈ $0.11** for this casebook, v1 + v2 combined.
+**Files:** `backend/ingestion/run_r6_srcc.py` (new, fresh-ingest entry point),
+`backend/ingestion/run_r6_srcc_patch.py` (new, v2 patch). No pipeline library code
+changed. Committed on `wip`, not `main`.
+**Undo:** Both versions are insert-only, `is_active=false`. To remove: delete
+`ingest_documents`/`ingest_pages`/`ingest_chunks` rows where
+`source_file = 'SRCC Guesstimates-Book-Volume-1-6.pdf'` (either or both versions).
+**Not done / left open:**
+- Page 12's one-digit number slip ("3.87" vs "3.287") is sitting in the review queue,
+  correctly flagged, not yet approved by Aalhad - same as any other `needs_review` page.
+- The other 10 eligible Consulting casebooks (IIM B/Calcutta/L/K/A, ISB, MIT-excluded,
+  Consulting Club FMS, FMS 2021-22, FMS 2024-25 - combined roughly 2,350 pages) are
+  still untouched. Each is substantially larger than SRCC's 61 pages; a follow-up run
+  should continue casebook by casebook rather than attempt all at once.
+
+---
+
 ## 2026-10-30 — R6-prep: two R2.12 free fixes implemented; v6 built on FMS (insert-only)
 **Phase:** R2/R6 · **Type:** fix, ingest
 
