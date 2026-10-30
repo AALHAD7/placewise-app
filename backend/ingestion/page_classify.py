@@ -16,6 +16,20 @@ BACKGROUND_OBJECT_AREA_FRACTION = 0.90  # a single object this large is almost
 # content density, which would have routed almost every page to Gemini
 # vision and defeated the point of using Docling as the primary converter.
 
+CHART_IMAGE_COVERAGE_THRESHOLD = 0.02  # a table page can ALSO carry a real
+# embedded picture (a pie/bar chart pasted next to a bulleted cost/revenue
+# table) that Docling's table parser is blind to - confirmed live on ISB
+# Consulting Casebook 2025 pp.162/166/169/175 (checked against the real page
+# images; a 5th originally-flagged low-score page, 177, turned out to have no
+# chart at all - see log.md and run_r6_isb_patch.py) and on The FMS
+# Consulting Casebook 2021-22 pp.53/56/57/60/63: every one of those pages'
+# img_coverage (real image/picture objects only - NOT path_coverage, which is
+# dominated by a table's own grid-line paths on every table page and so can't
+# tell charts apart from plain tables) sits well above this corpus's ~0.0067
+# baseline (one small logo/header asset shared by almost every page with no
+# real picture at all). Below this, img_coverage is noise; at or above it,
+# there's a real picture Docling will never see.
+
 
 def _union_coverage(page, obj_types, grid=60) -> float:
     """Area-union of all objects of the given type(s), via grid
@@ -74,7 +88,15 @@ def classify_page(page, docling_has_table: bool) -> dict:
     combined_cov = _union_coverage(page, {pdfium_c.FPDF_PAGEOBJ_IMAGE, pdfium_c.FPDF_PAGEOBJ_PATH})
     tree_pattern = _looks_like_tree_or_box_layout(page)
 
-    is_table = docling_has_table
+    has_embedded_picture = img_cov >= CHART_IMAGE_COVERAGE_THRESHOLD
+    # A Docling-detected table on a page that ALSO carries a real embedded
+    # picture (not just grid-line paths) must not be routed to Docling -
+    # Docling reads the table but has no way to read the picture at all,
+    # silently losing it (e.g. a pie chart's numbers). Route the whole page
+    # to Gemini vision instead; its prompt already turns plain tables into
+    # Markdown tables, so nothing is lost by giving up the Docling table
+    # parse on these pages specifically.
+    is_table = docling_has_table and not has_embedded_picture
     is_scanned = (len(text_layer.strip()) == 0) and combined_cov < 0.02 and img_cov < 0.02
     # A genuinely blank/near-blank page (no text, no meaningful graphics at
     # all) is scanned-with-nothing-found rather than visual - distinct from
@@ -86,6 +108,7 @@ def classify_page(page, docling_has_table: bool) -> dict:
         or tree_pattern
         or (len(text_layer.strip()) < TEXT_MIN_CHARS and combined_cov > 0.02)
         or is_scanned_with_content
+        or has_embedded_picture
     )
     is_text = (not is_table) and (not is_visual) and (not is_scanned) and len(text_layer.strip()) >= TEXT_MIN_CHARS
 

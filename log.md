@@ -5,6 +5,107 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — R6 fix: page_classify.py routing bug (table+embedded-chart pages silently lost to Docling)
+**Phase:** R6 (fix) · **Type:** ingestion, fix, tests
+
+**What changed:** Root-caused and fixed the real bug behind the 2026-10-30 ISB finding
+(`log.md`, "R6: ISB Consulting Casebook ingested... found a real scoring tradeoff"). Confirmed
+against the real PDF, not re-derived from the summary: `page_classify.py` was
+`is_table = docling_has_table` - a page Docling flags as having a table was **always** routed
+to Docling, even when the same page also carries a real embedded picture (a pie chart) Docling
+can't read at all. Checked all 5 originally-flagged pages against their real images:
+- **4 of 5 (pp.162, 166, 169, 175) genuinely have embedded pie charts** next to a real
+  Docling-readable table (e.g. p169's telecom market-share chart: Jio 50.9%, Airtel 31.1%,
+  Vodafone Idea 13%, Others 3.4%, BSNL 1.5%). Their `img_coverage` (real image objects only,
+  not a table's own grid-line paths, which inflate `path_coverage` on every table page and
+  can't tell a chart apart from a plain table) sits at 0.03-0.10, far above this corpus's
+  ~0.0067 baseline for a page with no real picture.
+- **p177 has no chart at all** (checked against the real page image - a plain multi-box
+  "Industry Primer" layout like dozens of others that scored fine). Its img_coverage sits
+  exactly at the 0.0067 baseline. Its low number_coverage (0.5) traces to Docling dropping
+  this one page's footer line ("2025  177") from its own markdown output - a one-off Docling
+  extraction quirk, not the classification bug. The existing automatic docling-vs-vision
+  retry already tried vision on p177 during the v1 run and discarded it, because vision's own
+  diagram-tree reading of the page's bulleted "Porter's 5 forces" section racked up several
+  `diagram_errors`/`diagram_structure` warnings that `_score()` weighs more heavily than the
+  real number/word gain - the exact same scoring tradeoff the 2026-10-30 entry already flagged
+  and explicitly left for Aalhad to decide, not re-decided here.
+**Fix:** `page_classify.py` now computes `has_embedded_picture = img_cov >=
+CHART_IMAGE_COVERAGE_THRESHOLD (0.02)` and only lets `docling_has_table` force the Docling
+route when there's no real picture (`is_table = docling_has_table and not
+has_embedded_picture`); `is_visual` picks up the same signal. General heuristic, not a
+per-page special case - also checked against `The FMS Consulting Casebook 2021-22` (already
+ingested, v2 `2c117f26-a298-41f1-9e39-ba570556ed4e`): its 8 worst `is_table` pages by
+number_coverage include 5 (pp.53, 56, 57, 60, 63; number_coverage as low as **0.19**, worse
+than any ISB page) with the identical real-embedded-picture signature under the fixed
+classifier - the same bug, confirmed on a second casebook, not yet patched (see "Left open").
+**Re-ingest:** Patched only the 4 confirmed ISB pages (162, 166, 169, 175), insert-only,
+`is_active=false`: `run_r6_isb_patch.py` builds v2 (`0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14`) =
+v1's 183 pages reused except these 4, re-classified (confirmed by assertion in the script that
+they now route to vision) and re-converted through `convert_page_vision`. p177 and the rest of
+v1 carried over unchanged.
+
+| page | number_coverage before | number_coverage after | needs_review after |
+|---|---|---|---|
+| 162 | 0.68 | **1.0** | true (diagram page, by design) |
+| 166 | 0.70 | **1.0** | true |
+| 169 | 0.33 | **1.0** | true |
+| 175 | 0.56 | **1.0** | true |
+
+All 4 still `needs_review=true` (expected - every diagram page waits for human sign-off,
+not a fidelity problem) and p169's vision output carries the exact printed pie-chart numbers
+(50.9/31.1/13/1.5/3.4, confirmed against the real image), not estimates - no hallucination.
+p166's and p175's `word_coverage` (0.88, 0.98) trips below the 0.98 bar mainly because the
+page's brand-name logos (e.g. "Google", "UltraTech") aren't in the PDF's extractable text
+layer at all (logos are images) - the project's own convention is to transcribe logo text per
+the vision prompt, so this is a pre-existing, accepted false-positive pattern in the fidelity
+check for any logo-bearing page, not something this fix introduced or should silently patch.
+**Why:** Fixes the real defect: casebook pages were silently losing printed numbers (a pie
+chart's market-share percentages) to a classification short-circuit, not a vision-model
+quality problem (the earlier NVIDIA-comparison entry had already shown Gemini vision itself
+gets these exact pages to 1.0 number_coverage).
+**Files:** `backend/ingestion/page_classify.py` (fix), `backend/ingestion/run_r6_isb_patch.py`
+(new, one-off patch script), `backend/ingestion/tests/test_page_classify.py` (new, 5 tests
+built from this session's real measured geometry on real ISB pages, not invented fixtures).
+**Proof:**
+- `venv/bin/python -m unittest discover -s tests` → **380/380 green** (375 before + 5 new).
+- Live reproduction of the in-pipeline retry on p169 (`_score`) before the fix, confirming
+  Docling's score (2.30) beat vision's own first-attempt score that run (-4.84, due to the
+  prompt's bullet-box-under-heading -> issue_tree instruction racking up `missing_box`
+  warnings on the Cost/Revenue box) - i.e. the automatic retry was never going to save this
+  page; only routing it to vision as primary (this fix) does.
+- `ingest_documents`: ISB v1 (`f3da976f...`) untouched, status `done`. v2
+  (`0a6c4f9e...`) inserted, `status=done`, 0 active `ingest_chunks` rows (`is_active=false`
+  confirmed via REST). Live `document_chunks` still 22,457 rows, unchanged.
+**Cost:** 8 vision calls (4 pages x up to 2 attempts) + 263 embedding calls (re-chunked whole
+casebook) for the v2 patch ≈ $0.01. Geometry investigation itself: 0 paid calls (pure
+pypdfium2 + direct REST reads).
+**Undo:** `page_classify.py`/`run_r6_isb_patch.py`/`tests/test_page_classify.py` are a normal
+revert. v2 is insert-only, `is_active=false`: delete `ingest_pages`/`ingest_chunks` rows where
+`document_id='0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14'` to remove it; v1 and `document_chunks`
+are untouched either way.
+**Open issues / needs Aalhad's call:**
+- **p177 is not fixed.** Its low number_coverage needs either a looser `_score()` diagram-
+  warning weight or a change to how the vision prompt tree-ifies bulleted sections under
+  headings - both are the exact product tradeoff the 2026-10-30 entry already declined to
+  decide silently. Still flagged `needs_review=true` in v1 as before; nothing regressed.
+- **The FMS Consulting Casebook 2021-22 has the same bug, confirmed, not yet patched**
+  (pp.53/56/57/60/63, worst number_coverage 0.19). Recommend the same patch pattern
+  (`run_r6_isb_patch.py` as a template) as a short follow-up - low cost (5 pages, ≈2 vision
+  calls each). SRCC and the other FMS version (2023-24) were spot-checked and don't show this
+  pattern at the same severity (SRCC's worst `is_table` page is already 0.93, most already
+  vision-converted; FMS 2023-24 v6's `is_table` pages are all 1.0/1.0) - not re-verified
+  exhaustively page-by-page.
+- Applying the fixed classifier to a **full** re-ingest of ISB (not just these 4 pages) would
+  reclassify more than 5 pages - roughly a quarter of its 61 `is_table` pages carry some real
+  embedded picture above the 0.02 threshold, most at mild-but-real coverage loss (0.86-0.93,
+  already `needs_review=true` today, not newly broken) rather than the severe 0.33-0.70 seen
+  on the 4 patched pages. That's a modestly larger Gemini bill for a future full re-ingest,
+  not evaluated or run here (this patch only touched the 4 pages needed) - worth a quick cost
+  estimate before any full ISB re-ingest.
+
+---
+
 ## 2026-10-30 — Guesstimates feature (new) + Consulting framework catalog derived from ingested casebooks
 **Phase:** R7 (follow-up) / G-Guesstimates · **Type:** feature, migration, tests
 
