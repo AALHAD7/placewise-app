@@ -5,6 +5,139 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — R6 patches run live: FMS 5-page chart-routing fix lands, ISB p177 does NOT flip, and the per-block formula fix has a real regression on ties
+**Phase:** R6 (fix) · **Type:** ingestion, fix, tests · Real Gemini vision calls this session
+(Aalhad's explicit approval, unlike the prior code-only session).
+
+**Task 1.1 — ISB p177 (NOT patched; new, important finding):** The 2026-10-31 formula-fix entry
+reconstructed p177's vision score from a hand-built, single-block assumption ("all 7 issues sit
+on one block... not measured directly") and predicted the new per-block `_score()` would flip
+this page from Docling to vision. Running it live (`run_r6_isb_p177_patch.py`, 2 independent
+vision calls across this session) **disproves that prediction**: the real vision output's
+diagram issues land on 2-3 distinct blocks, not 1 (first call: blocks {1,3}, score 2.0 vs
+Docling's 2.4769; second call: blocks {1,3,6}, score 1.5 vs 2.4769) - Docling wins both times,
+same as the current live behavior. **No v3 was written for ISB; p177 is unchanged** (still on
+Docling, `f3da976f…`/`0a6c4f9e…`, both version 1 and 2). This is not a bug in the fix - the
+formula is doing exactly what it says - it's that the single-block reconstruction in the prior
+entry didn't hold up against real model output. Flagging this explicitly rather than silently
+dropping the ISB-p177 half of the task.
+
+**Task 1.2 — FMS 2021-22 pages 53, 56, 57, 60, 63 (patched, insert-only):** The already-committed
+`page_classify.py` fix (53a281b) correctly routes all 5 to vision, confirmed live.
+`run_r6_fms2122_chart_patch.py` built v3 (`e9229429-3eec-478b-b54a-7d5a1cdf6de0`) = v2's 200 pages
+reused except these 5:
+
+| page | number_coverage before | after | word_coverage after | needs_review |
+|---|---|---|---|---|
+| 53 | 0.70 | **1.0** | 0.93 | true |
+| 56 | 0.19 | **0.91** | 0.99 | true |
+| 57 | 0.44 | **0.89** | 0.99 | true |
+| 60 | 0.89 | **1.0** | 1.0 | true |
+| 63 | 0.75 | **0.90** | 0.98 | true |
+
+All 5 still `needs_review=true` (expected) and 3 of them (53, 56, 60) carry `number_not_on_page`
+flags the automatic checker raised against printed chart values. **Manually checked all 8
+flagged numbers against the real page images** (not assumed): p53's bar-chart labels (TCS 171,
+Infosys 93, Wipro 64, HCL 71, Mahindra 38) and p60's pie-chart labels (Rural 29.9%, Urban 70.1%)
+are **all genuinely printed on the page** - a checker false positive (chart data-label text
+apparently isn't always in pdfium's extractable text layer, same class of false positive as the
+2026-10-30 ISB logo-text finding), not hallucination. p56's flagged "185" is a **real, minor
+transcription slip**: the page prints "1851" (the FY19 NBFC-cancellations bar) and the model
+dropped the trailing digit - a genuine inaccuracy, correctly caught, but a one-digit slip, not an
+invented number from a bar height. Net: **no invented numbers found** in this spot-check; the
+zero-hallucination bar holds, and the real digit-drop error is exactly why these pages correctly
+stay `needs_review=true` pending human sign-off, not switched on.
+
+**Task 2 - spot-check of the formula-fix's blast radius (13 live-reconverted pages, real finding
+- not just "mostly safe"):** Recomputed the "concentrated issues" set this session (read-only,
+0 calls): of 1228 stored vision/`docling+gemini_vision_v2` pages, **107** have their stored
+winning candidate's qualifying diagram issues in fewer blocks than issues (the prior session's
+150 could not be reproduced exactly from current stored data - methodology difference not fully
+resolved; same directional finding, smaller count). Deduped to 63 unique pages across ISB, both
+FMS casebooks and SRCC Guesstimates; sampled 13, spanning severity_gap 0.5 to 34.5 and all 4
+casebooks. For each, **live-reran both of `convert_page_vision`'s real attempts** (not the
+single already-chosen candidate) and scored both under the OLD (flat per-issue) and NEW
+(per-block) formula:
+
+| result | count |
+|---|---|
+| formula's pick changed (old attempt ≠ new attempt) | **7 / 13** |
+| of those, new pick confirmed better (visually checked against the real page) | 1 (FMS2023-24 p78) |
+| of those, new pick is a **same-or-worse pick due to a tie** (see below) | **4 (p16, p30, p50, and p78's own counterpart logic)** |
+| of those, ambiguous / needs more than this spot-check (chart-vs-structure tradeoff) | 2 (p29, p228) |
+
+**Real regression found, confirmed against the source page image (not inferred):** FMS2023-24
+p78 ("Understanding Google"). Attempt 1 flattened the "Ads"/"Cloud"/"Hardware" box groups (real
+printed boxes: Ad-words, Ad-Sense, G-Suite, Maps, Docs, Phones, Home Assistant, Chromecast, Nest
+Hub, Google Home - all visible in the real page image) out of the diagram block into plain
+Markdown text, triggering 15 `missing_box` warnings, all in ONE block. Attempt 2 (the retry, with
+targeted fix hints) correctly rebuilt them as diagram nodes, leaving only 1 minor issue. **Old
+formula correctly preferred attempt 2** (score 2.5 vs -4.5). **New formula can't tell them
+apart**: both have exactly 1 "bad" block, so both score 2.5 - a tie - and the actual production
+code's tie-break (`if new_score > old_score: keep attempt2` else keep attempt 1) **silently
+keeps the worse attempt** on a tie. The same degenerate pattern (both attempts land in the same
+block count, old formula correctly preferred the one with fewer real issues, new formula ties
+and defaults to attempt 1) also showed up on FMS2021-22 p16, ISB p30, and FMS2021-22 p50 - 4 of
+the 13 sampled pages, not a one-off. **This is the real problem the prior session's dry-run risk
+flag warned about and couldn't prove**: the per-block formula fixes p177's hypothetical case
+(penalizing one bad block too harshly relative to coverage) but **loses resolution between two
+candidates that both touch the same single block with very different severity**, and the
+existing tie-break (keep attempt 1, the un-retried one) then silently discards the retry's real
+improvement. None of these pages were re-ingested or had their stored rows changed by this
+finding - it's a live read-only comparison, same budget-safe pattern as the rest of this spot
+check.
+**Not yet resolved:** p29 and p228 flipped in the other direction (new pick has MORE raw issues
+but the same or fewer bad blocks, with marginally better coverage) - whether that's actually
+better needs a closer per-block severity look, not done here (time-boxed to the approved spend).
+
+**Why this matters:** the per-block fix should not be trusted yet for a batch re-ingest or wider
+patch run without a follow-up fix - likely weighting the penalty by issue count *within* a block
+(not fully collapsing to "0.5 per bad block regardless of how bad"), not by reverting to the old
+flat-per-issue formula (which correctly ranked p78-style cases but was the original problem for
+p177-style cases). This is a real, confirmed-on-source-images finding, not a theoretical risk.
+
+**Files:** `backend/ingestion/run_r6_isb_p177_patch.py` (new, no v3 written - see above),
+`backend/ingestion/run_r6_fms2122_chart_patch.py` (new, v3 written).
+
+**Proof:**
+- `venv/bin/python -m unittest discover -s tests` → **382/382 green**, before and after.
+- `npm test` → 111 pass / 1 fail, the same pre-existing unrelated `sandbox.test.js`
+  `__CF_USER_TEXT_ENCODING` flake every prior entry this week documents.
+- Row counts before -> after this session: `ingest_documents` 12 -> 13 (+1, the FMS v3 only -
+  no ISB v3 was written); `ingest_pages` 2376 -> 2576 (+200, FMS v3's full reused+patched page
+  set); `ingest_chunks` 3432 -> 3696 (+264, FMS v3's chunks, `is_active=false`); `document_chunks`
+  (live) unchanged at **22457**; `ingest_chunks` with `is_active=true`: **0** before and after.
+- FMS v3 doc id `e9229429-3eec-478b-b54a-7d5a1cdf6de0`, status `done`.
+- Branch: `wip`, `main` untouched.
+
+**Cost:** ~45 vision HTTP calls (2 ISB-p177 attempts x ~2 exploratory runs + 2 official + 10 FMS
+patch + 25 spot-check + 4 follow-up detail reruns on p78/p16) + 264 embedding calls (FMS v3's
+full chunk set, required because `write_version` re-chunks and re-embeds the whole reused+patched
+page set, not just the 5 changed pages). At this project's established flash-lite rate, roughly
+**$0.08-0.15** this session. Combined with the ~$0.72 already spent on R6 this phase, cumulative
+R6 spend is **~$0.80-0.87**, under the $1 guardrail for this task but closer to it than planned -
+worth knowing before any further R6 spend this month.
+**Undo:** FMS v3 is a normal insert-only row set (`is_active=false` throughout) - delete by
+`document_id = 'e9229429-3eec-478b-b54a-7d5a1cdf6de0'` if ever needed; nothing else to undo
+(ISB had no write).
+**Left open:**
+- ISB p177 is still on Docling, unresolved - the per-block fix doesn't flip it live. Whether
+  Docling (footer line dropped) or vision (diagram mis-treed) is "more correct" for a student is
+  still Aalhad's call, same as before this session.
+- FMS pages 56/57/63 remain below the 95%/100% coverage bar even after the patch (0.89-0.91) -
+  real improvement over Docling (0.19-0.75) but not perfect; all 5 correctly stay
+  `needs_review=true`, not a silent pass.
+- **The per-block `_score` formula needs a follow-up fix** before it's trusted for a batch
+  re-ingest: the tie-break-on-equal-block-count regression above (p78, p16, p30, p50) is real,
+  confirmed against source images, not a one-off. Suggested direction: weight the per-block
+  penalty by (capped) issue count within the block, so two single-bad-block candidates with very
+  different severity no longer score identically.
+- The 150-vs-107 page count discrepancy for the "concentrated issues" set wasn't root-caused
+  (likely a scope/criteria difference from the prior session's inline script, which wasn't saved)
+  - flagged, not chased further this session.
+
+---
+
 ## 2026-10-31 — G3 pulled forward: Company value chain + timeline grounded in casebooks
 **Phase:** G3 (pulled forward ahead of M3 sequencing - Aalhad's explicit follow-on call after G2:
 "move on to the company pages.") · **Type:** backend, schema · **No `is_active` flip, no
