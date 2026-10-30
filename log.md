@@ -5,6 +5,71 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-30 — R6: ISB Consulting Casebook ingested; found a real scoring tradeoff, flagged for review
+**Phase:** R6 · **Type:** ingest, finding
+
+**What changed:** Second fresh casebook past SRCC. Picked `ISB Consulting Casebook 2025.pdf`
+(183 pages, confirmed `club_casebook` by querying existing `document_chunks` classifications
+first, not assumed) as the smallest of the 10 remaining eligible casebooks. Fresh ingest v1:
+183 pages, 239 chunks, 230 vision calls, 240 embedding calls, inserted into `ingest_*` with
+`is_active=false`. 78 pages carry 118 diagrams; all 78 are `needs_review=true` by the
+existing design (a page with a diagram always waits for human sign-off before going live,
+same as FMS/SRCC) - that alone accounts for most of the page's 75 flagged pages and is not a
+fidelity problem.
+
+The other 13 flagged pages (7% of the casebook) cluster on pages 162-177, the casebook's
+"Industry Primer" section - dense pages combining a bulleted Cost/Revenue Drivers box (a real
+table) with a small embedded pie chart (e.g. p169's telecom market-share chart: Reliance Jio
+50.9%, Airtel 31.1%, Vodafone Idea 13%, Others 3.4%, BSNL 1.5%). I pulled the actual page
+image and read it myself to confirm what's really printed, then ran both conversion paths
+on p169 directly to find the cause:
+- **Docling** (the path the pipeline picked, since the page registers `is_table=true`) gets
+  the Cost/Revenue bullets perfectly but has no way to read the pie chart at all -
+  `number_coverage` 0.33.
+- **Gemini vision**, run manually on the same page with the real text layer, gets the pie
+  chart's numbers exactly right (`number_coverage` 1.0, `word_coverage` 1.0) but its own
+  issue-tree transcription of the Cost/Revenue box drops several bullet children as
+  `missing_box` warnings, which the scoring formula (`_score` in `convert.py`) penalizes at
+  -0.5 each - 11 warnings drags its score to 0.5, well below docling's 2.3, so **the
+  automatic docling-vs-vision retry correctly picked docling and flagged the page
+  `needs_review`, rather than silently guessing**. Neither path actually hallucinates
+  anything; both just lose a different half of the page's real content.
+**Why:** Continuing the check-against-source -> diagnose -> (fix or flag) loop from the SRCC
+entry, now on a casebook with a page layout the pipeline hadn't seen before (table + chart on
+the same page). Root-caused rather than reflagged-and-moved-on, per that loop.
+**Proof:**
+- `out/r6_isb_v1.json`: per-page coverage/diagram summary for all 183 pages.
+- Direct image pull + read for pages 169/5/44 from the `casebook-source` bucket, compared by
+  eye against the stored markdown.
+- Manual reproduction: ran `convert_page_vision` on p169's real PNG + real text layer outside
+  the pipeline, printed `number_coverage`, `word_coverage`, `diagram_issues` and the `_score`
+  breakdown to isolate exactly which component sank vision's score.
+- Full test suite unaffected (no pipeline code changed this round - see "Not done" below for
+  why). `document_chunks` (live) verified untouched.
+**Cost:** v1: 230 vision + 240 embedding calls. At ~$0.0012/vision call (flash-lite, per
+prior entries), embeddings near-free: **≈ $0.28** for this casebook. Cumulative R6 spend
+so far (SRCC + ISB): ≈ $0.39, well inside the ~$20/month budget.
+**Files:** `backend/ingestion/run_r6_isb.py` (new, fresh-ingest entry point). No pipeline
+library code changed. Committed on `wip`, not `main`.
+**Undo:** Insert-only, `is_active=false`. To remove: delete `ingest_documents`/
+`ingest_pages`/`ingest_chunks` rows where `source_file = 'ISB Consulting Casebook 2025.pdf'`.
+**Not done / left open - needs Aalhad's call, not a guess:**
+- I did **not** change `_score`'s -0.5-per-warning weight or special-case `missing_box`
+  warnings, even though that's the lever that would flip p169 (and likely the other 12
+  clustered pages) to the vision version. Lowering it is a product tradeoff - pie-chart
+  percentages vs. a couple of bullet labels that are also visible in the retained docling
+  table - not an engineering bug, and I don't think it's mine to decide silently for a
+  pattern I've only confirmed on one page so far.
+- These 13 pages are sitting in the review queue (R5) as-is: docling's version (missing the
+  chart) is what's stored, flagged `needs_review`. An admin reviewing them can currently see
+  the flag but not the alternative vision version side-by-side - worth a note for whoever
+  builds out the R5 UI further.
+- 8 of the 10 remaining eligible Consulting casebooks (IIM B/Calcutta/L/K/A, ISB done,
+  Consulting Club FMS, FMS 2021-22, FMS 2024-25) are still untouched, roughly 2,170 pages
+  combined.
+
+---
+
 ## 2026-10-30 — R6: first new casebook ingested — SRCC Guesstimates Book (insert-only)
 **Phase:** R6 · **Type:** ingest, fix
 
