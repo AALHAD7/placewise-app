@@ -3,8 +3,32 @@ import { supabase } from "../lib/supabase.js";
 import { optionalAuth } from "../middleware/auth.js";
 import { errorDetail } from "../lib/errors.js";
 import { withGroundedExamples } from "../lib/frameworksGrounding.js";
+import { buildConsultingFrameworkCatalog } from "../lib/frameworkCatalog.js";
 
 const router = Router();
+
+// Same R7 switch as the rest of the Consulting RAG v2 work - off by default, so this
+// additive endpoint has zero effect on the existing /frameworks and /taxonomy routes
+// above when it's off.
+const CONSULTING_RAG_V2_ENABLED = process.env.ENABLE_CONSULTING_RAG_V2 === "true";
+
+// GET /api/frameworks/catalog?domain=Consulting - every framework actually named in a
+// diagram title across the ingested club casebooks for that domain, not the static
+// seeded `frameworks` table. Currently Consulting-only (the only domain R6 has
+// re-ingested); any other `domain` value returns an empty catalog, not an error.
+router.get("/catalog", optionalAuth, async (req, res) => {
+  const { domain } = req.query;
+  if (!CONSULTING_RAG_V2_ENABLED || domain !== "Consulting") {
+    return res.json({ success: true, frameworks: [] });
+  }
+  try {
+    const frameworks = await buildConsultingFrameworkCatalog();
+    res.json({ success: true, frameworks });
+  } catch (err) {
+    console.error("[frameworks/catalog]", err);
+    res.status(500).json({ success: false, error: "Failed to build the framework catalog.", detail: errorDetail(err) });
+  }
+});
 
 // Pure DB read (distinct domain/subdomain pairs already in the frameworks
 // table) - no AI involved, this just tells the frontend what's actually

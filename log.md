@@ -5,6 +5,67 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-30 — Guesstimates feature (new) + Consulting framework catalog derived from ingested casebooks
+**Phase:** R7 (follow-up) / G-Guesstimates · **Type:** feature, migration, tests
+
+**What changed:** Two pieces of new feature work Aalhad asked for directly, building on
+R7's `match_ingest_chunks`/`consultingRetrieval.js`.
+
+1. **Guesstimates feature (didn't exist before — R7's fork confirmed no route/page for
+   it anywhere).** `migration_044_guesstimates_source_filter.sql` adds an optional
+   `filter_source_file` parameter to `match_ingest_chunks` (drop+create, same reason as
+   migration_043's drop+create for `match_document_chunks` — Postgres treats a new
+   parameter as a different signature) — defaults to null, so the 3-arg callers in
+   `consultingRetrieval.js` are unaffected. `src/lib/guesstimateRetrieval.js` scopes
+   lookups to exactly `SRCC Guesstimates-Book-Volume-1-6.pdf` via that filter, reusing
+   `decideCoverage`/`buildCitation`/`AI_FALLBACK_LABEL` from `consultingRetrieval.js`
+   rather than re-deriving them. New routes `GET /api/guesstimates/random` (a random
+   covering chunk, picked with `pickRandomCoveringChunk` so repeated calls don't always
+   return the same problem) and `GET /api/guesstimates/ask?topic=...`, both behind the
+   existing `ENABLE_CONSULTING_RAG_V2` flag (reused rather than a new flag — same
+   underlying ingestion work gates both). A miss here reports `available:false,
+   reason:"not_yet_live"`, deliberately distinct from the grounding policy's
+   `AI_FALLBACK_LABEL` wording — right now every `ingest_chunks` row has `is_active =
+   false` (R9 hasn't run), so this isn't "the casebook doesn't cover guesstimates" (it
+   does, entirely), it's "the data isn't switched live yet." Conflating those would
+   misrepresent why nothing came back.
+
+2. **Framework catalog derived from the actual ingested casebooks, not a static list.**
+   `src/lib/frameworkCatalog.js`'s `buildConsultingFrameworkCatalog` reads every diagram
+   `title` (diagram-transcription format, migration_040) off `ingest_pages` for
+   `domain='Consulting'` + `source_class='club_casebook'` documents (FMS, SRCC, ISB),
+   deduplicates case/whitespace variants, and groups by how often each one actually
+   appears — e.g. "Porter's Five Forces" showing up in both FMS and ISB collapses to one
+   entry with two citations, not two separate rows. This surfaces exactly what's in the
+   corpus (nothing invented from loose text — a title only exists if the ingestion
+   pipeline already transcribed it off a real labelled diagram), independent of
+   `is_active`/R9, since it's cataloging the corpus, not serving it live. New additive
+   route `GET /api/frameworks/catalog?domain=Consulting`, behind the same flag; any other
+   domain or flag-off returns `{frameworks: []}`, with zero effect on the existing
+   `/frameworks` and `/taxonomy` routes.
+
+**Scope cut, flagged not guessed:** no frontend UI was built for either feature — no
+Guesstimates page, no catalog display on the Frameworks page. That's genuinely R8's job
+(frontend rendering) and needs a product/design call this session doesn't have (where
+Guesstimates lives in nav, what a practice flow looks like, how the catalog surfaces
+next to the existing seeded framework list) — added the response types
+(`GuesstimateResponse`, `FrameworksCatalogResponse`, etc. in `src/types/api.ts`) so R8
+isn't starting from nothing, but didn't guess at UI.
+
+**Proof:** 12 new tests (`test/guesstimateRetrieval.test.js`,
+`test/frameworkCatalog.test.js`), all pure-logic, no network/Supabase — same tier as
+`consultingRetrieval.test.js`. `npm test`: 98/99 (the 1 failure is the pre-existing,
+unrelated sandbox-env flake). Frontend: `tsc -b` surfaced exactly one pre-existing error
+in `HomePage.tsx` (unused `data` var) from an unrelated uncommitted edit already in the
+working tree before this work started — not touched, not caused by this change; every
+other file including the new types compiles clean.
+
+**Not done:** `ingest_chunks.is_active` stays `false` everywhere — this migration and
+both features are inert in production regardless of the flag until R9. Nothing in
+`document_chunks` or any earlier `ingest_*` row was touched. `main` untouched.
+
+---
+
 ## 2026-10-30 — Fix: match_document_chunks dropped `image_url`, silently broke Frameworks v1 image grounding
 **Phase:** R7 (follow-up) · **Type:** migration, fix
 

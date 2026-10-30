@@ -45,13 +45,14 @@ export function buildCitation(row) {
  * frameworksGrounding.js's findGrounding - a retrieval miss must never take
  * down the page it's enriching.
  */
-export async function retrieveConsultingChunks(queryText, { domain, matchCount = 6 } = {}) {
+export async function retrieveConsultingChunks(queryText, { domain, matchCount = 6, sourceFile } = {}) {
   try {
     const [queryEmbedding] = await embedTexts([queryText], "RETRIEVAL_QUERY");
     const { data, error } = await supabase.rpc("match_ingest_chunks", {
       query_embedding: queryEmbedding,
       match_count: matchCount,
-      filter_domain: domain || null
+      filter_domain: domain || null,
+      filter_source_file: sourceFile || null
     });
     if (error) throw error;
     return data || [];
@@ -66,8 +67,8 @@ export async function retrieveConsultingChunks(queryText, { domain, matchCount =
  * return casebook-only material with citations, or the labelled "not
  * covered" marker - never both blended (grounding policy, CLAUDE.md).
  */
-export async function groundedConsultingLookup(queryText, { domain = "Consulting", matchCount = 6 } = {}) {
-  const rows = await retrieveConsultingChunks(queryText, { domain, matchCount });
+export async function groundedConsultingLookup(queryText, { domain = "Consulting", matchCount = 6, sourceFile } = {}) {
+  const rows = await retrieveConsultingChunks(queryText, { domain, matchCount, sourceFile });
   const { covered, rows: coveringRows } = decideCoverage(rows);
 
   if (!covered) {

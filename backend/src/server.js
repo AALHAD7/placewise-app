@@ -9,6 +9,7 @@ import storyRouter from "./routes/story.js";
 import toneRouter from "./routes/tone.js";
 import mockInterviewRouter from "./routes/mockInterview.js";
 import frameworksRouter from "./routes/frameworks.js";
+import guesstimatesRouter from "./routes/guesstimates.js";
 import companiesRouter from "./routes/companies.js";
 import communityRouter from "./routes/community.js";
 import newsRouter from "./routes/news.js";
@@ -18,6 +19,9 @@ import transcribeRouter from "./routes/transcribe.js";
 import rolesRouter from "./routes/roles.js";
 import skillsRouter from "./routes/skills.js";
 import activityRouter from "./routes/activity.js";
+import planRouter from "./routes/plan.js";
+import adminRouter from "./routes/admin.js";
+import adminReviewRouter from "./routes/adminReview.js";
 
 const REQUIRED_ENV = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "GEMINI_API_KEY", "GNEWS_API_KEY"];
 const missing = REQUIRED_ENV.filter(k => !process.env[k]);
@@ -72,6 +76,7 @@ app.use("/api/story", storyRouter);
 app.use("/api/tone", toneRouter);
 app.use("/api/mock-interview", mockInterviewRouter);
 app.use("/api/frameworks", frameworksRouter);
+app.use("/api/guesstimates", guesstimatesRouter);
 app.use("/api/companies", companiesRouter);
 app.use("/api/community", communityRouter);
 app.use("/api/news", newsRouter);
@@ -81,6 +86,10 @@ app.use("/api/transcribe", transcribeRouter);
 app.use("/api/roles", rolesRouter);
 app.use("/api/skills", skillsRouter);
 app.use("/api/activity", activityRouter);
+app.use("/api/plan", planRouter);
+// Before /api/admin so the review queue gets adminReviewLimiter, not adminLimiter.
+app.use("/api/admin/review", adminReviewRouter);
+app.use("/api/admin", adminRouter);
 
 // Without this, an error thrown/passed before a route's own try/catch runs
 // (e.g. Multer rejecting an oversized upload) falls through to Express's
