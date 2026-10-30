@@ -5,6 +5,59 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-30 — NVIDIA free-tier vision: side-by-side comparison vs Gemini, no cutover
+**Phase:** ingest-nvidia · **Type:** ingestion, eval
+
+**What changed:** Added `nvidia_client.py` (same `transcribe_page` contract as
+`gemini_client.py`, calling the free-tier NVIDIA NIM endpoint,
+`nvidia/nemotron-3.5-super-vl-120b-a12b`) and `compare_vision_providers.py`, a read-only
+harness that runs both providers on the same real ISB pages and scores both with the
+existing `fidelity.check_page`. `config.py` gained `VISION_PROVIDER` ("gemini", unchanged
+default) and `NVIDIA_VISION_MODEL` as scaffolding only — no caller branches on them yet.
+
+**Why:** Aalhad wants to reduce Gemini dependency using the NVIDIA free tier (40 req/min)
+wherever a confirmed-working model actually fits. This tests the one candidate for page
+conversion (vision) before touching anything live.
+
+**Result — do not switch the default yet:** ran both providers on 7 real pages (the 5
+lowest-number_coverage table pages from the ISB run, pages 162/166/169/175/177, plus two
+genuine multi-diagram pages, 163/34).
+- On the 5 table/chart pages, forced through the *vision* path (not Docling, which is what
+  actually ran in production): **Gemini scored 1.0 number_coverage on all 5** — meaning
+  Gemini vision itself was never the problem on ISB's pie-chart pages; the real R6 finding
+  was that these pages get routed to Docling (table path), not vision, and Docling can't
+  read charts. That's a routing/scoring-formula question, same open item R6 already flagged
+  — not something this comparison changes.
+- **NVIDIA returned empty `content` (0 chars) on those same 5 pages** — it's a reasoning
+  model and appears to spend its token budget on hidden chain-of-thought, leaving nothing
+  in the field this pipeline reads (confirmed in isolation: a plain "ping" request earlier
+  also came back with `finish_reason:"length"` and no real answer). On the 2 genuine
+  diagram pages it did return content, but with its own real problems (`invented_text` on
+  163, `missing_box` on 34).
+- **Recommendation:** NVIDIA vision is not a drop-in replacement as integrated — before
+  reconsidering it, someone needs to either read `reasoning_content` as a fallback, raise
+  `max_tokens` well past 8192, or find a request parameter that disables extended thinking
+  for this model. Until then, Gemini stays the only vision provider; `VISION_PROVIDER`
+  exists but nothing reads it.
+
+**Files:** `backend/ingestion/nvidia_client.py`, `backend/ingestion/compare_vision_providers.py`,
+`backend/ingestion/config.py`, `backend/ingestion/tests/test_nvidia_client.py`
+
+**Proof:** `venv/bin/python -m unittest discover -s tests` → 375/375 green (was 366 before
+this change, +9 new tests). Comparison output: `backend/ingestion/out/compare_vision_providers.json`.
+
+**Cost:** 7 Gemini vision calls (already-budgeted model, no embeddings) + 8 NVIDIA vision
+calls, all free-tier. ~$0 incremental.
+
+**Undo:** delete the 4 new/changed files; nothing else references them.
+
+**Open issues:** page-classification side of the original ask (routing pages to a cheap
+LLM classifier) doesn't apply — `page_classify.py` is already code-only (pypdfium2
+geometry), no LLM call exists there to replace. The NVIDIA Q&A-cascade fallback (chat
+model, not vision) is separate work, not started here.
+
+---
+
 ## 2026-10-30 — R7: match_ingest_chunks RPC + Frameworks (Consulting) behind ENABLE_CONSULTING_RAG_V2, off by default
 **Phase:** R7 · **Type:** migration, retrieval
 

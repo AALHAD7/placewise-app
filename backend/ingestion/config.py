@@ -11,7 +11,8 @@ load_dotenv(BACKEND_DIR / ".env")
 # tests that never talk to Supabase/Gemini import cleanly without backend/.env.
 # `from config import GEMINI_API_KEY` still works when the variable is set and
 # raises a clear error when it isn't.
-_SECRET_NAMES = ("SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "GEMINI_API_KEY")
+_SECRET_NAMES = ("SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "GEMINI_API_KEY",
+                  "NVIDIA_NEMOTRON3_ULTRA_BASE_URL", "NVIDIA_NEMOTRON3_ULTRA_API_KEY")
 
 
 def __getattr__(name):
@@ -57,3 +58,12 @@ VISION_RETRY_ON_DIAGRAM_FAIL = True
 VISION_MAX_CALLS_PER_PAGE = 2
 # A 429 is retried on the same model only if Gemini asks for a short wait.
 VISION_429_MAX_WAIT_S = 10.0
+
+# Evaluation-only alternate vision provider (free tier, OpenAI-compatible NIM
+# endpoint). NOT the default - VISION_PROVIDER stays "gemini" until a
+# side-by-side comparison (see compare_vision_providers.py) shows it's worth
+# switching. Never used for embeddings: document_chunks.embedding is locked to
+# gemini-embedding-001 at 768 dims, a different provider would need a full
+# re-embed + schema change, out of scope here.
+VISION_PROVIDER = "gemini"
+NVIDIA_VISION_MODEL = "nvidia/nemotron-3.5-super-vl-120b-a12b"
