@@ -192,13 +192,37 @@ def diagram_fix_hints(fid: dict, truncated: bool, page_no: int) -> list:
     return hints[:MAX_FIX_HINTS]
 
 
+def _penalty_blocks(fid: dict) -> int:
+    """Distinct diagram blocks (by `block` index) carrying at least one error
+    or one structure-losing warn code (RETRY_WARN_CODES) - the real unit of
+    damage for scoring. One mis-treed block (e.g. a bulleted section the
+    model turned into an issue_tree with the wrong shape) can throw off
+    several individual issues at once (a duplicate label, a missing box, a
+    couple of altered labels...), and the old flat `-0.5 per issue` penalty
+    double-counted all of them as if they were independent page-wide
+    problems. On a page where that one bad block sits next to otherwise
+    much-better coverage (R6, ISB p177: Docling drops a footer line, vision
+    gets everything including the footer but mis-trees an unrelated
+    Porter's-5-forces block), the flat penalty let a handful of issues in
+    ONE block wipe out a real, page-wide coverage win. Counting damage per
+    block instead still fully penalizes a page where every block is bad
+    (each contributes its own 0.5), but no longer piles additional penalty
+    onto a block that already triggered one."""
+    blocks = set()
+    for it in fid.get("diagram_issues") or []:
+        if it.get("severity") == "error" or it.get("code") in RETRY_WARN_CODES:
+            blocks.add(it.get("block"))
+    return len(blocks)
+
+
 def _score(fid: dict, truncated: bool) -> float:
     """number_coverage + word_coverage + label_coverage (1 when no labels were
-    checked) - 0.5 per diagram error or structural warning - 1 if truncated."""
+    checked) - 0.5 per diagram BLOCK carrying an error or structural warning
+    (not per individual issue - see _penalty_blocks) - 1 if truncated."""
     cov = fid.get("diagram_label_coverage")
     return ((fid.get("number_coverage") or 0) + (fid.get("word_coverage") or 0)
             + (1.0 if cov is None else cov)
-            - 0.5 * ((fid.get("diagram_errors") or 0) + _retry_warns(fid))
+            - 0.5 * _penalty_blocks(fid)
             - (1.0 if truncated else 0.0))
 
 

@@ -5,6 +5,107 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — R6 fix: per-block diagram penalty in `_score` (ISB p177); confirmed FMS's 5 pages already covered by the routing fix
+**Phase:** R6 (fix) · **Type:** ingestion, fix, tests · **No re-ingestion, no Gemini/NVIDIA
+calls in this session** - code fix + dry-run/unit-test proof only, per explicit instruction.
+
+**What changed (Issue 1 - p177 scoring tradeoff):** `ISB Consulting Casebook 2025.pdf` p177
+has no chart (confirmed in the 2026-10-31 entry above); its automatic docling-vs-vision retry
+already recovers the page's dropped footer line through Gemini vision (number_coverage and
+word_coverage both reach 1.0 there, real measured values from
+`out/compare_vision_providers.json`), but the retry kept Docling anyway because
+`convert._score()` subtracted a flat `0.5` for every individual diagram error/structural warn
+(6 `label_altered` errors + >=1 structural warn, all real/stored, all from the page's one
+"Porter's 5 forces" bulleted section the model mis-treed) - one bad diagram block throwing off
+several individual issues at once outweighed a real, page-wide coverage win. Fixed
+`_score()` (`backend/ingestion/convert.py`) to penalize per **distinct diagram block**
+carrying an issue (`_penalty_blocks`, grouping by each issue's `block` index) instead of per
+individual issue. A page where every block is bad is penalized the same as before (each
+contributes its own 0.5); a page where one block throws several issues at once no longer pays
+for each one separately.
+- Real numbers used (none invented): Docling score = 0.5 + 0.9769230769230769 + 1.0 (no
+  diagram blocks) = **2.4769**. Vision, old formula = 1.0 + 1.0 + 1.0 - 0.5*(6 errors + 1
+  structural warn) = **-0.5** (Docling wins, matches the real v1 outcome - p177 stayed on
+  Docling). Vision, new formula = 1.0 + 1.0 + 1.0 - 0.5*(1 block) = **2.5** (vision now wins,
+  by 0.0231). The only reconstructed piece (not directly measured, since the discarded vision
+  draft's full `diagram_issues` list was never persisted anywhere - not in `ingest_pages`
+  columns, not in any `out/*.json`) is that all 7 issues sit on that single block; this follows
+  from the page having exactly one diagram topic (confirmed from `P177_TEXT` in
+  `tests/test_page_classify.py` and the real page text), not from a second measurement.
+- **Regression test:** `tests/test_convert_v2.py::test_isb_p177_score_picks_vision_once_penalty_is_per_block`
+  builds the Docling and vision `fid` dicts from exactly these real/reconstructed numbers and
+  asserts the old flat formula keeps Docling, the new per-block formula picks vision. No live
+  run, no new Gemini/NVIDIA calls - the fid inputs are hand-built from already-stored scalars.
+- **Blast-radius check (risk, not fully resolved):** wrote a read-only, code-only script
+  (`fidelity.check_page` run locally against already-stored `markdown`/`text_layer` columns of
+  every `ingest_pages` row whose `method` mentions "vision" - 1228 rows, 0 API calls, 0
+  writes) to see how often the fix changes the penalty value on an already-decided page's
+  *stored* (winning) candidate. **150 of 1228 (~12%) have their qualifying diagram issues
+  concentrated in fewer blocks than issues**, meaning the new formula gives a different,
+  lower, penalty on the stored winner for those pages. This does **not** prove any of those
+  150 pages' docling-vs-vision or attempt-1-vs-attempt-2 choice would flip - the discarded
+  losing candidate's `diagram_issues` were never persisted, so there is no way to re-run that
+  comparison from stored data alone, and doing so live is exactly the re-ingestion this session
+  was told not to do. **Flagging this explicitly as an open risk**: before this formula change
+  is relied on for a batch re-ingest or patch run, the comparison should be re-validated
+  live on a small sample (a few already-known tradeoff pages plus a few random ones), not
+  assumed safe from this dry run alone.
+- Full ingestion suite: **382/382 green** (380 before + 2 new).
+
+**What changed (Issue 2 - FMS's 5 pages, same chart-routing bug):** Confirmed, without
+patching or re-ingesting anything, that the already-committed `page_classify.py` fix (commit
+`53a281b`) correctly reclassifies all 5 of FMS Consulting Casebook 2021-22's affected pages
+(53, 56, 57, 60, 63 - flagged in the entry above as "the same bug, confirmed on a second
+casebook, not yet patched"). Measured live, read-only, this session: ran
+`page_classify.classify_page` directly against the real PDF
+(`Data/Consulting Files/PDF Files/The FMS Consulting Casebook 2021-22.pdf`) for these 5 pages
+- pure pypdfium2 geometry, 0 Gemini/NVIDIA calls, 0 DB writes. Real `img_coverage`: p53
+0.0606, p56 0.1611, p57 0.0839, p60 0.1036, p63 0.0461 - all well above
+`CHART_IMAGE_COVERAGE_THRESHOLD` (0.02) and this corpus's ~0.0067 no-picture baseline, so
+`classify_page(docling_has_table=True)` now returns `is_table=False, is_visual=True` for
+every one of them, same as ISB's 4 pages. **Regression test:**
+`tests/test_page_classify.py::test_fms_five_chart_table_pages_route_to_vision` pins these 5
+real measured `img_coverage` values so this stays proven without needing to re-run the pilot
+again. The actual patch (re-converting these 5 pages through vision, insert-only,
+`is_active=false`, same pattern as `run_r6_isb_patch.py`) is **not run here** - left as a
+cheap, already-scoped follow-up for whenever Aalhad wants to spend the ~2 vision calls x 5
+pages it costs.
+
+**Why:** p177's fix recovers a real printed footer number without inventing anything or
+loosening the bar for pages that are genuinely bad in more than one place. FMS confirmation
+means the already-committed classifier fix is proven general (two casebooks, same bug,
+same fix, no per-page special-casing) before Aalhad spends anything patching it.
+
+**Files:** `backend/ingestion/convert.py` (`_score`/`_penalty_blocks` fix),
+`backend/ingestion/tests/test_convert_v2.py` (new p177 regression test),
+`backend/ingestion/tests/test_page_classify.py` (new FMS regression test).
+
+**Proof:**
+- `venv/bin/python -m unittest discover -s tests` → **382/382 green**.
+- p177: real stored scores (above) show old formula picks Docling (-0.5 < 2.4769), new
+  formula picks vision (2.5 > 2.4769) - by a real, thin, non-cherry-picked margin (0.0231),
+  not an engineered pass.
+- FMS: real measured `img_coverage` for all 5 pages, well clear of the 0.02 threshold.
+- **Nothing was re-ingested.** No `ingest_pages`/`ingest_chunks`/`ingest_documents` row was
+  inserted, updated or deleted. No Gemini or NVIDIA vision call was made. The only live-data
+  reads this session were SELECT-only (`ingest_pages`, for the blast-radius check) and local
+  PDF geometry reads (FMS pages, for Issue 2) - zero paid calls, confirmed by not touching
+  `gemini_client`/`nvidia_client`'s `transcribe_page` anywhere in this session's new code.
+- Branch: `wip`, `main` untouched.
+
+**Cost:** $0 (no paid API calls this session).
+**Undo:** Both fixes are normal code reverts (`convert.py`, the two test files) - no DB state
+to undo, nothing was written.
+**Left open:**
+- The 12% blast-radius finding above - re-validate the formula change on a small live sample
+  before trusting it for a batch patch/re-ingest.
+- FMS's 5 pages (53, 56, 57, 60, 63) still need the actual patch run (insert-only, same
+  pattern as `run_r6_isb_patch.py`) - cheap, scoped, not done here by instruction.
+- p177 itself still needs its actual patch run (re-convert through vision as primary, not
+  just via the retry path) to apply this fix live - also not done here.
+
+---
+
 ## 2026-10-31 — R6 fix: page_classify.py routing bug (table+embedded-chart pages silently lost to Docling)
 **Phase:** R6 (fix) · **Type:** ingestion, fix, tests
 

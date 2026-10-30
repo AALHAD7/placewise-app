@@ -124,6 +124,55 @@ class ConvertPageVisionTest(unittest.TestCase):
         fid["diagram_label_coverage"] = None
         self.assertEqual(convert._score(fid, False), 3.0)
 
+    def test_isb_p177_score_picks_vision_once_penalty_is_per_block(self):
+        """Regression for the R6 scoring tradeoff (log.md 2026-10-31, 2026-10-30):
+        ISB Consulting Casebook 2025.pdf p177 has no chart at all - its low
+        Docling number_coverage is a one-off footer-line drop, not a
+        classification bug (confirmed in test_page_classify.py). The
+        automatic docling_fidelity_retry already tries Gemini vision on this
+        page and vision genuinely recovers the footer (number_coverage and
+        word_coverage both 1.0, real, measured: out/compare_vision_providers.json,
+        2026-10-31 run against the real page), but vision's own diagram-tree
+        reading of the page's single "Porter's 5 forces" bulleted section
+        throws off several issues at once (6 errors - all `label_altered`,
+        matching the stored `review_reasons` containing "diagram_label_altered"
+        but none of the other error-reason buckets - plus >=1 structural warn,
+        matching the stored "diagram_structure" bucket; `diagram_label`
+        absent, so diagram_label_coverage is either None or exactly 1.0 per
+        DIAGRAM_LABEL_COVERAGE_MIN=1.0, contributing 1.0 to the score either
+        way) - all from that ONE block, since this page has exactly one
+        diagram topic. Docling's own fid has no diagram blocks at all
+        (diagram_errors=0).
+        Real stored scalars used below: Docling number_coverage=0.5,
+        word_coverage=0.9769230769230769 (out/r6_isb_v1.json pages_summary,
+        p177); vision number_coverage=1.0, word_coverage=1.0, 6 errors + 1
+        structural warn (out/compare_vision_providers.json). The only
+        reconstructed part is that all 7 issues sit on a single diagram
+        block (block index 0) - inferred from the page having one diagram
+        section, not measured directly (the discarded vision draft's full
+        diagram_issues list was never persisted - see log.md "Open issues").
+        """
+        docling_fid = {"number_coverage": 0.5, "word_coverage": 0.9769230769230769,
+                        "diagram_label_coverage": None, "diagram_issues": []}
+        vision_fid = {"number_coverage": 1.0, "word_coverage": 1.0,
+                       "diagram_label_coverage": None,
+                       "diagram_issues": (
+                           [{"block": 0, "code": "label_altered", "severity": "error"}] * 6
+                           + [{"block": 0, "code": "tree_convergence_suspect", "severity": "warn"}]
+                       )}
+        docling_score = convert._score(docling_fid, False)
+        vision_score = convert._score(vision_fid, False)
+        # Old flat per-issue formula: Docling would have won (matches the
+        # real v1 ingest, where p177 stayed on Docling and needs_review for
+        # the footer-drop alone).
+        old_vision_penalty = 0.5 * (6 + 1)
+        old_vision_score = 1.0 + 1.0 + 1.0 - old_vision_penalty
+        self.assertLess(old_vision_score, docling_score)
+        # New per-block formula: the fix. Vision now wins on real coverage,
+        # not discarded for one unrelated block's issues.
+        self.assertGreater(vision_score, docling_score)
+        self.assertEqual(convert._penalty_blocks(vision_fid), 1)
+
     def test_flattened_notes_trigger_one_retry(self):
         flat = dict(ANSOFF, notes=["Market Penetration", "Diversification", "Product Development"],
                     cells=[["Existing", "New"], ["Existing", "New"]])

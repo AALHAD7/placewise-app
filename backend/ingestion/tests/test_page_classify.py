@@ -132,6 +132,31 @@ class TestChartTableRouting(unittest.TestCase):
         self.assertTrue(classify_page(below, docling_has_table=True)["is_table"])
         self.assertFalse(classify_page(above, docling_has_table=True)["is_table"])
 
+    def test_fms_five_chart_table_pages_route_to_vision(self):
+        """Confirms the committed fix (commit 53a281b) covers FMS Consulting
+        Casebook 2021-22's 5 chart+table pages (53, 56, 57, 60, 63), flagged
+        in log.md 2026-10-31 as "the same bug, confirmed on a second
+        casebook, not yet patched". These values are real: measured live
+        this session with this repo's own page_classify.classify_page
+        against the actual PDF pages of `The FMS Consulting Casebook
+        2021-22.pdf` (img_coverage, path_coverage) - a read-only, code-only
+        dry run (pypdfium2 geometry only, no Gemini/NVIDIA call, no
+        ingestion, nothing written to ingest_pages/ingest_chunks). All 5 are
+        well above CHART_IMAGE_COVERAGE_THRESHOLD (0.02) and this corpus's
+        ~0.0067 no-picture baseline, so the already-fixed classifier routes
+        every one of them to vision, same as ISB's 4 pages - no further
+        code change needed for FMS; only the actual patch run (forbidden in
+        this session) is left as a cheap follow-up."""
+        real_geometry = {
+            53: 0.0606, 56: 0.1611, 57: 0.0839, 60: 0.1036, 63: 0.0461,
+        }
+        for page_no, img_frac in real_geometry.items():
+            with self.subTest(page_no=page_no):
+                page = _FakePage(f"FMS p{page_no} text layer", img_frac=img_frac, path_frac=0.8)
+                cls = classify_page(page, docling_has_table=True)
+                self.assertFalse(cls["is_table"], f"p{page_no} should not stay on Docling")
+                self.assertTrue(cls["is_visual"], f"p{page_no} should route to vision")
+
     def test_non_table_page_unaffected(self):
         """A page Docling does NOT flag as a table keeps its existing
         is_visual/is_text behavior - this fix only changes pages where
