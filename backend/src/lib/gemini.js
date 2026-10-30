@@ -1,3 +1,5 @@
+import { logLlmCall } from "./llmCallLog.js";
+
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
 const EMBEDDING_MODEL = "gemini-embedding-001";
 // A local model (bge-base-en-v1.5 via @huggingface/transformers) was tried as
@@ -21,7 +23,7 @@ const EMBEDDING_DIM = 768; // gemini-embedding-001 supports 768 / 1536 / 3072 vi
 // fallback capacity, and routing cheap Lite traffic into Pro on a quota
 // miss would spike cost with no real benefit. 3.6 before 3.7 within the
 // Flash tier: 3.7 is the newest/most-capable model here, so last resort.
-const GENERATION_MODELS = [
+export const GENERATION_MODELS = [
   "gemini-3.5-flash-lite",
   "gemini-3.1-flash-lite",
   "gemini-2.5-flash-lite",
@@ -29,6 +31,97 @@ const GENERATION_MODELS = [
   "gemini-3.6-flash",
   "gemini-3.7-flash"
 ];
+
+// Phase 1.5 item 5: every call is capped to the flash-lite tiers
+// (GENERATION_MODELS[0..MAX_CASCADE_TIER-1]) by default - escalating past
+// that into full-flash pricing needs an explicit `allowEscalation: true` on
+// the call, reserved for evaluation-type calls (Mock Interview answer
+// evaluation, the content-check verifier) where a wrong/low-quality result
+// is costlier than the extra tokens. This is a default baked into
+// generateText/generateJSON/generateGroundedText themselves, not a per-
+// call-site opt-in - every existing caller across the app gets the cap
+// automatically with zero changes, and only the 2 explicitly-marked
+// escalation call sites can go further.
+export const MAX_CASCADE_TIER = 3;
+
+// Nvidia-cascade: nvidia/nemotron-3-ultra-550b-a55b, tried first (ahead of
+// every Gemini tier) for chat.js's ungrounded Q&A/chat passthrough only
+// (framework explain/pushback chat, Tone Shifter) — not wired into
+// generateText/generateJSON/generateGroundedText, so every grounded/RAG
+// path and every other feature (resume, mock interview, company/role
+// content, Guesstimates, Frameworks) is completely untouched by this. See
+// generateChatText below. OpenAI-compatible /chat/completions endpoint,
+// confirmed live via curl earlier this session. Off by default — see
+// ENABLE_NVIDIA_CASCADE below and log.md for why.
+const NVIDIA_MODEL = "nvidia/nemotron-3-ultra-550b-a55b";
+// Read live from process.env on every call (not cached at module load) —
+// cheap, and lets tests flip config/flag between calls within one process
+// instead of needing a fresh module import per scenario.
+// Free tier is ~40 req/min, shared across however many features eventually
+// use it — short enough that a slow/hung call never makes the user wait
+// meaningfully longer than the Gemini cascade alone would, and never serves
+// as the sole path (a timeout here always falls straight through to Gemini).
+// Overridable via env for tests only (simulating a timeout without a real
+// multi-second wait) — unset in .env.example, so production always gets the
+// 4000ms default.
+const NVIDIA_TIMEOUT_MS = Number(process.env.NVIDIA_CASCADE_TIMEOUT_MS) || 4000;
+
+export function isNvidiaCascadeEnabled() {
+  return process.env.ENABLE_NVIDIA_CASCADE === "true";
+}
+
+// Every failure mode (missing config, non-2xx, timeout/abort, network
+// error, malformed body, empty text) is caught here and turned into `null`
+// — this function must never throw. generateChatText below treats `null`
+// as "fall through to Gemini, exactly as it works today" with no special
+// casing per failure type, so a quota 429, a 500, a dropped connection and
+// a slow response all degrade identically and invisibly to the caller.
+async function tryNvidiaChat({ system, prompt, maxTokens }) {
+  const baseUrl = process.env.NVIDIA_NEMOTRON3_ULTRA_BASE_URL;
+  const apiKey = process.env.NVIDIA_NEMOTRON3_ULTRA_API_KEY;
+  if (!baseUrl || !apiKey) {
+    console.warn("[gemini] nvidia cascade enabled but NVIDIA_NEMOTRON3_ULTRA_BASE_URL/API_KEY not set, skipping");
+    return null;
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), NVIDIA_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: NVIDIA_MODEL,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: maxTokens,
+        temperature: 0.4
+      }),
+      signal: controller.signal
+    });
+    if (!res.ok) {
+      console.warn(`[gemini] nvidia cascade: ${NVIDIA_MODEL} returned ${res.status}, falling back to Gemini`);
+      return null;
+    }
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text || !text.trim()) {
+      console.warn("[gemini] nvidia cascade: empty response, falling back to Gemini");
+      return null;
+    }
+    return text;
+  } catch (err) {
+    const reason = err?.name === "AbortError" ? `timed out after ${NVIDIA_TIMEOUT_MS}ms` : err.message;
+    console.warn(`[gemini] nvidia cascade: ${reason}, falling back to Gemini`);
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -205,8 +298,11 @@ export async function embedTexts(texts, taskType = "RETRIEVAL_DOCUMENT") {
 // directly. `grounded` is false if the model answered without actually
 // searching (check it - don't assume `sources` means grounding occurred
 // only from a non-empty text).
-export async function generateGroundedText({ system, prompt, maxTokens = 500 }) {
-  const { res } = await fetchGeminiWithRetry(
+async function generateGroundedTextOnce({ system, prompt, maxTokens = 500, feature }) {
+  // Grounded search isn't in the escalation-allowed list (Phase 1.5 item 5
+  // names only Mock Interview evaluation and the content-check verifier) -
+  // always capped to the flash-lite tiers, no opt-in here.
+  const { res, model } = await fetchGeminiWithRetry(
     model => `${GEMINI_BASE}/models/${model}:generateContent`,
     {
       method: "POST",
@@ -218,8 +314,10 @@ export async function generateGroundedText({ system, prompt, maxTokens = 500 }) 
         generationConfig: { maxOutputTokens: maxTokens, temperature: 0.3 }
       })
     },
-    "generateContent(grounded)"
+    "generateContent(grounded)",
+    GENERATION_MODELS.slice(0, MAX_CASCADE_TIER)
   );
+  logLlmCall("grounded", model, feature);
 
   const data = await res.json();
   const candidate = data.candidates?.[0];
@@ -237,8 +335,31 @@ export async function generateGroundedText({ system, prompt, maxTokens = 500 }) 
   return { text, grounded, sources };
 }
 
-export async function generateText({ system, prompt, maxTokens = 1200 }) {
-  const { res } = await fetchGeminiWithRetry(
+// Whether the model actually invokes the search tool on a given call is
+// itself probabilistic, independent of the retry-on-transport-failure logic
+// above - confirmed live: the identical prompt for "TCS" and "Amazon India"
+// came back ungrounded twice in a row, then grounded on a 3rd attempt with
+// no other change. For most callers here that's tolerable (they fall back
+// to a clearly-labeled "general knowledge, unverified" framing when
+// ungrounded). But a caller that hard-refuses to show anything when
+// ungrounded (e.g. companyRating.js - a single number looks authoritative
+// enough that an unverified guess is worse than admitting "not found")
+// needs a real chance at grounding actually firing, not just one roll of
+// the dice. `retriesIfUngrounded` (default 0 - no behavior change for every
+// existing caller unless opted in) re-rolls up to that many extra times,
+// stopping the moment one attempt comes back grounded, and returns the last
+// attempt's result if none of them did.
+export async function generateGroundedText({ system, prompt, maxTokens = 500, retriesIfUngrounded = 0, feature }) {
+  let result = await generateGroundedTextOnce({ system, prompt, maxTokens, feature });
+  for (let attempt = 0; attempt < retriesIfUngrounded && !result.grounded; attempt++) {
+    result = await generateGroundedTextOnce({ system, prompt, maxTokens, feature });
+  }
+  return result;
+}
+
+export async function generateText({ system, prompt, maxTokens = 1200, allowEscalation = false, onModelUsed, feature, _callType = "text" }) {
+  const models = allowEscalation ? GENERATION_MODELS : GENERATION_MODELS.slice(0, MAX_CASCADE_TIER);
+  const { res, model } = await fetchGeminiWithRetry(
     model => `${GEMINI_BASE}/models/${model}:generateContent`,
     {
       method: "POST",
@@ -249,11 +370,35 @@ export async function generateText({ system, prompt, maxTokens = 1200 }) {
         generationConfig: { maxOutputTokens: maxTokens, temperature: 0.4 }
       })
     },
-    "generateContent"
+    "generateContent",
+    models
   );
+  if (onModelUsed) onModelUsed(model);
+  // _callType: generateJSON calls this function internally and passes
+  // "json" so the usage log reflects what the CALLER actually asked for,
+  // not the fact that JSON happens to be fetched via the text endpoint.
+  logLlmCall(_callType, model, feature);
 
   const data = await res.json();
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+}
+
+// chat.js's ungrounded Q&A/chat passthrough only (framework explain/pushback
+// chat, Tone Shifter) — tries nvidia/nemotron-3-ultra-550b-a55b first when
+// ENABLE_NVIDIA_CASCADE=true, then falls straight through to the existing
+// Gemini generateText cascade on any failure, exactly as it behaved before
+// this model existed. Caching/singleFlight in the caller is untouched: this
+// function just returns a string either way, same as generateText always
+// did, so whichever model answered is cached identically.
+export async function generateChatText({ system, prompt, maxTokens = 1200, feature }) {
+  if (isNvidiaCascadeEnabled()) {
+    const text = await tryNvidiaChat({ system, prompt, maxTokens });
+    if (text) {
+      logLlmCall("text", NVIDIA_MODEL, feature);
+      return text;
+    }
+  }
+  return generateText({ system, prompt, maxTokens, feature });
 }
 
 // A greedy [...]/{ ...} regex can't just be tried in a fixed order: a top-level
@@ -264,7 +409,7 @@ export async function generateText({ system, prompt, maxTokens = 1200 }) {
 const TRANSCRIBE_SYSTEM_PROMPT = "Transcribe this audio recording exactly as spoken, in plain text. No commentary, no markdown, no speaker labels, no timestamps — just the words spoken, as a candidate answering an interview question.";
 
 export async function transcribeAudio({ buffer, mimeType }) {
-  const { res } = await fetchGeminiWithRetry(
+  const { res, model } = await fetchGeminiWithRetry(
     model => `${GEMINI_BASE}/models/${model}:generateContent`,
     {
       method: "POST",
@@ -280,8 +425,10 @@ export async function transcribeAudio({ buffer, mimeType }) {
         generationConfig: { maxOutputTokens: 2000, temperature: 0.1 }
       })
     },
-    "transcription"
+    "transcription",
+    GENERATION_MODELS.slice(0, MAX_CASCADE_TIER)
   );
+  logLlmCall("text", model, "transcribeAudio");
 
   const data = await res.json();
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
@@ -295,7 +442,7 @@ export async function transcribeAudio({ buffer, mimeType }) {
 const CAPTION_SYSTEM_PROMPT = "This image was extracted from a student interview-prep casebook or study guide (consulting/product/finance/HR/marketing/general management). Describe it factually and specifically enough that someone searching interview-prep material by topic would find it from this description alone: what kind of image it is (chart, framework diagram, table, screenshot, photo, etc.), what data or concept it shows, and any labels, numbers, or named frameworks visible in it. 2-4 sentences. If it is purely decorative (a logo, icon, background pattern, or divider with no informational content), respond with exactly: DECORATIVE";
 
 export async function captionImage({ buffer, mimeType }) {
-  const { res } = await fetchGeminiWithRetry(
+  const { res, model } = await fetchGeminiWithRetry(
     model => `${GEMINI_BASE}/models/${model}:generateContent`,
     {
       method: "POST",
@@ -311,8 +458,10 @@ export async function captionImage({ buffer, mimeType }) {
         generationConfig: { maxOutputTokens: 300, temperature: 0.2 }
       })
     },
-    "image caption"
+    "image caption",
+    GENERATION_MODELS.slice(0, MAX_CASCADE_TIER)
   );
+  logLlmCall("text", model, "captionImage");
 
   const data = await res.json();
   return (data.candidates?.[0]?.content?.parts?.[0]?.text ?? "").trim();
@@ -332,7 +481,7 @@ Respond with ONLY a JSON object, no markdown fences, no commentary, in exactly t
 
 export async function checkInterviewProof({ buffer, mimeType, company, role }) {
   const claim = [company ? `Company: ${company}` : null, role ? `Role: ${role}` : null].filter(Boolean).join(", ") || "(no company/role given)";
-  const { res } = await fetchGeminiWithRetry(
+  const { res, model } = await fetchGeminiWithRetry(
     model => `${GEMINI_BASE}/models/${model}:generateContent`,
     {
       method: "POST",
@@ -348,8 +497,10 @@ export async function checkInterviewProof({ buffer, mimeType, company, role }) {
         generationConfig: { maxOutputTokens: 300, temperature: 0.1 }
       })
     },
-    "proof check"
+    "proof check",
+    GENERATION_MODELS.slice(0, MAX_CASCADE_TIER)
   );
+  logLlmCall("json", model, "checkInterviewProof");
 
   const data = await res.json();
   const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text ?? "").trim();
@@ -375,11 +526,11 @@ function extractJSON(raw) {
 // around the JSON (variable "thinking" token usage on reasoning-capable models can eat
 // into the output budget unpredictably) — extract just the JSON substring and retry a
 // couple of times before giving up, rather than failing on the first imperfect response.
-export async function generateJSON({ system, prompt, maxTokens = 1200, attempts = 3 }) {
+export async function generateJSON({ system, prompt, maxTokens = 1200, attempts = 3, allowEscalation = false, onModelUsed, feature }) {
   let lastErr;
   for (let i = 0; i < attempts; i++) {
     try {
-      const raw = await generateText({ system, prompt, maxTokens });
+      const raw = await generateText({ system, prompt, maxTokens, allowEscalation, onModelUsed, feature, _callType: "json" });
       return extractJSON(raw);
     } catch (err) {
       lastErr = err;
@@ -406,13 +557,19 @@ async function streamGenerateJSONOnce({ system, prompt, maxTokens, onProgress })
   // to fail over (to the next model, and ultimately to the non-streaming
   // fallback in streamGenerateJSON below) quickly than to sit here retrying
   // a specifically-broken endpoint for a long time.
-  const { res } = await fetchGeminiWithRetry(
+  // Not an escalation-allowed call type (Phase 1.5 item 5 names only Mock
+  // Interview evaluation and the content-check verifier) - capped same as
+  // everything else by default.
+  const { res, model } = await fetchGeminiWithRetry(
     model => `${GEMINI_BASE}/models/${model}:streamGenerateContent?alt=sse`,
     { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY }, body },
     "streamGenerateContent",
-    GENERATION_MODELS,
+    GENERATION_MODELS.slice(0, MAX_CASCADE_TIER),
     3
   );
+  // Single caller today (resume.js's 30-question interrogation) - hardcoded
+  // rather than threading a feature param through for just one call site.
+  logLlmCall("json", model, "resume.js (streamGenerateJSON)");
 
   let raw = "";
   let buffer = "";

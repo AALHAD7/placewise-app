@@ -5,6 +5,44 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — nvidia/nemotron-3-ultra-550b-a55b added as try-first cascade entry, chat.js only
+**Phase:** M4 (misc backend) · **Type:** feature, fix
+
+**What changed:** `generateChatText` (new, `backend/src/lib/gemini.js`) tries
+nvidia/nemotron-3-ultra-550b-a55b (OpenAI-compatible endpoint, 4s timeout) first, then falls
+straight through to the existing Gemini `generateText` cascade on any non-2xx, timeout, network
+error, or empty/malformed response — the failure path never throws and never reaches the user as
+an error. Wired into `backend/src/routes/chat.js` only (the ungrounded framework explain/pushback
+chat + Tone Shifter passthrough) — `generateText`/`generateJSON`/`generateGroundedText` and every
+RAG/grounded path are untouched, so Frameworks, Guesstimates, resume, mock interview, company/role
+content all behave exactly as before. Gated by `ENABLE_NVIDIA_CASCADE` (new flag,
+`backend/.env.example`), **default off**.
+**Why:** Aalhad wants to try a free, more capable model ahead of Gemini for one low-stakes,
+already-ungrounded feature, without risking it becoming a single point of failure (NVIDIA's free
+tier is ~40 req/min, shared) or silently degrading answer quality on a feature nobody's graded yet.
+**Default-off justification:** The fallback logic itself tested clean in every failure mode (see
+Proof) — that alone would support defaulting on. Left off anyway because answer *quality* is
+untested: NVIDIA succeeding with a worse-than-Gemini answer wouldn't trigger any fallback (that's
+explicitly flagged as Aalhad's call, not mine to guess). Aalhad can flip `ENABLE_NVIDIA_CASCADE=true`
+in `backend/.env` after spot-checking a few real chat/pushback/Tone-Shifter answers.
+**Files:** `backend/src/lib/gemini.js`, `backend/src/routes/chat.js`, `backend/.env.example`,
+`backend/test/geminiNvidiaCascade.test.js`
+**Proof:** `npm test` → `111 pass, 1 fail` (the 1 failure is a pre-existing, unrelated macOS
+sandbox env-leak flake in `sandbox.test.js`, confirmed present on the pre-change code too via
+`git stash`). New suite: 8/8 pass — flag-off (NVIDIA never called), happy path (NVIDIA's text used,
+Gemini never called), 429, 500, timeout (50ms simulated), empty/malformed body, thrown network
+error, and missing-config, all falling through to a working Gemini response. Live curl against the
+real NVIDIA endpoint: flag off → `{"success":true,"text":"pong"}` via Gemini; flag on with a valid
+key → `{"success":true,"text":"pong"}` with no fallback log line (NVIDIA answered); flag on with a
+deliberately invalid NVIDIA key → real `401` from NVIDIA, logged
+`[gemini] nvidia cascade: ... returned 401, falling back to Gemini`, still
+`{"success":true,"text":"pong"}` to the user.
+**Undo:** Leave `ENABLE_NVIDIA_CASCADE` unset/false (already the default), or revert this commit.
+**Open issues:** Answer-quality comparison between NVIDIA and Gemini on real chat/pushback/Tone
+Shifter prompts is unreviewed — Aalhad's call before flipping the flag on.
+
+---
+
 ## 2026-10-31 — R6 patches run live: FMS 5-page chart-routing fix lands, ISB p177 does NOT flip, and the per-block formula fix has a real regression on ties
 **Phase:** R6 (fix) · **Type:** ingestion, fix, tests · Real Gemini vision calls this session
 (Aalhad's explicit approval, unlike the prior code-only session).
