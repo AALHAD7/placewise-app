@@ -37,7 +37,7 @@ const upload = multer({
 // mis-upload (e.g. a whole casebook instead of a resume) can't send a huge
 // embedding request that hangs/times out — this actually happened while
 // testing with a 33-page PDF.
-const MAX_RESUME_CHARS = 6000;
+const MAX_RESUME_CHARS = 10000;
 
 const CATEGORIES = ["Behavioural", "Technical", "Situational"];
 

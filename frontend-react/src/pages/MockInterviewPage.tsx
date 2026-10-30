@@ -145,8 +145,8 @@ export default function MockInterviewPage() {
           role: roleInput.trim() || undefined,
           difficulty: difficulty || 2,
           domain: mapDomainForRetrieval(ragDomain),
-          resumeText,
-          jdText: jdText || undefined,
+          resumeText: resumeText ? resumeText.slice(0, 10000) : "",
+          jdText: jdText ? jdText.slice(0, 10000) : undefined,
           questionSource: jdText ? questionSource : "resume"
         })
       }, "Failed to start mock interview.");

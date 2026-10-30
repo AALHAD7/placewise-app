@@ -16,8 +16,8 @@ const TIME_LIMIT_SECONDS = 300;
 // pattern of small per-route constants, e.g. resume.js/mockInterview.js
 // already each define their own rather than centralizing). A JD is
 // typically shorter than a resume, so it gets a tighter cap.
-const MAX_RESUME_CHARS = 6000;
-const MAX_JD_CHARS = 4000;
+const MAX_RESUME_CHARS = 10000;
+const MAX_JD_CHARS = 10000;
 const QUESTION_SOURCES = ["resume", "jd", "both"];
 
 const START_SYSTEM_PROMPT = `You are a mock interviewer for Indian B-school placements (product management, consulting, and related roles). Generate ONE strong opening interview question for the given company, role, and difficulty (1=easy, 2=medium, 3=hard), grounded in the provided context where relevant.
@@ -74,14 +74,13 @@ router.post("/start", requireAuth, heavyAiLimiter, async (req, res) => {
   if (!resumeText || typeof resumeText !== "string" || resumeText.trim().length < 20) {
     return res.status(400).json({ error: "resumeText is required (upload a resume first)." });
   }
-  if (resumeText.length > MAX_RESUME_CHARS) {
-    return res.status(400).json({ error: `resumeText too long (max ${MAX_RESUME_CHARS} characters).` });
+  const cleanResume = resumeText.trim().slice(0, MAX_RESUME_CHARS);
+
+  if (jdText !== undefined && jdText !== null && typeof jdText !== "string") {
+    return res.status(400).json({ error: "jdText, if given, must be a string." });
   }
-  if (jdText !== undefined && jdText !== null && jdText !== "") {
-    if (typeof jdText !== "string") return res.status(400).json({ error: "jdText, if given, must be a string." });
-    if (jdText.length > MAX_JD_CHARS) return res.status(400).json({ error: `jdText too long (max ${MAX_JD_CHARS} characters).` });
-  }
-  const hasJd = !!(jdText && jdText.trim());
+  const cleanJd = typeof jdText === "string" ? jdText.trim().slice(0, MAX_JD_CHARS) : "";
+  const hasJd = cleanJd.length > 0;
   // Falls back to "resume" for an invalid value AND for "jd"/"both" without
   // an actual JD present - never silently ground on a job description that
   // doesn't exist.
@@ -89,7 +88,7 @@ router.post("/start", requireAuth, heavyAiLimiter, async (req, res) => {
 
   try {
     const context = await retrieveContext(`${role || "general"} interview questions at ${company || "a company"}`, domain);
-    const candidateContext = buildCandidateContext(resumeText.trim(), hasJd ? jdText.trim() : "", source);
+    const candidateContext = buildCandidateContext(cleanResume, cleanJd, source);
     const prompt = `CONTEXT:\n${context || "(no matching context found)"}\n\n${candidateContext ? candidateContext + "\n\n" : ""}COMPANY: ${company || "(not specified)"}\nROLE: ${role || "(not specified)"}\nDIFFICULTY: ${diff}\n\nGenerate the opening question.`;
 
     const { question } = await generateJSON({ system: START_SYSTEM_PROMPT, prompt, maxTokens: 1000 });
@@ -102,8 +101,8 @@ router.post("/start", requireAuth, heavyAiLimiter, async (req, res) => {
         role: role || null,
         role_id: roleIdFor(role),
         difficulty: diff,
-        resume_text: resumeText.trim().slice(0, MAX_RESUME_CHARS),
-        jd_text: hasJd ? jdText.trim().slice(0, MAX_JD_CHARS) : null,
+        resume_text: cleanResume,
+        jd_text: hasJd ? cleanJd : null,
         question_source: source,
         questions: [{ question, difficulty: diff, askedAt: new Date().toISOString(), userAnswer: null }]
       })
