@@ -5,6 +5,79 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-30 — R7: match_ingest_chunks RPC + Frameworks (Consulting) behind ENABLE_CONSULTING_RAG_V2, off by default
+**Phase:** R7 · **Type:** migration, retrieval
+
+**What changed:** Wrote `migration_042_consulting_rag_v2.sql`: adds a `domain` column to
+`ingest_documents` (backfilled to `'Consulting'` for the 11 existing rows — all verified
+`club_casebook`, all from Consulting casebooks), and a new `match_ingest_chunks` RPC — the
+`ingest_chunks` equivalent of `match_document_chunks`, but returning real page-level
+citations (school, club, year, page range) that `document_chunks` never stored. Added
+`src/lib/consultingRetrieval.js` (pure coverage decision + citation builder, plus the
+retrieval call) and wired it into `frameworksGrounding.js` behind a new switch,
+`ENABLE_CONSULTING_RAG_V2` (unset/false by default). When on, and only for
+`fw.domain === "Consulting"`, Frameworks grounds against `ingest_chunks` instead of
+`document_chunks`; any failure or switch-off falls straight back to today's exact v1 path.
+
+**Why:** R7 on the roadmap — grounded retrieval on the new pipeline, with citations, behind
+a reversible switch, ahead of R9's actual go-live decision.
+
+**Scope note / what's NOT done (flagging, not guessing):**
+- **Guesstimates and Q&A as grounded features don't exist in this codebase yet.**
+  `backend/src/routes/chat.js` is explicitly an *ungrounded* passthrough to Gemini (its own
+  comment: "rather than needing a structured RAG pipeline") used for framework
+  explain/pushback chat and Tone Shifter — not a Q&A RAG feature. There is no Guesstimates
+  route or frontend page anywhere. R7's task description assumes both already exist to "wire
+  retrieval into" — they don't. Building either from scratch is new feature work, not a
+  retrieval wiring task, so I didn't invent one silently. **Needs Aalhad's call** on whether/
+  when to build them, and R8 ("frontend for RAG only") has the same dependency.
+- The rebuilt diagram itself (`ingest_pages.diagrams`, diagram-transcription format) isn't
+  joined into `match_ingest_chunks` — only `has_diagram` is. Pulling in the actual structured
+  diagram block by page is R8's job ("render new diagram types"), not R7's; doing it here
+  would get ahead of that phase for no reason since nothing can render it yet.
+- Found, but did not touch: `match_document_chunks` (schema.sql + migration_014) says it
+  returns `image_url`, but migration_037's later `drop function / create function` rebuilt it
+  *without* that column, while `frameworksGrounding.js`'s v1 path still reads `r.image_url` off
+  every row. That looks like a live bug in the **existing** v1 path (images silently never
+  match in `findGrounding`'s v1 branch) — pre-existing, unrelated to this change, out of R7's
+  scope, flagging for a look.
+
+**Files:** `backend/db/migration_042_consulting_rag_v2.sql`,
+`backend/scripts/apply_migration_042.py`, `backend/src/lib/consultingRetrieval.js`,
+`backend/src/lib/frameworksGrounding.js`, `backend/test/consultingRetrieval.test.js`,
+`backend/.env.example`
+
+**Proof:** `npm test` → 82/83 (10 new tests for `consultingRetrieval.js`, all pass; the 1
+failure is the pre-existing, unrelated `sandbox.test.js` `__CF_USER_TEXT_ENCODING` flake also
+seen in the 2026-10-30 R6 entries). Manually confirmed the switch defaults off
+(`ENABLE_CONSULTING_RAG_V2` unset → v1 path). Live smoke-test of
+`retrieveConsultingChunks()` against the real (not-yet-migrated) DB returns `[]` and logs a
+clean warning rather than throwing — proves the fail-safe path actually works, not just in
+theory.
+
+**Cost:** 1 embedding call (the smoke test above), ≈$0.0001.
+
+**Undo:** Leave `ENABLE_CONSULTING_RAG_V2` unset (already the default — nothing to undo).
+`match_ingest_chunks` can be dropped independently of everything else (`drop function if
+exists match_ingest_chunks(vector, integer, text);`); the `domain` column backfill is
+harmless to leave even if dropped.
+
+**Open issues — migration_042 is NOT applied to the live DB yet.** This sandbox can reach the
+Supabase REST API (`https://<ref>.supabase.co`, used throughout R6) but not the direct
+Postgres pooler (`aws-0-ap-southeast-1.pooler.supabase.com:5432`) or the Supabase Management
+API (`api.supabase.com`) — both time out, apparently blocked at the network level, not a
+credentials problem. `apply_migration_041.py`'s same approach (direct `psycopg` connection)
+worked in an earlier session; it doesn't reach the DB from here. **Aalhad: paste
+`backend/db/migration_042_consulting_rag_v2.sql` into the Supabase SQL editor and run it
+(idempotent, safe to run twice)** — same manual step migration_041 needed. Until that's done,
+`ENABLE_CONSULTING_RAG_V2=true` would just make Frameworks warn-and-fall-back-to-v1 for
+Consulting rows, which is safe but pointless; there's no reason to flip it before the
+migration lands anyway, since `is_active=true` hasn't been set on any `ingest_chunks` row
+(R9 hasn't happened), so it would return "not covered" for everything regardless.
+Guesstimates/Q&A scope question above also needs an answer before R8 can really start.
+
+---
+
 ## 2026-10-30 — R6: The FMS Consulting Casebook 2021-22 ingested; 1 network-failure page patched
 **Phase:** R6 · **Type:** ingest, fix
 

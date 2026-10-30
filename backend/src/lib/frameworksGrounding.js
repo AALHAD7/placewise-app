@@ -1,5 +1,6 @@
 import { supabase } from "./supabase.js";
 import { embedTexts } from "./gemini.js";
+import { groundedConsultingLookup } from "./consultingRetrieval.js";
 
 // Below this, a "closest match" isn't actually about the framework - better
 // to show nothing than a misleadingly-labeled irrelevant excerpt.
@@ -10,11 +11,72 @@ const SIMILARITY_THRESHOLD = 0.5;
 // descriptions of a picture, easy to false-positive on).
 const IMAGE_SIMILARITY_THRESHOLD = 0.58;
 
+// R7 switch: off by default, so flipping it off at any time restores today's
+// exact behavior (document_chunks + frameworksGrounding below). On, and only
+// for fw.domain === "Consulting" (the one domain R6 has re-ingested so far),
+// Frameworks grounds against ingest_chunks instead, via consultingRetrieval.js
+// - real page-level citations (school/casebook/page), which document_chunks
+// structurally cannot provide (it never stored page numbers). See
+// grounded-answering skill. Until R9 flips any ingest_chunks row's is_active
+// to true, this path returns "not covered" for everything - that is the
+// correct, safe state, not a bug.
+const CONSULTING_RAG_V2_ENABLED = process.env.ENABLE_CONSULTING_RAG_V2 === "true";
+
+async function findGroundingV2(fw) {
+  const query = `${fw.name} framework diagram case study real example application ${fw.subdomain || fw.role || ""}`;
+  const result = await groundedConsultingLookup(query, { domain: "Consulting" });
+  if (!result.covered) return { example: null, image: null };
+
+  const textIdx = result.chunks.findIndex(c => !c.hasDiagram);
+  const diagramIdx = result.chunks.findIndex(c => c.hasDiagram);
+
+  // grounded_example/grounded_image are jsonb (migration_011/019) - the
+  // `citation` field below is new structure, not a new column. v1 rows have
+  // no `citation` key at all, so the frontend can treat its absence as
+  // "citation not available" without a schema change.
+  return {
+    example: textIdx >= 0
+      ? {
+          sourceFile: result.citations[textIdx].casebook,
+          excerpt: result.chunks[textIdx].content,
+          similarity: result.chunks[textIdx].similarity,
+          citation: result.citations[textIdx]
+        }
+      : null,
+    // url: null deliberately, not a bug - unlike v1 (document_chunks.image_url,
+    // a raw Storage URL), this chunk carries no image_url at all: the real
+    // rebuilt diagram lives in ingest_pages.diagrams (diagram-transcription
+    // format), keyed by page, not on ingest_chunks. Joining that in and
+    // rendering the structured block is R8's job ("render new diagram
+    // types"), not R7's. Exposing a raw page image here would also violate
+    // the diagram privacy rule (CLAUDE.md) even if the data were available.
+    image: diagramIdx >= 0
+      ? {
+          url: null,
+          caption: result.chunks[diagramIdx].content,
+          sourceFile: result.citations[diagramIdx].casebook,
+          similarity: result.chunks[diagramIdx].similarity,
+          citation: result.citations[diagramIdx]
+        }
+      : null
+  };
+}
+
 // filter_domain uses the same raw value stored on document_chunks.domain
 // (e.g. "Prodman", "Marketing:Sales") - frameworks.domain is seeded with
 // those exact values (see migration_019) specifically so no remapping layer
 // is needed here.
 async function findGrounding(fw) {
+  if (CONSULTING_RAG_V2_ENABLED && fw.domain === "Consulting") {
+    try {
+      return await findGroundingV2(fw);
+    } catch (err) {
+      console.warn(`[frameworksGrounding] v2 lookup failed for "${fw.name}", falling back to v1: ${err.message}`);
+      // Fall through to the v1 path below rather than surfacing nothing -
+      // same resilience posture as the rest of this function.
+    }
+  }
+
   try {
     const [queryEmbedding] = await embedTexts(
       [`${fw.name} framework diagram case study real example application ${fw.subdomain || fw.role || ""}`],
