@@ -10,6 +10,7 @@
 //      6-per-difficulty batch a live page load would trigger) per language,
 //      to catch prompt/schema drift against the live model — same reasoning
 //      as api.test.js's two real Gemini calls.
+import "dotenv/config";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {

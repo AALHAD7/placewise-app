@@ -5,6 +5,8 @@ import { requireAuth } from "../middleware/auth.js";
 import { aiLimiter, heavyAiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
 import { logActivity } from "../lib/activity.js";
+import { logEscalationIfNeeded } from "../lib/modelEscalation.js";
+import { roleIdFor } from "../lib/roles.js";
 
 const router = Router();
 const TIME_LIMIT_SECONDS = 300;
@@ -98,6 +100,7 @@ router.post("/start", requireAuth, heavyAiLimiter, async (req, res) => {
         user_id: req.user.id,
         company: company || null,
         role: role || null,
+        role_id: roleIdFor(role),
         difficulty: diff,
         resume_text: resumeText.trim().slice(0, MAX_RESUME_CHARS),
         jd_text: hasJd ? jdText.trim().slice(0, MAX_JD_CHARS) : null,
@@ -146,7 +149,14 @@ router.post("/answer", requireAuth, aiLimiter, async (req, res) => {
 
     const candidateContext = buildCandidateContext(session.resume_text, session.jd_text, session.question_source);
     const prompt = `${candidateContext ? candidateContext + "\n\n" : ""}QUESTION: ${currentQuestion}\n\nCANDIDATE'S ANSWER: ${userAnswer}\n\nTIME SPENT: ${timeSpent || "unknown"} seconds (limit ${TIME_LIMIT_SECONDS}s)\n\nEvaluate the answer as specified.`;
-    const feedback = await generateJSON({ system: ANSWER_SYSTEM_PROMPT, prompt, maxTokens: 2000 });
+    // Phase 1.5 item 5: one of the 2 named evaluation-type call sites
+    // allowed past the flash-lite cap - a wrong/low-quality interview score
+    // is worse than the extra tokens a flash-tier escalation costs.
+    const feedback = await generateJSON({
+      system: ANSWER_SYSTEM_PROMPT, prompt, maxTokens: 2000,
+      allowEscalation: true,
+      onModelUsed: m => logEscalationIfNeeded(m, "mockInterview.evaluate", "json")
+    });
 
     questions[pendingIdx] = {
       ...questions[pendingIdx],

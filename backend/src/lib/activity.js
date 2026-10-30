@@ -11,7 +11,7 @@ import { supabase } from "./supabase.js";
 // fabricated breakdown.
 const ACTIVITY_TYPES = {
   mock_interview: { label: "Mock Interview", minutes: 20 },
-  resume_interrogation: { label: "Resume Interrogation", minutes: 15 },
+  resume_interrogation: { label: "Resume Drill", minutes: 15 },
   framework_review: { label: "Framework Practice", minutes: 10 },
   tone_shift: { label: "Tone Shifter", minutes: 10 },
   story_builder: { label: "Story Builder", minutes: 15 }

@@ -47,7 +47,7 @@ const STORY_FIELDS: { key: string; label: string; hint: string }[] = [
   { key: "turning", label: "Turning points", hint: "Decisions or setbacks that changed your direction." }
 ];
 const STORY_FOCUS_LABELS: Record<string, string> = { school: "School years", ug: "Undergraduate", work: "Work experience", mba: "MBA and now", turning: "Turning points" };
-const STORY_ACCENTS = ["var(--indigo)", "var(--green)", "var(--amber-ink)", "#be185d"];
+const STORY_ACCENTS = ["var(--indigo)", "var(--green)", "var(--amber-ink)", "var(--indigo-700)"];
 
 const spinIconPath = "M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z";
 
@@ -356,7 +356,7 @@ export default function ResumePage() {
 
   return (
     <>
-      <PageHeader title="Resume Interrogation" subtitle="" />
+      <PageHeader title="Resume Drill" subtitle="" />
 
       {!resumeFile && (
         <>
@@ -424,7 +424,7 @@ export default function ResumePage() {
         </>
       )}
 
-      <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: 18 }}>
+      <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: 18 }}>
         <input
           type="file"
           ref={fileRef}
@@ -474,22 +474,22 @@ export default function ResumePage() {
             )}
           </>
         ) : (
-          <div style={{ border: "1.5px dashed #d8d9e0", borderRadius: "var(--r-sm)", padding: "32px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "var(--field-bg)" }}>
+          <div style={{ border: "1.5px dashed var(--border-strong)", borderRadius: "var(--r-sm)", padding: "32px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "var(--field-bg)" }}>
             <div style={{ fontSize: "0.96875rem", fontWeight: 600, color: "var(--text-900)" }}>Add your resume</div>
             <div style={{ color: "var(--text-gray2)", fontSize: "0.84375rem", textAlign: "center" }}>PDF, DOC or DOCX. We parse it and build questions from what is actually on the page.</div>
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-              <button onClick={() => fileRef.current?.click()} className="btn-primary-darken" style={{ border: 0, cursor: "pointer", background: "var(--indigo)", color: "var(--surface)", font: "600 0.875rem 'Instrument Sans',sans-serif", padding: "11px 18px", borderRadius: "var(--r-sm)", boxShadow: "0 1px 2px rgba(22,86,217,.4)" }}>Choose from device</button>
-              <button onClick={uploadFromGoogleDrive} className="btn-outline-indigo" style={{ border: "1px solid #e0e1e6", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)", font: "600 0.875rem 'Instrument Sans',sans-serif", padding: "11px 18px", borderRadius: "var(--r-sm)" }}>Google Drive</button>
+              <button onClick={() => fileRef.current?.click()} className="btn-primary-darken" style={{ border: 0, cursor: "pointer", background: "var(--indigo)", color: "var(--surface)", font: "600 0.875rem 'Instrument Sans',sans-serif", padding: "11px 18px", borderRadius: "var(--r-pill)" }}>Choose from device</button>
+              <button onClick={uploadFromGoogleDrive} className="btn-outline-indigo" style={{ border: "1px solid var(--card-border)", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)", font: "600 0.875rem 'Instrument Sans',sans-serif", padding: "11px 18px", borderRadius: "var(--r-sm)" }}>Google Drive</button>
             </div>
           </div>
         )}
 
-        <div style={{ borderTop: "1px solid #f1f2f5", paddingTop: 16, marginTop: 18 }}>
+        <div style={{ borderTop: "1px solid var(--divider)", paddingTop: 16, marginTop: 18 }}>
           <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Prep track</div>
           <select
             value={ragDomain}
             onChange={(e) => setRagDomain(e.target.value)}
-            style={{ marginTop: 8, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)", cursor: "pointer" }}
+            style={{ marginTop: 8, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)", cursor: "pointer" }}
           >
             {RAG_DOMAIN_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -521,7 +521,7 @@ export default function ResumePage() {
         </div>
         {refreshVisible && (
           <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 12 }}>
-            <button onClick={() => refreshCategory(qMode)} disabled={refreshing} className="btn-outline-indigo" style={{ border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "10px 16px", font: "600 0.84375rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)" }}>
+            <button onClick={() => refreshCategory(qMode)} disabled={refreshing} className="btn-outline-indigo" style={{ border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "10px 16px", font: "600 0.84375rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)" }}>
               {refreshing ? "↻ Refreshing… " + categoryRefreshPercent + "%" : "↻ Refresh these " + qMode.toLowerCase() + " questions"}
             </button>
             <span style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{categoryRefreshError}</span>
@@ -540,8 +540,8 @@ export default function ResumePage() {
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {storyVariants.map((v, i) => (
-              <div key={i} style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, borderBottom: "1px solid #f1f2f5", paddingBottom: 14 }}>
+              <div key={i} style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "22px 24px" }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, borderBottom: "1px solid var(--divider)", paddingBottom: 14 }}>
                   <div>
                     <div style={{ fontSize: "0.96875rem", fontWeight: 700, color: "var(--text-900)" }}>{v.name}</div>
                     <div style={{ marginTop: 4, color: "var(--text-gray2)", fontSize: "0.84375rem" }}>{v.note}</div>
@@ -573,7 +573,10 @@ export default function ResumePage() {
               open={!!answerOpen[k]}
               toggleOpen={() => setAnswerOpen((s) => ({ ...s, [k]: !s[k] }))}
               fb={feedback[k]}
-              onGetFeedback={(text) => runFeedback(k, r.q, text)}
+              onGetFeedback={(text) => {
+                if (recording[k]) stopRecording(k);
+                runFeedback(k, r.q, text);
+              }}
               h={helpful[k]}
               onToggleHelpful={(checked) => toggleHelpful(k, r, checked)}
               cl={clarify[k]}
@@ -599,17 +602,18 @@ export default function ResumePage() {
         <div
           className={storyModalExiting ? "t-scrim-out" : "t-scrim-in"}
           onClick={(e) => { if (e.target === e.currentTarget) setStoryModalOpen(false); }}
+          data-lenis-prevent
           style={{ position: "fixed", inset: 0, background: "rgba(17,20,45,.55)", zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "48px 20px", overflow: "auto" }}
         >
-          <div role="dialog" aria-modal="true" aria-label="Your journey, 10th to now" className={storyModalExiting ? "t-panel-out" : "t-panel-in"} style={{ width: "100%", maxWidth: 620, background: "var(--surface)", borderRadius: "var(--r-md)", boxShadow: "0 24px 60px rgba(16,24,40,.28)" }}>
-            <div style={{ padding: "24px 26px 18px", borderBottom: "1px solid #f1f2f5", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+          <div role="dialog" aria-modal="true" aria-label="Your journey, 10th to now" className={(storyModalExiting ? "t-panel-out" : "t-panel-in") + " glass-panel"} style={{ width: "100%", maxWidth: 620, borderRadius: "var(--r-md)" }}>
+            <div style={{ padding: "24px 26px 18px", borderBottom: "1px solid var(--divider)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
               <div>
                 <h2 style={{ margin: 0, fontSize: "1.3125rem", fontWeight: 700, letterSpacing: "-.015em", color: "var(--text-900)" }}>Your journey, 10th to now</h2>
                 <p style={{ margin: "7px 0 0", color: "var(--text-gray2)", fontSize: "0.875rem" }}>Answer in plain sentences. We combine this with your uploaded resume to build two story variants.</p>
               </div>
               <button type="button" onClick={() => setStoryModalOpen(false)} aria-label="Close" className="unbutton link-darken probe-close" style={{ flex: "none", color: "var(--text-lightgray)", fontSize: "1.25rem", cursor: "pointer", lineHeight: 1, padding: "2px 6px" }}>×</button>
             </div>
-            <div style={{ padding: "20px 26px", display: "flex", flexDirection: "column", gap: 18, maxHeight: "54vh", overflow: "auto" }}>
+            <div data-lenis-prevent style={{ padding: "20px 26px", display: "flex", flexDirection: "column", gap: 18, maxHeight: "54vh", overflow: "auto" }}>
               {STORY_FIELDS.map((f) => (
                 <div key={f.key}>
                   <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-900)" }}>{f.label}</div>
@@ -617,15 +621,15 @@ export default function ResumePage() {
                   <textarea
                     value={storyAnswers[f.key] || ""}
                     onChange={(e) => setStoryAnswers((s) => ({ ...s, [f.key]: e.target.value }))}
-                    style={{ marginTop: 9, width: "100%", height: 74, resize: "vertical", border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "11px 13px", outline: "none", fontSize: "0.90625rem", lineHeight: 1.55, color: "var(--text-900)", background: "var(--field-bg)" }}
+                    style={{ marginTop: 9, width: "100%", height: 74, resize: "vertical", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "11px 13px", outline: "none", fontSize: "0.90625rem", lineHeight: 1.55, color: "var(--text-900)", background: "var(--field-bg)" }}
                   />
                 </div>
               ))}
             </div>
-            <div style={{ padding: "16px 26px 20px", borderTop: "1px solid #f1f2f5", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+            <div style={{ padding: "16px 26px 20px", borderTop: "1px solid var(--divider)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
               <span style={{ color: "var(--text-lightgray)", fontSize: "0.8125rem", fontFamily: "'JetBrains Mono',monospace" }}>{storyFilled} of 5 answered</span>
               <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => setStoryModalOpen(false)} className="btn-outline-indigo" style={{ border: "1px solid #e0e1e6", background: "var(--surface)", color: "var(--text-700)", font: "600 0.90625rem 'Instrument Sans',sans-serif", padding: "12px 18px", borderRadius: "var(--r-sm)", cursor: "pointer" }}>Cancel</button>
+                <button onClick={() => setStoryModalOpen(false)} className="btn-outline-indigo" style={{ border: "1px solid var(--card-border)", background: "var(--surface)", color: "var(--text-700)", font: "600 0.90625rem 'Instrument Sans',sans-serif", padding: "12px 18px", borderRadius: "var(--r-sm)", cursor: "pointer" }}>Cancel</button>
                 <button
                   onClick={submitStoryModal}
                   disabled={storyFilled === 0}
@@ -683,7 +687,7 @@ function ResultCard({
   const submitActive = !!answer.trim() && !loading;
 
   return (
-    <div className="result-card" style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderLeft: "3px solid var(--indigo)", borderRadius: "var(--r-sm)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "17px 19px" }}>
+    <div className="result-card" style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderLeft: "3px solid var(--indigo)", borderRadius: "var(--r-sm)", boxShadow: "0 0 0 1px var(--card-border)", padding: "17px 19px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
         <p style={{ margin: 0, flex: 1, fontSize: "0.96875rem", lineHeight: 1.5, color: "var(--text-900)" }}>{r.q}</p>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flex: "none" }}>
@@ -701,7 +705,7 @@ function ResultCard({
             aria-checked={!!h?.marked}
             disabled={h?.saving}
             onClick={() => onToggleHelpful(!h?.marked)}
-            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none", width: 16, height: 16, padding: 0, border: "1px solid " + (h?.marked ? "var(--green)" : "#d1d5db"), borderRadius: "var(--r-xs)", background: h?.marked ? "var(--green)" : "var(--surface)", cursor: "pointer" }}
+            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none", width: 16, height: 16, padding: 0, border: "1px solid " + (h?.marked ? "var(--green)" : "var(--border-strong)"), borderRadius: "var(--r-xs)", background: h?.marked ? "var(--green)" : "var(--surface)", cursor: "pointer" }}
           >
             <svg viewBox="0 0 10.1668 10.1668" width="9" height="9" style={{ display: "block" }}>
               <path d="M1 5.52L3.92 9.17L9.17 1" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -712,11 +716,11 @@ function ResultCard({
       </div>
 
       {open && (
-        <div style={{ marginTop: 14, borderTop: "1px solid #f1f2f5", paddingTop: 14 }}>
+        <div style={{ marginTop: 14, borderTop: "1px solid var(--divider)", paddingTop: 14 }}>
           {isSituational && (
             <>
               {clarifyAsked && (
-                <div style={{ marginBottom: 12, background: "var(--surface-alt)", border: "1px solid #eceef2", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                <div style={{ marginBottom: 12, background: "var(--surface-alt)", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
                   <div style={{ fontSize: "0.78125rem", fontWeight: 600, color: "var(--indigo)" }}>You asked: {cl?.askedQuestion}</div>
                   <div style={{ marginTop: 6, fontSize: "0.84375rem", lineHeight: 1.5, color: "var(--text-700)" }}>{cl?.answer}</div>
                 </div>
@@ -734,11 +738,11 @@ function ResultCard({
                     value={cl?.draft || ""}
                     onChange={(e) => onClarifyDraftChange(e.target.value)}
                     placeholder="Ask the interviewer one clarifying question before you answer…"
-                    style={{ width: "100%", border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
+                    style={{ width: "100%", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
                   />
                   <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 9, marginBottom: 12 }}>
                     <VoiceRecordButton recording={clarifyRecording} onClick={onToggleClarifyMic} />
-                    <button onClick={onAskClarify} disabled={!(cl?.draft || "").trim() || !!cl?.loading} className="btn-outline-indigo" style={{ border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 14px", font: "600 0.8125rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)" }}>
+                    <button onClick={onAskClarify} disabled={!(cl?.draft || "").trim() || !!cl?.loading} className="btn-outline-indigo" style={{ border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 14px", font: "600 0.8125rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)" }}>
                       {cl?.loading ? "Asking…" : "Ask"}
                     </button>
                     <span style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{clarifyMicError}</span>
@@ -753,7 +757,7 @@ function ResultCard({
             value={answer}
             onChange={(e) => onAnswerChange(e.target.value)}
             placeholder="Type your answer, or record it and we will transcribe."
-            style={{ width: "100%", height: 96, resize: "vertical", border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "11px 13px", outline: "none", fontSize: "0.90625rem", lineHeight: 1.55, color: "var(--text-900)", background: "var(--field-bg)" }}
+            style={{ width: "100%", height: 96, resize: "vertical", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "11px 13px", outline: "none", fontSize: "0.90625rem", lineHeight: 1.55, color: "var(--text-900)", background: "var(--field-bg)" }}
           />
           <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 11 }}>
             <VoiceRecordButton recording={recording} onClick={onToggleMic} />

@@ -166,6 +166,7 @@ export default function MockInterviewPage() {
   async function submitMockAnswer() {
     const answer = answerDraft.trim();
     if (answer.length < 5 || loading) return;
+    if (isRecording) stopRecording(RECKEY);
     const timeSpent = questionStartedAt ? Math.round((Date.now() - questionStartedAt) / 1000) : null;
     setLoading(true);
     setError("");
@@ -209,7 +210,7 @@ export default function MockInterviewPage() {
       <PageHeader title="Mock Interview" subtitle="Practice against a real Gemini-backed interviewer" />
 
       {showPrefillCard && (
-        <div style={{ marginTop: 24, border: "1px solid #C7DCF9", borderRadius: "var(--r-md)", background: "var(--blue-wash)", padding: "18px 20px" }}>
+        <div style={{ marginTop: 24, border: "1px solid #99c7ff", borderRadius: "var(--r-md)", background: "var(--blue-wash)", padding: "18px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
             <span style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--indigo)" }}>Loaded from practice prompts</span>
             <button type="button" onClick={clearPrefill} className="unbutton probe-close" style={{ cursor: "pointer", color: "var(--text-lightgray)", fontSize: "0.9375rem", lineHeight: 1 }}>×</button>
@@ -307,7 +308,7 @@ export default function MockInterviewPage() {
       )}
 
       {!active && (
-        <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px", maxWidth: 520 }}>
+        <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "22px 24px", maxWidth: 520 }}>
           <div style={{ fontSize: "0.96875rem", fontWeight: 700, color: "var(--text-900)" }}>Start a mock interview</div>
           <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", color: "var(--text-gray2)" }}>A real interviewer - asks an opening question, evaluates each answer, and follows up based on what you say.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
@@ -351,13 +352,13 @@ export default function MockInterviewPage() {
             )}
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-            <input type="text" value={companyInput} onChange={(e) => setCompanyInput(e.target.value)} placeholder="Company (optional)" style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
-            <input type="text" value={roleInput} onChange={(e) => setRoleInput(e.target.value)} placeholder="Role (optional)" style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
+            <input type="text" value={companyInput} onChange={(e) => setCompanyInput(e.target.value)} placeholder="Company (optional)" style={{ flex: 1, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
+            <input type="text" value={roleInput} onChange={(e) => setRoleInput(e.target.value)} placeholder="Role (optional)" style={{ flex: 1, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
           </div>
           <select
             value={ragDomain}
             onChange={(e) => setRagDomain(e.target.value)}
-            style={{ marginTop: 10, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)", cursor: "pointer" }}
+            style={{ marginTop: 10, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)", cursor: "pointer" }}
           >
             {RAG_DOMAIN_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -391,7 +392,7 @@ export default function MockInterviewPage() {
       )}
 
       {active && (
-        <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "22px 24px" }}>
+        <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "22px 24px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
             <span style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>Question {count}</span>
             <button type="button" onClick={endMockInterview} className="unbutton probe-close" style={{ cursor: "pointer", color: "var(--text-lightgray)", fontSize: "0.8125rem", fontWeight: 600 }}>End session</button>
@@ -402,7 +403,7 @@ export default function MockInterviewPage() {
             value={answerDraft}
             onChange={(e) => setAnswerDraft(e.target.value)}
             placeholder="Type your answer, or record it and we will transcribe."
-            style={{ width: "100%", height: 120, resize: "vertical", border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "11px 13px", outline: "none", fontSize: "0.90625rem", lineHeight: 1.55, color: "var(--text-900)", background: "var(--field-bg)", marginTop: 16 }}
+            style={{ width: "100%", height: 120, resize: "vertical", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "11px 13px", outline: "none", fontSize: "0.90625rem", lineHeight: 1.55, color: "var(--text-900)", background: "var(--field-bg)", marginTop: 16 }}
           />
           <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 11 }}>
             <VoiceRecordButton
@@ -427,7 +428,7 @@ export default function MockInterviewPage() {
           </div>
 
           {feedback && (
-            <div style={{ marginTop: 20, borderTop: "1px solid #f1f2f5", paddingTop: 18 }}>
+            <div style={{ marginTop: 20, borderTop: "1px solid var(--divider)", paddingTop: 18 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
                 <span style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>Score</span>
                 <span style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-900)" }}>{feedback.score}/10</span>
@@ -450,7 +451,7 @@ export default function MockInterviewPage() {
                   </div>
                 </div>
               </div>
-              <div style={{ marginTop: 14, background: "var(--surface-alt)", border: "1px solid #eceef2", borderRadius: "var(--r-sm)", padding: "14px 16px" }}>
+              <div style={{ marginTop: 14, background: "var(--surface-alt)", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "14px 16px" }}>
                 <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--indigo)" }}>A stronger version</div>
                 <p style={{ margin: "8px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>{feedback.sampleBetterAnswer}</p>
               </div>

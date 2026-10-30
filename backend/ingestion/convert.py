@@ -192,6 +192,17 @@ def diagram_fix_hints(fid: dict, truncated: bool, page_no: int) -> list:
     return hints[:MAX_FIX_HINTS]
 
 
+def _block_issue_counts(fid: dict) -> dict:
+    """{block_index: qualifying_issue_count} for every diagram block carrying
+    at least one error or one structure-losing warn code (RETRY_WARN_CODES)."""
+    counts = {}
+    for it in fid.get("diagram_issues") or []:
+        if it.get("severity") == "error" or it.get("code") in RETRY_WARN_CODES:
+            b = it.get("block")
+            counts[b] = counts.get(b, 0) + 1
+    return counts
+
+
 def _penalty_blocks(fid: dict) -> int:
     """Distinct diagram blocks (by `block` index) carrying at least one error
     or one structure-losing warn code (RETRY_WARN_CODES) - the real unit of
@@ -206,23 +217,58 @@ def _penalty_blocks(fid: dict) -> int:
     Porter's-5-forces block), the flat penalty let a handful of issues in
     ONE block wipe out a real, page-wide coverage win. Counting damage per
     block instead still fully penalizes a page where every block is bad
-    (each contributes its own 0.5), but no longer piles additional penalty
-    onto a block that already triggered one."""
-    blocks = set()
-    for it in fid.get("diagram_issues") or []:
-        if it.get("severity") == "error" or it.get("code") in RETRY_WARN_CODES:
-            blocks.add(it.get("block"))
-    return len(blocks)
+    (each contributes its own base penalty), but no longer piles additional
+    penalty onto a block that already triggered one.
+
+    Kept as a plain block count (not weighted) for callers/tests that only
+    care how many distinct blocks are bad - see `_block_penalty` for the
+    weighted total `_score` actually uses."""
+    return len(_block_issue_counts(fid))
+
+
+# R6 follow-up fix (log.md 2026-10-31, "per-block formula regression found"):
+# collapsing every bad block to the same flat 0.5 - regardless of whether it
+# carries 1 issue or 15 - ties two candidates that both touch exactly one bad
+# block but differ hugely in how bad that block is (confirmed live on
+# FMS2023-24 p78: attempt 1 flattens an entire box group into plain text,
+# 14 qualifying issues in that one block; attempt 2's targeted retry fixes
+# all but 1). Production's tie-break (`keep attempt1 unless attempt2 scores
+# strictly higher`) then silently kept the worse, un-retried attempt on that
+# tie. BLOCK_ISSUE_FREE_ALLOWANCE lets a block absorb its first 2 qualifying
+# issues at the original flat 0.5 - a block that trips 1 or 2 related issues
+# (e.g. one duplicate label plus one altered label from the same mis-treed
+# section) is still "one concentrated problem", same as the formula's
+# original intent and the same number the ISB-p177-style regression test
+# below depends on. Beyond that, each extra issue (capped) adds a small
+# weighted penalty, so a block with many issues is scored worse than a block
+# with few - breaking the tie in p78's favor (and p16/p30/p50, confirmed
+# live, see log.md) without re-flattening back to the old per-issue formula
+# that originally over-penalized ISB-p177-style pages.
+BLOCK_ISSUE_FREE_ALLOWANCE = 2
+BLOCK_ISSUE_WEIGHT = 0.05
+BLOCK_ISSUE_CAP = 20  # extra (beyond the free allowance) qualifying issues counted per block
+
+
+def _block_penalty(fid: dict) -> float:
+    """Total diagram penalty: 0.5 per bad block, plus a small weighted
+    top-up for blocks whose qualifying-issue count exceeds
+    BLOCK_ISSUE_FREE_ALLOWANCE (capped at BLOCK_ISSUE_CAP extra issues)."""
+    total = 0.0
+    for _block, n in _block_issue_counts(fid).items():
+        extra = max(0, min(n - BLOCK_ISSUE_FREE_ALLOWANCE, BLOCK_ISSUE_CAP))
+        total += 0.5 + BLOCK_ISSUE_WEIGHT * extra
+    return total
 
 
 def _score(fid: dict, truncated: bool) -> float:
     """number_coverage + word_coverage + label_coverage (1 when no labels were
-    checked) - 0.5 per diagram BLOCK carrying an error or structural warning
-    (not per individual issue - see _penalty_blocks) - 1 if truncated."""
+    checked) - a per-diagram-BLOCK penalty (0.5 per bad block, plus a small
+    weighted top-up once a block's qualifying issues exceed
+    BLOCK_ISSUE_FREE_ALLOWANCE - see _block_penalty) - 1 if truncated."""
     cov = fid.get("diagram_label_coverage")
     return ((fid.get("number_coverage") or 0) + (fid.get("word_coverage") or 0)
             + (1.0 if cov is None else cov)
-            - 0.5 * _penalty_blocks(fid)
+            - _block_penalty(fid)
             - (1.0 if truncated else 0.0))
 
 

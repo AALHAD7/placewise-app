@@ -150,7 +150,7 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+      <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
         <div style={{ fontSize: "0.96875rem", fontWeight: 700, color: "var(--text-900)" }}>Share something with the community</div>
         <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
           {TYPES.map((t) => (
@@ -177,14 +177,14 @@ export default function CommunityPage() {
             value={company}
             onChange={(e) => setCompany(e.target.value)}
             placeholder="Company (optional)"
-            style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
+            style={{ flex: 1, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
           />
           <input
             type="text"
             value={role}
             onChange={(e) => setRole(e.target.value)}
             placeholder="Role (optional)"
-            style={{ flex: 1, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
+            style={{ flex: 1, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
           />
         </div>
         <textarea
@@ -195,7 +195,7 @@ export default function CommunityPage() {
             width: "100%",
             height: 96,
             resize: "vertical",
-            border: "1px solid #e0e1e6",
+            border: "1px solid var(--card-border)",
             borderRadius: "var(--r-sm)",
             padding: "11px 13px",
             outline: "none",
@@ -219,7 +219,7 @@ export default function CommunityPage() {
             />
             <label
               htmlFor="proof-upload"
-              style={{ display: "inline-flex", alignItems: "center", gap: 7, border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "8px 13px", cursor: "pointer", font: "600 0.8125rem 'Instrument Sans',sans-serif", color: "var(--text-700)", background: "var(--field-bg)" }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "8px 13px", cursor: "pointer", font: "600 0.8125rem 'Instrument Sans',sans-serif", color: "var(--text-700)", background: "var(--field-bg)" }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
@@ -267,7 +267,7 @@ export default function CommunityPage() {
         {list.map((c) => {
           const meta = [TYPE_LABELS[c.type] || c.type, c.company, c.role].filter(Boolean).join(" · ");
           return (
-            <div key={c.id} style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "18px 20px" }}>
+            <div key={c.id} style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "18px 20px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                 <span style={{ color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>{meta}</span>
                 <span style={{ fontSize: "0.71875rem", fontWeight: 600, color: statusColor(c.status) }}>{statusLabel(c.status)}</span>

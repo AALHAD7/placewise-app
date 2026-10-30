@@ -1,12 +1,24 @@
 import { useState, type ChangeEvent, type CSSProperties, type KeyboardEvent } from "react";
-import { callClaude } from "../lib/apiClient";
+import { callClaude, fetchChipPanel } from "../lib/apiClient";
 import { howPrompt, plain, pushPrompt, whatPrompt, whyPrompt } from "../lib/prompts";
 
 // "Push-back chat" - ported from frontend/index.html: probeFor() (3135-3171),
-// openProbe/runWhy/sendPushback/retryProbe (3070-3133), probeCache/cacheProbe
-// (2972-2988). Only one probe can be open at a time (matches the source
-// exactly - state.probe was a single global slice), scoped per-page here
-// since only the Role page uses this pattern.
+// openProbe/runWhy/sendPushback/retryProbe (3070-3133). Only one probe can
+// be open at a time (matches the source exactly - state.probe was a single
+// global slice), scoped per-page here since only the Role page uses this
+// pattern.
+//
+// What?/Why?/How to apply panels are server-cached now (Phase 1 amendment
+// D - see chipPanel.js), keyed by (role, topic, blockId, mode) with no
+// company in the key, since those three are company-agnostic content
+// (rule 3). The old client-only localStorage cache (PROBE_CACHE_KEY) is
+// retired along with that - a stale copy of it in an existing browser is
+// removed once below rather than left to linger unused.
+try {
+  localStorage.removeItem("pmh.probeCache");
+} catch {
+  // ignore - private browsing / blocked storage
+}
 
 export type ProbeMode = "what" | "why" | "how" | "pushback";
 
@@ -15,11 +27,16 @@ interface ProbeMessage {
   text: string;
 }
 
+interface ContentCheckResult {
+  checked: boolean;
+  passed: boolean;
+  issue: string;
+}
+
 interface ProbeState {
   blockId: string;
   blockText: string;
   mode: ProbeMode;
-  key: string;
   role: string;
   topic: string;
   company: string;
@@ -27,6 +44,7 @@ interface ProbeState {
   loading: boolean;
   error: string;
   draft: string;
+  contentCheck: ContentCheckResult | null;
 }
 
 export interface ProbeVM {
@@ -44,6 +62,7 @@ export interface ProbeVM {
   loading: boolean;
   hasError: boolean;
   error: string;
+  contentCheckNotice: string;
   showInput: boolean;
   placeholder: string;
   draft: string;
@@ -54,58 +73,27 @@ export interface ProbeVM {
   close: () => void;
 }
 
-const PROBE_CACHE_KEY = "pmh.probeCache";
-
-function readProbeCache(): Record<string, string> {
-  try {
-    return JSON.parse(localStorage.getItem(PROBE_CACHE_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-function writeProbeCache(key: string, text: string): void {
-  try {
-    const own = readProbeCache();
-    own[key] = text;
-    localStorage.setItem(PROBE_CACHE_KEY, JSON.stringify(own));
-  } catch {
-    // ignore
-  }
-}
-
 export function useProbe() {
   const [probe, setProbe] = useState<ProbeState | null>(null);
 
-  async function runWhy(key: string, role: string, topic: string, blockText: string, mode: ProbeMode, company: string) {
+  async function runWhy(role: string, topic: string, blockId: string, blockText: string, mode: "what" | "why" | "how") {
     try {
-      const prompt =
-        mode === "how" ? howPrompt(role, topic, blockText, company) :
-        mode === "what" ? whatPrompt(role, topic, blockText, company) :
-        whyPrompt(role, topic, blockText, company);
-      const text = await callClaude([{ role: "user", content: prompt }]);
-      writeProbeCache(key, text);
-      setProbe((s) => (s ? { ...s, loading: false, error: "", messages: [{ who: "ai", text }] } : s));
+      const promptText =
+        mode === "how" ? howPrompt(role, topic, blockText) :
+        mode === "what" ? whatPrompt(role, topic, blockText) :
+        whyPrompt(role, topic, blockText);
+      const res = await fetchChipPanel(role, topic, blockId, mode, promptText);
+      setProbe((s) => (s ? { ...s, loading: false, error: "", messages: [{ who: "ai", text: res.text }], contentCheck: res.contentCheck } : s));
     } catch {
       setProbe((s) => (s ? { ...s, loading: false, error: "Could not reach the model." } : s));
     }
   }
 
   function openProbe(role: string, topic: string, blockId: string, blockText: string, mode: ProbeMode, company: string) {
-    // company is part of the cache key now that prompts ground answers in it
-    // (companyGrounding in prompts.ts) - without this, switching company on
-    // the same role/topic/point would silently serve a cached answer written
-    // for a DIFFERENT company (confirmed live: re-testing this exact fix hit
-    // a stale pre-fix cached answer, which is what surfaced this).
-    const key = topic + "|" + blockId + "|" + mode + "|" + (company || "");
-    const cached = readProbeCache()[key];
-    const base: ProbeState = { blockId, blockText, mode, key, role, topic, company, messages: [], loading: false, error: "", draft: "" };
+    const base: ProbeState = { blockId, blockText, mode, role, topic, company, messages: [], loading: false, error: "", draft: "", contentCheck: null };
     if (mode !== "pushback") {
-      if (cached) {
-        setProbe({ ...base, messages: [{ who: "ai", text: cached }] });
-        return;
-      }
       setProbe({ ...base, loading: true });
-      runWhy(key, role, topic, blockText, mode, company);
+      runWhy(role, topic, blockId, blockText, mode);
       return;
     }
     setProbe(base);
@@ -117,7 +105,6 @@ export function useProbe() {
     const userText = (overrideText ?? p.draft).trim();
     if (!userText || p.loading) return;
     const firstUser = !p.messages.some((m) => m.who === "me");
-    const first = p.mode === "pushback" && p.messages.length === 0;
     const initialAnswer = p.messages[0]?.text || "";
     const history = p.messages.map((m) => ({ role: m.who === "ai" ? "assistant" : "user", content: m.text }));
     const messages: ProbeMessage[] = [...p.messages, { who: "me", text: userText }];
@@ -135,10 +122,13 @@ export function useProbe() {
       // crossquestion-eval.md). Later turns in the same thread are genuine
       // back-and-forth (real AI replies, real user text), so the history-
       // based multi-turn path is correct for those and stays as-is.
+      // pushback keeps company grounding (Phase 1 rule 3 only exempts the
+      // What/Why/How panels above, not a user's own free-form follow-up)
+      // and stays uncached - cross-question replies are per-user, per-
+      // thread, never shared.
       const text = firstUser
         ? await callClaude([{ role: "user", content: pushPrompt(p.role, p.topic, p.blockText, initialAnswer, userText, p.company) }])
         : await callClaude([...history, { role: "user", content: userText }]);
-      if (first) writeProbeCache(p.key, text);
       setProbe((s) => (s ? { ...s, loading: false, messages: [...s.messages, { who: "ai", text }] } : s));
     } catch {
       setProbe((s) => (s ? { ...s, loading: false, error: "Could not reach the model." } : s));
@@ -150,7 +140,7 @@ export function useProbe() {
     if (!p) return;
     if (p.mode !== "pushback") {
       setProbe((s) => (s ? { ...s, loading: true, error: "" } : s));
-      runWhy(p.key, p.role, p.topic, p.blockText, p.mode, p.company);
+      runWhy(p.role, p.topic, p.blockId, p.blockText, p.mode as "what" | "why" | "how");
       return;
     }
     const last = [...p.messages].reverse().find((m) => m.who === "me");
@@ -176,7 +166,7 @@ export function useProbe() {
     };
     if (!open || !p) {
       return {
-        ...base, messages: [], loading: false, error: "", hasError: false, showInput: false, title: "", draft: "", context: "", quote: "",
+        ...base, messages: [], loading: false, error: "", hasError: false, showInput: false, title: "", draft: "", context: "", quote: "", contentCheckNotice: "",
         onDraft: () => {}, onKeyDown: () => {}, send: () => {}, retry: () => {}, close: () => {}, placeholder: ""
       };
     }
@@ -196,6 +186,15 @@ export function useProbe() {
       loading: p.loading,
       hasError: !!p.error,
       error: p.error,
+      // Phase 1.5: shown when the content check (5 flags, always run - not
+      // digit-gated) still failed after one regeneration attempt - never
+      // shown otherwise. Phase 1.7 item 4: an empty issue means the check
+      // failed twice with nothing to target a repair at (a likely false
+      // flag) - shown plainly rather than implying a specific, known
+      // problem the default message does.
+      contentCheckNotice: p.contentCheck && p.contentCheck.checked && !p.contentCheck.passed
+        ? (p.contentCheck.issue ? "This answer could not be fully verified. Check before relying on it." : "Automated check flagged this content.")
+        : "",
       showInput: !p.loading && (p.mode === "pushback" || p.messages.length > 0),
       placeholder: p.messages.some((m) => m.who === "me") ? "Respond..." : "Cross-question this answer...",
       draft: p.draft,

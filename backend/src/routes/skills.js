@@ -2,7 +2,7 @@ import { Router } from "express";
 import { optionalAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
-import { getSkillMeta, getSkillProblems, normalizeDifficulty, scoreOpenAnswer } from "../lib/skillContent.js";
+import { getSkillMeta, getSkillProblems, getConceptLink, normalizeDifficulty, scoreOpenAnswer } from "../lib/skillContent.js";
 
 const router = Router();
 
@@ -27,6 +27,28 @@ router.get("/:roleName/:skillName", optionalAuth, aiLimiter, async (req, res) =>
   } catch (err) {
     console.error("[skills/:roleName/:skillName]", err);
     res.status(500).json({ success: false, error: "Failed to fetch skill content.", detail: errorDetail(err) });
+  }
+});
+
+// Phase 1.7 item 2: the "learn more" link for ONE concept, fetched on first
+// click instead of eagerly for every concept at page-generation time.
+router.get("/:roleName/:skillName/concept-link", optionalAuth, aiLimiter, async (req, res) => {
+  const params = validateParams(req, res);
+  if (!params) return;
+  const tier = (req.query.tier || "").toString().trim();
+  const title = (req.query.title || "").toString().trim();
+  if (!["basic", "intermediate", "advanced"].includes(tier)) {
+    return res.status(400).json({ success: false, error: "tier must be one of: basic, intermediate, advanced." });
+  }
+  if (!title || title.length > 200) {
+    return res.status(400).json({ success: false, error: "title is required (max 200 characters)." });
+  }
+  try {
+    const link = await getConceptLink(params.roleName, params.skillName, tier, title);
+    res.json({ success: true, link });
+  } catch (err) {
+    console.error("[skills/:roleName/:skillName/concept-link]", err);
+    res.status(500).json({ success: false, error: "Failed to fetch concept link.", detail: errorDetail(err) });
   }
 });
 

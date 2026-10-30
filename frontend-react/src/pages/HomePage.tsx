@@ -1,401 +1,311 @@
-import { useMemo } from "react";
-import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import { useDashboard } from "../hooks/useDashboard";
-import FeatureCard, { type IconClass } from "../components/FeatureCard";
-import type { ActivityType } from "../types/api";
+import { apiFetch } from "../lib/apiClient";
+import PlanModal from "../components/PlanModal";
+import type { CommunitySummaryResponse, CurrentPlanResponse, PlanDay } from "../types/api";
 
-// Ported from frontend/index.html lines 315-413 (hero/illustration/feature
-// grid) + 1614-1689 (right panel) + dashPanel() (2037-2112) + home (4067-4098).
-// Note: readinessDasharray (old dashPanel() field) was dropped - grepped
-// confirmed it was computed but never read by any markup, only
-// readinessRingStyle (a CSS conic-gradient, not an SVG stroke-dasharray)
-// was actually used for the readiness ring.
+// Home rebuild (replaces the earlier P0-P4 Home entirely - see home.css's
+// header comment). Six sections only: Header (TopNav), Greeting, Hero,
+// Popular tools, Plan banner, Community card.
 
-const TYPE_PAGE: Record<ActivityType, string> = {
-  resume_interrogation: "/resume",
-  framework_review: "/frameworks",
-  mock_interview: "/mock-interview",
-  tone_shift: "/tone-shifter",
-  story_builder: "/resume"
-};
-
-const TYPE_BADGE: Record<ActivityType, { bg: string; color: string; iconPath: string }> = {
-  resume_interrogation: {
-    bg: "#DCFCE7",
-    color: "#16A34A",
-    iconPath: "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5"
-  },
-  framework_review: {
-    bg: "#FCE7F3",
-    color: "#DB2777",
-    iconPath:
-      "M18 5m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M18 19m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"
-  },
-  mock_interview: {
-    bg: "#E0E7FF",
-    color: "var(--indigo)",
-    iconPath: "M12 19v3M19 10v2a7 7 0 0 1-14 0v-2M12 15a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v7a3 3 0 0 0 3 3z"
-  },
-  tone_shift: {
-    bg: "#CFFAFE",
-    color: "#0891B2",
-    iconPath: "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
-  },
-  story_builder: {
-    bg: "#FEF3C7",
-    color: "#D97706",
-    iconPath: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"
-  }
-};
-const DEFAULT_BADGE = { bg: "var(--surface-sunken)", color: "var(--text-gray2)", iconPath: "M12 8v4l3 3" };
-
-function timeAgo(iso: string): string {
-  const ms = Date.now() - new Date(iso).getTime();
-  const mins = Math.max(1, Math.round(ms / 60000));
-  if (mins < 60) return mins + "m ago";
-  const hours = Math.round(mins / 60);
-  if (hours < 24) return hours + "h ago";
-  return Math.round(hours / 24) + "d ago";
+function getGreetingWord(): string {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "Good morning";
+  if (h >= 12 && h < 17) return "Good afternoon";
+  return "Good evening";
 }
 
-interface Step {
-  name: string;
-  body: string;
-  go: string;
-  iconClass: IconClass;
-  iconPath: string;
+function LightningIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13 2 3 14h9l-1 8 10-12h-9z" />
+    </svg>
+  );
+}
+function TargetIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+function PeopleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+function TrendIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
+    </svg>
+  );
+}
+function ArrowRightIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+}
+function ChevronDownIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+function UploadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v12" /><polyline points="7 8 12 3 17 8" /><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" />
+    </svg>
+  );
 }
 
-const STEPS: Step[] = [
-  {
-    name: "Role",
-    body: "Insights on the role you are targeting: what the job actually involves day to day, the skills and salary band, and the kind of candidate that gets hired into it.",
-    go: "/role",
-    iconClass: "icon-purple",
-    iconPath: "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
-  },
-  {
-    name: "Company",
-    body: "Details about the company: what it does and how it makes money, its recent news and major investments, its recruitment process by role, and debriefs from students who interviewed there.",
-    go: "/company",
-    iconClass: "icon-blue",
-    iconPath: "M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2M10 12h4M10 8h4M14 21v-3a2 2 0 0 0-4 0v3"
-  },
-  {
-    name: "Resume Interrogation",
-    body: "Upload your resume and get the behavioural, technical, and situational questions it invites. Answer by text or voice and get feedback on what worked and what to fix.",
-    go: "/resume",
-    iconClass: "icon-green",
-    iconPath: "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5"
-  },
-  {
-    // No standalone page of its own - it's the same flow already built into
-    // the Resume tab (mode "story"), just reachable from here too.
-    name: "Story Builder",
-    body: "Turn your journey from 10th onwards into one coherent narrative, with variants for the resume walkthrough and the fit round.",
-    go: "/resume?mode=story",
-    iconClass: "icon-amber",
-    iconPath: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"
-  },
-  {
-    name: "Frameworks",
-    body: "The structures interviewers expect you to reach for - guesstimates, cases, product sense - with worked examples you can apply under pressure.",
-    go: "/frameworks",
-    iconClass: "icon-pink",
-    iconPath:
-      "M18 5m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M18 19m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"
-  },
-  {
-    name: "Tone Shifter",
-    body: "Rewrite the same answer for the room you are in: consulting crisp, product conversational, finance precise.",
-    go: "/tone-shifter",
-    iconClass: "icon-cyan",
-    iconPath: "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
-  },
-  {
-    name: "Mock Interview",
-    body: "Run the full loop under time, built on the real interview structures used by the company and role you picked.",
-    go: "/mock-interview",
-    iconClass: "icon-purple",
-    iconPath: "M12 19v3M19 10v2a7 7 0 0 1-14 0v-2M12 15a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v7a3 3 0 0 0 3 3z"
-  }
+// The curved hand-drawn arrow under the Caveat note - a small inline SVG,
+// not an icon font glyph, so it reads as a sketch rather than a UI icon.
+function CurvedArrow() {
+  return (
+    <svg viewBox="0 0 40 28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M3 4c6 2 18 2 24 12 2 3-1 7-6 6" />
+      <path d="M17 20l4 2-1-5" />
+    </svg>
+  );
+}
+
+// TOOLS: 4 cards, tints/routes exactly as specified.
+const TOOLS = [
+  { title: "Company Prep", desc: "Insights on top companies, roles and interview process.", to: "/company", tint: "var(--home-tint-blue)", color: "var(--home-primary)", icon: "building" },
+  { title: "Case Practice", desc: "Practise real casebook cases with AI guidance.", to: "/frameworks", tint: "var(--home-tint-purple)", color: "#7C3AED", icon: "layers" },
+  { title: "Resume Drill", desc: "Get the questions your resume invites, with AI feedback.", to: "/resume", tint: "var(--home-tint-green)", color: "var(--home-success)", icon: "file" },
+  { title: "Mock Interview", desc: "A live voice interview tuned to your domain and difficulty.", to: "/mock-interview", tint: "var(--home-tint-orange)", color: "#D97706", icon: "mic" }
 ];
 
+function ToolIcon({ name }: { name: string }) {
+  const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  if (name === "building") return <svg {...common}><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" /><path d="M10 9h4M10 13h4M10 17h4" /></svg>;
+  if (name === "layers") return <svg {...common}><polygon points="12 2 2 8 12 14 22 8 12 2" /><polyline points="2 16 12 22 22 16" /><polyline points="2 12 12 18 22 12" /></svg>;
+  if (name === "file") return <svg {...common}><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8l6 6v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /></svg>;
+  return <svg {...common}><rect x="9" y="2" width="6" height="13" rx="3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><path d="M12 19v3" /></svg>;
+}
+
 export default function HomePage() {
-  const navigate = useNavigate();
-  const { loading, error, data } = useDashboard();
+  const { isGuest } = useAuth();
+  const { sessionName, loading: dashLoading } = useDashboard();
+  const firstName = sessionName.split(" ")[0] || "there";
 
-  const dash = useMemo(() => {
-    const d = data;
-    const plan = (d?.plan || []).map((p) => {
-      const badge = TYPE_BADGE[p.type] || DEFAULT_BADGE;
-      return {
-        label: p.label,
-        minutesLabel: p.done ? "Done" : "~" + p.minutes + " min",
-        done: p.done,
-        badgeBg: p.done ? "var(--surface-sunken)" : badge.bg,
-        badgeColor: p.done ? "var(--text-lightgray)" : badge.color,
-        iconPath: badge.iconPath,
-        labelStyle: { fontSize: "0.84375rem", color: p.done ? "var(--text-lightgray)" : "var(--text-900)", textDecoration: p.done ? "line-through" : "none" },
-        open: () => navigate(TYPE_PAGE[p.type] || "/")
-      };
-    });
-    const recent = (d?.recent || []).map((r) => {
-      const badge = TYPE_BADGE[r.type] || DEFAULT_BADGE;
-      return { label: r.label, detail: r.detail, ago: timeAgo(r.createdAt), badgeBg: badge.bg, badgeColor: badge.color, iconPath: badge.iconPath };
-    });
-    const week = (d?.thisWeek || []).map((w) => ({
-      label: w.label,
-      showCheck: !!w.done,
-      circleClass: w.done ? "done" : w.isFuture ? "todo" : "missed"
-    }));
-    const streak = d?.streak || 0;
-    const streakMessage = streak >= 3 ? "You're on fire! 🔥" : streak > 0 ? "Nice, keep it going." : "Start today to build your streak.";
-    const hasReadiness = !loading && !error && typeof d?.readiness === "number";
-    const readinessPct = hasReadiness ? Math.max(0, Math.min(100, d!.readiness as number)) : 0;
-    const readinessLabel = readinessPct >= 80 ? "Strong" : readinessPct >= 60 ? "Good" : "Building";
-    return {
-      loading, hasError: !loading && !!error, error: error || "",
-      hasPlan: !loading && !error && plan.some((p) => !p.done),
-      allPlanDone: !loading && !error && plan.length > 0 && plan.every((p) => p.done),
-      plan,
-      hasRecent: !loading && !error && recent.length > 0,
-      noRecent: !loading && !error && recent.length === 0,
-      recent,
-      streak, streakMessage, week,
-      hasReadiness, noReadiness: !hasReadiness,
-      readiness: d?.readiness, readinessLabel,
-      readinessRingStyle: { background: `conic-gradient(#1E1B4B ${readinessPct}%, #E7E6F2 0)` }
-    };
-  }, [loading, error, data, navigate]);
+  const [heroImgOk, setHeroImgOk] = useState(true);
 
-  const steps = useMemo(
-    () =>
-      STEPS.map((s) => ({
-        ...s,
-        open: () => navigate(s.go)
-      })),
-    [navigate]
-  );
-  const gridSteps = steps.slice(0, 6);
-  const wideStep = steps[6];
+  // --- Plan banner state -----------------------------------------------
+  const [plan, setPlan] = useState<PlanDay[] | null>(null);
+  const [planSaved, setPlanSaved] = useState(false);
+  const [planCreatedAt, setPlanCreatedAt] = useState<string | null>(null);
+  const [planLoading, setPlanLoading] = useState(!isGuest);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [openDay, setOpenDay] = useState<number | null>(null);
+  const [sectionRoutes, setSectionRoutes] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (isGuest) {
+      setPlanLoading(false);
+      return;
+    }
+    apiFetch<CurrentPlanResponse>("/api/plan/current", {}, "")
+      .then((res) => {
+        setSectionRoutes(res.sectionRoutes || {});
+        if (res.plan) {
+          setPlan(res.plan.days);
+          setPlanSaved(true);
+          setPlanCreatedAt(res.plan.created_at);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setPlanLoading(false));
+  }, [isGuest]);
+
+  const todayDayNumber = useMemo(() => {
+    if (!planCreatedAt) return 1;
+    const daysSince = Math.floor((Date.now() - new Date(planCreatedAt).getTime()) / 86400000);
+    return Math.min(Math.max(daysSince + 1, 1), 3);
+  }, [planCreatedAt]);
+
+  useEffect(() => {
+    if (plan) setOpenDay(todayDayNumber);
+  }, [plan, todayDayNumber]);
+
+  const handleGenerated = (days: PlanDay[], saved: boolean) => {
+    setPlan(days);
+    setPlanSaved(saved);
+    setPlanCreatedAt(new Date().toISOString());
+    setModalOpen(false);
+    setOpenDay(1);
+  };
+
+  // --- Community card state ---------------------------------------------
+  const [community, setCommunity] = useState<CommunitySummaryResponse | null>(null);
+  useEffect(() => {
+    apiFetch<CommunitySummaryResponse>("/api/community/summary", {}, "")
+      .then(setCommunity)
+      .catch(() => {});
+  }, []);
 
   return (
-    <>
-      <div style={{ marginBottom: 26 }}>
-        <div className="pill">
-          <span className="check-circle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </span>
-          RESUME-FIRST. TARGETED. PERSONALIZED.
-        </div>
-      </div>
+    <div className="home-page">
+      <div className="home-container">
+        {!isGuest && !dashLoading && (
+          <div className="home-greeting">{getGreetingWord()}, {firstName}</div>
+        )}
 
-      <div style={{ display: "flex", gap: 30, alignItems: "flex-start" }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="hero">
-            <div>
-              <div className="hero-headline">
-                Interview prep
-                <br />
-                that starts from
-                <br />
-                <span className="grad">your resume.</span>
-              </div>
-              <p className="hero-copy">
-                We read your resume, understand your target roles, and simulate the exact interview experience — so you walk in prepared, not
-                guessed.
-              </p>
-              <div className="hero-actions">
-                <button type="button" className="unbutton btn btn-primary" onClick={() => navigate("/resume")}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M7 16a4 4 0 0 1-.4-8A5.5 5.5 0 0 1 17.4 9 4.5 4.5 0 0 1 17 16" />
-                    <polyline points="12 12 12 21" />
-                    <polyline points="9 15 12 12 15 15" />
-                  </svg>
-                  Upload your resume
-                </button>
-                <button type="button" className="unbutton btn btn-secondary" onClick={() => navigate("/role")}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="9" />
-                    <circle cx="12" cy="12" r="5" />
-                    <circle cx="12" cy="12" r="1" />
-                  </svg>
-                  Set your target
-                </button>
-              </div>
-            </div>
-
-            <div className="illustration">
-              <div className="ring"></div>
-              <svg className="sparkle" style={{ top: 2, right: 60 }} width="18" height="18" viewBox="0 0 24 24" fill="#C9C7E4">
-                <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z" />
-              </svg>
-              <svg className="sparkle" style={{ bottom: 70, left: 230 }} width="12" height="12" viewBox="0 0 24 24" fill="#C9C7E4">
-                <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z" />
-              </svg>
-              <div className="fc-dot" style={{ top: 40, left: 200 }}></div>
-              <div className="fc-dot" style={{ bottom: 120, right: 40 }}></div>
-
-              <div className="float-card fc-role">
-                <div className="fc-label">Role Fit</div>
-                <div className="fc-pct">91%</div>
-                <svg width="80" height="20" viewBox="0 0 80 20">
-                  <polyline points="0,16 12,10 24,14 36,6 48,11 60,4 72,9" fill="none" stroke="#6D61F5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-
-              <div className="float-card fc-comm">
-                <div className="fc-label">Communication</div>
-                <div className="fc-pct">78%</div>
-                <svg width="80" height="20" viewBox="0 0 80 20">
-                  <rect x="0" y="10" width="8" height="10" rx="1.5" fill="#34D399" />
-                  <rect x="14" y="6" width="8" height="14" rx="1.5" fill="#34D399" />
-                  <rect x="28" y="2" width="8" height="18" rx="1.5" fill="#34D399" />
-                  <rect x="42" y="8" width="8" height="12" rx="1.5" fill="#A7F3D0" />
-                  <rect x="56" y="4" width="8" height="16" rx="1.5" fill="#34D399" />
-                </svg>
-              </div>
-
-              <div className="float-card fc-problem">
-                <div className="fc-label">Problem Solving</div>
-                <div className="fc-pct">85%</div>
-                <svg width="80" height="20" viewBox="0 0 80 20">
-                  <polyline points="0,6 12,12 24,7 36,15 48,9 60,13 72,5" fill="none" stroke="#D9A441" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-
-              <div className="fc-center">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5" />
-                  <path d="M9 13h6M9 17h6" />
-                </svg>
-              </div>
-
-              <div className="float-card fc-readiness">
-                {dash.hasReadiness && (
-                  <div className="ring-outer" style={dash.readinessRingStyle}>
-                    <div className="ring-inner">
-                      <span className="pct">{dash.readiness}%</span>
-                      <span className="lbl">{dash.readinessLabel}</span>
-                    </div>
-                  </div>
-                )}
-                {dash.noReadiness && (
-                  <div className="ring-outer-empty">
-                    <span style={{ fontSize: "0.4375rem", color: "#8A8B94", fontWeight: 600, textAlign: "center", lineHeight: 1.2 }}>
-                      No data
-                      <br />
-                      yet
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <div className="fc-label" style={{ marginBottom: 2 }}>
-                    Interview Readiness
-                  </div>
-                </div>
-              </div>
+        <section className="home-hero">
+          <div>
+            <h1>
+              Interview prep that starts
+              <span className="accent">from your resume</span>
+            </h1>
+            <p className="home-hero-sub">
+              Upload your CV. Placewise finds the questions each line invites, then runs you through live mock interviews the way panels in your target domain actually ask.
+            </p>
+            <div className="home-hero-actions">
+              <Link to="/resume" className="home-btn home-btn-primary">
+                <UploadIcon /> Upload your resume
+              </Link>
+              <Link to="/role" className="home-btn home-btn-secondary">
+                <TargetIcon /> Set your target
+              </Link>
             </div>
           </div>
 
-          <div className="section-title">What each section does</div>
-          <div className="grid-3">
-            {gridSteps.map((s) => (
-              <FeatureCard key={s.name} name={s.name} body={s.body} iconClass={s.iconClass} iconPath={s.iconPath} onClick={s.open} />
+          <div className="home-illustration">
+            <div className="home-trend-badge"><TrendIcon /></div>
+            <div className="home-illu-note">
+              From prep to placement
+              <CurvedArrow />
+            </div>
+            {heroImgOk ? (
+              <img
+                src="/illustrations/hero-student.png"
+                alt="A student working through interview prep on a laptop, checklist: Learn, Practice, Improve, Get Hired"
+                width={361}
+                height={212}
+                fetchPriority="high"
+                className="home-illu-image"
+                onError={() => setHeroImgOk(false)}
+              />
+            ) : (
+              // Never show a broken image - if the file is missing, the
+              // panel still reads fine with just the gradient and note.
+              <div className="home-illu-fallback" />
+            )}
+          </div>
+        </section>
+
+        <section className="home-section">
+          <div className="home-section-head">
+            <div className="home-section-title"><LightningIcon /><h2>Popular tools</h2></div>
+          </div>
+          <div className="home-tools-grid">
+            {TOOLS.map((tool) => (
+              <Link key={tool.title} to={tool.to} className="home-tool-card">
+                <div className="home-tool-icon" style={{ background: tool.tint, color: tool.color }}>
+                  <ToolIcon name={tool.icon} />
+                </div>
+                <h3>{tool.title}</h3>
+                <p>{tool.desc}</p>
+                <div className="home-tool-arrow"><ArrowRightIcon /></div>
+              </Link>
             ))}
           </div>
+        </section>
 
-          <div className="grid-full">
-            <FeatureCard wide name={wideStep.name} body={wideStep.body} iconClass={wideStep.iconClass} iconPath={wideStep.iconPath} onClick={wideStep.open} />
-          </div>
-        </div>
+        <section className="home-section home-split">
+          <div className="home-plan-banner">
+            <div className="home-plan-icon"><TargetIcon /></div>
+            <h2>Upcoming interviews?</h2>
+            <p>Get a personalised 3-day prep plan based on your target role and timeline.</p>
 
-        <aside className="rightpanel">
-          <div className="rp-card">
-            <div className="rp-title">Prep streak</div>
-            <div className="streak-num">
-              <svg className="flame-big" viewBox="0 0 24 24" fill="#F97316">
-                <path d="M12 2c1 3-2 4-2 7a3 3 0 0 0 6 0c1 1 2 2.5 2 4.5A6.5 6.5 0 0 1 5 13.5C5 8 9 6 12 2z" />
-              </svg>
-              <span>{dash.streak} days</span>
-            </div>
-            <div className="streak-caption">{dash.streakMessage}</div>
-            <div className="week-row">
-              {dash.week.map((d, i) => (
-                <div className="week-day" key={i}>
-                  <div className={"day-circle " + d.circleClass}>
-                    {d.showCheck && (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                  </div>
-                  <div className="day-label">{d.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rp-card">
-            <div className="rp-title">Today's plan</div>
-            {dash.loading && (
-              <div role="status" aria-live="polite">
-                <div style={{ color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>Loading your plan…</div>
-                <IndeterminateProgressBar />
+            {!plan && !planLoading && (
+              <div>
+                <button type="button" className="home-btn home-btn-primary" onClick={() => setModalOpen(true)}>
+                  Create my plan
+                </button>
               </div>
             )}
-            {dash.hasError && <div style={{ color: "var(--red-dark)", fontSize: "0.78125rem" }}>{dash.error}</div>}
-            {dash.hasPlan &&
-              dash.plan.map((p, i) => (
-                <button type="button" className="unbutton plan-row" onClick={p.open} key={i}>
-                  <div className="row-icon" style={{ background: p.badgeBg, color: p.badgeColor }}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d={p.iconPath} />
-                    </svg>
-                  </div>
-                  <div className="row-body">
-                    <div className="row-title" style={p.labelStyle}>
-                      {p.label}
-                    </div>
-                  </div>
-                  <div className="row-time">{p.minutesLabel}</div>
-                </button>
-              ))}
-            {dash.allPlanDone && <div style={{ color: "var(--text-700)", fontSize: "0.78125rem" }}>Nice work — you've covered today's core prep already. 🎉</div>}
-          </div>
 
-          <div className="rp-card">
-            <div className="rp-title">Recent activity</div>
-            {dash.hasRecent &&
-              dash.recent.map((r, i) => (
-                <div className="activity-row" key={i}>
-                  <div className="row-icon" style={{ background: r.badgeBg, color: r.badgeColor }}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d={r.iconPath} />
-                    </svg>
-                  </div>
-                  <div className="row-body">
-                    <div className="row-title">{r.label}</div>
-                    <div className="row-sub">{r.detail}</div>
-                  </div>
-                  <div className="row-time">{r.ago}</div>
+            {plan && (
+              <>
+                {!planSaved && <div className="home-plan-note">Sign in to save this plan.</div>}
+                <div className="home-plan-days">
+                  {plan.map((day) => {
+                    const expanded = openDay === day.day;
+                    const isToday = day.day === todayDayNumber;
+                    return (
+                      <div key={day.day} className="home-plan-day">
+                        <button
+                          type="button"
+                          className="home-plan-day-head"
+                          aria-expanded={expanded}
+                          onClick={() => setOpenDay(expanded ? null : day.day)}
+                        >
+                          <span>
+                            {isToday ? "Today's plan" : `Day ${day.day}`}
+                            <span className="focus">{day.focus}</span>
+                          </span>
+                          <ChevronDownIcon />
+                        </button>
+                        {expanded && (
+                          <div className="home-plan-tasks">
+                            {day.tasks.map((task, i) => (
+                              <Link key={i} to={sectionRoutes[task.section] || "/frameworks"} className="home-plan-task">
+                                <span>{task.title}</span>
+                                <span className="minutes">{task.minutes} min</span>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            {dash.noRecent && <div style={{ color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>Nothing logged yet — start with today's plan above.</div>}
+                <div>
+                  <button type="button" className="home-btn home-btn-secondary" onClick={() => setModalOpen(true)}>
+                    Regenerate plan
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="rp-card quote-card">
-            <div className="quote-mark">"</div>
-            <div className="quote-line1">Preparation today,</div>
-            <div className="quote-line2">placement tomorrow.</div>
-            <div className="quote-sub">You've got this! 💪</div>
+          <div className="home-community-card">
+            <h2><PeopleIcon /> Join the community</h2>
+            <p>Discuss, share resources, ask questions and grow together.</p>
+            <div className="home-avatar-row">
+              {community && community.avatars.length > 0 && (
+                <div className="home-avatar-stack">
+                  {community.avatars.map((a, i) => (
+                    <div key={i} className="home-mini-avatar">{a.initials}</div>
+                  ))}
+                </div>
+              )}
+              {community?.showCount && <span className="home-member-count">+{community.memberCount} members</span>}
+            </div>
+            <div>
+              <Link to="/community" className="home-btn home-btn-secondary">
+                {isGuest ? "Join now" : "Open community"}
+              </Link>
+            </div>
           </div>
-        </aside>
+        </section>
       </div>
-    </>
+
+      {modalOpen && (
+        <PlanModal isGuest={isGuest} onClose={() => setModalOpen(false)} onGenerated={handleGenerated} />
+      )}
+    </div>
   );
 }

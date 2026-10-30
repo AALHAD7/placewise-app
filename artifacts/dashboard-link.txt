@@ -1,0 +1,3 @@
+PlaceWise decisions dashboard (owner-only)
+Link: https://claude.ai/artifact/NmLKYkAPXACBitQrNVyAh7
+Source file: dashboard.html (Claude publishes changes from it to the same link)

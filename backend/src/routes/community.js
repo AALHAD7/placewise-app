@@ -57,6 +57,56 @@ router.get("/", optionalAuth, async (req, res) => {
   }
 });
 
+// "Members" for the Home page's community card = distinct REAL (non-guest)
+// users with at least one real logged activity - not total signups (an
+// account that never did anything isn't a meaningful "member"), and not
+// anonymous guest sessions (most user_activity rows in practice: a guest
+// session is a throwaway 3-hour identity, never a returning "member" in any
+// sense this card means). Avatars are real too: each one is a genuine
+// signed-up user's initials, the same derivation the frontend already uses
+// for its own session name (apiClient.ts's decodeSessionDisplayName), just
+// computed here from auth.users via the admin API since the backend has no
+// profiles table to read a display name from.
+router.get("/summary", async (req, res) => {
+  try {
+    const { data: rows, error } = await supabase
+      .from("user_activity")
+      .select("user_id")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+
+    const distinctIds = [...new Set((rows || []).map(r => r.user_id))];
+
+    const avatars = [];
+    let memberCount = 0;
+    for (const id of distinctIds) {
+      const { data, error: userErr } = await supabase.auth.admin.getUserById(id);
+      if (userErr || !data?.user || data.user.is_anonymous || !data.user.email) continue;
+      memberCount++;
+      if (avatars.length >= 4) continue;
+      const local = data.user.email.split("@")[0] || "";
+      const initials = local
+        .split(/[._-]+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(w => w[0].toUpperCase())
+        .join("") || "?";
+      avatars.push({ initials });
+    }
+
+    res.json({
+      success: true,
+      memberCount,
+      showCount: memberCount >= 25,
+      avatars
+    });
+  } catch (err) {
+    console.error("[community/summary]", err);
+    res.status(500).json({ success: false, error: "Failed to load community summary.", detail: errorDetail(err) });
+  }
+});
+
 // A proof screenshot (email thread, calendar invite, offer letter, etc.) is
 // required for every submission - Gemini does a soft plausibility read on it
 // (checkInterviewProof, see gemini.js for exactly what that can and can't

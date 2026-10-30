@@ -1,0 +1,54 @@
+*Note: These are only rough figures (and not actual) that are meant to help you in solving the guesstimate with simple calculations
+GUESSTIMATE STATISTICS
+Following are some important statistics to keep in mind for solving guesstimates for market sizing and otherwise.
+APPENDIX A
+451
+*Note: These are only rough figures (and not actual) that are meant to help you in solving the guesstimate with simple calculations
+Population Distribution in India (in Millions)
+Geography (in Millions) %Total
+Urban 560 40%
+Rural 840 60%
+Age Groups (in Millions) %Total
+0-14 350 25%
+15-24 350 25%
+25-34 210 15%
+35-44 210 15%
+45-54 140 10%
+55+ 140 10%
+Note: 50% of the population is under 
+25, 65% under 35
+Income (annual) (in Mn) %Total
+BPL (< ₹125K) 210 15%
+Low (₹125K – 500K) 700 50%
+Middle (₹500K – 3Mn) 420 30%
+High (> ₹3Mn) 70 5%
+Area wise Distribution of India (in '000 sq. kms)
+Total Area 3,300
+Terrain (in '000 sq. km) %Total
+Land 2,310 70%
+Water 330 10%
+Forests 660 20%
+Population Distribution by Faith
+Faith (in Mn) %Total
+Hindu 1,040 80%
+Muslim 195 15%
+Christian 26 2%
+Sikh 19.5 1.5%
+Others/Unspecified 19.5 1.5%
+Population and Area of Major Cities
+Cities Population (in Mn) Area (in sq. km)
+Mumbai 20 600
+New Delhi 33 1500
+Kolkata 15 200
+Bangalore 15 700
+Chennai 12 400
+Hyderabad 12 650
+Tiers Population (in Mn) % Urban
+Tier 1 (Top 10) 120 20%
+Tier 2 (Next 50) 85 15%
+Tier 3 (Next 100) 70 12%
+Total Population 1400 
+Gender (in Million) %Total
+Males 728 52%
+Females 672 48%
+Sex Ratio (M/F) 1.07

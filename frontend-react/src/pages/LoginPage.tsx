@@ -46,7 +46,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
-      <div style={{ width: 380, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "32px 30px" }}>
+      <div style={{ width: 380, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "32px 30px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9, justifyContent: "center" }}>
           <span style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-900)" }}>Placewise</span>
         </div>
@@ -62,7 +62,7 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 10,
-            border: "1px solid #e0e1e6",
+            border: "1px solid var(--card-border)",
             borderRadius: "var(--r-sm)",
             padding: "10px 14px",
             background: "var(--surface)",
@@ -93,7 +93,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            style={{ border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "10px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
+            style={{ border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "10px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
           />
           <input
             type="password"
@@ -102,7 +102,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            style={{ border: "1px solid #e0e1e6", borderRadius: "var(--r-sm)", padding: "10px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
+            style={{ border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "10px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }}
           />
           {error && <div style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{error}</div>}
           {signupMessage && <div style={{ fontSize: "0.78125rem", color: "var(--green)" }}>{signupMessage}</div>}

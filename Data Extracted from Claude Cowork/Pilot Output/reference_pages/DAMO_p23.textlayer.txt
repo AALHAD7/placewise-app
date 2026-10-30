@@ -1,0 +1,16 @@
+Aswath Damodaran 23
+Valuation of Coca Cola
+ The FCFE for the first 5 years are computed, using the expected 
+growth rate of 7.5% in net income and a 25% reinvestment rate.
+ Terminal value of equity = 
+1 2 3 4 5 Sum
+Expected Growth Rate 7.50% 7.50% 7.50% 7.50% 7.50%
+Net Income $12,581 $13,525 $14,539 $15,630 $16,802 
+Equity Reinvestment Rate 25.00% 25.00% 25.00% 25.00% 25.00%
+FCFE $9,436 $10,144 $10,905 $11,722 $12,602 
+Terminal Value of equity $230,750
+Cost of Equity 8.45% 8.45% 8.45% 8.45% 8.45%
+Cumulative Cost of Equity 1.0845 1.1761 1.2755 1.3833 1.5002
+Present Value $8,701 $8,625 $8,549 $8,474 $162,213 $196,562
+$16,802 (1.03) (.80)
+(.09-.03) = $230, 750 million

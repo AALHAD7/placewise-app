@@ -1,0 +1,52 @@
+S. No Particulars Industry Difficulty 
+Level
+Page 
+No.
+4.5 Declining Revenues 47
+4.6 Case 1: Dough Dilemma FMCG Easy 48
+4.7 Case 2: Gallery Gains Gap Tourism Easy 52
+4.8 Case 3: Table Turn Tangle Hospitality Easy 56
+4.9 Case 4: Power Plant Puzzle Power Easy 60
+4.10 Case 5: Mill-to-Margin Manufacturing Easy 64
+4.11 Case 6: Herbal Headwinds FMCG Easy 68
+4.12 Case 7: Metro Profit Jam Transportation Medium 72
+4.13 Case 8: The Uncovered Risk Insurance Medium 76
+4.14 Case 9: Hospital Margin Maze Pharmaceutical Medium 80
+4.15 Case 10: Perks-to-Profits Hospitality Medium 84
+4.16 Case 11: Scent & Cents FMCG Medium 88
+4.17 Case 12: Twin Florists Case Retail Medium 92
+4.18 Case 13: Gearshift in the P&L Automobile Medium 96
+4.19 Case 14: UPI Paradox Financial Services Medium 100
+4.20 Case 15: Quick Fix E-commerce Medium 104
+4.21 Case 16: Fading Fragrance FMCG Medium 108
+4.22 Case 17: Bitter Dose Pharmaceutical Medium 112
+4.23 Case 18: Threads of Trouble Retail Medium 116
+4.24 Case 19: Cart to Crisis FMCG Medium 120
+4.25 Case 20: Check-in, Check-out Hospitality Difficult 124
+4.26 Case 21: Ploughing for Profits Insurance Difficult 129
+4.27 Case 22: Stream & Strain Entertainment Difficult 134
+4.28 Case 23: Wheels of Woes Automobile Difficult 138
+4.29 Case 24: Turbulent Margins Aviation Difficult 142
+4.30 Case 25: Profits in the Shade Power Difficult 146
+4.31 Case 26: Factory Fallout Industrial Goods Difficult 150
+5. Market Entry 155
+5.1 Framework 156
+5.2 Case 27: CabCraft: Onboard & 
+On-Road
+Transportation Easy 159
+5.3 Case 28: Loom to Zoom Retail Easy 164
+5.4 Case 29: Branchless Bharat Banking Easy 168
+5.5 Case 30: Scoop in the stadium Retail Medium 172
+5.6 Case 31: Project Clear Vision Retail Medium 175
+5.7 Case 32: Volt-to-Market Power Medium 180
+5.8 Case 33: Hydrogen Export 
+Equation
+Power Medium 184
+5.9 Case 34: Seeding the Market Agriculture Medium 188
+5.10 Case 35: Cabs at the Gate Transportation Medium 192
+5.11 Case 36: Borderless SaaS IT & ITES Medium 197
+5.12 Case 37: Stream India Entertainment Medium 201
+5.13 Case 38: Edible Oil Route Manufacturing Difficult 206
+5.14 Case 39: ChemRoute to India Chemical Difficult 210
+7
+CONTENTS

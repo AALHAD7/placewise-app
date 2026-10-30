@@ -12,6 +12,8 @@
     "ingest": "node scripts/ingest.js",
     "ingest-images": "node scripts/ingestImages.js",
     "ingest-images-progress": "node scripts/checkImageIngestProgress.js",
+    "check-role-keying": "node scripts/checkRoleKeying.js",
+    "prewarm-roles": "node scripts/prewarmRoles.js",
     "test": "node --test test/*.test.js"
   },
   "dependencies": {

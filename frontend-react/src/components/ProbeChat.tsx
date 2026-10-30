@@ -31,7 +31,7 @@ export default function ProbeChat({ probe: p, showHow, showQuote = true }: Probe
       </div>
 
       {p.open && (
-        <div style={{ margin: "10px 0 0 14px", border: "1px solid #e0e1e6", borderRadius: "var(--r-md)", background: "var(--surface)", boxShadow: "0 10px 26px -14px rgba(16,24,40,.3)", padding: "13px 14px" }}>
+        <div style={{ margin: "10px 0 0 14px", border: "1px solid var(--card-border)", borderRadius: "var(--r-md)", background: "var(--surface)", padding: "13px 14px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
             <span style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--text-gray2)" }}>{p.title}</span>
             <button type="button" onClick={p.close} aria-label="Close" className="unbutton probe-close" style={{ cursor: "pointer", color: "var(--text-lightgray)", fontSize: "0.9375rem", lineHeight: 1, padding: "2px 4px" }}>
@@ -53,6 +53,11 @@ export default function ProbeChat({ probe: p, showHow, showQuote = true }: Probe
             <div role="status" aria-live="polite" style={{ marginTop: 10 }}>
               <div style={{ fontSize: "0.8125rem", color: "var(--text-lightgray)" }}>Thinking…</div>
               <IndeterminateProgressBar />
+            </div>
+          )}
+          {p.contentCheckNotice && !p.loading && (
+            <div role="alert" style={{ marginTop: 10, padding: "8px 10px", borderRadius: "var(--r-sm)", background: "#fdf3e3", color: "var(--amber-ink)", fontSize: "0.78125rem", lineHeight: 1.5 }}>
+              {p.contentCheckNotice}
             </div>
           )}
           {p.hasError && (

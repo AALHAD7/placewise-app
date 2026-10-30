@@ -14,13 +14,16 @@ import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, Framework
 // search) are added on top of the same GET /api/frameworks this page always
 // used.
 
+// Apple's palette reserves one saturated blue for accents rather than a
+// rainbow per item (DESIGN.md Do's/Don'ts) - every card gets the same
+// Studio Mist tile and Apple Blue glyph, matching global.css's .icon-*.
 const GRID_COLORS = [
-  { bg: "#DEEBFF", text: "#2563EB" },
-  { bg: "#EFE9FE", text: "#7C3AED" },
-  { bg: "#DBF8E7", text: "#059669" },
-  { bg: "#FDF0D2", text: "#D97706" },
-  { bg: "#FCE3EE", text: "#DB2777" },
-  { bg: "#D3F5F8", text: "#0891B2" }
+  { bg: "#f5f5f7", text: "#0066cc" },
+  { bg: "#f5f5f7", text: "#0066cc" },
+  { bg: "#f5f5f7", text: "#0066cc" },
+  { bg: "#f5f5f7", text: "#0066cc" },
+  { bg: "#f5f5f7", text: "#0066cc" },
+  { bg: "#f5f5f7", text: "#0066cc" }
 ];
 
 // A domain label as it should read in the UI - frameworks.domain (and
@@ -348,7 +351,7 @@ export default function FrameworksPage() {
               const pitfalls = Array.isArray(f.pitfalls) ? f.pitfalls : [];
 
               return (
-                <div key={f.id} style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
+                <div key={f.id} style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: "0.96875rem", fontWeight: 600, color: "var(--text-900)" }}>{f.name}</div>
@@ -363,7 +366,7 @@ export default function FrameworksPage() {
                     </span>
                   </div>
                   {isOpen && (
-                    <div className="t-panel-in" style={{ marginTop: 16, borderTop: "1px solid #f1f2f5", paddingTop: 14 }}>
+                    <div className="t-panel-in" style={{ marginTop: 16, borderTop: "1px solid var(--divider)", paddingTop: 14 }}>
                       {f.diagram_type === "grid" && f.diagram_data && "cols" in f.diagram_data && <GridDiagram data={f.diagram_data} />}
                       {f.diagram_type === "funnel" && f.diagram_data && "stages" in f.diagram_data && <FunnelDiagram data={f.diagram_data} />}
 
@@ -372,7 +375,7 @@ export default function FrameworksPage() {
                           <img
                             src={f.grounded_image!.url}
                             alt={f.grounded_image!.caption}
-                            style={{ maxWidth: "100%", borderRadius: "var(--r-sm)", border: "1px solid #eceef2", display: "block" }}
+                            style={{ maxWidth: "100%", borderRadius: "var(--r-sm)", border: "1px solid var(--card-border)", display: "block" }}
                           />
                           <div style={{ marginTop: 6, fontSize: "0.71875rem", color: "var(--text-lightgray)" }}>
                             From the ingested casebooks ({f.grounded_image!.sourceFile}): {f.grounded_image!.caption}
@@ -413,7 +416,7 @@ export default function FrameworksPage() {
                         </div>
                       )}
                       {hasExample && (
-                        <div style={{ marginTop: 12, background: "var(--surface-alt)", border: "1px solid #eceef2", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                        <div style={{ marginTop: 12, background: "var(--surface-alt)", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
                           <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>Example</div>
                           <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)", textWrap: "pretty" as const }}>{f.example}</p>
                         </div>

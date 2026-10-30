@@ -4,9 +4,39 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#F5F8FF" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <!-- Plus Jakarta Sans 700 (H1/headings/buttons) and Caveat 600 (the
+         illustration panel's one handwritten note) are the Home rebuild's
+         heaviest-used weights - preloaded as the actual resolved woff2 files
+         (verified live against Google Fonts' CSS2 endpoint, not guessed) so
+         the browser doesn't wait to discover them via the stylesheet below. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/plusjakartasans/v12/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_Tkn9TR_VMq2oRsWk.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/caveat/v23/WnznHAc5bAfYB2QRah7pcpNvOx-pjSx6eIWpYT5Kmgq3sw.woff2" />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Caveat:wght@600&display=swap" rel="stylesheet" />
+    <script>
+      // Applied before first paint (not in a React effect) so there is no
+      // flash of the wrong theme. Mirrors useTheme.ts's own read/resolve
+      // logic exactly - keep the two in sync if either changes. Every step
+      // is try/catch'd: localStorage can throw (private browsing, blocked
+      // storage) and matchMedia can be absent on an old browser, neither of
+      // which should ever break page load.
+      (function () {
+        try {
+          var stored = null;
+          try { stored = localStorage.getItem("placewise-theme"); } catch (e) {}
+          var mode = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+          var resolved = mode;
+          if (mode === "system") {
+            try { resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
+            catch (e) { resolved = "light"; }
+          }
+          document.documentElement.setAttribute("data-theme", resolved);
+          document.documentElement.style.colorScheme = resolved;
+        } catch (e) {}
+      })();
+    </script>
     <script type="module">
       // Registers <morph-icon>, a zero-dependency custom element (morphicons.com)
       // that spring-morphs an SVG path from one icon shape into another - used

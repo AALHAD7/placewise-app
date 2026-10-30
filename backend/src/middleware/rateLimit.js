@@ -21,9 +21,19 @@ function userOrIpKey(req) {
 // Applied only to routes that call Gemini (generation, embeddings, or
 // transcription) — those are the ones with a real per-request cost. Plain
 // reads (frameworks list, companies, news) aren't limited here.
+//
+// Was 30 — too low for how the Company page actually behaves now: a single
+// pickCompany() prefetches 7 separate aiLimiter routes at once (overview,
+// roles, timeline, value-chain, rating, leadership, subsidiaries), so 30
+// only covered about 4 company picks before a real user (not just dev
+// testing) would hit this mid-session - confirmed live, reported as an
+// error rather than read as "you're going too fast". Raised to 120 (~17
+// company picks per window) - still a real ceiling against runaway cost/
+// abuse per user, just sized to this page's actual request shape instead
+// of a number picked before it existed.
 export const aiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 30,
+  limit: 120,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: userOrIpKey,
@@ -65,6 +75,31 @@ export const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many login attempts. Please wait a few minutes and try again." }
+});
+
+// Admin endpoints (Phase 1.6) - low real traffic (one person, occasionally),
+// tight budget is just abuse protection on a route that already 404s for
+// anyone not in ADMIN_EMAILS.
+export const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userOrIpKey,
+  message: { error: "Too many admin requests. Please wait a few minutes and try again." }
+});
+
+// R5 admin review queue (/api/admin/review/*). Same gate as adminLimiter, but sized for
+// paging through ~170 flagged pages (detail + image + action per page). The global
+// generalLimiter (300 / 15 min per IP) still applies first, so this is the real ceiling
+// only together with it.
+export const adminReviewLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userOrIpKey,
+  message: { error: "Too many review requests. Please wait a few minutes and try again." }
 });
 
 // Dev-only test-login bypass (blocked outright in production - see dev.js).

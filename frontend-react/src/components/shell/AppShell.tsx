@@ -3,9 +3,12 @@ import { DashboardProvider } from "../../hooks/useDashboard";
 import TopNav from "./TopNav";
 import SmoothScroll from "./SmoothScroll";
 
-// Ported from frontend/index.html lines 222-224, 294 - the app is
-// deliberately desktop-only (1180px floor, see global.css's media query),
-// not a migration side effect to "fix".
+// Ported from frontend/index.html lines 222-224, 294. The former 1180px
+// desktop-only floor (see git history) was a deliberate decision at the
+// time - reversed per an explicit later spec requiring real responsiveness
+// down to 375px and correct behavior at 50-200% browser zoom (P0 of the
+// Home redesign). .app-container (global.css) caps and centers content at
+// every width instead.
 //
 // The .app-shell class is the surface a modal pushes back (see the
 // [data-modal] rule in global.css): a modal task dims and recedes the layer
@@ -17,10 +20,12 @@ export default function AppShell() {
     <DashboardProvider>
       <SmoothScroll />
       <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-        <div className="app-shell" data-modal="false" style={{ minWidth: 1180 }}>
+        <div className="app-shell" data-modal="false">
           <TopNav />
-          <main style={{ position: "relative", padding: "26px 44px 72px" }}>
-            <Outlet />
+          <main style={{ position: "relative" }}>
+            <div className="app-container" style={{ paddingTop: "1.625rem", paddingBottom: "4.5rem" }}>
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>

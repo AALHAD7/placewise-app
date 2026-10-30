@@ -9,74 +9,134 @@
    NavLink's active state). */
 
 /* --- Design system tokens ---------------------------------------------
-   Every value below is a deliberate step on a scale. Colors live here (and
-   are referenced as var() from inline styles in the .tsx files) rather than
-   being re-typed as literal hex at each call site, so a palette change is
-   one edit and a light/dark pass stays possible. */
+   Re-mapped onto Apple's product-page language (see DESIGN.md): a white/
+   mist monochrome canvas, ink typography, one precise blue for links and
+   compact filled controls, 28px card radii, and no gradients or card
+   shadows. Every value below is a deliberate step on a scale. Colors live
+   here (and are referenced as var() from inline styles in the .tsx files)
+   rather than being re-typed as literal hex at each call site, so a
+   palette change is one edit and a light/dark pass stays possible. */
 :root{
-  /* Brand */
-  --indigo:#4F46E5;
-  --indigo-700:#4338CA;
-  --indigo-dark:#3730A3;
-  --indigo-wash:#EEF0FE;
-  --grad-a:#5B52F5;
-  --grad-b:#9B5CF0;
+  /* Brand - Apple Blue (links/text controls), Pricing Blue (filled controls) */
+  --indigo:#0066cc;
+  --indigo-700:#0071e3;
+  --indigo-dark:#004c99;
+  --indigo-wash:#f5f5f7;
+  --grad-a:#0066cc;
+  --grad-b:#0071e3;
 
   /* Ink - darkest to lightest */
-  --text-darkest:#13121A;
-  --text-ink:#16151F;
-  --text-900:#111827;
-  --text-800:#1f2937;
-  --text-700:#374151;
-  --text-600:#4b5563;
-  --text-dark2:#13121A;
-  --text-gray2:#6B7280;
-  --text-lightgray:#9CA3AF;
+  --text-darkest:#1d1d1f;
+  --text-ink:#1d1d1f;
+  --text-900:#1d1d1f;
+  --text-800:#1d1d1f;
+  --text-700:#424245;
+  --text-600:#6e6e73;
+  --text-dark2:#1d1d1f;
+  --text-gray2:#6e6e73;
+  --text-lightgray:#86868b;
 
   /* Surfaces & lines */
-  --bg:#f9fafb;
+  --bg:#f5f5f7;
   --surface:#ffffff;
-  --surface-sunken:#f3f4f6;
-  --card-border:#ECECF2;
-  --border-soft:#e5e7eb;
-  --border-input:#e9eaee;
-  --border-focus:#BBD3F7;
+  --surface-sunken:#f5f5f7;
+  --card-border:#d2d2d7;
+  --border-soft:#d6d6d6;
+  --border-input:#d6d6d6;
+  --border-focus:#0066cc;
 
   /* Status */
-  --green:#059669;
-  --green-bright:#22C55E;
-  --red:#dc2626;
-  --red-dark:#b91c1c;
-  --amber:#F97316;
+  --green:#1d7a3d;
+  --green-bright:#1d7a3d;
+  --red:#c0342a;
+  --red-dark:#a42920;
+  --amber:#b64400;
 
   /* Recurring surfaces & washes lifted out of the page files - each of
      these appeared 3+ times as a literal before tokenising. */
-  --field-bg:#fcfcfd;
-  --field-bg-alt:#fbfbfd;
-  --surface-alt:#f8f8fb;
-  --track:#eceef2;
-  --border-strong:#e0e1e6;
-  --divider:#f1f2f5;
-  --text-muted:#a9acb6;
+  --field-bg:#fafafc;
+  --field-bg-alt:#fafafc;
+  --surface-alt:#f5f5f7;
+  --track:#e6e6e8;
+  --border-strong:#d6d6d6;
+  --divider:#e6e6e8;
+  --text-muted:#86868b;
   --text-disabled:#c2c4cc;
-  --green-dark:#047857;
+  --green-dark:#166534;
   --green-ink:#14532d;
-  --green-wash:#f4fcf8;
-  --blue-wash:#f3f7fe;
-  --red-wash:#fffaf9;
+  --green-wash:#f5f5f7;
+  --blue-wash:#f5f5f7;
+  --red-wash:#fafafa;
   --red-ink:#7f1d1d;
-  --amber-ink:#b45309;
+  --amber-ink:#b64400;
 
-  /* Radius scale - five steps, nothing in between */
-  --r-xs:4px;
-  --r-sm:8px;
-  --r-md:12px;
-  --r-lg:18px;
-  --r-pill:999px;
+  /* Radius scale - Apple's named radii: cards 28px, pills/buttons 9999px,
+     inputs 980px. Nothing in between. */
+  --r-xs:6px;
+  --r-sm:10px;
+  --r-md:16px;
+  --r-lg:28px;
+  --r-pill:9999px;
 
   /* Motion */
   --t-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --t-press: 110ms;
+}
+
+/* Dark mode: applied via data-theme on <html> (useTheme.ts sets it; the
+   inline script in index.html sets it before first paint to avoid a flash).
+   Reuses the SAME token names as the light :root above rather than a
+   parallel set, so every existing var(--x) call site - this file and every
+   .tsx inline style - darkens automatically with no per-page rework. The
+   Home page's own --home-* tokens (home.css) get their own dark block using
+   the Home rebuild spec's exact hex values; these are the sitewide pass. */
+:root[data-theme="dark"]{
+  --indigo:#5B8CFF;
+  --indigo-700:#6F98FF;
+  --indigo-dark:#3D6FE0;
+  --indigo-wash:#17254A;
+  --grad-a:#5B8CFF;
+  --grad-b:#6F98FF;
+
+  --text-darkest:#EAF0FF;
+  --text-ink:#EAF0FF;
+  --text-900:#EAF0FF;
+  --text-800:#DCE4F7;
+  --text-700:#A9B4D0;
+  --text-600:#8591B0;
+  --text-dark2:#EAF0FF;
+  --text-gray2:#A9B4D0;
+  --text-lightgray:#8591B0;
+
+  --bg:#0B1220;
+  --surface:#121A2B;
+  --surface-sunken:#172135;
+  --card-border:#22304A;
+  --border-soft:#22304A;
+  --border-input:#22304A;
+  --border-focus:#5B8CFF;
+
+  --green:#34C759;
+  --green-bright:#34C759;
+  --red:#FF6B6B;
+  --red-dark:#E04F4F;
+  --amber:#F5A623;
+
+  --field-bg:#172135;
+  --field-bg-alt:#172135;
+  --surface-alt:#172135;
+  --track:#22304A;
+  --border-strong:#22304A;
+  --divider:#22304A;
+  --text-muted:#8591B0;
+  --text-disabled:#4A5578;
+  --green-dark:#2BAF4D;
+  --green-ink:#34C759;
+  --green-wash:#132A1C;
+  --blue-wash:#17254A;
+  --red-wash:#2A1515;
+  --red-ink:#FF6B6B;
+  --amber-ink:#F5A623;
 }
 
 /* Type ramp. Sizes are rem so the layout scales with the reader's own text
@@ -94,7 +154,10 @@
   --fs-display:2.875rem;  /* 46px  */
 }
 
-body{margin:0;background:var(--bg);font:100%/1.5 "Instrument Sans",-apple-system,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;color:var(--text-900)}
+/* Explicit, not just relying on the browser default matching it - every rem
+   value sitewide (this file and home.css) is sized against this. */
+html{font-size:16px;}
+body{margin:0;background:var(--bg);font:100%/1.5 -apple-system,"SF Pro Text",Inter,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;color:var(--text-900)}
 a{color:var(--indigo)}a:hover{color:var(--indigo-700)}
 textarea{font-family:inherit}
 *{box-sizing:border-box}
@@ -129,22 +192,14 @@ button{font:inherit;color:inherit}
 .probe-trigger:active, .probe-trigger-why:active, .probe-trigger-how:active,
 .bell-btn:active, .probe-close:active, .view-stats:active { transform: scale(.94); }
 
-.nav-item:hover:not(.active){ background:#F4F5F9; }
-/* Hover lift - "pop off the stack": a small rise + scale + shadow reads as
-   the item coming toward the user, not just a color swap underneath it.
-   Kept subtle (Apple's own nav/card hovers use small values, not dramatic
-   ones - a 6% scale already reads clearly at this size) and z-index'd above
-   its siblings so the shadow isn't clipped by the next item's flat edge.
-   Reuses .nav-item's existing transform/box-shadow transition (--t-press,
-   --t-ease) rather than adding new timing - the base already fires fast. */
-.nav-item:hover{ transform:translateY(-2px) scale(1.06); box-shadow:0 10px 22px -8px rgba(16,24,40,.18); position:relative; z-index:1; }
-.nav-item.active:hover{ box-shadow:0 10px 22px -8px rgba(79,70,229,.35); }
-/* Pressing a lifted item should feel like pushing it back down, not just
-   the generic press state riding on top of the lift unopposed. */
-.nav-item:hover:active{ transform:translateY(-1px) scale(.98); }
+.nav-item:hover:not(.active){ background:var(--surface-sunken); }
+/* Apple's surfaces gain separation through flat color and a 1px hairline
+   rather than shadows or lift - no translateY/box-shadow on hover. */
+.nav-item:hover{ position:relative; z-index:1; }
+.nav-item.active:hover{ background:rgba(255,255,255,.92); }
 .selector-option:hover{ background:var(--surface-sunken); }
-.probe-trigger:hover, .probe-trigger-why:hover, .probe-trigger-how:hover{ background:var(--bg); border-color:#d6d9e0; }
-.btn-primary:hover{ box-shadow:0 12px 26px -8px rgba(99,80,240,0.62); }
+.probe-trigger:hover, .probe-trigger-why:hover, .probe-trigger-how:hover{ background:var(--bg); border-color:var(--card-border); }
+.btn-primary:hover{ background:#004c99; }
 .btn-secondary:hover{ background:var(--bg); }
 .user-block:hover{ background:var(--surface-sunken); border-radius:var(--r-md); }
 
@@ -213,9 +268,11 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 }
 @media (prefers-reduced-transparency: reduce) {
   .topnav{ background:var(--surface); backdrop-filter:none; }
+  .glass-capsule, .glass-panel{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:0 0 0 1px var(--card-border); }
 }
 @media (prefers-contrast: more) {
   .topnav{ background:var(--surface); backdrop-filter:none; border-bottom-color:var(--text-800); }
+  .glass-capsule, .glass-panel{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:0 0 0 1px var(--text-800); }
   .feature-card, .rp-card{ border-color:#b8b9c4; }
   .nav-item{ color:var(--text-900); }
 }
@@ -223,9 +280,9 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 .brand-left{ display:flex; align-items:center; gap:8px; }
 .brand-bars{ display:flex; align-items:flex-end; gap:2px; height:20px; }
 .brand-bars span{ width:4px; border-radius:2px; display:block; }
-.brand-bars span:nth-child(1){ height:8px; background:#93C5FD; }
-.brand-bars span:nth-child(2){ height:14px; background:#6D5EF3; }
-.brand-bars span:nth-child(3){ height:20px; background:#A855F7; }
+.brand-bars span:nth-child(1){ height:8px; background:#86868b; }
+.brand-bars span:nth-child(2){ height:14px; background:#424245; }
+.brand-bars span:nth-child(3){ height:20px; background:#0066cc; }
 .brand-name{ font-weight:800; font-size:1.1875rem; letter-spacing:-.018em; color:var(--text-900); }
 
 /* --- Materials & depth -------------------------------------------------
@@ -234,142 +291,208 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
    plus a short scroll-edge fade where content meets the floating chrome. */
 .topnav{
   position:sticky; top:0; z-index:20;
-  background:rgba(255,255,255,.72);
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
-  border-bottom:1px solid rgba(236,236,242,.6);
-  display:flex; align-items:center; gap:26px; padding:14px 28px;
+  background:rgba(255,255,255,.7);
+  backdrop-filter:blur(26px) saturate(190%);
+  -webkit-backdrop-filter:blur(26px) saturate(190%);
+  border-bottom:1px solid rgba(210,210,215,.55);
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,.4);
 }
-.topnav::after{
-  content:""; position:absolute; left:0; right:0; top:100%; height:14px;
-  background:linear-gradient(to bottom, rgba(249,250,251,.85), rgba(249,250,251,0));
-  pointer-events:none;
+.topnav::after{ display:none; }
+:root[data-theme="dark"] .topnav{
+  background:rgba(18,26,43,.82);
+  border-bottom:1px solid rgba(34,48,74,.8);
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,.03);
 }
-.topnav-links{ display:flex; align-items:center; gap:2px; overflow-x:auto; flex:1; min-width:0; }
-.topnav-divider{ flex:none; width:1px; height:22px; background:var(--card-border); margin:0 8px; }
 
-.nav-item{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--r-sm); font-size:var(--fs-body); font-weight:500; color:#44454E; cursor:pointer; text-decoration:none; white-space:nowrap; }
-.nav-item svg{ width:18px; height:18px; flex-shrink:0; color:#8A8B94; }
-.nav-item.active{ background:var(--indigo-wash); color:var(--indigo); font-weight:600; }
+/* P0 responsive fix: the bar itself stays full-bleed (so the glass
+   background spans edge to edge), but its actual content - and every
+   page's content below it - is capped and centered here, so nothing is
+   ever pinned left with dead space on the right at any width or zoom
+   level. Used by TopNav's own content row and by AppShell's <main>. */
+.app-container{
+  max-width:1240px;
+  margin-inline:auto;
+  padding-inline:clamp(1rem, 4vw, 2.5rem);
+  width:100%;
+  box-sizing:border-box;
+}
+/* Deliberately NOT .app-container: that caps content at 1240px, which is
+   right for page body copy but was also capping the nav bar, forcing it to
+   wrap even on wide screens that had plenty of room for all 9 items on one
+   line. The nav gets its own full-width row (own padding, no max-width) so
+   it only wraps when the window is genuinely too narrow, not because of an
+   unrelated content-width limit borrowed from below the fold. */
+.topnav-row{
+  display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem 0.75rem;
+  padding-block:0.625rem; padding-inline:clamp(0.75rem, 2.5vw, 1.25rem);
+  width:100%; box-sizing:border-box;
+}
+
+/* Guest-session tooltip on the user block ("Sign in to save your
+   progress") - plain CSS, shown on hover/focus so it's reachable by
+   keyboard too, no JS state needed. */
+.has-tooltip{ position:relative; }
+.has-tooltip[data-tip]:hover::after, .has-tooltip[data-tip]:focus-within::after{
+  content:attr(data-tip);
+  position:absolute; top:calc(100% + 6px); right:0; z-index:40;
+  background:var(--text-900); color:var(--surface);
+  font-size:0.75rem; font-weight:500; white-space:nowrap;
+  padding:0.375rem 0.625rem; border-radius:0.375rem;
+}
+
+/* --- Liquid Glass --------------------------------------------------------
+   Apple's translucent, refractive material (Liquid Glass, WWDC 2025)
+   applied to chrome that visually floats above scrolling content - the nav
+   capsule, dropdown menus, and modal panels. Resting content cards
+   elsewhere keep the existing flat monochrome surfaces (DESIGN.md) - this
+   is a material distinction (floating vs. resting), not a wholesale
+   reskin, so a card never gets glass just because it's nearby. Two
+   strengths: .glass-capsule (lighter blur, for chrome sitting on top of
+   the already-translucent .topnav) and .glass-panel (heavier blur+opacity,
+   for menus/modals that sit directly over page content and need to stay
+   legible without a second glass layer underneath them). */
+.glass-capsule{
+  background: linear-gradient(180deg, rgba(255,255,255,.8), rgba(255,255,255,.58));
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 0 0 1px rgba(255,255,255,.55),
+    0 4px 16px rgba(0,0,0,.07);
+}
+.glass-panel{
+  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.8));
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 0 0 1px rgba(255,255,255,.55),
+    0 20px 60px rgba(0,0,0,.14);
+}
+:root[data-theme="dark"] .glass-capsule{
+  background: linear-gradient(180deg, rgba(23,33,53,.9), rgba(18,26,43,.75));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    inset 0 0 0 1px rgba(255,255,255,.05),
+    0 4px 16px rgba(0,0,0,.3);
+}
+:root[data-theme="dark"] .glass-panel{
+  background: linear-gradient(180deg, rgba(23,33,53,.97), rgba(18,26,43,.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    inset 0 0 0 1px rgba(255,255,255,.05),
+    0 20px 60px rgba(0,0,0,.45);
+}
+
+/* All items stay visible at every width - no hamburger/overflow menu. The
+   bar's intrinsic content (9 items + dividers) is ~1123px wide, which
+   doesn't fit a single row below very wide viewports, so instead of hiding
+   anything it wraps: flex-wrap turns this into a multi-line pill cluster
+   rather than a single-row capsule. border-radius is a modest fixed value
+   (not --r-pill) for the same reason the old nav-sheet moved off a literal
+   stadium shape - a true pill radius looks wrong once the block is tall. */
+.topnav-links{
+  display:flex; align-items:center; flex-wrap:wrap; gap:1px; flex:1 1 auto; min-width:0;
+  padding:4px; border-radius:20px;
+}
+.topnav-divider{ display:none; }
+
+.nav-item{ display:flex; align-items:center; gap:5px; padding:6px 8px; border-radius:var(--r-pill); font-size:var(--fs-small); font-weight:500; color:var(--text-700); cursor:pointer; text-decoration:none; white-space:nowrap; }
+.nav-item svg{ width:15px; height:15px; flex-shrink:0; color:var(--text-lightgray); }
+.nav-item.active{ background:rgba(255,255,255,.92); color:var(--indigo); font-weight:600; box-shadow: 0 1px 4px rgba(0,0,0,.09), inset 0 0 0 1px rgba(255,255,255,.7); }
+:root[data-theme="dark"] .nav-item.active{ background:rgba(91,140,255,.16); box-shadow: 0 1px 4px rgba(0,0,0,.3), inset 0 0 0 1px rgba(91,140,255,.3); }
 .nav-item.active svg{ color:var(--indigo); }
 
-.pill{ display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-pill); padding:7px 14px; font-size:var(--fs-micro); font-weight:700; letter-spacing:0.05em; color:#3F3F49; }
+.pill{ display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-pill); padding:7px 14px; font-size:var(--fs-micro); font-weight:700; letter-spacing:0.05em; color:var(--text-700); }
 .pill .check-circle{ width:14px; height:14px; border-radius:50%; background:var(--green-bright); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .pill .check-circle svg{ width:9px; height:9px; color:var(--surface); }
 
-.topbar-right{ display:flex; align-items:center; gap:16px; }
-.streak-pill{ display:flex; align-items:center; gap:9px; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-pill); padding:8px 16px 8px 12px; font-size:var(--fs-small); font-weight:600; color:#26262E; }
-.streak-pill .flame{ width:15px; height:15px; color:var(--amber); }
-.streak-pill .divider{ width:1px; height:14px; background:var(--card-border); }
-.streak-pill .view-stats{ color:var(--indigo); font-weight:700; display:flex; align-items:center; gap:3px; cursor:pointer; }
-.streak-pill .view-stats svg{ width:12px; height:12px; }
+.topbar-right{ display:flex; align-items:center; gap:8px; flex:none; }
+/* Below 640px topbar-right's own content is still wider than the whole
+   available row even compacted, so it wraps to its own full-width line
+   under the brand/nav row rather than clipping. */
+@media (max-width:640px){
+  .topnav-row{ flex-wrap:wrap; }
+  .topbar-right{ flex:1 1 100%; justify-content:space-between; order:3; }
+}
+.streak-pill{ display:flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-pill); padding:5px 11px; font-size:var(--fs-small); font-weight:600; color:var(--text-ink); }
+.streak-pill .flame{ width:14px; height:14px; color:var(--amber); }
+/* "View stats" is a secondary action, not nav - dropped from the header bar
+   entirely (divider included) so the primary single-line-nav requirement
+   isn't competing with it for width; the stat is still one click away via
+   the streak panel on Home. */
+.streak-pill .divider, .streak-pill .view-stats{ display:none; }
 
-.bell-btn{ width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#8A8B94; position:relative; cursor:pointer; }
-.bell-btn svg{ width:19px; height:19px; }
+.bell-btn{ width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--text-lightgray); position:relative; cursor:pointer; }
+.bell-btn svg{ width:17px; height:17px; }
 .bell-btn:hover{ background:var(--surface-sunken); }
 
-.user-block{ display:flex; align-items:center; gap:10px; cursor:pointer; padding:3px 6px; }
-.avatar{ width:38px; height:38px; border-radius:50%; background:var(--indigo); color:var(--surface); display:flex; align-items:center; justify-content:center; font-size:var(--fs-small); font-weight:700; flex-shrink:0; }
-.user-meta{ line-height:1.25; }
+.user-block{ display:flex; align-items:center; gap:7px; cursor:pointer; padding:3px 4px; }
+.avatar{ width:30px; height:30px; border-radius:50%; background:var(--indigo); color:var(--surface); display:flex; align-items:center; justify-content:center; font-size:var(--fs-caption); font-weight:700; flex-shrink:0; }
+.user-meta{ line-height:1.2; }
 .user-name{ font-size:var(--fs-small); font-weight:700; color:var(--text-ink); }
-.user-sub{ font-size:var(--fs-caption); color:var(--text-gray2); }
+.user-sub{ font-size:var(--fs-micro); color:var(--text-gray2); white-space:nowrap; }
 .chev{ width:15px; height:15px; color:var(--text-lightgray); margin-left:2px; }
+
+/* Header search: icon button that expands into an anchored panel (see
+   TopNav.tsx for why this isn't a persistent text input - width budget on
+   an already-full single-line nav). */
+.bell-btn.active{ background:var(--surface-sunken); color:var(--indigo); }
+.search-panel{
+  position:absolute; top:calc(100% + 8px); right:0; z-index:30;
+  width:320px; max-width:calc(100vw - 2rem);
+  border-radius:var(--r-md); padding:10px;
+}
+.search-input{
+  width:100%; box-sizing:border-box; border:1px solid var(--border-input); background:var(--field-bg);
+  border-radius:var(--r-sm); padding:9px 12px; font-size:var(--fs-body); color:var(--text-ink);
+  outline:none;
+}
+.search-input:focus{ border-color:var(--border-focus); }
+.search-results{ margin-top:8px; max-height:50vh; overflow:auto; }
+.search-empty{ padding:10px 8px; font-size:var(--fs-small); color:var(--text-gray2); }
+.search-group + .search-group{ margin-top:6px; }
+.search-group-label{ padding:4px 8px; font-size:var(--fs-micro); font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--text-lightgray); }
+.search-result{
+  display:block; width:100%; text-align:left; padding:8px; border-radius:var(--r-sm);
+  font-size:var(--fs-body); color:var(--text-ink); cursor:pointer;
+}
+.search-result.active, .search-result:hover{ background:var(--surface-sunken); }
+
+/* Avatar menu's Theme row: three small pill toggles (Light/Dark/System). */
+.theme-pick{
+  flex:1; text-align:center; padding:6px 0; border-radius:var(--r-pill);
+  font-size:var(--fs-caption); font-weight:600; color:var(--text-700);
+  border:1px solid var(--card-border); cursor:pointer;
+}
+.theme-pick[data-active="true"]{ background:var(--indigo-wash); color:var(--indigo); border-color:transparent; font-weight:700; }
+.menu-row{
+  display:block; width:100%; text-align:left; padding:8px; border-radius:var(--r-sm);
+  font-size:var(--fs-body); font-weight:600; color:var(--text-ink); cursor:pointer;
+}
+.menu-row:hover{ background:var(--surface-sunken); }
 
 /* --- Typography --------------------------------------------------------
    Tracking tightens as type grows (large text reads too loose at its
    natural spacing) and leading tightens with it; body copy sits near 0. */
-.hero{ display:grid; grid-template-columns:1fr 480px; gap:20px; margin-bottom:52px; align-items:center; }
-.hero-headline{ font-size:var(--fs-display); font-weight:800; line-height:1.08; letter-spacing:-.022em; color:#111018; }
-.hero-headline .grad{ background:linear-gradient(92deg,var(--grad-a),var(--grad-b)); -webkit-background-clip:text; background-clip:text; color:transparent; }
-.hero-copy{ font-size:var(--fs-body-lg); color:var(--text-gray2); line-height:1.6; max-width:30em; margin:18px 0 26px; }
-.hero-actions{ display:flex; align-items:center; gap:12px; }
-.btn{ display:inline-flex; align-items:center; gap:9px; font-size:var(--fs-body); font-weight:700; padding:13px 22px; border-radius:var(--r-md); cursor:pointer; border:1px solid transparent; letter-spacing:-.006em; }
+.btn{ display:inline-flex; align-items:center; gap:9px; font-size:var(--fs-body); font-weight:600; padding:13px 22px; border-radius:var(--r-pill); cursor:pointer; border:1px solid transparent; letter-spacing:-.006em; }
 .btn svg{ width:17px; height:17px; }
-.btn-primary{ color:var(--surface); background:linear-gradient(120deg,#6D61F5,#8A5CF3); box-shadow:0 10px 22px -8px rgba(99,80,240,0.55); }
-.btn-secondary{ background:var(--surface); color:var(--text-ink); border:1px solid #E2E2E9; }
+.btn-primary{ color:var(--surface); background:var(--indigo-700); }
+.btn-secondary{ background:var(--surface); color:var(--text-ink); border:1px solid var(--card-border); }
 
-.illustration{ position:relative; height:340px; }
-.illustration .ring{ position:absolute; top:50%; left:50%; width:280px; height:280px; transform:translate(-50%,-50%); border:1px dashed #D7D6E8; border-radius:50%; }
-.float-card{ position:absolute; background:var(--surface); border-radius:var(--r-md); padding:12px 14px; box-shadow:0 14px 28px -14px rgba(30,20,80,0.18); border:1px solid #F0EFF6; width:112px; }
-.float-card .fc-label{ font-size:var(--fs-caption); color:#5B5B67; font-weight:600; margin-bottom:2px; }
-.fc-role{ top:6px; left:14px; transform:rotate(-7deg); background:#F1F5FE; }
-.fc-comm{ top:14px; right:0px; transform:rotate(6deg); background:#EEFBF3; }
-.fc-problem{ bottom:36px; left:0px; transform:rotate(5deg); background:#FEFAEC; }
-.float-card .fc-pct{ font-size:1.1875rem; font-weight:800; color:var(--text-ink); margin-bottom:6px; letter-spacing:-.012em; }
-
-.fc-center{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:74px; height:74px; background:var(--surface); border-radius:var(--r-lg); display:flex; align-items:center; justify-content:center; box-shadow:0 16px 30px -12px rgba(30,20,80,0.2); border:1px solid #F0EFF6; }
-.fc-center svg{ width:30px; height:30px; color:var(--indigo); }
-
-.fc-readiness{ position:absolute; bottom:0; right:14px; transform:rotate(-3deg); background:var(--surface); width:150px; display:flex; align-items:center; gap:12px; }
-.ring-outer{ width:56px; height:56px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-.ring-inner{ width:44px; height:44px; border-radius:50%; background:var(--surface); display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.ring-inner .pct{ font-size:var(--fs-caption); font-weight:800; color:var(--text-ink); line-height:1; }
-.ring-inner .lbl{ font-size:.46875rem; color:#8A8B94; margin-top:1px; letter-spacing:.04em; }
-.ring-outer-empty{ width:56px; height:56px; border-radius:50%; flex-shrink:0; border:2px dashed #D7D6E8; display:flex; align-items:center; justify-content:center; }
-
-.sparkle{ position:absolute; color:#C9C7E4; }
-.fc-dot{ position:absolute; width:5px; height:5px; border-radius:50%; background:#D7D6E8; }
-
-.section-title{ font-size:var(--fs-title); font-weight:800; margin-bottom:18px; color:var(--text-ink); letter-spacing:-.012em; }
+.section-title{ font-size:var(--fs-title); font-weight:600; margin-bottom:18px; color:var(--text-ink); letter-spacing:-.012em; }
 .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
 .grid-full{ margin-top:18px; }
 
-.feature-card{ width:100%; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-lg); padding:22px; cursor:pointer; }
-.feature-card:hover{ transform:translateY(-3px); box-shadow:0 16px 34px -18px rgba(15,26,51,.25); border-color:#C7D2FE; }
-.feature-card:active{ box-shadow:0 8px 18px -12px rgba(15,26,51,.28); }
+.feature-card{ width:100%; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-lg); padding:22px; cursor:pointer; box-shadow:none; }
+.feature-card:hover{ border-color:var(--text-lightgray); }
+.feature-card:active{ background:var(--surface-sunken); }
 .feature-card.wide{ display:flex; align-items:flex-start; gap:18px; }
 .feature-card.wide .fc-body{ flex:1; }
-.fc-icon{ width:46px; height:46px; border-radius:var(--r-md); display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
+.fc-icon{ width:46px; height:46px; border-radius:var(--r-md); display:flex; align-items:center; justify-content:center; margin-bottom:14px; background:var(--surface-sunken); }
 .feature-card.wide .fc-icon{ margin-bottom:0; }
 .fc-icon svg{ width:21px; height:21px; }
-.icon-purple{ background:#EFE9FE; } .icon-purple svg{ color:#7C3AED; }
-.icon-blue{ background:#DEEBFF; } .icon-blue svg{ color:#2563EB; }
-.icon-green{ background:#DBF8E7; } .icon-green svg{ color:var(--green); }
-.icon-amber{ background:#FDF0D2; } .icon-amber svg{ color:#D97706; }
-.icon-pink{ background:#FCE3EE; } .icon-pink svg{ color:#DB2777; }
-.icon-cyan{ background:#D3F5F8; } .icon-cyan svg{ color:#0891B2; }
+.icon-purple svg, .icon-blue svg, .icon-green svg, .icon-amber svg, .icon-pink svg, .icon-cyan svg{ color:var(--indigo); }
 
 .feature-title{ font-size:var(--fs-body-lg); font-weight:700; margin-bottom:8px; color:var(--text-ink); letter-spacing:-.006em; }
 .feature-desc{ font-size:var(--fs-small); color:var(--text-gray2); line-height:1.55; margin-bottom:14px; }
-.feature-open{ display:inline-flex; align-items:center; gap:5px; font-size:var(--fs-small); font-weight:700; color:var(--indigo); }
-.feature-open svg{ width:13px; height:13px; }
-
-.rightpanel{ flex:none; width:284px; position:sticky; top:96px; padding:0; display:flex; flex-direction:column; gap:18px; }
-.rp-card{ background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-lg); padding:20px; }
-.rp-title{ font-size:var(--fs-body); font-weight:700; margin-bottom:14px; color:var(--text-ink); letter-spacing:-.006em; }
-
-.streak-num{ display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
-.streak-num .flame-big{ width:22px; height:22px; color:var(--amber); }
-.streak-num span{ font-size:1.5rem; font-weight:800; color:var(--text-ink); letter-spacing:-.016em; }
-.streak-caption{ font-size:var(--fs-caption); color:var(--text-gray2); margin-bottom:16px; }
-.week-row{ display:flex; justify-content:space-between; }
-.week-day{ display:flex; flex-direction:column; align-items:center; gap:6px; }
-.day-circle{ width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.day-circle.done{ background:var(--indigo); }
-.day-circle.done svg{ width:13px; height:13px; color:var(--surface); }
-.day-circle.todo{ border:1px solid #E5E4EE; background:var(--surface); }
-.day-circle.missed{ background:#FDECEC; }
-.day-label{ font-size:var(--fs-micro); color:var(--text-lightgray); font-weight:600; }
-
-.plan-row, .activity-row{ display:flex; align-items:flex-start; gap:11px; padding:9px 0; }
-.plan-row{ cursor:pointer; border-radius:var(--r-sm); width:100%; }
-.plan-row:hover{ background:var(--bg); }
-.row-icon{ width:32px; height:32px; border-radius:var(--r-sm); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-.row-icon svg{ width:15px; height:15px; }
-.row-body{ flex:1; min-width:0; }
-.row-title{ font-size:var(--fs-small); font-weight:600; color:var(--text-ink); }
-.row-sub{ font-size:var(--fs-caption); color:var(--text-gray2); margin-top:1px; }
-.row-time{ font-size:var(--fs-caption); color:var(--text-lightgray); white-space:nowrap; margin-top:2px; }
-.plan-row .row-time{ align-self:center; }
-
-.quote-card{ background:linear-gradient(160deg,#EFEDFE,#E7E9FE); border:none; }
-.quote-mark{ font-size:1.875rem; font-weight:800; color:#C7C4EA; line-height:1; margin-bottom:6px; font-family:Georgia,serif; }
-.quote-line1{ font-size:var(--fs-body-lg); font-weight:700; color:var(--text-ink); letter-spacing:-.006em; }
-.quote-line2{ font-size:var(--fs-body-lg); font-weight:800; color:var(--indigo); margin-bottom:10px; letter-spacing:-.006em; }
-.quote-sub{ font-size:var(--fs-caption); color:#6B6C7E; }
-
-@media (max-width:1180px){
-  .rightpanel{ display:none; }
-  .hero{ grid-template-columns:1fr; }
-  .illustration{ display:none; }
-}

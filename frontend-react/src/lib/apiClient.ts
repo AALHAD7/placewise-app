@@ -4,7 +4,17 @@ import { supabase } from "./supabaseClient";
 
 export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
 
-export class ApiError extends Error {}
+// `status` and `body` are optional extras (HTTP status and the parsed JSON error body) so
+// callers can tell 409/429/503 apart; every existing `new ApiError(msg)` still works.
+export class ApiError extends Error {
+  status?: number;
+  body?: Record<string, unknown>;
+  constructor(message?: string, status?: number, body?: Record<string, unknown>) {
+    super(message);
+    this.status = status;
+    this.body = body;
+  }
+}
 
 // Raised when a request needs a session and the visitor isn't signed in
 // (not even as a guest) - the AppShell's auth guard means this should be
@@ -73,6 +83,40 @@ export async function callClaude(messages: { role: string; content: string }[]):
   return data.text as string;
 }
 
+// What?/Why?/How to apply chip panels (Phase 1 amendment D) - server-cached
+// by (role, topic, blockId, mode), replacing the old client-only
+// localStorage cache in useProbe.ts. `contentCheck` (Phase 1.5's 5-flag
+// check, replacing Phase 1's arithmetic-only one) always runs now - there's
+// no "only when it contains digits" gate anymore, since company_forced/
+// on_topic/irrelevant_citation can all fail in non-numeric text too.
+export interface ChipPanelResponse {
+  success: true;
+  text: string;
+  cached: boolean;
+  contentCheck: { checked: boolean; passed: boolean; issue: string };
+}
+
+export async function fetchChipPanel(role: string, topic: string, blockId: string, mode: "what" | "why" | "how", prompt: string): Promise<ChipPanelResponse> {
+  return apiFetch<ChipPanelResponse>(
+    "/api/roles/chip-panel",
+    { method: "POST", body: JSON.stringify({ role, topic, blockId, mode, prompt }) },
+    "Failed to generate panel."
+  );
+}
+
+// Phase 1.7 item 2: a skill concept's "learn more" link is fetched lazily
+// on first click, not eagerly for every concept when the skill page loads -
+// see skillContent.js's getConceptLink for the server-side cache-and-persist
+// behavior (every later click, by anyone, reuses the same stored link).
+export async function fetchConceptLink(role: string, skill: string, tier: "basic" | "intermediate" | "advanced", title: string): Promise<string> {
+  const data = await apiFetch<{ success: true; link: string }>(
+    `/api/skills/${encodeURIComponent(role)}/${encodeURIComponent(skill)}/concept-link?tier=${encodeURIComponent(tier)}&title=${encodeURIComponent(title)}`,
+    {},
+    "Failed to find a resource for this concept."
+  );
+  return data.link;
+}
+
 // Fire-and-forget activity logging (feeds Home's Today's Plan/Recent
 // Activity/streak) - errors are deliberately swallowed, same as the old
 // app's logActivity() (frontend/index.html:2996-3005): a failed log write
@@ -114,9 +158,25 @@ export async function apiFetch<T>(
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && !token) throw new AuthUnavailableError();
   if (!res.ok || data.success === false) {
-    throw new ApiError(data.error || fallbackError);
+    throw new ApiError(data.error || fallbackError, res.status, data);
   }
   return data as T;
+}
+
+// Binary GET (e.g. the admin review page image) with the same token logic as apiFetch.
+// <img src> can't send a Bearer token, so callers turn the Blob into an object URL
+// (URL.createObjectURL) and revoke it when done. Throws ApiError on non-2xx.
+export async function apiFetchBlob(path: string, fallbackError = "Request failed."): Promise<Blob> {
+  const token = await getOptionalAuthToken();
+  const res = await fetch(API_BASE + path, {
+    headers: token ? { Authorization: "Bearer " + token } : {}
+  });
+  if (res.status === 401 && !token) throw new AuthUnavailableError();
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new ApiError(data.error || fallbackError, res.status, data);
+  }
+  return res.blob();
 }
 
 // /api/resume/interrogate streams progress as SSE rather than returning one

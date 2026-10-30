@@ -1,5 +1,7 @@
 import { supabase } from "./supabase.js";
 import { generateJSON, generateGroundedText } from "./gemini.js";
+import { normalizeCacheKey } from "./cacheKey.js";
+import { singleFlight } from "./singleFlight.js";
 
 // Roles a company hires for don't change week to week - same long-TTL
 // reasoning as roleOverview.js/companyOverview.js.
@@ -27,10 +29,15 @@ async function researchCompanyRoles(companyName) {
  * @returns {Promise<{roles: string[], cached: boolean, fetchedAt: string}>}
  */
 export async function getCompanyRoles(companyName) {
+  const cacheKey = normalizeCacheKey(companyName);
+  return singleFlight(`companyRoles:${cacheKey}`, () => fetchCompanyRoles(companyName, cacheKey));
+}
+
+async function fetchCompanyRoles(companyName, cacheKey) {
   const { data: cached, error: cacheError } = await supabase
     .from("company_roles_cache")
     .select("*")
-    .eq("company_name", companyName)
+    .eq("company_name", cacheKey)
     .maybeSingle();
   if (cacheError) throw cacheError;
 
@@ -46,7 +53,7 @@ export async function getCompanyRoles(companyName) {
   const result = await generateJSON({ system: FORMAT_SYSTEM_PROMPT, prompt, maxTokens: 200 });
   const roles = Array.isArray(result.roles) ? result.roles : [];
 
-  const row = { company_name: companyName, roles, fetched_at: new Date().toISOString() };
+  const row = { company_name: cacheKey, roles, fetched_at: new Date().toISOString() };
   const { error: upsertError } = await supabase
     .from("company_roles_cache")
     .upsert(row, { onConflict: "company_name" });

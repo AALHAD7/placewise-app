@@ -1,50 +1,153 @@
-## gstack (REQUIRED — global install)
+# PlaceWise — Claude Code guide
 
-**Before doing ANY work, verify gstack is installed:**
+PlaceWise is a one-stop placement-prep site for MBA students. Instead of reading a
+350-page casebook to learn one framework, a student asks for exactly what they need and
+gets it — grounded in real college casebooks, with the diagram, the explanation, and the
+page it came from.
 
-```bash
-_GS=""
-for _D in "${GSTACK_ROOT:-}" "$HOME/.claude/skills/gstack" "$HOME/.codex/skills/gstack" "$HOME/.factory/skills/gstack" "$HOME/.kiro/skills/gstack" "$HOME/.config/opencode/skills/gstack" "$HOME/.slate/skills/gstack" "$HOME/.cursor/skills/gstack" "$HOME/.openclaw/skills/gstack" "$HOME/.hermes/skills/gstack" "$HOME/.gbrain/skills/gstack" "$HOME/.gstack/repos/gstack"; do
-  [ -z "$_GS" ] && [ -n "$_D" ] && [ -d "$_D/bin" ] && _GS="$_D"
-done
-[ -n "$_GS" ] && echo "GSTACK_OK: $_GS" || echo "GSTACK_MISSING"
-```
+Owner: Aalhad (MBA student, building this solo). Previous versions were vibe-coded; the
+rebuild is systematic. Enhance what exists — never wipe it.
 
-If GSTACK_MISSING: STOP. Do not proceed. Tell the user:
+---
 
-> gstack is required for all AI-assisted work in this repo.
-> Install it:
-> ```bash
-> git clone --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack
-> cd ~/.claude/skills/gstack && ./setup --team
-> ```
-> Then restart your AI coding tool.
+## Current focus
 
-Do not skip skills, ignore gstack errors, or work around missing gstack.
+**`.gsd/ROADMAP.md` is the source of truth** for what's being done now (the ▶ task) and
+what comes later. Milestones: M1 Consulting RAG (now) → M2 other domains → M3 ground every
+feature → M4 frontend fixes → M5 clean-up. When a task is verified, mark it done there,
+move ▶ to the next task, and log it.
 
-Using gstack skills: After install, skills like /qa, /ship, /review, /investigate,
-and /browse are available. Use /browse for all web browsing (Aside first, the bundled gstack browser as fallback).
-Never use `mcp__claude-in-chrome__*` tools.
-Use the resolved install path above for gstack file paths
-(default: ~/.claude/skills/gstack).
+Spec: `.gsd/SPEC.md`. Session position: `.gsd/STATE.md`.
 
-Available gstack skills: `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/browse`, `/connect-chrome`, `/qa`, `/qa-only`, `/design-review`, `/scrape`, `/setup-browser-cookies`, `/setup-deploy`, `/setup-gbrain`, `/retro`, `/investigate`, `/document-release`, `/document-generate`, `/codex`, `/cso`, `/autoplan`, `/plan-devex-review`, `/devex-review`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/gstack-upgrade`, `/learn`.
+---
 
-## Skill routing
+## Product rules (non-negotiable)
 
-When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.
+**Grounding policy**
+- If the casebooks cover a question, the answer uses **casebook content only**, with
+  citations (school, casebook, page).
+- If they don't, say so plainly, then give a general answer **clearly labelled** as not from
+  the casebooks. Never blend the two silently.
+- Below the similarity threshold, show nothing rather than a loosely related excerpt.
 
-Key routing rules:
-- Product ideas/brainstorming → invoke /office-hours
-- Strategy/scope → invoke /plan-ceo-review
-- Architecture → invoke /plan-eng-review
-- Design system/plan review → invoke /design-consultation or /plan-design-review
-- Full review pipeline → invoke /autoplan
-- Bugs/errors → invoke /investigate
-- QA/testing site behavior → invoke /qa or /qa-only
-- Code review/diff check → invoke /review
-- Visual polish → invoke /design-review
-- Ship/deploy/PR → invoke /ship or /land-and-deploy
-- Save progress → invoke /context-save
-- Resume context → invoke /context-restore
-- Author a backlog-ready spec/issue → invoke /spec
+**What is grounded in the casebooks**
+- Frameworks page (by domain/subdomain): explanation + rebuilt diagram from casebooks.
+- Guesstimates.
+- Product management content.
+- Free-form Q&A whenever the casebooks cover the topic.
+- Eventually every feature (Mock Interview, Role, Skill, Company, …) uses casebook content
+  wherever it exists, with labelled AI generation for the rest. Order: `.gsd/ROADMAP.md`.
+- The site is live for Aalhad's batch: every switch-over must be reversible in one step.
+
+**Sources** — only `source_class = club_casebook` feeds the RAG. PrepInsta, commercial,
+certification, external_academic and unattributed files are excluded.
+
+**Diagrams** — students see a **rebuilt** diagram (structured data the frontend draws) plus
+the explanation. Original PDFs and page images stay admin-only; never expose them or their
+storage URLs to non-admin users. See the `diagram-transcription` skill.
+
+**Data safety** — never delete or overwrite existing chunks or tables. New data is written
+alongside (`ingest_*` tables, `is_active = false`) until switch-over.
+
+---
+
+## How to work with Aalhad
+
+- **No approval needed** for any step, including paid API calls, migrations and commits.
+- **Every big change gets a `log.md` entry** (repo root) — see the `build-log` skill. Big =
+  new/changed migration, ingestion run, retrieval or prompt change, switch-over, new
+  agent/skill, anything that changes what students see, or any batch of paid calls.
+- **Explain in plain language** after each step: what changed, why, how to check it works.
+  Go deeper only when asked.
+- **Budget: ~$20/month** on Gemini. Prefer the free tier and flash-lite models; batch heavy
+  work; report call counts and rough cost in the log.
+- Report results honestly. If an eval fails or a step was skipped, say so with the output.
+
+---
+
+## Workflow (GSD, merged)
+
+Canonical method: `PROJECT_RULES.md` — **SPEC → PLAN → EXECUTE → VERIFY → COMMIT**, with
+proof for every change (command output, curl response, test output, eval score). Where this
+file is more specific, this file wins:
+
+- This machine is macOS/zsh, so `&&` chaining is fine.
+- Instead of `invoke_subagent`, use the Claude agents in `.claude/agents/`.
+- The GSD planner/executor/verifier definitions in `.agents/` remain the reference method.
+- Commit format: `type(scope): description`, scope = phase (e.g. `feat(R1): ...`).
+
+---
+
+## Agents (`.claude/agents/`)
+
+| Agent | Use for |
+|---|---|
+| `planner` | Turn a roadmap phase into small plan files (GSD + gstack plan reviews) |
+| `ingestion-engineer` | Changing or running the PDF → chunk pipeline |
+| `fidelity-reviewer` | Checking converted pages against the source PDF; flagging for review |
+| `rag-engineer` | Retrieval, `match_*` RPCs, grounded prompts, wiring features to chunks |
+| `backend-engineer` | Other API work: routes, admin endpoints, caching, migrations, tests |
+| `frontend-engineer` | React pages, components, styles, diagrams and citations on screen |
+| `debugger` | Root-causing one hard bug (gstack `/investigate`) |
+| `code-reviewer` | Reviewing a diff before commit or ship (gstack `/review`, `/cso`) |
+| `qa-tester` | Testing the running site like a student (gstack `/qa-only` / `/qa`, `/browse`) |
+| `rag-evaluator` | Running the test question set and scoring answers against source pages |
+| `verifier` | Independently proving a phase is done before it's marked complete |
+
+**Entry point:** `/pipeline` (`.claude/commands/pipeline.md`) routes any request (a phase,
+feature, bug, review, QA, eval or ship) through the right agents and skills.
+
+**Default flow for a phase:** `planner` → build agent(s) → `code-reviewer` → `qa-tester` /
+`rag-evaluator` → `verifier` → commit + `log.md`.
+
+## Skills (`.claude/skills/`)
+
+| Skill | What it encodes |
+|---|---|
+| `gstack-playbook` | Which gstack skill to use at each stage, for RAG, backend and frontend |
+| `casebook-ingestion` | The ingestion pipeline: classify → convert → verify → chunk → embed → store |
+| `diagram-transcription` | The structured diagram format (issue tree, matrix, funnel, flow, chart, table) |
+| `grounded-answering` | Grounding policy, citations, thresholds, the "not in casebooks" label |
+| `rag-eval` | Test-set format, how to run evals, scoring, regressions |
+| `backend-conventions` | Express route shape, errors, middleware, caching, migrations, tests |
+| `frontend-conventions` | React structure, API client, types, CSS tokens, verifying UI changes |
+| `build-log` | How and when to write `log.md` entries |
+| `model-routing` | Which model/effort to use when delegating, so trivial lookups don't cost the same as correctness-critical work |
+
+## gstack (global install, required)
+
+`.claude/hooks/check-gstack.sh` blocks skills if gstack is missing. Full map:
+`gstack-playbook` skill. Quick routing:
+
+- Ideas / scope → `/office-hours`, `/plan-ceo-review` · Spec → `/spec`
+- Plan review → `/autoplan`, or `/plan-eng-review` (backend/RAG) and `/plan-design-review` (UI)
+- UI design → `/design-consultation`, `/design-shotgun`, `/design-html` · polish → `/design-review`
+- Bugs → `/investigate` · Diff review → `/review` (+ `/cso` for auth/admin/RLS/uploads)
+- Test the site → `/qa-only` (report) or `/qa` (fix) · Performance → `/benchmark`
+- Ship → `/ship`, `/land-and-deploy` · after deploy → `/canary`
+- Session → `/context-save`, `/context-restore` · Safety → `/careful`, `/freeze`, `/guard`
+- Weekly → `/retro` · Docs → `/document-release`
+
+Use `/browse` for all web browsing. Don't use `mcp__claude-in-chrome__*` tools.
+
+---
+
+## Stack and layout
+
+- **Backend** `backend/` — Node 22, Express, ES modules. `npm run dev`, `npm test`
+  (node:test). Routes in `src/routes/`, logic in `src/lib/`. Gemini wrapper with model
+  cascade: `src/lib/gemini.js`.
+- **Database** — Supabase Postgres + pgvector. Migrations in `backend/db/migration_NNN_*.sql`
+  (latest: 039). Live chunks: `document_chunks`, queried via the `match_document_chunks` RPC.
+  New pipeline: `ingest_documents`, `ingest_pages`, `ingest_chunks` (RLS, service-role only).
+- **Embeddings** — `gemini-embedding-001`, **768 dims**. New chunks must match exactly.
+- **Ingestion** `backend/ingestion/` — offline Python: `pipeline.py` (orchestrator),
+  `page_classify.py`, `convert.py` (Docling + Gemini vision), `fidelity.py`, `chunk.py`,
+  `gemini_client.py`, `config.py`. PyMuPDF is AGPL — keep it out of the deployed backend.
+- **Source data** `Data/<Domain> Files/PDF Files/` (domains: Consulting, Finance, Prodman,
+  HR, Marketing:Sales, General Management).
+- **Frontend** `frontend-react/` — Vite + React + TS. Framework diagrams are typed in
+  `src/types/api.ts` (`diagram_type`, `diagram_data`). The old `frontend/` is retired.
+- **History** — `Mark Down Files/DOCUMENT.md` is the pre-rebuild build log (read-only
+  history). New entries go in `log.md`.
+- Secrets live in `backend/.env` — never print or commit them.

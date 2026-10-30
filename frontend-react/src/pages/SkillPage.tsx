@@ -1,6 +1,6 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { apiFetch } from "../lib/apiClient";
+import { apiFetch, fetchConceptLink } from "../lib/apiClient";
 import { isPageReload } from "../lib/navigation";
 import { ensurePyodide, ensureSqlJs } from "../lib/sandboxRuntimes";
 import { parseBold, rowsMatch, type BoldSegment } from "../lib/skillUtils";
@@ -8,7 +8,14 @@ import { ICON_D } from "../lib/constants";
 import { useVoiceRecording } from "../hooks/useVoiceRecording";
 import VoiceRecordButton from "../components/VoiceRecordButton";
 import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
-import type { SkillConcept, SkillContentResponse, SkillDifficulty, SkillProblem, SkillProblemsResponse, SkillScoreFeedback, SkillScoreResponse } from "../types/api";
+import type { SkillConceptTierName, SkillConceptTiers, SkillContentResponse, SkillDifficulty, SkillProblem, SkillProblemsResponse, SkillScoreFeedback, SkillScoreResponse } from "../types/api";
+
+const EMPTY_CONCEPT_TIERS: SkillConceptTiers = { basic: [], intermediate: [], advanced: [] };
+const CONCEPT_TIER_LABELS: { key: SkillConceptTierName; label: string }[] = [
+  { key: "basic", label: "Basic" },
+  { key: "intermediate", label: "Intermediate" },
+  { key: "advanced", label: "Advanced" }
+];
 
 // Ported from frontend/index.html: openSkill/loadSkillContent/
 // onSkillDifficultyChange/loadSkillProblems (3387-3431), rowsMatch/parseBold
@@ -43,11 +50,44 @@ export default function SkillPage() {
   const [searchParams] = useSearchParams();
   const role = searchParams.get("role") || "";
   const skill = searchParams.get("skill") || "";
+  // Not used for loading this page's own content - only carried through so
+  // "Back to Role" below can restore the exact Role page state (picked
+  // company/topic) the user came from, instead of resetting it.
+  const backCompany = searchParams.get("company") || "";
+  const backTopic = searchParams.get("topic") || "";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [language, setLanguage] = useState<"sql" | "python" | null>(null);
-  const [concepts, setConcepts] = useState<SkillConcept[]>([]);
+  const [concepts, setConcepts] = useState<SkillConceptTiers>(EMPTY_CONCEPT_TIERS);
+  // Progressive reveal, not "show everything at once, keep it clickable" -
+  // Basic shown by default, Intermediate/Advanced only render once picked.
+  const [conceptTier, setConceptTier] = useState<SkillConceptTierName>("basic");
+  // Phase 1.7 item 2: concept links are fetched lazily on first click, not
+  // baked into the initial concepts response - keyed by "tier::title" so
+  // the loading/found state is per-concept, and the fetched link is cached
+  // here for the rest of this page view (the server caches it permanently).
+  const [conceptLinks, setConceptLinks] = useState<Record<string, string>>({});
+  const [conceptLinkLoading, setConceptLinkLoading] = useState<string>("");
+
+  async function learnMore(tier: SkillConceptTierName, title: string) {
+    const key = `${tier}::${title}`;
+    if (conceptLinks[key]) {
+      window.open(conceptLinks[key], "_blank", "noopener,noreferrer");
+      return;
+    }
+    setConceptLinkLoading(key);
+    try {
+      const link = await fetchConceptLink(role, skill, tier, title);
+      setConceptLinks((s) => ({ ...s, [key]: link }));
+      window.open(link, "_blank", "noopener,noreferrer");
+    } catch {
+      // No dedicated error UI for a single concept's link lookup - it just
+      // stays clickable so the user can retry.
+    } finally {
+      setConceptLinkLoading("");
+    }
+  }
 
   const [difficulty, setDifficulty] = useState<SkillDifficulty | "">("");
   const [problemsLoading, setProblemsLoading] = useState(false);
@@ -74,11 +114,12 @@ export default function SkillPage() {
     setDifficulty("");
     setProblems([]);
     setProblemsError("");
+    setConceptTier("basic");
     apiFetch<SkillContentResponse>("/api/skills/" + encodeURIComponent(role) + "/" + encodeURIComponent(skill), {}, "Failed to load skill content.")
       .then((data) => {
         setLoading(false);
         setLanguage(data.language);
-        setConcepts(data.concepts || []);
+        setConcepts(data.concepts || EMPTY_CONCEPT_TIERS);
       })
       .catch((e) => {
         setLoading(false);
@@ -158,6 +199,7 @@ export default function SkillPage() {
     const prevRun = skillRuns[runKey] || {};
     const answer = (prevRun.answerDraft || "").trim();
     if (!answer || prevRun.scoring) return;
+    if (recording["skill__" + runKey]) stopRecording("skill__" + runKey);
     setSkillRuns((s) => ({ ...s, [runKey]: { ...prevRun, scoring: true, scoreError: "" } }));
     try {
       const data = await apiFetch<SkillScoreResponse>(
@@ -171,13 +213,19 @@ export default function SkillPage() {
     }
   }
 
-  const hasConcepts = !loading && !error && concepts.length > 0;
+  const hasConcepts = !loading && !error && CONCEPT_TIER_LABELS.some((t) => concepts[t.key].length > 0);
+  const activeConcepts = concepts[conceptTier];
   const showDifficultyPicker = !loading && !error;
   const hasProblems = !loading && !error && !problemsLoading && !problemsError && problems.length > 0;
 
   return (
     <div style={{ marginTop: 26, width: "100%" }}>
-      <button type="button" onClick={() => navigate("/role?role=" + encodeURIComponent(role))} className="unbutton link-darken" style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", color: "var(--text-gray2)", fontSize: "0.8125rem", fontWeight: 600, marginBottom: 14 }}>
+      <button type="button" onClick={() => {
+        const params = new URLSearchParams({ role });
+        if (backCompany) params.set("company", backCompany);
+        if (backTopic) params.set("topic", backTopic);
+        navigate("/role?" + params.toString());
+      }} className="unbutton link-darken" style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", color: "var(--text-gray2)", fontSize: "0.8125rem", fontWeight: 600, marginBottom: 14 }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flex: "none" }}>
           <path d="m12 19-7-7 7-7" />
           <path d="M19 12H5" />
@@ -196,32 +244,70 @@ export default function SkillPage() {
       {error && <div className="t-shake" style={{ marginTop: 20, color: "var(--red-dark)", fontSize: "0.84375rem" }}>{error}</div>}
 
       {hasConcepts && (
-        <div style={{ marginTop: 24, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "20px 22px" }}>
-          <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Core concepts</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 14 }}>
-            {concepts.map((c, i) => (
-              <div key={i}>
-                {c.link ? (
-                  <a href={c.link} target="_blank" rel="noopener noreferrer" className="skill-concept-link" style={{ fontSize: "0.90625rem", fontWeight: 700, color: "#1d4ed8", textDecoration: "underline", textUnderlineOffset: 2 }}>
-                    {c.title}{" "}
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline", verticalAlign: -1 }}>
+        <div style={{ marginTop: 24, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Core concepts</div>
+            {/* Progressive reveal: only the picked tier's concepts render
+                below - Basic is shown by default, Intermediate/Advanced are
+                a deliberate click-through, not all three stacked on one
+                page at once. */}
+            <div style={{ display: "flex", gap: 4, background: "var(--surface-sunken)", borderRadius: "var(--r-pill)", padding: 3 }}>
+              {CONCEPT_TIER_LABELS.map((t) => {
+                const count = concepts[t.key].length;
+                const active = conceptTier === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => setConceptTier(t.key)}
+                    disabled={count === 0}
+                    className="unbutton"
+                    style={{
+                      padding: "6px 13px",
+                      borderRadius: "var(--r-pill)",
+                      cursor: count === 0 ? "not-allowed" : "pointer",
+                      font: "600 0.78125rem 'Instrument Sans',sans-serif",
+                      color: count === 0 ? "var(--text-disabled)" : active ? "var(--surface)" : "var(--text-700)",
+                      background: active ? "var(--indigo)" : "transparent"
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 16 }}>
+            {activeConcepts.length === 0 ? (
+              <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>No {conceptTier} concepts for this skill.</div>
+            ) : (
+              activeConcepts.map((c, i) => (
+                <div key={i} style={{ borderTop: i === 0 ? "none" : "1px solid var(--divider)", paddingTop: i === 0 ? 0 : 16 }}>
+                  <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-900)" }}>{c.title}</div>
+                  <p style={{ margin: "6px 0 0", fontSize: "0.875rem", lineHeight: 1.65, color: "var(--text-700)" }}>{c.explanation}</p>
+                  <button
+                    type="button"
+                    onClick={() => learnMore(conceptTier, c.title)}
+                    disabled={conceptLinkLoading === `${conceptTier}::${c.title}`}
+                    className="unbutton skill-concept-link"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 8, fontSize: "0.78125rem", fontWeight: 600, color: "#0066cc", textDecoration: "underline", textUnderlineOffset: 2, cursor: "pointer", background: "none", border: "none", padding: 0 }}
+                  >
+                    {conceptLinkLoading === `${conceptTier}::${c.title}` ? "Finding resource…" : "Learn more"}
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M15 3h6v6" />
                       <path d="M10 14 21 3" />
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                     </svg>
-                  </a>
-                ) : (
-                  <div style={{ fontSize: "0.90625rem", fontWeight: 700, color: "var(--text-900)" }}>{c.title}</div>
-                )}
-                <p style={{ margin: "4px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-600)" }}>{c.explanation}</p>
-              </div>
-            ))}
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
 
       {showDifficultyPicker && (
-        <div style={{ marginTop: 22, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+        <div style={{ marginTop: 22, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           <span style={{ fontSize: "0.84375rem", fontWeight: 700, color: "var(--text-900)" }}>Choose a difficulty to generate 6 practice problems</span>
           <select
             value={difficulty}
@@ -343,7 +429,7 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
   const modelAnswerSegments = !isCode ? parseBold(p.modelAnswer || "") : [];
 
   return (
-    <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 1px 2px rgba(16,24,40,.05)", padding: "18px 20px" }}>
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "18px 20px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <span style={{ flex: "none", padding: "3px 9px", borderRadius: "var(--r-pill)", fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", background: tagBg, color: tagColor }}>{p.difficulty}</span>
         {p.concept && <span style={{ flex: "none", fontSize: "0.6875rem", fontWeight: 700, color: "var(--indigo-700)", background: "#eef0ff", padding: "3px 9px", borderRadius: "var(--r-pill)" }}>Tests: {p.concept}</span>}
@@ -395,7 +481,7 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
                   {rows.map((r, i) => (
                     <tr key={i}>
                       {Object.values(r).map((v, j) => (
-                        <td key={j} style={{ padding: "6px 10px", borderBottom: "1px solid #f1f2f6", color: "var(--text-700)" }}>{String(v)}</td>
+                        <td key={j} style={{ padding: "6px 10px", borderBottom: "1px solid var(--divider)", color: "var(--text-700)" }}>{String(v)}</td>
                       ))}
                     </tr>
                   ))}
@@ -454,7 +540,7 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
           </div>
 
           {!!run.feedback && (
-            <div className="t-panel-in" style={{ marginTop: 16, borderTop: "1px solid #f1f2f5", paddingTop: 14 }}>
+            <div className="t-panel-in" style={{ marginTop: 16, borderTop: "1px solid var(--divider)", paddingTop: 14 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
                 <span style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>AI feedback · Score</span>
                 <span style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-900)" }}>{run.feedback.score}/10</span>
@@ -477,7 +563,7 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
                   </div>
                 </div>
               </div>
-              <div style={{ marginTop: 10, background: "var(--surface-alt)", border: "1px solid #eceef2", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+              <div style={{ marginTop: 10, background: "var(--surface-alt)", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
                 <div style={{ fontSize: "0.625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--indigo)" }}>A stronger version</div>
                 <p style={{ margin: "7px 0 0", fontSize: "0.8125rem", lineHeight: 1.55, color: "var(--text-700)" }}>{run.feedback.sampleBetterAnswer}</p>
               </div>

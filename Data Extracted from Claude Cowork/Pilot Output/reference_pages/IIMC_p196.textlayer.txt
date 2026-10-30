@@ -1,0 +1,64 @@
+KEY LEARNINGS APPROACH
+BROWNIE POINTS
+• Breaking down passenger 
+traffic and estimating user 
+conversion percentages 
+offers a clear view of 
+potential daily demand and 
+viability.
+• Profitability Hinges on 
+Smart Assumptions (fare 
+per trip, driver costs, etc.) 
+ensures accurate financial 
+forecasting and sound 
+investment decisions.
+• Strong GTM Strategy drives 
+differentiation and success 
+relies on operational 
+efficiency, standout value 
+proposition and strong 
+brand reputation for safety 
+and reliability.
+- Use a logical and data-driven approach to market sizing and segmentation.
+- Integrate financial analysis with strategic recommendations effectively.
+- GTM strategy should be well-structured around practical and impactful pillars.
+- Address competitive landscape and customer needs in a holistic manner.
+Market Entry | Transportation | Medium
+CABS AT THE GATE
+The Mexico City government has recently issued 2,500 new city permits, priced at $1,000 each, for taxi operations at its 
+international airport. Our client is a large taxi company that does not currently service this airport. They've approached us to help 
+them understand the market and advise on whether they should enter, how many permits they should acquire, and whether it would 
+be a profitable venture.
+Taxi Operations
+Financial 
+Feasibility Operational Feasibility GTM Strategy
+Acquire
+2,000 permits
+Differentiated 
+Value 
+Proposition
+Dominant 
+Operational 
+Presence
+Building a 
+Reputation
+Airport 
+Branding
+Exclusive 
+Service
+Digital 
+Presence
+Number of Taxis: 2,000 Trips per Day per Taxi: 4
+Annual Trips: 2,000 x 4 x 365 = 2,920,000
+Annual Revenue: 2,920,000 trips x $200/trip = $584 M
+Total Annual Cost: $24M (salary) + $438M (operating) = $462M
+One -Time Permit Cost: 2,000 permits x $1,000/permit = $2M
+Annual Profit: $584 M (revenue) - $462 M (cost) = $122 M
+Net Profit (Year 1): $122M - $2M = $120M
+The project is highly profitable.
+• Annual Passengers = 42,000,000
+• Daily Passengers = 42,000,000 / 365 days ≈ 115,000 
+• Passengers taking taxi: International:30% Domestic: 30%
+• Taxi Passengers = (115,000*50%)*70% + (115,000* 50%)*30% 
+TAM = 57,500
+196

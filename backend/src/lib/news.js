@@ -1,4 +1,6 @@
 import { supabase } from "./supabase.js";
+import { normalizeCacheKey } from "./cacheKey.js";
+import { singleFlight } from "./singleFlight.js";
 
 const GNEWS_SEARCH_URL = "https://gnews.io/api/v4/search";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours — free tier is 100 req/day, so don't hit GNews on every page load
@@ -33,11 +35,16 @@ async function fetchFromGNews(query, { max = 10, lang = "en" } = {}) {
  * @returns {Promise<{articles: object[], cached: boolean, fetchedAt: string}>}
  */
 export async function getNews(scopeType, scopeValue, query) {
+  const cacheKey = normalizeCacheKey(scopeValue);
+  return singleFlight(`news:${scopeType}::${cacheKey}`, () => fetchNews(scopeType, cacheKey, query));
+}
+
+async function fetchNews(scopeType, cacheKey, query) {
   const { data: cached, error: cacheError } = await supabase
     .from("news_cache")
     .select("*")
     .eq("scope_type", scopeType)
-    .eq("scope_value", scopeValue)
+    .eq("scope_value", cacheKey)
     .maybeSingle();
   if (cacheError) throw cacheError;
 
@@ -55,7 +62,7 @@ export async function getNews(scopeType, scopeValue, query) {
   if (articles.length > 0) {
     const { error: upsertError } = await supabase
       .from("news_cache")
-      .upsert({ scope_type: scopeType, scope_value: scopeValue, articles, fetched_at: fetchedAt }, { onConflict: "scope_type,scope_value" });
+      .upsert({ scope_type: scopeType, scope_value: cacheKey, articles, fetched_at: fetchedAt }, { onConflict: "scope_type,scope_value" });
     if (upsertError) throw upsertError;
   }
 

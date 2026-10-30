@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import AppShell from "./components/shell/AppShell";
 import RequireAuth from "./components/shell/RequireAuth";
@@ -11,6 +12,8 @@ import SkillPage from "./pages/SkillPage";
 import ResumePage from "./pages/ResumePage";
 import ToneShifterPage from "./pages/ToneShifterPage";
 import CommunityPage from "./pages/CommunityPage";
+// Admin-only (usage + R5 review queue): split into its own chunk so students never download it.
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 // One route per page (see migration plan §0.9). Skill uses query params
 // (?role=...&skill=...) rather than path segments, since role/skill names
@@ -33,7 +36,8 @@ export const router = createBrowserRouter([
           { path: "/skill", element: <SkillPage /> },
           { path: "/resume", element: <ResumePage /> },
           { path: "/tone-shifter", element: <ToneShifterPage /> },
-          { path: "/community", element: <CommunityPage /> }
+          { path: "/community", element: <CommunityPage /> },
+          { path: "/admin", element: <Suspense fallback={null}><AdminPage /></Suspense> }
         ]
       }
     ]
