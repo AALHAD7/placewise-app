@@ -1,5 +1,6 @@
 import type { ProbeVM } from "../hooks/useProbe";
 import IndeterminateProgressBar from "./IndeterminateProgressBar";
+import GroundingNote from "./GroundingNote";
 
 // Ported from frontend/index.html's 3 near-identical probe blocks: points
 // (726-762, What?/Why?, shows quote), frameworks (781-816, What?/Why?/How to
@@ -54,6 +55,11 @@ export default function ProbeChat({ probe: p, showHow, showQuote = true }: Probe
               <div style={{ fontSize: "0.8125rem", color: "var(--text-lightgray)" }}>Thinking…</div>
               <IndeterminateProgressBar />
             </div>
+          )}
+          {/* R8: only what/why/how carry a grounding decision (pushback is
+              explicitly ungrounded - groundedInCasebooks stays null there). */}
+          {!p.loading && p.groundedInCasebooks !== null && (
+            <GroundingNote groundedInCasebooks={p.groundedInCasebooks} citation={p.citation} />
           )}
           {p.contentCheckNotice && !p.loading && (
             <div role="alert" style={{ marginTop: 10, padding: "8px 10px", borderRadius: "var(--r-sm)", background: "#fdf3e3", color: "var(--amber-ink)", fontSize: "0.78125rem", lineHeight: 1.5 }}>

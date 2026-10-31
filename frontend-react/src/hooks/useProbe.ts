@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type CSSProperties, type KeyboardEvent } from "react";
 import { callClaude, fetchChipPanel } from "../lib/apiClient";
 import { howPrompt, plain, pushPrompt, whatPrompt, whyPrompt } from "../lib/prompts";
+import type { GuesstimateCitation } from "../types/api";
 
 // "Push-back chat" - ported from frontend/index.html: probeFor() (3135-3171),
 // openProbe/runWhy/sendPushback/retryProbe (3070-3133). Only one probe can
@@ -45,6 +46,10 @@ interface ProbeState {
   error: string;
   draft: string;
   contentCheck: ContentCheckResult | null;
+  // R7 (backend-only until R8)/R8: only set for what/why/how (chipPanel.js); pushback
+  // (chat.js) is explicitly ungrounded, so this stays null there - never implied.
+  groundedInCasebooks: boolean | null;
+  citation: GuesstimateCitation | null;
 }
 
 export interface ProbeVM {
@@ -63,6 +68,10 @@ export interface ProbeVM {
   hasError: boolean;
   error: string;
   contentCheckNotice: string;
+  // null (not false) for pushback, where grounding never applies - distinct from
+  // "checked and came back ungrounded" (false). See GroundingNote.tsx.
+  groundedInCasebooks: boolean | null;
+  citation: GuesstimateCitation | null;
   showInput: boolean;
   placeholder: string;
   draft: string;
@@ -83,14 +92,17 @@ export function useProbe() {
         mode === "what" ? whatPrompt(role, topic, blockText) :
         whyPrompt(role, topic, blockText);
       const res = await fetchChipPanel(role, topic, blockId, mode, promptText);
-      setProbe((s) => (s ? { ...s, loading: false, error: "", messages: [{ who: "ai", text: res.text }], contentCheck: res.contentCheck } : s));
+      setProbe((s) => (s ? {
+        ...s, loading: false, error: "", messages: [{ who: "ai", text: res.text }], contentCheck: res.contentCheck,
+        groundedInCasebooks: res.groundedInCasebooks ?? false, citation: res.citation ?? null
+      } : s));
     } catch {
       setProbe((s) => (s ? { ...s, loading: false, error: "Could not reach the model." } : s));
     }
   }
 
   function openProbe(role: string, topic: string, blockId: string, blockText: string, mode: ProbeMode, company: string) {
-    const base: ProbeState = { blockId, blockText, mode, role, topic, company, messages: [], loading: false, error: "", draft: "", contentCheck: null };
+    const base: ProbeState = { blockId, blockText, mode, role, topic, company, messages: [], loading: false, error: "", draft: "", contentCheck: null, groundedInCasebooks: null, citation: null };
     if (mode !== "pushback") {
       setProbe({ ...base, loading: true });
       runWhy(role, topic, blockId, blockText, mode);
@@ -167,6 +179,7 @@ export function useProbe() {
     if (!open || !p) {
       return {
         ...base, messages: [], loading: false, error: "", hasError: false, showInput: false, title: "", draft: "", context: "", quote: "", contentCheckNotice: "",
+        groundedInCasebooks: null, citation: null,
         onDraft: () => {}, onKeyDown: () => {}, send: () => {}, retry: () => {}, close: () => {}, placeholder: ""
       };
     }
@@ -195,6 +208,8 @@ export function useProbe() {
       contentCheckNotice: p.contentCheck && p.contentCheck.checked && !p.contentCheck.passed
         ? (p.contentCheck.issue ? "This answer could not be fully verified. Check before relying on it." : "Automated check flagged this content.")
         : "",
+      groundedInCasebooks: p.groundedInCasebooks,
+      citation: p.citation,
       showInput: !p.loading && (p.mode === "pushback" || p.messages.length > 0),
       placeholder: p.messages.some((m) => m.who === "me") ? "Respond..." : "Cross-question this answer...",
       draft: p.draft,
