@@ -414,6 +414,26 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 @media (max-width:640px){
   .topnav-row{ flex-wrap:wrap; }
   .topbar-right{ flex:1 1 100%; justify-content:space-between; order:3; }
+  /* The nav is meant to be a frosted-glass layer (blurred scroll-under
+     content, see "Liquid Glass" above) - but when backdrop-filter doesn't
+     actually render (seen on a real Android phone, data-saver icon visible
+     in the report screenshot; Chrome's data-saver/lite mode and some GPU
+     contexts drop compositing filters silently, no CSS fallback fires),
+     all that's left is background:rgba(255,255,255,.7) with no blur at
+     all - unblurred page content reads straight through it, which on
+     mobile is exactly where the capsule is tallest (3-line wrapped nav)
+     and most likely to sit over real content underneath. Mobile is also
+     where misreading overlapping text actually costs a tap, so below
+     640px the nav gets the same solid fallback already used for
+     prefers-reduced-transparency, instead of leaving it dependent on
+     backdrop-filter support. */
+  .topnav{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; }
+  :root[data-theme="dark"] .topnav{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; }
+  /* .topnav-links (the glass-capsule pill cluster) sits on top of .topnav
+     itself normally (layered glass-on-glass is the point on desktop), so it
+     needs the same solid fallback once its parent stops being translucent -
+     otherwise the exact same unblurred-text problem reappears one layer in. */
+  .topnav-links.glass-capsule{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:0 0 0 1px var(--card-border); }
 }
 .streak-pill{ display:flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-pill); padding:5px 11px; font-size:var(--fs-small); font-weight:600; color:var(--text-ink); }
 .streak-pill .flame{ width:14px; height:14px; color:var(--amber); }
@@ -490,6 +510,23 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 @media (max-width:900px){ .grid-3{ grid-template-columns:repeat(2,1fr); } }
 @media (max-width:560px){ .grid-3{ grid-template-columns:1fr; } }
 .grid-full{ margin-top:18px; }
+
+/* Main-content + fixed-min-width-sidebar layout (Role's info/skills split,
+   Tone Shifter's editor/output split, …). Both tracks were set via inline
+   gridTemplateColumns with no breakpoint, so on any viewport narrower than
+   roughly sidebar-min + gap + any real minimum for the main track (~375-
+   412px phones), the sidebar held its min-width and the main track - whose
+   own minmax(0,1fr) has no floor - got squeezed to a handful of px, wrapping
+   every word in its cards onto its own line. Found on Role (M3 mobile
+   verification, Oct 31) after an earlier mobile-overflow pass missed it
+   because nothing here technically overflows its box - it just collapses.
+   Single column below 760px (wider than .grid-3's 560px since this sidebar
+   itself needs ~320-420px, not a card). */
+.two-col-sidebar{ display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,420px); gap:16px; align-items:start; }
+@media (max-width:760px){ .two-col-sidebar{ grid-template-columns:1fr; } }
+/* Same bug, Tone Shifter's wider editor/output ratio (sidebar min 300px). */
+.two-col-sidebar-wide{ display:grid; grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr); gap:22px; align-items:start; }
+@media (max-width:760px){ .two-col-sidebar-wide{ grid-template-columns:1fr; } }
 
 .feature-card{ width:100%; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-lg); padding:22px; cursor:pointer; box-shadow:none; }
 .feature-card:hover{ border-color:var(--text-lightgray); }

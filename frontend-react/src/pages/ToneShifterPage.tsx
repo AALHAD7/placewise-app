@@ -255,7 +255,7 @@ export default function ToneShifterPage() {
         </>
       )}
 
-      <div style={{ marginTop: 26, display: "grid", gridTemplateColumns: "minmax(0,1.55fr) minmax(300px,.85fr)", gap: 22, alignItems: "start" }}>
+      <div className="two-col-sidebar-wide" style={{ marginTop: 26 }}>
         <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 20px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
             <span style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>Your bullet points</span>

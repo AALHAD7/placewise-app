@@ -5,6 +5,72 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — Correction: two real mobile bugs the earlier F2 pass (`0e78f14`) missed on Role
+**Phase:** F2 (fix, correction) · **Type:** fix
+
+**What changed:** Fixed two genuine mobile-width bugs on the Role page, found from a real
+phone screenshot, that commit `0e78f14` ("fix(F2): mobile layout overflow on 7 pages at
+375px") claimed to have cleared via a DOM-overflow check ("0 overflowing elements"). That
+check was insufficient — neither bug produces an overflowing element, so it passed both
+bugs through undetected. Re-verified everything in this entry visually, not just with the
+overflow check.
+
+1. **Severe word-wrap, one word per line, below "Exit Opportunities"** (and in "What this
+   role is" / "Topics to prepare"). Root cause: `RolePage.tsx`'s two-column info/sidebar
+   grid (`gridTemplateColumns: "minmax(0,1fr) minmax(320px,420px)"`) has no responsive
+   breakpoint and predates F2 and G2 both (introduced 2026-09-20, commit `0efe46e1`) — F2
+   added breakpoints for `.grid-3` and a couple of flex rows, but never touched this inline
+   grid. At ~375-412px, the sidebar's 320px floor leaves the main column's `minmax(0,1fr)`
+   almost nothing, so every card in it collapses to a few px wide and wraps one word per
+   line. Confirmed via real `/browse` screenshot at 390px before the fix. G2 (`6ce7b93`,
+   same day) is not the cause — it touched zero frontend files.
+   `ToneShifterPage.tsx` had the identical unbounded pattern (different ratio,
+   `minmax(0,1.55fr) minmax(300px,.85fr)`) and was fixed the same way as part of this
+   session's broader mobile check.
+2. **Nav capsule shows unblurred page content through it on mobile.** `.topnav` is
+   intentionally translucent + `backdrop-filter: blur(...)` (content is meant to scroll
+   blurred underneath it) — but on any context where `backdrop-filter` silently doesn't
+   render (seen on a real Android phone in the reported screenshot; data-saver/lite mode
+   and some GPU contexts drop compositing filters with no CSS fallback), only the flat
+   `rgba(255,255,255,.7)` background is left, so unblurred page text reads straight through
+   it. Reproduced with `/browse` by scrolling the page under the sticky nav at 375px — card
+   text appeared legibly layered behind the nav capsule, matching the reported screenshot.
+   Mobile is also where the nav is tallest (wraps to 3-4 lines), so this is where it bites
+   hardest.
+
+**Fix:** Added a reusable `.two-col-sidebar` / `.two-col-sidebar-wide` grid class
+(collapses to one column below 760px) and applied it to `RolePage.tsx` and
+`ToneShifterPage.tsx` in place of the unbounded inline grid. Added a `max-width:640px`
+rule making `.topnav` and `.topnav-links.glass-capsule` fall back to the same solid
+`var(--surface)` background already used for `prefers-reduced-transparency`, so legibility
+no longer depends on `backdrop-filter` actually rendering.
+
+**Why:** A student reported (real phone screenshot) the Role page unreadable below "Exit
+Opportunities" and the nav overlapping page content — both real, both live, both missed by
+the earlier automated "0 overflowing elements" verification.
+
+**Files:** `frontend-react/src/pages/RolePage.tsx`, `frontend-react/src/pages/ToneShifterPage.tsx`,
+`frontend-react/src/styles/global.css`
+
+**Proof:** `npm run build` clean, `npm run lint` clean (pre-existing warnings only, no new
+ones). Before/after `/browse` screenshots at 375px and 390px: before shows "on" / "retention,"
+/ "and" / "revenue" / "impact." each on its own line and nav-capsule ghosting on scroll;
+after shows the full sentence readable in one paragraph and a solid opaque nav with no
+bleed-through. Broader pass also checked Company page (today's G3 work) at 390px — grids
+there use `auto-fit`/`auto-fill`, not a fixed-min sidebar, no horizontal overflow, no
+squeeze found.
+
+**Undo:** revert this commit; `.two-col-sidebar`/`.two-col-sidebar-wide` and the mobile
+`.topnav` fallback are additive CSS, safe to drop independently.
+
+**Open issues:** The nav's real-device backdrop-filter failure mode (why it doesn't render
+on that phone — data saver vs. GPU) wasn't root-caused precisely, only worked around with a
+solid fallback below 640px. TopNav's lack of a hamburger menu (wraps to multiple lines
+instead) remains the known, separate, already-documented design decision from F2 — not
+changed here.
+
+---
+
 ## 2026-10-31 — R6 follow-up: weighted per-block `_score` fix verified live (tie-break regression resolved); p177 merge investigated, not built
 **Phase:** R6 (fix) · **Type:** ingestion, fix, tests · Resumed after a session-boundary git
 branch collision (unrelated concurrent push landed a stray commit on the wrong branch,
