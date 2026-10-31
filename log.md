@@ -5,6 +5,78 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — R6: IIM B Consulting Casebook 2025 ingested, 2-page network-failure patch, high needs_review rate traced and cleared
+**Phase:** R6 · **Type:** ingestion, fix
+
+**Ingested:** IIM B Consulting Casebook 2025 (292 pages), insert-only, `is_active=false`.
+Classification confirmed live (`source_class='club_casebook'`, school IIM Bangalore) before
+ingesting — along with the other 4 remaining casebooks in the same check (IIM Calcutta, IIMA,
+FMS Consulting Club 2025-26, FMS 2024-25), all 5 confirmed `club_casebook`.
+
+**v1 → v2 patch:** 2 pages (21, 114) failed v1 with transient network errors
+(`ReadTimeout`/`ConnectionError` on the vision call) — correctly stored as `[UNREADABLE]` and
+`needs_review=true`, not silently wrong. Both already classified `is_visual=true` (not a
+classification bug). Retried via `run_r6_iimb_patch.py`; both now `number_coverage=1.0` (still
+`needs_review` for unrelated reasons: p21 `diagram_invalid`, both `seq_diff`). v2
+(`17a7c482-5181-423c-b8d5-44f79e90e392`, v1 file_id `11b97978-6533-4c51-9e32-1a9945d758db`):
+292 pages, 530 chunks. Mean coverage after patch: number 0.9776, word 0.9766.
+
+**Investigated: 211 of 292 pages (72%) flagged `needs_review`** — higher than IIM L's rate but
+in the same range as IIMK's v2 (160/229, 70%), not an outlier. Traced representative samples
+across every reason code before accepting the number, same standard as the IIMK run:
+- **`seq_diff` (162 pages, the largest reason)** — almost all trace to two per-page template
+  elements this casebook has that IIMK/IIM L didn't: (1) a page-footer nav bar ("Home",
+  "Contents", a changing page fraction like "3/7", the school/year stamp) and (2) a case-tag
+  sidebar ("Best of the Season", "Challenging", a changing firm name like "BCG"/"Bain"/
+  "Deloitte"). Both vary per page (fraction, firm name), so they don't hit the
+  boilerplate-line filter (needs an *exact* match on ≥20% of pages) and get flagged as
+  "insert" (text-layer content the markdown correctly chose not to transcribe as prose).
+  Confirmed on 10+ sampled pages (10, 15, 18, 24, 27, 29, 32, 35, 47, 50, 57, 73): every real
+  op traces to this nav/badge pattern, not a real content difference. One exception found
+  while sampling: p47 has a genuine `delete`-tag op (markdown holds scenario-analysis numbers
+  the text layer doesn't) — checked against the page's content and it is a chart/table value
+  the vision model read off an image, not an invention.
+- **`invented_text` (8 pages, 259–287)** — all are "Industry Reports" pages with a "Major
+  Players" section; the flagged lines are company names (Adani Wilmar, Apollo Hospitals,
+  Maruti Suzuki, Tata Motors, ONGC, Reliance, SBI Life, HDFC Life, FedEx) that appear as logo
+  graphics, not selectable text — same false-positive class as IIMK's branding stamps. Real,
+  verifiable companies for each industry page, not fabricated.
+- **Diagram-structure flags (`diagram_structure`, `diagram_flattened`, `missing_box`, etc.,
+  ~90 pages)** — mostly a new page template this casebook introduces: multi-panel "Industry
+  Report" pages with several small labelled sections (Key Drivers, KPIs, Market Size) that the
+  `missing_box` heuristic (3+ short standalone lines) reads as undiagrammed boxes, when they're
+  section headers of a one-page dashboard, not one diagram. Flagged correctly for review, not
+  silently dropped or invented.
+- **`unreadable`/`vision_failed` (8 + 2 pages)** — the 2 network failures (patched above) plus
+  6 pages with a genuinely unreadable logo fragment inside otherwise-valid content (e.g. p277's
+  `[UNREADABLE] HP`), correctly left `needs_review` per the skill (never fabricate the missing
+  piece).
+
+No genuine invented/hallucinated content found in any page checked. **Same conclusion as the
+IIMK run: a checker false-positive pattern driven by this casebook's own page template
+(footer nav bar, case-tag sidebar, industry-report dashboard layout, logo-only player names),
+not a real content defect.** Flagged here, not fixed (checker tuning is out of scope for an
+ingestion run).
+
+**Proof:** `document_chunks` (live) unchanged at 22,457 rows. `ingest_chunks` for this
+document all `is_active=false` (530 rows). Sample diagram blocks confirmed real
+(p17 BCG-style matrix with STAR/QUESTION MARK/CASH COW/DOG text verbatim from the page; p22
+a Risks issue tree; p259 a 6-node Food Processing value-chain flow with real edges a→b→c→d→e→f).
+
+**Cost:** v1: 367 vision + 528 embedding calls. v2 patch: 3 vision + 530 embedding calls.
+≈$0.60-0.70 this casebook (flash-lite vision ~$0.0012-0.002/call, embeddings ~$0.0001/call,
+per this project's established rate). **Cumulative R6 spend now ≈$2.09-2.53 — crosses the $2
+round-number threshold** (still well inside the $20/month budget; flagging per Aalhad's
+standing instruction to surface every round-number crossing).
+
+**Left open:** IIM Calcutta (~457p), IIMA (~389p), Consulting Club FMS 2025-26 (~325p), FMS
+2024-25 (~279p) — ~1,450 pages, not started this run.
+
+**Files:** `backend/ingestion/run_r6_iimb.py` (new), `backend/ingestion/run_r6_iimb_patch.py`
+(new).
+
+---
+
 ## 2026-10-31 — R6: IIMK Kasebook 2025 ingested, 5-page network-failure patch, invented_text false-positive investigated and cleared
 **Phase:** R6 · **Type:** ingestion, fix
 
