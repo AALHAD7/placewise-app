@@ -4,7 +4,7 @@ import { ICON_D } from "../lib/constants";
 import { useSelectorOpenState } from "../hooks/useSelector";
 import Selector, { type SelectorOption } from "../components/Selector";
 import PageHeader from "../components/PageHeader";
-import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksResponse, FrameworksTaxonomyResponse } from "../types/api";
+import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksCatalogResponse, FrameworksResponse, FrameworksTaxonomyResponse } from "../types/api";
 
 // Rebuilt around a real Domain -> Subdomain -> framework browse flow instead
 // of one flat, ungrouped list (see migration_019_frameworks_taxonomy.sql +
@@ -163,10 +163,19 @@ export default function FrameworksPage() {
   const [list, setList] = useState<Framework[]>([]);
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
+  // R8: "From the casebooks" catalog (R7's buildConsultingFrameworkCatalog) - every
+  // framework actually named in a transcribed diagram, not this page's seeded list
+  // above. Empty (not an error) while the feature flag is off or outside Consulting.
+  const [catalog, setCatalog] = useState<FrameworksCatalogResponse["frameworks"]>([]);
+  const [catalogExpanded, setCatalogExpanded] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     apiFetch<FrameworksTaxonomyResponse>("/api/frameworks/taxonomy", {}, "Failed to load framework topics.")
       .then((data) => setTaxonomy(data.domains || []))
       .catch((e) => setTaxonomyError(e instanceof Error ? e.message : "Could not reach the backend."));
+    apiFetch<FrameworksCatalogResponse>("/api/frameworks/catalog?domain=Consulting", {}, "Failed to load the casebook catalog.")
+      .then((data) => setCatalog(data.frameworks || []))
+      .catch(() => setCatalog([])); // non-critical - page works fine without it
   }, []);
 
   useEffect(() => {
@@ -292,6 +301,46 @@ export default function FrameworksPage() {
           </div>
         </div>
       </div>
+
+      {catalog.length > 0 && (
+        <div style={{ marginTop: 28 }}>
+          <div className="section-title">From the casebooks</div>
+          <p style={{ margin: "6px 0 14px", fontSize: "0.8125rem", color: "var(--text-gray2)" }}>
+            Every framework actually named in a diagram across the ingested Consulting casebooks - {catalog.length} found so far.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-start" }}>
+            {catalog.map((f) => {
+              const key = f.title;
+              const isOpen = !!catalogExpanded[key];
+              return (
+                <div key={key} style={{ border: "1px solid var(--border-input)", borderRadius: "var(--r-pill)", background: "var(--surface)" }}>
+                  <button
+                    type="button"
+                    onClick={() => setCatalogExpanded((s) => ({ ...s, [key]: !s[key] }))}
+                    className="unbutton"
+                    style={{ padding: "7px 14px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-900)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}
+                  >
+                    {f.title}
+                    <span style={{ color: "var(--text-lightgray)", fontWeight: 400 }}>({f.occurrences.length})</span>
+                  </button>
+                  {isOpen && (
+                    <div style={{ padding: "0 14px 10px", fontSize: "0.75rem", color: "var(--text-gray2)", maxHeight: 220, overflowY: "auto" }}>
+                      {f.occurrences.slice(0, 20).map((o, i) => (
+                        <div key={i}>
+                          {[o.school, o.club].filter(Boolean).join(" ") || o.sourceFile}{o.year ? `, ${o.year}` : ""} - p.{o.page}
+                        </div>
+                      ))}
+                      {f.occurrences.length > 20 && (
+                        <div style={{ marginTop: 4, color: "var(--text-lightgray)" }}>+{f.occurrences.length - 20} more</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div style={{ marginTop: 26, display: "flex", gap: 14, flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 320px", maxWidth: 440 }}>

@@ -5,6 +5,74 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — R8: frontend for grounded citations, diagrams, Guesstimates and the framework catalog
+**Phase:** R8 · **Type:** feature, fix
+
+**What changed:** built the frontend pieces for everything R7/G2/G3 already grounded on
+the backend but had no visible UI for.
+
+- New `GroundingNote.tsx` - the one reusable component for "casebook-cited" (green badge
+  + school/casebook/page) vs. "AI-generated, not from the casebooks" (plain gray italic
+  label) - never ambiguous which applies (grounding policy, CLAUDE.md). Wired into:
+  - Role Topics panel (`RolePage.tsx`) - was retrieving real chunks and silently feeding
+    them to the model with no visible citation; now shows the real decision either way.
+  - Company-topic notes ("How this shows up at X") - already correctly gated on a real
+    company mention; now shows the citation when one exists.
+  - Chip panels (What?/Why?/How to apply) - `useProbe.ts`/`ProbeChat.tsx` - was 100% AI
+    with zero grounding attempt wired to the UI even though `chipPanel.js` already
+    returned `groundedInCasebooks`/`citation`; the type (`ChipPanelResponse`) didn't even
+    have the fields. Added them and render the result.
+- **Guesstimates: first real UI**, `GuesstimatesPage.tsx` (new route `/guesstimates`, new
+  nav entry). Fetches a random practice problem, renders markdown + any embedded
+  `placewise-diagram` block (reusing `splitMarkdownBlocks`/`PlacewiseDiagram` - same
+  pattern the admin review queue already used, not reinvented), shows the citation, "Try
+  another" button. Correctly shows "not switched on yet" rather than an error while
+  `is_active` is false everywhere.
+- **Framework catalog view** added to `FrameworksPage.tsx` - "From the casebooks" section,
+  real diagram titles from R7's `buildConsultingFrameworkCatalog`, expandable per-entry to
+  show citations (capped at 20 + "N more" for popular ones like Value Chain's 82).
+
+**Real bug found and fixed during testing, not just claimed:** the framework catalog's
+pill row used default flex `align-items: stretch` - expanding one entry (showing its
+citation list) stretched every sibling pill in that row to match its height, turning the
+row into dozens of tall empty boxes. Only visible in an actual screenshot, not an
+automated check - caught the same way as the mobile-fix correction a few commits back,
+this time on the first pass. Fixed with `alignItems: "flex-start"`.
+
+**Testing method (explicit instruction from Aalhad after the earlier mobile-fix miss):**
+started an isolated local backend (port 4060, `ENABLE_CONSULTING_RAG_V2=true` for this
+process only - never touched the shared `backend/.env` or live Supabase `is_active`
+values) and an isolated frontend (port 5190) pointed at it, then drove real `/browse`
+screenshots - desktop, 375px mobile, light and dark theme - and actually looked at them
+before claiming anything worked. `ingest_chunks.is_active` is false everywhere live, so
+Guesstimates/Topics/chip grounding correctly show their off-state in every screenshot;
+the framework catalog (reads `ingest_pages` directly, not gated by `is_active`) is the one
+place real grounded data was actually visible end-to-end - confirmed working against 151
+real framework entries.
+
+**Proof:** `tsc -b` and `npm run build` clean. `npm run lint` - one new warning
+(`set-state-in-effect` on `GuesstimatesPage.tsx`), same pre-existing pattern already
+present on 7 other files in this codebase, not a new category of issue. No console errors
+on any tested page. Real screenshots (not committed - local `.gstack/browse-reports/`):
+Frameworks catalog (desktop/mobile/dark, collapsed and expanded, before/after the
+stretch-bug fix), Guesstimates off-state (desktop/mobile/dark), Role Topics fallback label
+(desktop/mobile/dark), chip panel fallback label (desktop, via a real Gemini call).
+
+**Left for a later pass, flagged not guessed:**
+- Guesstimates page is deliberately minimal (a working page, not a redesign) - nav
+  placement and visual polish are Aalhad's call.
+- The framework catalog pill UI is functional but basic - fine for now, a real design
+  pass could group/filter 151 entries better than one long wrapped row.
+- Nothing here was testable against real grounded output for Guesstimates/Topics/chips
+  specifically (vs. the framework catalog) since `is_active` is false everywhere - the
+  component logic is verified against both the off-state (real, by default) and the
+  on-state's actual data shape (matches the backend code read directly), but not an
+  end-to-end grounded screenshot. That requires R9's switch-over to verify for real.
+
+**Cost:** one real chip-panel Gemini call during testing (negligible). No other paid calls.
+
+---
+
 ## 2026-10-31 — R6: ingest IIM L Consulting Casebook 2025
 **Phase:** R6 · **Type:** ingestion
 

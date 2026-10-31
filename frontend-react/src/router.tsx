@@ -5,6 +5,7 @@ import RequireAuth from "./components/shell/RequireAuth";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import FrameworksPage from "./pages/FrameworksPage";
+import GuesstimatesPage from "./pages/GuesstimatesPage";
 import CompanyPage from "./pages/CompanyPage";
 import RolePage from "./pages/RolePage";
 import MockInterviewPage from "./pages/MockInterviewPage";
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "/", element: <HomePage /> },
           { path: "/frameworks", element: <FrameworksPage /> },
+          { path: "/guesstimates", element: <GuesstimatesPage /> },
           { path: "/company", element: <CompanyPage /> },
           { path: "/role", element: <RolePage /> },
           { path: "/mock-interview", element: <MockInterviewPage /> },

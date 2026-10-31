@@ -94,6 +94,10 @@ export interface ChipPanelResponse {
   text: string;
   cached: boolean;
   contentCheck: { checked: boolean; passed: boolean; issue: string };
+  // R7 (backend-only until R8): real casebook citation when the chip's topic is
+  // covered, or false + no citation when this is general AI guidance.
+  groundedInCasebooks?: boolean;
+  citation?: import("../types/api").GuesstimateCitation | null;
 }
 
 export async function fetchChipPanel(role: string, topic: string, blockId: string, mode: "what" | "why" | "how", prompt: string): Promise<ChipPanelResponse> {

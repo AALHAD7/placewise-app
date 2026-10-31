@@ -355,12 +355,19 @@ export interface RoleTopicsResponse {
   success: true;
   matchedRole: string;
   topics: RoleTopic[];
+  // R7/G2 (backend-only until R8): real casebook citations when covered, or false +
+  // no citations when this is general AI guidance - see GroundingNote.tsx.
+  groundedInCasebooks?: boolean;
+  citations?: GuesstimateCitation[];
 }
 
 // GET /api/roles/:title/company-notes?company=&topics=
 export interface RoleCompanyNotesResponse {
   success: true;
   notes: Record<string, string>;
+  // Keyed the same as `notes` - only topics with a real company mention get a
+  // citation; the rest are simply absent (grounding policy: show nothing, not a guess).
+  citations?: Record<string, GuesstimateCitation[]>;
 }
 
 // POST /api/mock-interview/start - backend/src/routes/mockInterview.js

@@ -62,6 +62,12 @@ const NAV: NavEntry[] = [
     ]
   },
   {
+    to: "/guesstimates",
+    label: "Guesstimates",
+    paths: ["M12 2v4", "M12 18v4", "M4.93 4.93l2.83 2.83", "M16.24 16.24l2.83 2.83", "M2 12h4", "M18 12h4", "M4.93 19.07l2.83-2.83", "M16.24 7.76l2.83-2.83"],
+    circles: [{ cx: 12, cy: 12, r: 4 }]
+  },
+  {
     // "Resume Interrogation" is the feature's full name (see ResumePage),
     // but doesn't fit this row alongside 8 other items - shortened per
     // spec to "Resume Drill", used identically here and on Home's card so
