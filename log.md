@@ -5,6 +5,148 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — R6 follow-up: weighted per-block `_score` fix verified live (tie-break regression resolved); p177 merge investigated, not built
+**Phase:** R6 (fix) · **Type:** ingestion, fix, tests · Resumed after a session-boundary git
+branch collision (unrelated concurrent push landed a stray commit on the wrong branch,
+handled separately); confirmed clean start on `wip` at `0e78f14` before touching anything.
+
+**Priority 1 - the tie-break regression (found and left open in the prior entry above):**
+On arrival, `convert.py`'s `_score()` already contained a weighted per-block formula
+(`BLOCK_ISSUE_FREE_ALLOWANCE=2`, `BLOCK_ISSUE_WEIGHT=0.05`, `BLOCK_ISSUE_CAP=20`,
+`_block_penalty()`) - this code (and a matching `tests/test_r6_formula_live.py` with 3
+hand-recorded-from-a-prior-live-run cases for p78/p30/p50) was already committed on `wip`
+(`b40ed0c`), apparently written in the interrupted session before the branch collision, but
+**no log.md entry documented it and p16 was missing from the test file** - so none of it was
+trusted at face value. Everything below is this session's own independent live
+re-verification, not a reconstruction of the inherited numbers (which, re-run live today,
+produced materially different real diagram_issues than the inherited test file recorded -
+Gemini vision output is not deterministic run-to-run, confirmed directly - so the inherited
+numbers couldn't have been re-checked for consistency anyway; they were superseded, not
+trusted).
+
+- **Formula logic:** a block's first `BLOCK_ISSUE_FREE_ALLOWANCE` (2) qualifying issues still
+  cost the original flat 0.5 (unchanged from the first R6 fix, so p177-style "one block, a
+  couple of related issues" cases are untouched); each issue beyond that adds
+  `BLOCK_ISSUE_WEIGHT` (0.05), capped at `BLOCK_ISSUE_CAP` (20) extra issues per block. A
+  block with 15 issues now costs 0.5 + 0.05*13 = 1.15, not a flat 0.5 - no longer
+  indistinguishable from a block with 1 issue.
+- **(a) ISB p177 / page_classify routing - re-verified live, not re-broken:**
+  `run_r6_isb_p177_patch.py` re-run live (2 real vision HTTP calls) against the real PDF:
+  vision scores **2.0**, Docling **2.4769** - Docling still wins, page unchanged, matching
+  stored production state exactly (`method=docling`, no DB write). A deeper live capture of
+  vision's full output this session (separate 2-call run, `out/r6_formula_verify/
+  ISB_p177_diagrams.json`) found this run's vision output is actually very good - 9 clean
+  structured diagram blocks covering every section plus the recovered footer line
+  ("ISB | Consulting Prep Casebook | 2025 | 177") - with only 2 minor flags (1 genuine
+  duplicate "Patient Acquisition" label that really is printed twice on the page, 1
+  punctuation-level `label_altered`), both within `BLOCK_ISSUE_FREE_ALLOWANCE` so neither is
+  extra-penalized. The page_classify chart-routing fix (53a281b, pages 162/166/169/175) is
+  unrelated code, untouched this session, still covered by its own passing regression test.
+- **(b) FMS2023-24 p78, FMS2021-22 p16, FMS2021-22 p50, ISB p30 - re-verified live:**
+  new script `run_r6_formula_verify_live.py` re-runs both of `convert_page_vision`'s real
+  attempts (attempt 1, then the targeted retry) directly against the real PDFs for all 4
+  pages (8 real vision HTTP calls), and scores both attempts under the OLD flat-per-issue
+  formula, the OLD flat-per-block formula (the one with the tie bug), and the NEW weighted
+  formula, from the real live `diagram_issues` (not hand-built):
+
+| page | old flat-per-block | new weighted | real outcome |
+|---|---|---|---|
+| FMS2023-24 p78 | a1=2.50, a2=3.00 (no tie this run) | a1=1.85, a2=3.00 | both agree, attempt 2 kept (0 issues after retry) |
+| FMS2021-22 p16 | **a1=1.50, a2=1.50 (TIE -> keeps worse a1)** | a1=0.95, a2=1.05 | **tie broken correctly, attempt 2 kept** |
+| FMS2021-22 p50 | a1=0.77, a2=0.73 (no tie) | a1=0.32, a2=0.03 | both agree, attempt 1 kept |
+| ISB p30 | a1=1.86, a2=1.86 (TIE -> keeps a1) | a1=1.41, a2=1.26 | tie broken, same pick as before (a1), now by real severity not luck |
+
+  FMS2021-22 p16 reproduced the exact tie-break bug live this session: attempt 1's diagram
+  block failed schema validation entirely (`type: "other"`, discarded, `diagrams: []` - the
+  student would see **no diagram at all** for this page, a real 9-box Porter's-style value
+  chain chevron); attempt 2's retry produced a real renderable flow diagram (10 nodes, 4
+  edges, one `flow_disconnected` warning for missing edges among the support-activities
+  boxes) - visually confirmed against the real page image
+  (`out/r6_formula_verify/FMS2021-22_p16.png`) that an imperfect real diagram beats no
+  diagram. Old flat-per-block formula tied both at 1.5 (1 bad block each) and would have
+  silently kept attempt 1 (no diagram); new formula breaks the tie toward attempt 2 by real
+  issue-count severity (11 < 13). Locked in as
+  `tests/test_r6_formula_live.py::test_fms2122_p16_tie_broken_correctly`, replacing the
+  untrusted inherited gap. p78/p50/p30 did not reproduce an exact tie this run (model
+  non-determinism - different real issues than the numbers the inherited test file recorded),
+  but in every case the new formula's pick matches or improves on the old formula's pick, with
+  no inversions found.
+- **Full regression suite:** `venv/bin/python -m unittest discover -s tests` → **386/386
+  green** (385 before this session's one new test, +1). `npm test` → 111/112, same
+  pre-existing unrelated `sandbox.test.js` `__CF_USER_TEXT_ENCODING` flake every prior entry
+  this week documents, not a regression.
+
+**Priority 2 - ISB p177 Docling+vision merge (investigated, not built):** Aalhad's suggestion
+was to patch vision's one bad region into Docling's otherwise-better output instead of picking
+a whole-page winner. Investigated live rather than assumed:
+- Docling's markdown has **no structural anchors** for any of p177's 9 sections (no
+  `## heading` markup, no per-block boundaries) - "Value Chain" and "Porter's 5 forces" come
+  through as an undifferentiated run of label words, not a delimited region a script could
+  reliably locate and replace. Locating "where does section X start/end in Docling's output"
+  would need page-specific manual indexing, not a general rule.
+- Live reruns of vision on the same page produced **materially different diagram_issues each
+  time** (this session's run found only 2 minor flags across 9 otherwise-clean blocks; the
+  problem description this task was handed, and the prior session's partial finding, describe
+  a worse single-block mis-treeing that did not reproduce today). A "patch the bad region"
+  rule has no stable target to aim at when the "bad region" itself changes between runs of the
+  same page.
+- A narrower, genuinely reusable idea **does** exist but is a different fix than the one asked
+  for: p177's missing footer digits ("2025", "177") are present verbatim in the page's own
+  `text_layer` (pdfium raw extraction, confirmed: offsets 220/225) but dropped by Docling's
+  own layout/markdown step - this is a `text_layer` vs `docling_markdown` gap, not a
+  Docling-vs-vision merge, and the fidelity checker already computes exactly this gap
+  (`number_coverage`/`word_coverage`). Backfilling verbatim-present-in-text_layer tokens into
+  a winning Docling page is a plausible, safe (copies only already-extracted raw text, invents
+  nothing), reusable pattern - but it's a new pipeline behavior change affecting every
+  Docling-winning page, which needs its own pilot and review before shipping, not a bolt-on
+  inside this task's scope (guardrails: no broader re-ingestion/batch patching beyond
+  verifying the two named fixes).
+- **Conclusion: the literal "patch one region from the losing candidate" merge is not a safe,
+  reusable pattern for p177** (no structural anchors in Docling's output, no stable target in
+  vision's output across runs) - built nothing. **p177 is left exactly as before: unresolved,
+  Docling is the live/stored pick, still needs_review=true via the diagram-page gate upstream,
+  Aalhad's call** whether a future, separately-scoped text_layer-backfill pass is worth doing.
+
+**Files:** `backend/ingestion/convert.py` (inherited, re-verified not re-written -
+`_block_penalty`/`BLOCK_ISSUE_*`), `backend/ingestion/run_r6_formula_verify_live.py` (new,
+this session), `backend/ingestion/tests/test_r6_formula_live.py` (new
+`test_fms2122_p16_tie_broken_correctly` test added this session; 3 pre-existing cases kept as
+hand-built regression tests, no longer relied on as "live proof" per this entry).
+
+**Proof:**
+- Live terminal output of `run_r6_formula_verify_live.py` and `run_r6_isb_p177_patch.py` (both
+  re-run this session, real HTTP calls, shown above).
+- `venv/bin/python -m unittest discover -s tests` → 386/386. `npm test` → 111/112 (pre-existing
+  flake only).
+- Row counts unchanged before/after this session (read-only + 0 writes, confirmed by direct
+  query): `ingest_documents` 13, `ingest_pages` 2576, `ingest_chunks` 3696 (`is_active=true`:
+  0), `document_chunks` (live) 22457 - identical to the prior entry's numbers.
+- Branch: `wip` only, confirmed starting and ending on `wip`; `main` never touched.
+
+**Cost:** 12 real vision HTTP calls this session (8 formula-verify + 2 p177 patch-check + 2
+p177 detail capture), 0 embedding calls (no writes, nothing re-ingested). At this project's
+established flash-lite rate (~$0.0012/call) ≈ **$0.01-0.02** this session. Cumulative R6
+spend: **≈$0.81-0.98**, still under the informal ~$1 guardrail mentioned in the prior entry
+and far under the ~$20/month project budget.
+**Undo:** No DB state to undo - zero writes this session. Code changes are a normal git
+revert of the two new/changed files above if ever needed.
+**Open issues:**
+- p177 remains genuinely unresolved - Docling (complete text, zero structured diagrams,
+  missing footer) vs vision (structured diagrams for all 9 sections including the footer, 2
+  minor flagged issues) is a real product tradeoff, not a bug, and still needs Aalhad's
+  explicit call.
+- The text_layer-backfill idea above (recovering verbatim-present footer/number tokens into a
+  winning Docling page generally, not just p177) is a plausible, separately-scoped follow-up -
+  not built, not decided.
+- The weighted formula's constants (`BLOCK_ISSUE_FREE_ALLOWANCE=2`, `WEIGHT=0.05`, `CAP=20`)
+  are still only verified against this session's 5 live-sampled pages (p177, p78, p16, p50,
+  p30) plus the inherited hand-built tests - not the full 63-page "concentrated issues" set
+  the original regression-finding entry identified. Before any batch re-ingest or wider patch
+  run, that wider set should get the same live (not reconstructed) treatment this entry gives
+  its 5 pages.
+
+---
+
 ## 2026-10-31 — Mobile layout fixes: 7 pages overflowed horizontally at 375px
 **Phase:** M4 (F1/F2, frontend fixes) · **Type:** fix
 
