@@ -5,6 +5,41 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — R6: ingest IIM L Consulting Casebook 2025
+**Phase:** R6 · **Type:** ingestion
+
+**What changed:** Ingested "IIM L Consulting Casebook 2025.pdf" (source_class `club_casebook`,
+IIM Lucknow, Consulting & Strategy Club) end to end — classify → convert → chunk → embed →
+store. Insert-only into `ingest_documents`/`ingest_pages`/`ingest_chunks`, `is_active=false`
+throughout (chunk.py default). `document_chunks` (live) and all prior `ingest_*` rows
+untouched. No changes made to the pipeline code itself — the chart-routing fix
+(`page_classify.py`) and the live-verified weighted scoring formula (`convert.py`) from the
+immediately preceding session were used as-is.
+
+**Fidelity:** 218 pages, 408 chunks. Mean `number_coverage` 0.996. 160 pages (73.4%) carry
+`needs_review=true` — in line with this project's standing design (every diagram page waits
+for human sign-off), not a quality failure. 36 pages (16.5%) have a real `diagram_issues`
+flag; the worst (page 37, `number_coverage=0.5`) is a genuine structural issue — a
+`placewise-diagram` block nested inside a Markdown table cell instead of standing alone
+(`block_in_table`, severity error) — correctly flagged for review, content itself (a
+"Customer Journey" flow diagram for a profitability case) is coherent and not invented.
+**Zero `hallucinated` findings anywhere in the casebook** (checked via direct query on
+`diagram_issues`).
+
+**Cost:** 265 vision calls + 408 embedding calls, ≈$0.33-0.40 at this project's established
+flash-lite rate (~$0.0015-0.002/page). Cumulative R6 spend before this run: ≈$0.81-0.98;
+after: **≈$1.14-1.38** — now over the informal ~$1 soft guardrail used in recent sessions,
+still far under the project's $20/month Gemini budget.
+
+**Left open:** 6 of the 7 remaining Consulting casebooks (IIM B, IIM Calcutta, IIMA, IIMK, The
+Consulting Club FMS 2025-26, FMS 2024-25 — combined ~1,971 more pages) are still pending;
+this run covered only the smallest. Page 37's `block_in_table` structural issue is a
+formatting problem the converter should ideally avoid outputting in the first place — worth a
+root-cause pass if it recurs across the remaining casebooks, not fixed in this run (out of
+scope, no pipeline code changes made here).
+
+---
+
 ## 2026-10-31 — Correction: two real mobile bugs the earlier F2 pass (`0e78f14`) missed on Role
 **Phase:** F2 (fix, correction) · **Type:** fix
 
