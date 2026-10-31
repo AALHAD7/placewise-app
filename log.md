@@ -5,6 +5,52 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — Mobile layout fixes: 7 pages overflowed horizontally at 375px
+**Phase:** M4 (F1/F2, frontend fixes) · **Type:** fix
+
+**What was broken:** Aalhad reported the site "cannot be used properly on mobile." An audit at
+375px (iPhone width, this project's own mobile standard) found real horizontal overflow on
+every page except Home — three separate root causes, all CSS/layout, none were logic bugs:
+
+1. **`.grid-3` had no responsive breakpoint** (`global.css`) — hardcoded `repeat(3,1fr)` with no
+   mobile collapse, unlike its sibling `.home-tools-grid` which already had one. This is the
+   "What you'll find here" 3-card row used on 7 pages (Frameworks, Role, Company, Mock
+   Interview, Tone Shifter, Community, Resume): at 375px each column was ~113px, too narrow for
+   icon+title+body, forcing the whole page wider than the viewport.
+2. **Two `flex:1` text inputs without `minWidth:0`** (Company/Role filter rows on
+   `MockInterviewPage.tsx` and `CommunityPage.tsx`) — browsers don't shrink flex items below
+   their intrinsic content width by default, so the pair couldn't compress to fit 375px.
+3. **`flexWrap: "nowrap"` on a button row** (`ResumePage.tsx`, the question-type toggle +
+   "Create a coherent story" button) — explicitly forced onto one line, pushing the last button
+   off-screen with no way to reach it except horizontal scroll.
+
+**What was NOT touched, and why:** `TopNav.tsx`'s mobile nav wraps into a multi-line pill
+cluster instead of collapsing behind a hamburger menu — this looks bad at 375px (eats a lot of
+vertical space before any content) but it's an explicit, documented design decision already in
+the code ("All items stay visible at every width - no hamburger/overflow menu"), not a bug.
+Left alone; flagged for Aalhad if he wants to revisit that policy specifically for phone widths.
+
+**Fix:**
+- `frontend-react/src/styles/global.css` — `.grid-3` gets `@media (max-width:900px)` → 2 cols,
+  `@media (max-width:560px)` → 1 col (same pattern `.home-tools-grid` already used).
+- `frontend-react/src/pages/MockInterviewPage.tsx`, `CommunityPage.tsx` — `minWidth: 0` added to
+  both filter inputs.
+- `frontend-react/src/pages/ResumePage.tsx` — `flexWrap: "nowrap"` → `"wrap"`.
+
+**Proof:** `/browse` (gstack's own headless browser, Aside unavailable on this machine) at
+375x812 against the local dev server, guest session. Before: 6 of 7 pages (frameworks, role,
+company, mock-interview, tone-shifter, community) overflowed from `.grid-3`; after that fix,
+mock-interview/community/resume still overflowed from the two separate input/button bugs above.
+After all three fixes: all 7 pages report `scrollWidth === clientWidth` (no overflow), confirmed
+with `document.querySelectorAll('*')` bounding-rect scan finding zero elements past the
+viewport edge. Screenshots before/after in `.gstack/browse-reports/mobile-audit/screenshots/`
+(not committed — local scratch). `npm run build` clean; `npm run lint` shows only pre-existing
+warnings in unrelated files/lines.
+
+**Cost:** $0 (no AI calls, pure CSS/layout).
+
+---
+
 ## 2026-10-31 — nvidia/nemotron-3-ultra-550b-a55b added as try-first cascade entry, chat.js only
 **Phase:** M4 (misc backend) · **Type:** feature, fix
 

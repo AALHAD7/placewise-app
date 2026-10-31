@@ -482,6 +482,13 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 
 .section-title{ font-size:var(--fs-title); font-weight:600; margin-bottom:18px; color:var(--text-ink); letter-spacing:-.012em; }
 .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+/* Below 900px three equal columns get too narrow for a card's icon+title+
+   body (the cause of real horizontal page overflow on every page using
+   .grid-3 - Frameworks, Role, Company, Mock Interview, Tone Shifter,
+   Community, Resume - at phone widths); same two-step collapse pattern as
+   .home-tools-grid. */
+@media (max-width:900px){ .grid-3{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:560px){ .grid-3{ grid-template-columns:1fr; } }
 .grid-full{ margin-top:18px; }
 
 .feature-card{ width:100%; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-lg); padding:22px; cursor:pointer; box-shadow:none; }
