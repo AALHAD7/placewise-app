@@ -496,7 +496,7 @@ export default function ResumePage() {
             ))}
           </select>
           <div style={{ marginTop: 14, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>What should we generate</div>
-          <div style={{ display: "flex", flexWrap: "nowrap", gap: 8, marginTop: 12 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
             {(["Behavioural", "Technical", "Situational"] as ResumeCategory[]).map((m) => {
               const on = qMode === m;
               return (

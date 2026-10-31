@@ -5,176 +5,259 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
-## 2026-10-31 — R6 formula follow-up: per-block penalty now weighted by issue count (live-verified fix); ISB p177 Docling/vision merge investigated and found not reusable
-**Phase:** R6 (fix) · **Type:** ingestion, fix, tests · Real Gemini vision calls this session
-(Aalhad's explicit instruction to re-verify live, not from memory).
+## 2026-10-31 — Correction: two real mobile bugs the earlier F2 pass (`0e78f14`) missed on Role
+**Phase:** F2 (fix, correction) · **Type:** fix
 
-**Priority 1 — the tie-break regression, fixed and live-verified:**
+**What changed:** Fixed two genuine mobile-width bugs on the Role page, found from a real
+phone screenshot, that commit `0e78f14` ("fix(F2): mobile layout overflow on 7 pages at
+375px") claimed to have cleared via a DOM-overflow check ("0 overflowing elements"). That
+check was insufficient — neither bug produces an overflowing element, so it passed both
+bugs through undetected. Re-verified everything in this entry visually, not just with the
+overflow check.
 
-**Problem recap:** `_score()`'s per-block fix (commit `20e1cd4`) counted *distinct bad blocks*,
-not issues, to stop one mis-treed block's several issues from outweighing a real page-wide
-coverage win. But collapsing every bad block to the same flat `0.5` - whether it carried 1 issue
-or 15 - meant two candidates touching the same single block with very different severity scored
-identically. Production's tie-break (`keep attempt1 unless attempt2 scores strictly higher`) then
-silently kept the worse, un-retried attempt. Confirmed live on FMS2023-24 p78 and 3 others
-(log.md, 2026-10-31, "per-block formula regression found").
+1. **Severe word-wrap, one word per line, below "Exit Opportunities"** (and in "What this
+   role is" / "Topics to prepare"). Root cause: `RolePage.tsx`'s two-column info/sidebar
+   grid (`gridTemplateColumns: "minmax(0,1fr) minmax(320px,420px)"`) has no responsive
+   breakpoint and predates F2 and G2 both (introduced 2026-09-20, commit `0efe46e1`) — F2
+   added breakpoints for `.grid-3` and a couple of flex rows, but never touched this inline
+   grid. At ~375-412px, the sidebar's 320px floor leaves the main column's `minmax(0,1fr)`
+   almost nothing, so every card in it collapses to a few px wide and wraps one word per
+   line. Confirmed via real `/browse` screenshot at 390px before the fix. G2 (`6ce7b93`,
+   same day) is not the cause — it touched zero frontend files.
+   `ToneShifterPage.tsx` had the identical unbounded pattern (different ratio,
+   `minmax(0,1.55fr) minmax(300px,.85fr)`) and was fixed the same way as part of this
+   session's broader mobile check.
+2. **Nav capsule shows unblurred page content through it on mobile.** `.topnav` is
+   intentionally translucent + `backdrop-filter: blur(...)` (content is meant to scroll
+   blurred underneath it) — but on any context where `backdrop-filter` silently doesn't
+   render (seen on a real Android phone in the reported screenshot; data-saver/lite mode
+   and some GPU contexts drop compositing filters with no CSS fallback), only the flat
+   `rgba(255,255,255,.7)` background is left, so unblurred page text reads straight through
+   it. Reproduced with `/browse` by scrolling the page under the sticky nav at 375px — card
+   text appeared legibly layered behind the nav capsule, matching the reported screenshot.
+   Mobile is also where the nav is tallest (wraps to 3-4 lines), so this is where it bites
+   hardest.
 
-**Fix (`backend/ingestion/convert.py`):** `_block_penalty()` replaces the flat `0.5 *
-_penalty_blocks(fid)` term in `_score()`. Each bad block still costs a base `0.5`, but a block
-gets no extra penalty for its first 2 qualifying issues (`BLOCK_ISSUE_FREE_ALLOWANCE = 2` - a
-block tripping 1-2 related issues from one mis-treed section is still "one concentrated
-problem", matching the formula's original intent). Beyond that, each additional qualifying issue
-(capped at `BLOCK_ISSUE_CAP = 20` extra) adds `BLOCK_ISSUE_WEIGHT = 0.05`, so a block with many
-real issues scores worse than a block with few - breaking exactly the kind of tie that caused the
-regression. `_penalty_blocks()` (plain distinct-block count) is kept unchanged for callers/tests
-that only need the count; `_block_penalty()` is the new weighted total `_score` actually uses.
+**Fix:** Added a reusable `.two-col-sidebar` / `.two-col-sidebar-wide` grid class
+(collapses to one column below 760px) and applied it to `RolePage.tsx` and
+`ToneShifterPage.tsx` in place of the unbounded inline grid. Added a `max-width:640px`
+rule making `.topnav` and `.topnav-links.glass-capsule` fall back to the same solid
+`var(--surface)` background already used for `prefers-reduced-transparency`, so legibility
+no longer depends on `backdrop-filter` actually rendering.
 
-**(a) ISB-p177-style case still works - re-verified live, not just preserved on paper:**
-Re-ran `run_r6_isb_p177_patch.py` live against the real p177 page this session (2 fresh vision
-HTTP calls): real diagram_issues this run were `{block 1: flow_disconnected (1 warn), block 3:
-label_altered (1 error)}` - both blocks within the free allowance, so the penalty is still
-exactly the original flat `0.5` per block, unchanged by this fix. Result: vision_score=2.0000,
-docling_score=2.4769 (p177 **stays on Docling**, same real outcome as the 2026-10-31 session that
-first found this, confirmed again live, independent of this fix). The repo's existing
-`test_isb_p177_score_picks_vision_once_penalty_is_per_block` unit test was revised (not deleted):
-its original version reconstructed p177's discarded vision draft as "6 errors + 1 warn, all on
-one block" - that reconstruction was explicitly disproven by live re-runs this session and the
-2026-10-31 session before it (real issues span 2-3 blocks, never 1). The revised test keeps
-Docling's and vision's real stored scalars but anchors the hypothetical single bad block at a
-smaller, still-representative 2 qualifying issues (within the free allowance, so penalty is
-unchanged at 0.5) rather than the disproven 7 - documented inline why, and a new assertion pins
-`_block_penalty(vision_fid) == 0.5` so this can't silently drift.
+**Why:** A student reported (real phone screenshot) the Role page unreadable below "Exit
+Opportunities" and the nav overlapping page content — both real, both live, both missed by
+the earlier automated "0 overflowing elements" verification.
 
-**(b) FMS2023-24 p78, p16; ISB p30; FMS2021-22 p50 - re-verified live, both attempts captured:**
-Wrote `verify_r6_formula.py` (scratchpad, not committed), which calls the real
-`convert_page_vision()` and intercepts *both* internal attempts via a monkeypatch around
-`_vision_attempt`, so it sees exactly what production sees - not a reconstruction. Ran it twice
-(14 live vision HTTP calls total) against the real PDFs:
+**Files:** `frontend-react/src/pages/RolePage.tsx`, `frontend-react/src/pages/ToneShifterPage.tsx`,
+`frontend-react/src/styles/global.css`
 
-| page | attempt1 issues/blocks | attempt2 issues/blocks | old formula | new formula | tied under old per-block count? |
-|---|---|---|---|---|---|
-| FMS2023-24 p78 | 1 block, 14 issues | 1 block, 1 issue | picks a2 (-4.0 vs 2.5) | picks a2 (2.5 vs 1.68) | no (this run) |
-| FMS2023-24 p16 | 0 issues (no retry triggered) | n/a | n/a | n/a | n/a |
-| ISB p30 | 1 block, 11 issues | 1 block, 13 issues | picks a1 (-3.1 vs -4.1) | picks a1 (1.41 vs 1.31) | **yes, under flat count (1 vs 1 block)** |
-| FMS2021-22 p50 | 3 blocks, 15 issues (6/5/4) | 3 blocks, 13 issues (6/4/3) | picks a2 (-3.77 vs -4.66) | **picks a1** (0.893 vs 0.879) | **yes, under flat count (3 vs 3 blocks)** |
+**Proof:** `npm run build` clean, `npm run lint` clean (pre-existing warnings only, no new
+ones). Before/after `/browse` screenshots at 375px and 390px: before shows "on" / "retention,"
+/ "and" / "revenue" / "impact." each on its own line and nav-capsule ghosting on scroll;
+after shows the full sentence readable in one paragraph and a solid opaque nav with no
+bleed-through. Broader pass also checked Company page (today's G3 work) at 390px — grids
+there use `auto-fit`/`auto-fill`, not a fixed-min sidebar, no horizontal overflow, no
+squeeze found.
 
-Live Gemini output is not deterministic run to run (confirmed directly: p78's two live runs
-produced different attempt1/attempt2 content each time), so this run's exact numbers differ from
-the originally-reported tie on these same 4 pages - the new formula's job is to never let a tie
-reappear whenever two attempts share a block count, and to rank correctly when it doesn't tie.
-Both held on every page above: `_penalty_blocks` alone (the old scheme) *would* have tied p30 and
-p50 (same block count, 1 and 3 respectively) - the weighted `_block_penalty` broke both ties and
-never inverted a ranking the old flat-per-issue formula got right.
+**Undo:** revert this commit; `.two-col-sidebar`/`.two-col-sidebar-wide` and the mobile
+`.topnav` fallback are additive CSS, safe to drop independently.
 
-**Visual confirmation against the real source image (not just a score comparison), p50 - the one
-page where new and old formula actually disagreed this run:** pulled the real page image
-(`Understanding Indian E-Commerce Industry`, FMS2021-22 p49/source_page 50) and read both
-attempts' full markdown. Old formula's pick (attempt 2, fewer raw issues) merges each Value
-Chain stage's header and description into one fabricated flow-node label (e.g. `"Inbound
-logistics Receiving, Warehousing & Inventory control of input"` as a single node - two separately
-printed texts concatenated with no separator, not literally printed that way) and garbles the
-Government Initiatives badges into a nonsense merged label (`"Udaan Digital Udaan"`). New
-formula's pick (attempt 1) correctly keeps every box as its own structured block, including the
-header/description parent-child split Value Chain actually has on the page. **The new formula's
-pick is the objectively better transcription here, confirmed by reading the real page** - not
-just a formula artifact. (p78's and p30's picks agreed between old and new formula this run, so
-they weren't a live test of a disagreement, but were still checked against the real page image:
-p78's kept attempt correctly has the pie-chart numbers and the discarded attempt fabricates a
-flow chart out of plain bullet text and loses the chart entirely; p30's label coverage is weak on
-both attempts for a page whose Venn/triangle shape isn't representable by the current diagram
-schema - a real, pre-existing schema gap, not something this scoring fix changes either way.)
+**Open issues:** The nav's real-device backdrop-filter failure mode (why it doesn't render
+on that phone — data saver vs. GPU) wasn't root-caused precisely, only worked around with a
+solid fallback below 640px. TopNav's lack of a hamburger menu (wraps to multiple lines
+instead) remains the known, separate, already-documented design decision from F2 — not
+changed here.
 
-**Tests:** `backend/ingestion/tests/test_r6_formula_live.py` (new) pins the exact real
-issue/block counts captured live above as offline regression tests (no network) - asserts the old
-per-block count alone would tie p78/p30/p50's attempts, and the new weighted formula does not tie
-them and ranks them the same direction the live run + visual check confirmed correct.
-`test_convert_v2.py`'s p177 test revised as described in (a). Full suite:
-**`venv/bin/python -m unittest discover -s tests` → 385/385 green** (382 before + 3 new: 2 live
-regression tests kept after merging, 1 revised). `npm test` → 111 pass / 1 fail (the same
-pre-existing unrelated `sandbox.test.js` `__CF_USER_TEXT_ENCODING` flake every prior entry
-documents - confirmed unrelated, no ingestion code touches that file).
+---
 
-**Priority 2 — ISB p177 Docling+vision merge: investigated, not feasible, not hardcoded in:**
+## 2026-10-31 — R6 follow-up: weighted per-block `_score` fix verified live (tie-break regression resolved); p177 merge investigated, not built
+**Phase:** R6 (fix) · **Type:** ingestion, fix, tests · Resumed after a session-boundary git
+branch collision (unrelated concurrent push landed a stray commit on the wrong branch,
+handled separately); confirmed clean start on `wip` at `0e78f14` before touching anything.
 
-Re-ran the real page live twice more this session (one via the patch script, one via a dedicated
-fetch script) to inspect both candidates in full, plus the real page image. Findings:
-- **Docling's output for p177 has zero diagram blocks and scrambled reading order** - it's a
-  flat, unordered dump of every text run on the page (e.g. "Key Market Trends" ends up after
-  "Market Structure", `Key Players` after that) with no parent/child structure anywhere,
-  including for the exact two regions (Value Chain, Key Players) that gave vision its warnings
-  this run. There is no "Docling got this region right" to surgically patch into vision for
-  either of those regions - Docling's own version of them is equally or more degraded (flat text,
-  no structure).
-- **The footer premise checks out** (Docling's stored markdown genuinely has no "2025"/"177" at
-  all, confirmed by reading the full field; vision's does, at the very end, confirmed on both live
-  runs this session) - but vision already recovers it reliably on its own, so there is nothing to
-  patch there either.
-- **The specific defect location is not stable across live runs**, which is itself the strongest
-  evidence against a reusable "patch region X" technique: the 2026-10-31 session's live reruns
-  found issues on blocks `{1,3}` and `{1,3,6}`; this session's two fresh live reruns found `{block
-  5 (Porter's 5 forces): 0 issues, block 1 (Value Chain): flow_disconnected, block 3 (Key
-  Players): label_altered}` - i.e. in this run, Porter's 5 forces (the section the original brief
-  specifically named) had **zero** issues, and the real problem was a flow-vs-issue_tree type
-  choice on Value Chain's 4 non-arrowed columns instead. A surgical per-region patch presupposes a
-  stable defect location; here even *which section* fails changes between runs.
-- Net result unchanged from the 2026-10-31 session: **p177 stays on Docling**, both scored
-  2.0-2.5ish vs Docling's 2.4769 depending on the run, under the now-fixed formula. Vision's
-  overall transcription is substantially richer (full structured sections, correct reading order,
-  footer present) but the automatic scorer still prefers Docling by a thin margin because of 1-2
-  real, minor structural warnings - this is a scoring-threshold tension, not a content gap a
-  Docling-sourced patch could close.
-**Conclusion:** no generalizable merge pattern found; not built, not hardcoded. **p177 remains
-unresolved**, same as before this session - Aalhad's call between Docling (safe, zero structure,
-needs_review anyway) and vision (richer, needs_review anyway, same human-review gate either way
-since both end up `needs_review=true`).
+**Priority 1 - the tie-break regression (found and left open in the prior entry above):**
+On arrival, `convert.py`'s `_score()` already contained a weighted per-block formula
+(`BLOCK_ISSUE_FREE_ALLOWANCE=2`, `BLOCK_ISSUE_WEIGHT=0.05`, `BLOCK_ISSUE_CAP=20`,
+`_block_penalty()`) - this code (and a matching `tests/test_r6_formula_live.py` with 3
+hand-recorded-from-a-prior-live-run cases for p78/p30/p50) was already committed on `wip`
+(`b40ed0c`), apparently written in the interrupted session before the branch collision, but
+**no log.md entry documented it and p16 was missing from the test file** - so none of it was
+trusted at face value. Everything below is this session's own independent live
+re-verification, not a reconstruction of the inherited numbers (which, re-run live today,
+produced materially different real diagram_issues than the inherited test file recorded -
+Gemini vision output is not deterministic run-to-run, confirmed directly - so the inherited
+numbers couldn't have been re-checked for consistency anyway; they were superseded, not
+trusted).
 
-**Files:** `backend/ingestion/convert.py` (`_block_penalty`/`_block_issue_counts`,
-`BLOCK_ISSUE_FREE_ALLOWANCE`/`WEIGHT`/`CAP`), `backend/ingestion/tests/test_convert_v2.py`
-(revised p177 test), `backend/ingestion/tests/test_r6_formula_live.py` (new). No pipeline code
-changed for Task 2 (investigation only, nothing to merge).
+- **Formula logic:** a block's first `BLOCK_ISSUE_FREE_ALLOWANCE` (2) qualifying issues still
+  cost the original flat 0.5 (unchanged from the first R6 fix, so p177-style "one block, a
+  couple of related issues" cases are untouched); each issue beyond that adds
+  `BLOCK_ISSUE_WEIGHT` (0.05), capped at `BLOCK_ISSUE_CAP` (20) extra issues per block. A
+  block with 15 issues now costs 0.5 + 0.05*13 = 1.15, not a flat 0.5 - no longer
+  indistinguishable from a block with 1 issue.
+- **(a) ISB p177 / page_classify routing - re-verified live, not re-broken:**
+  `run_r6_isb_p177_patch.py` re-run live (2 real vision HTTP calls) against the real PDF:
+  vision scores **2.0**, Docling **2.4769** - Docling still wins, page unchanged, matching
+  stored production state exactly (`method=docling`, no DB write). A deeper live capture of
+  vision's full output this session (separate 2-call run, `out/r6_formula_verify/
+  ISB_p177_diagrams.json`) found this run's vision output is actually very good - 9 clean
+  structured diagram blocks covering every section plus the recovered footer line
+  ("ISB | Consulting Prep Casebook | 2025 | 177") - with only 2 minor flags (1 genuine
+  duplicate "Patient Acquisition" label that really is printed twice on the page, 1
+  punctuation-level `label_altered`), both within `BLOCK_ISSUE_FREE_ALLOWANCE` so neither is
+  extra-penalized. The page_classify chart-routing fix (53a281b, pages 162/166/169/175) is
+  unrelated code, untouched this session, still covered by its own passing regression test.
+- **(b) FMS2023-24 p78, FMS2021-22 p16, FMS2021-22 p50, ISB p30 - re-verified live:**
+  new script `run_r6_formula_verify_live.py` re-runs both of `convert_page_vision`'s real
+  attempts (attempt 1, then the targeted retry) directly against the real PDFs for all 4
+  pages (8 real vision HTTP calls), and scores both attempts under the OLD flat-per-issue
+  formula, the OLD flat-per-block formula (the one with the tie bug), and the NEW weighted
+  formula, from the real live `diagram_issues` (not hand-built):
+
+| page | old flat-per-block | new weighted | real outcome |
+|---|---|---|---|
+| FMS2023-24 p78 | a1=2.50, a2=3.00 (no tie this run) | a1=1.85, a2=3.00 | both agree, attempt 2 kept (0 issues after retry) |
+| FMS2021-22 p16 | **a1=1.50, a2=1.50 (TIE -> keeps worse a1)** | a1=0.95, a2=1.05 | **tie broken correctly, attempt 2 kept** |
+| FMS2021-22 p50 | a1=0.77, a2=0.73 (no tie) | a1=0.32, a2=0.03 | both agree, attempt 1 kept |
+| ISB p30 | a1=1.86, a2=1.86 (TIE -> keeps a1) | a1=1.41, a2=1.26 | tie broken, same pick as before (a1), now by real severity not luck |
+
+  FMS2021-22 p16 reproduced the exact tie-break bug live this session: attempt 1's diagram
+  block failed schema validation entirely (`type: "other"`, discarded, `diagrams: []` - the
+  student would see **no diagram at all** for this page, a real 9-box Porter's-style value
+  chain chevron); attempt 2's retry produced a real renderable flow diagram (10 nodes, 4
+  edges, one `flow_disconnected` warning for missing edges among the support-activities
+  boxes) - visually confirmed against the real page image
+  (`out/r6_formula_verify/FMS2021-22_p16.png`) that an imperfect real diagram beats no
+  diagram. Old flat-per-block formula tied both at 1.5 (1 bad block each) and would have
+  silently kept attempt 1 (no diagram); new formula breaks the tie toward attempt 2 by real
+  issue-count severity (11 < 13). Locked in as
+  `tests/test_r6_formula_live.py::test_fms2122_p16_tie_broken_correctly`, replacing the
+  untrusted inherited gap. p78/p50/p30 did not reproduce an exact tie this run (model
+  non-determinism - different real issues than the numbers the inherited test file recorded),
+  but in every case the new formula's pick matches or improves on the old formula's pick, with
+  no inversions found.
+- **Full regression suite:** `venv/bin/python -m unittest discover -s tests` → **386/386
+  green** (385 before this session's one new test, +1). `npm test` → 111/112, same
+  pre-existing unrelated `sandbox.test.js` `__CF_USER_TEXT_ENCODING` flake every prior entry
+  this week documents, not a regression.
+
+**Priority 2 - ISB p177 Docling+vision merge (investigated, not built):** Aalhad's suggestion
+was to patch vision's one bad region into Docling's otherwise-better output instead of picking
+a whole-page winner. Investigated live rather than assumed:
+- Docling's markdown has **no structural anchors** for any of p177's 9 sections (no
+  `## heading` markup, no per-block boundaries) - "Value Chain" and "Porter's 5 forces" come
+  through as an undifferentiated run of label words, not a delimited region a script could
+  reliably locate and replace. Locating "where does section X start/end in Docling's output"
+  would need page-specific manual indexing, not a general rule.
+- Live reruns of vision on the same page produced **materially different diagram_issues each
+  time** (this session's run found only 2 minor flags across 9 otherwise-clean blocks; the
+  problem description this task was handed, and the prior session's partial finding, describe
+  a worse single-block mis-treeing that did not reproduce today). A "patch the bad region"
+  rule has no stable target to aim at when the "bad region" itself changes between runs of the
+  same page.
+- A narrower, genuinely reusable idea **does** exist but is a different fix than the one asked
+  for: p177's missing footer digits ("2025", "177") are present verbatim in the page's own
+  `text_layer` (pdfium raw extraction, confirmed: offsets 220/225) but dropped by Docling's
+  own layout/markdown step - this is a `text_layer` vs `docling_markdown` gap, not a
+  Docling-vs-vision merge, and the fidelity checker already computes exactly this gap
+  (`number_coverage`/`word_coverage`). Backfilling verbatim-present-in-text_layer tokens into
+  a winning Docling page is a plausible, safe (copies only already-extracted raw text, invents
+  nothing), reusable pattern - but it's a new pipeline behavior change affecting every
+  Docling-winning page, which needs its own pilot and review before shipping, not a bolt-on
+  inside this task's scope (guardrails: no broader re-ingestion/batch patching beyond
+  verifying the two named fixes).
+- **Conclusion: the literal "patch one region from the losing candidate" merge is not a safe,
+  reusable pattern for p177** (no structural anchors in Docling's output, no stable target in
+  vision's output across runs) - built nothing. **p177 is left exactly as before: unresolved,
+  Docling is the live/stored pick, still needs_review=true via the diagram-page gate upstream,
+  Aalhad's call** whether a future, separately-scoped text_layer-backfill pass is worth doing.
+
+**Files:** `backend/ingestion/convert.py` (inherited, re-verified not re-written -
+`_block_penalty`/`BLOCK_ISSUE_*`), `backend/ingestion/run_r6_formula_verify_live.py` (new,
+this session), `backend/ingestion/tests/test_r6_formula_live.py` (new
+`test_fms2122_p16_tie_broken_correctly` test added this session; 3 pre-existing cases kept as
+hand-built regression tests, no longer relied on as "live proof" per this entry).
 
 **Proof:**
-- `venv/bin/python -m unittest discover -s tests` → **385/385 green**, before and after.
-- `npm test` → 111 pass / 1 fail, pre-existing unrelated flake, confirmed via `git stash` pattern
-  used in every prior entry.
-- Live reruns this session: `run_r6_isb_p177_patch.py` (2 vision HTTP calls, no DB write - vision
-  did not beat docling, script's own guard correctly skipped writing v3), `verify_r6_formula.py`
-  (2 runs, 7 + 7 = 14 vision HTTP calls, read-only, no DB write), `fetch_p177.py` (1
-  `convert_page_vision` call, ~2-4 HTTP calls depending on whether its internal retry fired - not
-  separately counted, no DB write).
-- Row counts: **no `ingest_documents`/`ingest_pages`/`ingest_chunks` row was inserted, updated or
-  deleted this session** - every live call in this session was either read-only or (for the one
-  write-capable script, `run_r6_isb_p177_patch.py`) hit its own "vision does not beat docling,
-  not writing v3" guard before any write. Live `document_chunks` unchanged.
-- Branch: `wip`, `main` untouched.
+- Live terminal output of `run_r6_formula_verify_live.py` and `run_r6_isb_p177_patch.py` (both
+  re-run this session, real HTTP calls, shown above).
+- `venv/bin/python -m unittest discover -s tests` → 386/386. `npm test` → 111/112 (pre-existing
+  flake only).
+- Row counts unchanged before/after this session (read-only + 0 writes, confirmed by direct
+  query): `ingest_documents` 13, `ingest_pages` 2576, `ingest_chunks` 3696 (`is_active=true`:
+  0), `document_chunks` (live) 22457 - identical to the prior entry's numbers.
+- Branch: `wip` only, confirmed starting and ending on `wip`; `main` never touched.
 
-**Cost:** ~18-20 vision HTTP calls this session (7 + 7 + 2 + ~2-4, see above) + 0 embedding calls
-(nothing was written, so nothing was re-chunked/re-embedded). At this project's established
-flash-lite rate (~$0.00125/call) that's **≈$0.02-0.03** this session. Combined with the ~$0.80-
-0.87 already spent on R6 before this session, cumulative R6 spend is **≈$0.82-0.90** - still under
-the project's ~$20/month budget and under the $1 R6 guardrail mentioned in the prior entry, but
-worth tracking before any further R6 spend this month. (Self-critique: the first
-`verify_r6_formula.py` run didn't save markdown/images, so a second live run was needed to get the
-visual-confirmation evidence - that doubled this particular script's cost; should have saved
-outputs on the first pass.)
-**Undo:** `convert.py`/the two test files are a normal code revert - no DB state to undo, nothing
-was written by either task this session.
-**Left open:**
-- **ISB p177 is still unresolved** - Docling (safe, no diagram structure) vs vision (richer,
-  minor structural warnings) - Aalhad's call, not re-decided here. Both are already
-  `needs_review=true`, so nothing ships to a student either way without human sign-off.
-- The formula fix is now live-verified on 4 named pages (plus p177 itself, confirming no
-  regression there) but has **not** been re-run across the full ~1228-page "concentrated issues"
-  set the 2026-10-31 session flagged (107-150 pages, exact count never fully reconciled) - that
-  broader validation is explicitly out of scope for this session per instruction ("deferred until
-  the formula is proven solid"); this session proves the *formula*, not a batch result. A batch
-  re-ingest/patch run using this fixed formula is a reasonable next step, scoped and
-  budget-checked before running.
-- `BLOCK_ISSUE_FREE_ALLOWANCE=2`/`WEIGHT=0.05`/`CAP=20` are my judgment call within the task's
-  explicit discretion ("use your own judgment on the exact weighting/cap") - tuned to satisfy both
-  constraints on the live data gathered this session, not derived from a larger labeled set. If a
-  future batch run surfaces a page where this specific weighting still misranks, the free
-  allowance/weight are isolated, named constants in `convert.py` to retune.
+**Cost:** 12 real vision HTTP calls this session (8 formula-verify + 2 p177 patch-check + 2
+p177 detail capture), 0 embedding calls (no writes, nothing re-ingested). At this project's
+established flash-lite rate (~$0.0012/call) ≈ **$0.01-0.02** this session. Cumulative R6
+spend: **≈$0.81-0.98**, still under the informal ~$1 guardrail mentioned in the prior entry
+and far under the ~$20/month project budget.
+**Undo:** No DB state to undo - zero writes this session. Code changes are a normal git
+revert of the two new/changed files above if ever needed.
+**Open issues:**
+- p177 remains genuinely unresolved - Docling (complete text, zero structured diagrams,
+  missing footer) vs vision (structured diagrams for all 9 sections including the footer, 2
+  minor flagged issues) is a real product tradeoff, not a bug, and still needs Aalhad's
+  explicit call.
+- The text_layer-backfill idea above (recovering verbatim-present footer/number tokens into a
+  winning Docling page generally, not just p177) is a plausible, separately-scoped follow-up -
+  not built, not decided.
+- The weighted formula's constants (`BLOCK_ISSUE_FREE_ALLOWANCE=2`, `WEIGHT=0.05`, `CAP=20`)
+  are still only verified against this session's 5 live-sampled pages (p177, p78, p16, p50,
+  p30) plus the inherited hand-built tests - not the full 63-page "concentrated issues" set
+  the original regression-finding entry identified. Before any batch re-ingest or wider patch
+  run, that wider set should get the same live (not reconstructed) treatment this entry gives
+  its 5 pages.
+
+---
+
+## 2026-10-31 — Mobile layout fixes: 7 pages overflowed horizontally at 375px
+**Phase:** M4 (F1/F2, frontend fixes) · **Type:** fix
+
+**What was broken:** Aalhad reported the site "cannot be used properly on mobile." An audit at
+375px (iPhone width, this project's own mobile standard) found real horizontal overflow on
+every page except Home — three separate root causes, all CSS/layout, none were logic bugs:
+
+1. **`.grid-3` had no responsive breakpoint** (`global.css`) — hardcoded `repeat(3,1fr)` with no
+   mobile collapse, unlike its sibling `.home-tools-grid` which already had one. This is the
+   "What you'll find here" 3-card row used on 7 pages (Frameworks, Role, Company, Mock
+   Interview, Tone Shifter, Community, Resume): at 375px each column was ~113px, too narrow for
+   icon+title+body, forcing the whole page wider than the viewport.
+2. **Two `flex:1` text inputs without `minWidth:0`** (Company/Role filter rows on
+   `MockInterviewPage.tsx` and `CommunityPage.tsx`) — browsers don't shrink flex items below
+   their intrinsic content width by default, so the pair couldn't compress to fit 375px.
+3. **`flexWrap: "nowrap"` on a button row** (`ResumePage.tsx`, the question-type toggle +
+   "Create a coherent story" button) — explicitly forced onto one line, pushing the last button
+   off-screen with no way to reach it except horizontal scroll.
+
+**What was NOT touched, and why:** `TopNav.tsx`'s mobile nav wraps into a multi-line pill
+cluster instead of collapsing behind a hamburger menu — this looks bad at 375px (eats a lot of
+vertical space before any content) but it's an explicit, documented design decision already in
+the code ("All items stay visible at every width - no hamburger/overflow menu"), not a bug.
+Left alone; flagged for Aalhad if he wants to revisit that policy specifically for phone widths.
+
+**Fix:**
+- `frontend-react/src/styles/global.css` — `.grid-3` gets `@media (max-width:900px)` → 2 cols,
+  `@media (max-width:560px)` → 1 col (same pattern `.home-tools-grid` already used).
+- `frontend-react/src/pages/MockInterviewPage.tsx`, `CommunityPage.tsx` — `minWidth: 0` added to
+  both filter inputs.
+- `frontend-react/src/pages/ResumePage.tsx` — `flexWrap: "nowrap"` → `"wrap"`.
+
+**Proof:** `/browse` (gstack's own headless browser, Aside unavailable on this machine) at
+375x812 against the local dev server, guest session. Before: 6 of 7 pages (frameworks, role,
+company, mock-interview, tone-shifter, community) overflowed from `.grid-3`; after that fix,
+mock-interview/community/resume still overflowed from the two separate input/button bugs above.
+After all three fixes: all 7 pages report `scrollWidth === clientWidth` (no overflow), confirmed
+with `document.querySelectorAll('*')` bounding-rect scan finding zero elements past the
+viewport edge. Screenshots before/after in `.gstack/browse-reports/mobile-audit/screenshots/`
+(not committed — local scratch). `npm run build` clean; `npm run lint` shows only pre-existing
+warnings in unrelated files/lines.
+
+**Cost:** $0 (no AI calls, pure CSS/layout).
+
+---
 
 ## 2026-10-31 — nvidia/nemotron-3-ultra-550b-a55b added as try-first cascade entry, chat.js only
 **Phase:** M4 (misc backend) · **Type:** feature, fix

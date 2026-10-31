@@ -412,7 +412,7 @@ export default function RolePage() {
           {roleInfo.revalidating && <div style={{ marginTop: 28, color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>Updating{company ? ` for ${company}` : ""}…</div>}
           {roleInfo.error && <div className="t-shake" style={{ marginTop: 28, color: "var(--red-dark)", fontSize: "0.84375rem" }}>{roleInfo.error}</div>}
 
-          <div style={{ marginTop: 28, display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(320px,420px)", gap: 16, alignItems: "start" }}>
+          <div className="two-col-sidebar" style={{ marginTop: 28 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "22px 24px" }}>
                 <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>What this role is</div>

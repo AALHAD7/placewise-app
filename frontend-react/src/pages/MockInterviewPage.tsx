@@ -352,8 +352,8 @@ export default function MockInterviewPage() {
             )}
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-            <input type="text" value={companyInput} onChange={(e) => setCompanyInput(e.target.value)} placeholder="Company (optional)" style={{ flex: 1, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
-            <input type="text" value={roleInput} onChange={(e) => setRoleInput(e.target.value)} placeholder="Role (optional)" style={{ flex: 1, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
+            <input type="text" value={companyInput} onChange={(e) => setCompanyInput(e.target.value)} placeholder="Company (optional)" style={{ flex: 1, minWidth: 0, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
+            <input type="text" value={roleInput} onChange={(e) => setRoleInput(e.target.value)} placeholder="Role (optional)" style={{ flex: 1, minWidth: 0, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", color: "var(--text-900)", background: "var(--field-bg)" }} />
           </div>
           <select
             value={ragDomain}
