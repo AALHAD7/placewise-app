@@ -5,6 +5,63 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-10-31 — R6: IIMK Kasebook 2025 ingested, 5-page network-failure patch, invented_text false-positive investigated and cleared
+**Phase:** R6 · **Type:** ingestion, fix
+
+**Ingested:** IIMK Kasebook 2025 (229 pages), insert-only, `is_active=false`. Classification
+confirmed live (`source_class='club_casebook'`, school IIM Kozhikode) before ingesting, along
+with the other 5 remaining casebooks in the same check — all 6 confirmed `club_casebook`,
+none excluded.
+
+**v1 → v2 patch:** 5 pages (1, 27, 62, 63, 118) failed v1 with transient network errors
+(`ConnectionError`/`ReadTimeout` on the vision call) — correctly stored as `[UNREADABLE]` and
+`needs_review=true`, not silently wrong. All 5 were already classified `is_visual=true` (not a
+classification bug). Retried via `run_r6_iimk_patch.py`; all 5 now `number_coverage=1.0`.
+v2 (`6ae47aaa-ad2e-4848-9775-75ac2072f79e`, file_id for v1 was `8f0bc31a-...`): 229 pages,
+208 chunks. Mean coverage after patch: number 0.9816, word 0.9535.
+
+**Investigated, not swept under the rug: 93 of 229 pages (40.6%) were flagged `invented_text`**
+— far above IIM L's rate (4/218, 1.8%) on the same check. Before calling this clear, traced the
+actual cause on representative samples rather than trusting the flag count:
+- **79 of 93 (85%)** share a common string in their markdown — "KONSULT GROUP" / "Buddy Round" —
+  the club's own branding/watermark, visually present on the page (confirmed against page 12's
+  full text) but absent from the PDF's extractable `text_layer` (it's a stamp/graphic, not
+  selectable text). Same accepted false-positive class as brand logos noted in earlier R6
+  entries (ISB, FMS). Not invented content.
+- **Page 216** (one of the 14 non-branding flags): every numeric/label string the diagram
+  blocks contain ("$ 250 Bn 2021", "11% CAGR", "$380 Bn 2025", the 5 Growth Drivers items, etc.)
+  is verified present verbatim in `text_layer` — the diagram is a faithful restructuring of real
+  page content, not an invention. Flag source not pinned to the exact line (likely a chart-type
+  sub-block further down the page with a formatting mismatch against `invented_text_issues`'s
+  string match), but the content itself is confirmed real.
+- **Page 3** (Table of Contents): `text_layer` extracts one character per line
+  (`T\nA\nB\nL\nE...`) — a PDF-extraction artifact of this page's title-style typography, not a
+  content problem. This breaks the checker's word-matching regardless of what the markdown says.
+
+No genuine invented/hallucinated content found in any page checked. **This is a checker
+false-positive pattern specific to this casebook's branding/typography, not a real content
+defect** — flagged here, not fixed (per scope: investigate, don't mid-ingestion-refactor the
+checker). Worth a dedicated pass if `invented_text`'s table_header/chart-string matching logic
+should tolerate watermark text and fragmented glyph layers — out of scope for this run.
+
+**Proof:** `document_chunks` (live) unchanged at 22,457 rows. `ingest_chunks` all
+`is_active=false` (4,512 total, +408 from this casebook). Zero rows match a literal
+`%hallucinat%` search (note: that term doesn't match this project's actual review-reason code,
+`invented_text` — corrected search used above).
+
+**Cost:** v1: 299 vision + 200 embedding calls. v2 patch: 7 vision + 209 embedding calls.
+≈$0.35-0.45 this casebook. **Cumulative R6 spend now ≈$1.49-1.83 — approaching the $2
+round-number threshold** (still trivial against the $20/month project budget; flagging per
+Aalhad's standing instruction to surface every round-number crossing).
+
+**Left open:** IIM B (~292p), IIM Calcutta (~457p), IIMA (~389p), Consulting Club FMS 2025-26
+(~325p), FMS 2024-25 (~279p) — ~1,742 pages, not started this run.
+
+**Files:** `backend/ingestion/run_r6_iimk.py` (new), `backend/ingestion/run_r6_iimk_patch.py`
+(new).
+
+---
+
 ## 2026-10-31 — R8: frontend for grounded citations, diagrams, Guesstimates and the framework catalog
 **Phase:** R8 · **Type:** feature, fix
 
