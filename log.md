@@ -5,6 +5,67 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — R6: IIMA Consult Prep Book Case Book 2025-26 ingested, 1-page network-failure patch, needs_review rate traced
+**Phase:** R6 · **Type:** ingestion, fix
+
+**Ingested:** IIMA-Consult-Prep-Book-Case-Book-2025-26.pdf (389 pages), insert-only,
+`is_active=false`. Classification already confirmed `club_casebook` (school IIM Ahmedabad) in
+the batch check logged 2026-10-31. v1 first attempt hit Gemini's prepayment credits being
+depleted (402 `RESOURCE_EXHAUSTED`) partway through embedding — no partial document was
+written (the whole insert is one `write_version` call, not row-by-row), so this cost nothing
+beyond the vision calls already spent; Aalhad topped up credits and the rerun completed
+clean: v1 (`54ece01c-c876-4533-82c6-bd91fabfb983`), 389 pages, 824 chunks, 502 vision + 825
+embedding calls. One page (138) failed v1 with a transient `ReadTimeout`, correctly stored
+`[UNREADABLE]` and flagged `needs_review`.
+
+**v1 → v2 patch:** retried page 138 (`run_r6_iima_patch.py`, same reuse-unless-patched
+pattern as every other R6 patch), succeeded cleanly first try — `number_coverage=1.0`,
+`word_coverage=1.0`, still `needs_review` for unrelated reasons (`seq_diff`,
+`diagram_missing_box`). v2 (`09c41590-6f53-40be-a19c-60fa645610f4`), 389 pages, 825 chunks,
+`status=done`.
+
+**Investigated: 161 of 389 pages (41.4%) flagged `needs_review`** — same range as IIMK
+(40.6%)/IIM Calcutta (25.6%), not an outlier. Reason breakdown: `seq_diff` (107, by far the
+largest), `diagram_structure` (23), `diagram_missing_box` (23), `number_coverage` (22),
+`word_coverage` (19), `diagram_invalid` (15), `unreadable` (11), `diagram_label_altered` (10),
+`diagram_label` (5), `ragged_table` (4), `diagram_flattened` (3), `invented_text` (2),
+`vision_failed` (1), `diagram_other` (1).
+- **`seq_diff` (107 pages)** — same page-template pattern as every prior R6 casebook: a
+  footer copyright line ("© Consult Club, IIM Ahmedabad 2025-26 N"), a stylized "FRAMEWORK"/
+  "INDEX" header that sometimes duplicates as letter-spaced text ("F R A M E W O R K"), and a
+  case-tag line ("Profitability | Logistics | Moderate") — all vary per page (page number,
+  case type/difficulty) so they dodge the exact-boilerplate filter. Confirmed on 8 sampled
+  pages (1, 3, 4, 5, 8, 49, 80, 160): every op traces to this template pattern, not a real
+  content difference.
+- **`unreadable` (11 pages) / `vision_failed` (1)** — the 1 genuine network failure (patched
+  above) plus 9 pages where the tag correctly marks a logo-only "Key players" table cell that
+  has no selectable text (e.g. p328, p334, p342, p354, p374, p376 — same accepted false-
+  positive class as every prior casebook's "Major Players"/branding stamps), and one genuine
+  content gap in running prose (p243, mid-sentence) left as `[UNREADABLE]` rather than
+  invented, correctly flagged.
+- **p104 is a real (not false-positive) defect**, flagged `diagram_invalid`: its second
+  diagram block is empty/malformed (`invalid JSON: Expecting value: line 1 column 1`) — a
+  genuine vision-generation gap, not a checker false positive. Correctly caught by `needs_review`,
+  left for the review queue (R5) rather than silently dropped or guessed at here.
+- **Diagram-structure flags (`diagram_structure`/`diagram_missing_box`, 46 pages)** — not
+  individually sampled this run given time, but consistent in count/shape with prior
+  casebooks' dashboard/multi-panel page pattern; flagged for review, not fixed here.
+
+**No genuine invented/hallucinated content found in any page checked.** Same conclusion as
+every prior R6 casebook: a checker false-positive pattern driven by this casebook's own page
+template, plus one real (correctly-caught) generation defect on p104.
+
+**Proof:** `document_chunks` (live) unchanged at 22,457 rows.
+**Cost:** v1: 502 vision + 825 embedding calls (one extra API-budget-depleted attempt before
+the topped-up rerun, cost already sunk in vision calls only — no embeddings/writes from that
+attempt). Patch: 2 vision + 826 embedding calls. Still well inside the $20/month budget.
+**Left open in R6:** FMS Consulting Club 2025-26 (~325p), FMS 2024-25 (~279p) — ~604 pages,
+not started.
+**Files:** `backend/ingestion/run_r6_iima.py`, `backend/ingestion/run_r6_iima_patch.py` (both
+now tracked — were untracked/didn't exist at session start).
+
+---
+
 ## 2026-11-02 — v2 preview rerun: widened to all 9 ingested casebooks + the new relevance gate
 **Phase:** (none — informational probe, follow-up to the earlier v2-preview entry) · **Type:** eval
 
