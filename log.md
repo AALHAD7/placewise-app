@@ -5,6 +5,35 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Guesstimates confirmed live on production, verified directly against the real API
+**Phase:** (R9-equivalent, scoped to SRCC) · **Type:** verification
+
+**What changed:** Aalhad set `ENABLE_CONSULTING_RAG_V2=true` on Render himself (the one step
+this session deliberately left to him - see the entry above). Verified it actually took
+effect by calling the real production API directly (`https://placement-mastery-hub-api.onrender.com`,
+found in `Mark Down Files/DOCUMENT.md` - the Render dashboard API was blocked by the sandbox's
+credential-use classifier this time, so verified via the public endpoints directly instead,
+which is more conclusive anyway):
+- `GET /api/guesstimates/random`: `available:true`, returns a real SRCC problem with a real
+  citation - was `available:false` before the flag was set.
+- `GET /api/guesstimates/ask?topic=...Swiggy in Delhi...`: `covered:true`, returns the exact
+  page (21) verified earlier today, matching the real content.
+- `GET /api/guesstimates/ask?topic=...tennis balls...` (the known trap question): still
+  correctly `covered:false`, labelled "General guidance — not from the casebooks" - the
+  relevance gate holds on the live production site, not just locally.
+
+**Guesstimates is genuinely live for students now**, grounded in the verified SRCC content
+from today's fixes. Nothing else (Frameworks, Q&A, Role/Company) is active yet - only SRCC's
+62 chunks are `is_active=true`, everything else correctly still returns "not covered."
+
+**Files:** None - verification only, no code/data change.
+**Proof:** Real HTTP responses from the production API, shown above.
+**Open issues:** Same as before - 8 more casebooks' content is independently verified
+(1,191-page fidelity pass) but not yet activated; R5 (admin review UI) still unbuilt;
+Frameworks/Q&A/Role/Company still need their own switch-over decision.
+
+---
+
 ## 2026-11-02 — SRCC Guesstimates live: page 35 fixed, pipeline-wide domain bug found and fixed, first real is_active switch-over
 **Phase:** (R9-equivalent, scoped to one casebook — informal, not the full M1 switch-over)
 **Type:** fix, ingestion, migration
