@@ -5,6 +5,53 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Ad-hoc: v2 (not-yet-live) pipeline previewed on the same 39 eval questions
+**Phase:** (none — informational probe, not a roadmap task) · **Type:** eval
+
+**What changed:** Aalhad asked directly whether R4's eval could be run against the new R6
+re-ingested content instead of the old live tables. It can't be done by just setting
+`ENABLE_CONSULTING_RAG_V2=true` and rerunning `run_eval.js` — `match_ingest_chunks`
+(migration_044) hardcodes `where c.is_active = true` in SQL, and every R6 row is still
+`is_active=false` (switch-over is a deliberate, separate R9 decision, untouched here). Built
+`backend/eval/run_eval_v2_preview.js`: a **read-only** script that fetches the still-inactive
+`ingest_chunks` rows for the 5 latest-version casebooks the question set references (FMS
+2021-22, ISB, IIM B, IIMK, SRCC — 1,334 chunks, paginated past PostgREST's 1000-row cap),
+computes cosine similarity locally in JS, and reuses the real `decideCoverage`/`buildCitation`
+pure functions from `consultingRetrieval.js` unmodified. **No row's `is_active` was changed; no
+student-facing behavior changed.**
+
+**Result: 8/39 (21%) overall, up from R4's 0/39.** Only `frameworks` (6/14) and `guesstimates`
+(2/7) have any v2 code path at all — `qa`/`role`/`company` (18/39, 46% of the set) still have
+zero grounded route in either pipeline, unaffected by switch-over. Citations check went from
+0/39 to 21/39 pass — `ingest_chunks` carries real `page_start`/`page_end`, unlike the live
+`document_chunks` table, so this is a genuine structural improvement, not just better content.
+
+**What's still broken, even in the new pipeline:**
+- 4 "wrong casebook" misses (q003, q014, q019, q024) are mostly benign: the retrieved chunk
+  was faithful, on-topic content from a *different* casebook that also covers the same
+  universal framework (e.g. PESTEL retrieved from IIM B instead of FMS 2021-22) — the eval's
+  strict single-source match treats this as a fail, but a student would likely get a correct
+  answer. Noted, not treated as a real defect.
+- q004 (price discrimination) retrieved a heading-only chunk with no body text — a chunking
+  boundary issue worth a look during R6/R7 polish.
+- **4 real false positives on `covered:false` questions (q008, q032, q036, q037)** — RICE,
+  Jobs-to-be-Done, tennis balls, NYC Uber rides — each retrieved an unrelated excerpt at
+  0.67–0.73 similarity, above threshold, that would show as "from the casebook" with no
+  warning. This is the same failure class R4 found in the old pipeline; re-ingesting better
+  content did **not** fix it, because the problem is the similarity threshold alone being an
+  insufficient filter, not the content quality. Worth addressing before R9, independent of
+  R6/R7/R8 progress.
+
+**Cost:** 21 embedding + 21 judge calls, negligible.
+**Files:** `backend/eval/run_eval_v2_preview.js` (new), `backend/eval/results/2026-11-02-v2-preview.json`/`.md`.
+**Proof:** Script output above; `is_active` unchanged (no UPDATE statement anywhere in this script).
+**Undo:** Delete the new files; nothing else to revert.
+**Not a roadmap update:** `.gsd/ROADMAP.md`/`STATE.md` unchanged — this isn't R4 or R9, just an
+early look Aalhad asked for. The real R9 eval (after R7/R8 land and switch-over is deliberately
+flipped) is still the one that counts for the gate.
+
+---
+
 ## 2026-11-02 — R4 done: eval runner built, baseline score on live chunks
 **Phase:** R4 · **Type:** eval
 
