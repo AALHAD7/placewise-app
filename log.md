@@ -5,6 +5,92 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Real fix for the random-pick bug: retrieval approach itself was wrong, not just missing a filter
+**Phase:** (fix, same incident) · **Type:** fix
+
+**What changed:** The first fix (structural + judge filter layered on top of the existing
+similarity search) was necessary but not sufficient - testing it locally surfaced a second,
+deeper problem: `getRandomGuesstimateProblem` always returned the exact same one problem,
+never anything else. Traced it: the fixed seed query ("guesstimate practice problem estimate
+market size...") is a generic string whose nearest neighbors by embedding similarity cluster
+around the book's own THEORY/explanation pages (which share vocabulary with a generic query
+about guesstimates), not the 36 specific, varied problems themselves - confirmed only 1 of
+the query's fixed top-10 nearest neighbors was ever a real problem. Separately, the sharpened
+relevance judge (built to check "does this answer a REAL student question") rejected almost
+everything for this path too, since the seed string isn't a real question.
+
+**Real fix: stopped doing a similarity search for this path entirely.** `getRandomGuesstimateProblem`
+now fetches every active chunk for the book directly (`ingest_chunks` joined to
+`ingest_documents`, no embedding call, no RPC), filters to structurally-plausible candidates
+(`looksLikeWorkedProblem`), shuffles them (`shuffle`, new pure Fisher-Yates helper), and tries
+them in that random order against a newly-added, correctly-scoped judge
+(`judgeIsWorkedProblem` - "is this an actual problem," not "does this answer a fake
+question") until one passes, capped at 5 attempts. Cheap in the common case (one judge call
+most of the time), and the earlier false positive (page 6, theory content using the word
+"assumptions" in a sentence) is correctly rejected by this judge even though it passed the
+plain regex.
+
+**Verified against the real data, not assumed:** ran it 10 times in a row - 9 distinct real
+problems (pens, chairs, salon revenue, Airbus paint, books read, biscuit industry, laundry
+service, commute time, animation/VFX market), zero repeats of the theory page, zero index
+pages. One minor cosmetic artifact spotted while checking: a chunk spanning a page boundary
+had a stray page-footer number ("47") prepended before its real title - not a correctness
+bug (the actual problem content shown was complete and legitimate), just a chunking-boundary
+quirk worth knowing about, not fixed here.
+
+**Tests:** 3 new tests for `shuffle` (preserves elements, doesn't mutate input, handles
+empty/single-element arrays). `npm test`: 121/122 pass (same pre-existing unrelated sandbox
+failure).
+
+**Files:** `backend/src/lib/guesstimateRetrieval.js`, `backend/test/guesstimateRetrieval.test.js`.
+**Proof:** 10-run local test output above; test suite output above.
+**Undo:** Revert both files; `groundedGuesstimateLookup` (the `/ask` topic path) is
+unchanged and still uses the full relevance-judge gate, since its questions are real.
+**Open issues:** SRCC is reactivated (`is_active=true`) again but production's
+`ENABLE_CONSULTING_RAG_V2` is still off (Aalhad's explicit instruction: local testing and
+production visibility are now deliberately decoupled until he says otherwise) - so this fix
+is live on localhost only, not for real students yet.
+
+---
+
+## 2026-11-02 — Full-site QA pass (report-only) after the Guesstimates index-page bug
+**Phase:** M4 (frontend fixes) · **Type:** fix
+
+**What changed:** Nothing in the app — this is a `qa-tester` / gstack `/qa-only` report-only
+pass across every route in `frontend-react/src/router.tsx` on production (login, home,
+frameworks, guesstimates, company, role, skill, mock interview, resume drill, tone shifter,
+community, admin), run because the Guesstimates random-pick bug "looked fine in isolated
+testing" and only showed up when actually clicked. Each feature got at least one golden-path
+and one edge-case test, executed live via a headless browser (Aside unavailable on this
+machine; used gstack's own headless browser + direct `curl` against the production API
+instead), with screenshots and network/API responses checked, not just visual review.
+
+**Found:** No repeat of the Guesstimates-class bug anywhere else, and Mock Interview, Resume
+Drill, Role (chip panels + company tailoring), Tone Shifter and Admin access control are all
+solid end-to-end with correct grounding labels and no data leakage to the non-admin Guest
+session. But Frameworks has the *same class* of problem as the original bug: its "From the
+casebooks" tag list (196 items) surfaces non-framework boilerplate (a club team roster,
+"Do's"/"Don'ts", "FORMULAE", raw data-table labels) as if they were real frameworks, and those
+pills are styled clickable but do nothing when clicked. The MECE framework card and the Skill
+page's Core Concepts also skip the grounding citation/label the policy requires, unlike their
+siblings. Also found: the Company page's "Business Model" diagram renders as raw ASCII text
+instead of an actual diagram, duplicate news headlines on Company, an unreviewed Community
+post's text visible pre-moderation, and an unrelated internal casebook-filename list cached in
+a guest's `localStorage` via the Resume Drill feature. Full bug table, repro steps and
+pass/fail per test case: `qa/site_qa_2026-11-02.md`.
+
+**Files:** `qa/site_qa_2026-11-02.md` (new), `qa/screenshots/*.jpg`/`*.png` (new, 34 files).
+**Proof:** Live network captures and API response bodies for every finding (see report); e.g.
+`GET /api/admin/usage` → `404` with empty body for a Guest session; `POST
+/api/mock-interview/start` → `200` referencing real uploaded-resume content; Frameworks tag
+pills click → 0 network requests fired.
+**Undo:** N/A — report-only, no product code or data changed.
+**Open issues:** All 9 findings in the report are unfixed and un-triaged — Aalhad decides what
+gets fixed and in what order, per the task's instructions. Community's "pending review" post
+visibility may be intended design rather than a bug; needs a decision, not necessarily a fix.
+
+---
+
 ## 2026-11-02 — Fix for the index-page bug: structural filter + sharpened judge
 **Phase:** (fix, same incident as the entry above) · **Type:** fix
 

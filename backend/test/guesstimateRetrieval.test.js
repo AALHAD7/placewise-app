@@ -5,7 +5,7 @@
 // they're intentionally left to the same resilience posture, not re-tested here.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickRandomCoveringChunk, looksLikeWorkedProblem, GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
+import { pickRandomCoveringChunk, looksLikeWorkedProblem, shuffle, GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
 
 test("pickRandomCoveringChunk: not covered returns null", () => {
   const picked = pickRandomCoveringChunk({ covered: false, chunks: [], citations: [] });
@@ -64,4 +64,26 @@ test("looksLikeWorkedProblem: case-insensitive match, and empty/undefined conten
   assert.equal(looksLikeWorkedProblem("Key ASSUMPTIONS made here"), true);
   assert.equal(looksLikeWorkedProblem(""), false);
   assert.equal(looksLikeWorkedProblem(undefined), false);
+});
+
+// --- shuffle (used by getRandomGuesstimateProblem to try candidates in random order,
+// since a fixed-query similarity search turned out to be the wrong tool - see that
+// function's comment, 2026-11-02) ---
+
+test("shuffle: same elements, different (or at least a valid) order, never drops/adds items", () => {
+  const input = [1, 2, 3, 4, 5];
+  const result = shuffle(input, () => 0.9);
+  assert.deepEqual([...result].sort(), [1, 2, 3, 4, 5]);
+  assert.equal(result.length, input.length);
+});
+
+test("shuffle: does not mutate the input array", () => {
+  const input = [1, 2, 3];
+  shuffle(input, () => 0.5);
+  assert.deepEqual(input, [1, 2, 3]);
+});
+
+test("shuffle: empty and single-element arrays pass through safely", () => {
+  assert.deepEqual(shuffle([], () => 0.5), []);
+  assert.deepEqual(shuffle([1], () => 0.5), [1]);
 });

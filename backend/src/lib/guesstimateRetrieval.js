@@ -1,4 +1,6 @@
-import { groundedConsultingLookup, AI_FALLBACK_LABEL } from "./consultingRetrieval.js";
+import { groundedConsultingLookup, buildCitation, AI_FALLBACK_LABEL } from "./consultingRetrieval.js";
+import { generateJSON } from "./gemini.js";
+import { supabase } from "./supabase.js";
 
 // The one casebook this feature is grounded in - ingested (R6, commit c516be7) but not
 // yet switched live (is_active=false on every ingest_chunks row until R9). Scoping to
@@ -6,10 +8,6 @@ import { groundedConsultingLookup, AI_FALLBACK_LABEL } from "./consultingRetriev
 // "guesstimate" request from pulling in FMS/ISB case-interview material instead.
 export const GUESSTIMATES_SOURCE_FILE = "SRCC Guesstimates-Book-Volume-1-6.pdf";
 
-// Broad enough to surface a real problem statement from the book without biasing toward
-// any one topic - a specific topic query goes through groundedGuesstimateLookup instead.
-const RANDOM_PROMPT_QUERY =
-  "guesstimate practice problem estimate market size number of units volume";
 
 /**
  * Grounded lookup for a specific guesstimate topic/question, scoped to the Guesstimates
@@ -28,11 +26,28 @@ export async function groundedGuesstimateLookup(queryText, { matchCount = 8 } = 
  * Pure: picks one covering row at random rather than always the top match, so repeated
  * requests surface different practice problems instead of the same one every time.
  * Exported separately from the I/O so this choice is unit-testable without a network call.
+ * (Not used by getRandomGuesstimateProblem any more - see shuffle below for why - kept and
+ * still tested as a general utility other callers may want.)
  */
 export function pickRandomCoveringChunk(result, rng = Math.random) {
   if (!result.covered || !result.chunks.length) return null;
   const idx = Math.floor(rng() * result.chunks.length);
   return { chunk: result.chunks[idx], citation: result.citations[idx] };
+}
+
+/**
+ * Pure: Fisher-Yates shuffle, rng injectable for tests. Used instead of a single
+ * `pick random index` because getRandomGuesstimateProblem needs to try several
+ * candidates in random order (cheapest-first) until one passes the problem judge, not
+ * just pick one index once.
+ */
+export function shuffle(array, rng = Math.random) {
+  const copy = array.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
 }
 
 /**
@@ -56,36 +71,110 @@ export function looksLikeWorkedProblem(content) {
   return /assumptions/i.test(content || "");
 }
 
+const PROBLEM_JUDGE_SYSTEM =
+  "You are checking whether a casebook excerpt is an ACTUAL guesstimate practice problem a " +
+  "student could work through right now - not theory, an index/table of contents, " +
+  "acknowledgements, or a generic methodology/framework explanation. A real problem presents " +
+  "a specific scenario to estimate (even briefly) and either stated assumptions or a worked " +
+  "calculation toward an answer. A page that only explains a general concept, lists problem " +
+  "titles, or teaches an approach in the abstract is NOT a worked problem - even if it uses " +
+  "words like \"assumption\" or \"estimate\" along the way. A worked EXAMPLE embedded inside " +
+  "a theory/methodology section (e.g. illustrating a framework with one concrete scenario and " +
+  "its own numbers) DOES count as a real problem - the test is whether there's an actual " +
+  "scenario being solved, not where in the book it sits.\n\n" +
+  'Respond with ONLY a JSON object, no markdown fences: {"verdict": "problem" or ' +
+  '"not_problem", "reasoning": "one sentence"}';
+
+/**
+ * I/O: a second, more reliable gate than looksLikeWorkedProblem's cheap regex, specific to
+ * the random-pick path - found 2026-11-02: the regex alone let through page 6
+ * ("Introduction to a Guesstimate", generic theory that happens to use the word
+ * "assumptions" in a sentence) while a plain "no embedded table markup" rule would have
+ * wrongly excluded page 9's legitimate worked fast-food-chain example (its assumptions
+ * appear as "? ASSUMPTIONS | Focus on Dine-in orders only", a table row, not a clean
+ * standalone heading). A judge asking the right question - "is this an actual problem,"
+ * not "does this answer a fake question" - handles both cases correctly where neither a
+ * looser nor a stricter regex could. Runs only on candidates that already passed the cheap
+ * regex, to keep the call count down. Fails closed (not a problem) on any error, same
+ * posture as judgeRelevance.
+ */
+export async function judgeIsWorkedProblem(content) {
+  try {
+    const parsed = await generateJSON({
+      system: PROBLEM_JUDGE_SYSTEM,
+      prompt: `Excerpt:\n"""${content.slice(0, 2000)}"""\n\nIs this an actual worked guesstimate problem?`,
+      maxTokens: 150,
+      temperature: 0,
+      feature: "guesstimate-random-pick-problem-judge"
+    });
+    return parsed.verdict === "problem";
+  } catch (err) {
+    console.warn(`[guesstimateRetrieval] problem judge failed: ${err.message}`);
+    return false;
+  }
+}
+
+const MAX_PROBLEM_JUDGE_ATTEMPTS = 5;
+
 /**
  * Full "give me a guesstimate to practice" lookup. Distinct from the grounding policy's
  * usual "not covered -> labelled general answer" path: a miss here means "the casebook
- * isn't live yet" (an R9 gating condition - is_active is still false everywhere), not
- * "the casebooks don't cover guesstimates" (they do, entirely). Returning the general
- * AI_FALLBACK_LABEL in that case would misrepresent why nothing came back, so this
- * reports `available: false` instead and leaves the labelled-fallback wording for actual
- * topic queries once the switch is on.
+ * isn't live yet" (an R9 gating condition), not "the casebooks don't cover guesstimates"
+ * (they do, entirely). Returning the general AI_FALLBACK_LABEL in that case would
+ * misrepresent why nothing came back, so this reports `available: false` instead.
+ *
+ * Found 2026-11-02 (two bugs, same day): (1) an embedding-similarity search against a
+ * fixed generic seed query ("guesstimate practice problem...") is the wrong tool for
+ * "pick any of the 36 real problems at random" - that seed's nearest neighbors cluster
+ * around the book's own THEORY/explanation pages (which share vocabulary with a generic
+ * query about guesstimates), not the specific, varied problems themselves. Verified: 6
+ * requests in a row all returned the exact same one problem, because only 1 of the
+ * query's fixed top-10 nearest neighbors was ever a real problem. (2) the relevance judge
+ * (built for "does this answer a real student question") rejected almost everything once
+ * sharpened, because the seed string isn't a real question for it to check against.
+ *
+ * Fixed by not doing a similarity search for this path at all: fetches every active chunk
+ * for this book directly, filters to structurally-plausible candidates
+ * (looksLikeWorkedProblem), shuffles them, then tries them in that random order against
+ * judgeIsWorkedProblem (the correctly-scoped "is this an actual problem" judge) until one
+ * passes or MAX_PROBLEM_JUDGE_ATTEMPTS is reached - cheap in the common case (most
+ * structurally-plausible candidates are, in fact, real problems) while still catching the
+ * rare false positive like the theory page from bug (2).
  */
 export async function getRandomGuesstimateProblem() {
-  const result = await groundedGuesstimateLookup(RANDOM_PROMPT_QUERY, { matchCount: 10 });
-  if (!result.covered) {
+  const { data, error } = await supabase
+    .from("ingest_chunks")
+    .select("content, has_diagram, page_start, page_end, ingest_documents!inner(source_file, school, club, year, source_class)")
+    .eq("is_active", true)
+    .eq("ingest_documents.source_file", GUESSTIMATES_SOURCE_FILE)
+    .eq("ingest_documents.source_class", "club_casebook");
+
+  if (error) {
+    console.warn(`[guesstimateRetrieval] random-pick fetch failed: ${error.message}`);
     return { available: false, reason: "not_yet_live", label: AI_FALLBACK_LABEL };
   }
-  // Only front-matter-filtered candidates are eligible to be picked - see
-  // looksLikeWorkedProblem's comment for why (2026-11-02 incident).
-  const worked = result.chunks
-    .map((chunk, i) => ({ chunk, citation: result.citations[i] }))
-    .filter(({ chunk }) => looksLikeWorkedProblem(chunk.content));
-  const picked = pickRandomCoveringChunk({
-    covered: worked.length > 0,
-    chunks: worked.map(w => w.chunk),
-    citations: worked.map(w => w.citation)
-  });
-  if (!picked) return { available: false, reason: "not_yet_live", label: AI_FALLBACK_LABEL };
 
-  return {
-    available: true,
-    problem: picked.chunk.content,
-    hasDiagram: picked.chunk.hasDiagram,
-    citation: picked.citation
-  };
+  const rows = (data || []).map(r => ({
+    content: r.content,
+    has_diagram: r.has_diagram,
+    page_start: r.page_start,
+    page_end: r.page_end,
+    source_file: r.ingest_documents.source_file,
+    school: r.ingest_documents.school,
+    club: r.ingest_documents.club,
+    year: r.ingest_documents.year
+  }));
+
+  const candidates = shuffle(rows.filter(row => looksLikeWorkedProblem(row.content)));
+  for (const row of candidates.slice(0, MAX_PROBLEM_JUDGE_ATTEMPTS)) {
+    if (await judgeIsWorkedProblem(row.content)) {
+      return {
+        available: true,
+        problem: row.content,
+        hasDiagram: row.has_diagram,
+        citation: buildCitation(row)
+      };
+    }
+  }
+  return { available: false, reason: "not_yet_live", label: AI_FALLBACK_LABEL };
 }
