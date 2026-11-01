@@ -5,6 +5,30 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Stopgap review export (R5 isn't built yet)
+**Phase:** (none — stopgap for R5) · **Type:** ingestion
+
+**What changed:** Aalhad asked exactly where the file is for him to manually review flagged
+pages. Honest answer: no such file exists — that's what R5 (admin review queue) is supposed
+to build, and R5 hasn't been built yet (it's the ▶ task). Rather than leave him with nothing,
+wrote `backend/ingestion/export_review_queue.py` - a read-only script (doesn't touch
+`needs_review`/`is_active` on any row) that exports every flagged page across all 9 Consulting
+`ingest_documents` into one CSV: casebook, page number, review reasons, coverage numbers,
+diagram count, and a markdown excerpt (truncated at 3000 chars).
+
+**Output:** `backend/ingestion/out/r6_review_queue.csv` (1,191 flagged pages total, gitignored
+per the existing `backend/ingestion/out/` rule - same as every other local review JSON this
+project has produced). Per casebook: FMS 2021-22 (92), ISB (75), IIM B (211), IIMK (160), SRCC
+(42), IIM L (160), IIM Calcutta (117), IIMA (161), FMS 2023-24 (173).
+
+**Files:** `backend/ingestion/export_review_queue.py` (tracked); the CSV itself is not
+tracked (gitignored).
+**Proof:** Script output above.
+**Open issues:** This is a stopgap, not R5. It has no approve/fix workflow - just a flat list
+for Aalhad to read. R5 (actual admin queue + endpoint) is still the real next step.
+
+---
+
 ## 2026-11-02 — R7 closed out: free-form Q&A grounding built
 **Phase:** R7 · **Type:** backend, retrieval
 
