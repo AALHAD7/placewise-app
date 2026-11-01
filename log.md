@@ -5,6 +5,70 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-01 — R6: IIM Calcutta Consulting CaseBook 2025-26 ingested, 1-page network-failure patch (retried twice after transient failures), needs_review rate traced
+**Phase:** R6 · **Type:** ingestion, fix
+
+**Ingested:** IIM Calcutta Consulting CaseBook 2025-26 (457 pages), insert-only, `is_active=false`.
+Classification already confirmed `club_casebook` (school IIM Calcutta) in the batch check logged
+2026-10-31. v1 (`dbfc78ec-1879-4623-8639-ac836049b274`): 457 pages, 930 chunks, 559 vision +
+931 embedding calls, one page (421) failed with a transient `ReadTimeout` during the vision
+call, correctly stored `[UNREADABLE]` and flagged `needs_review` rather than silently wrong.
+
+**v1 → v2 patch, retried twice:** the patch script (retry page 421, rebuild v2) failed on its
+first two attempts, both on dropped network connections, not code bugs:
+1. First attempt (run before this session) died with `httpcore.ConnectError: Connection reset
+   by peer` while inserting the new `ingest_documents` row — no v2 document existed afterward.
+2. Second attempt (rerun this session) got through the vision retry (page 421,
+   `number_coverage=1.0`, `word_coverage=1.0`, still `needs_review` for unrelated reasons:
+   `ragged_table`, `diagram_in_table`) but then hit `socket.gaierror` / DNS resolution failure
+   on `generativelanguage.googleapis.com` partway through re-embedding all 931 chunks — again
+   no v2 write.
+3. Third attempt (after confirming DNS/network was back via `ping`/`nslookup`) completed clean:
+   v2 (`f2c1333f-b205-46fa-991e-551548dffef7`), 457 pages, 931 chunks, `status=done`.
+
+The script is idempotent by design (`version_status(...) == "done"` short-circuits), so rerunning
+after each failure was safe — no duplicate v2 rows were created.
+
+**Investigated: 117 of 457 pages (25.6%) flagged `needs_review`** — lower than IIMB (72%) and
+IIMK (40.6%), same "trace before accepting" standard as those runs. Reason breakdown: `seq_diff`
+(50), `ragged_table` (37), `diagram_in_table` (35), `invented_text` (18), `diagram_label` (12),
+`diagram_structure` (12), `diagram_label_altered` (11), `number_coverage`/`word_coverage` (11
+each), `diagram_missing_box` (9), `diagram_invalid` (7), `diagram_flattened` (5), `unreadable` (4).
+Flags cluster heavily on pages ~18–31 (an "Industry Overview" dashboard section, e.g. Automobile,
+Iron & Steel). Sampled pages 20 and 27: `text_layer` on both is almost empty — just a source
+citation and the page title/number (e.g. page 20's entire `text_layer` is "Source: IBEF, Invest
+India / Note: Mfg. refers to Manufacturing / AUTOMOBILE INDUSTRY / 20") — because these pages are
+near-fully graphic infographics, not selectable text. The vision model reads the infographic
+correctly into table/diagram markdown, but the checker's `label_not_on_page`/`number_not_on_page`/
+coverage checks compare against `text_layer`, so they flag almost every label and number as "not
+on page" when there's barely any real text layer to match against. Same false-positive class as
+IIMB's Industry Report pages and IIMK's branding stamps, more pronounced here because these pages
+are closer to 100% image. **Traced, not fixed** — checker tuning for near-empty-text-layer pages
+is out of scope for an ingestion run; flagged for review as usual.
+
+**Not independently verified against the rendered page image** (only against `text_layer`/
+markdown this time, no page-image render check) — lower-confidence than prior entries' spot
+checks; worth a `fidelity-reviewer` pass if this cluster matters before switch-over.
+
+**Proof:** `document_chunks` (live) unchanged at 22,457 rows. v2 `ingest_documents` row
+`status=done`, 457 pages, 931 chunks, `is_active=false`.
+
+**Cost:** v1 (prior session): 559 vision + 931 embedding calls. Patch: vision retried once per
+attempt (3 attempts × 1 page ≈ 3 vision calls); embeddings re-ran in full on both the failed DNS
+attempt and the successful attempt (≈931 calls each, most of the failed attempt's calls likely
+landed before the DNS drop) — rough estimate ≈1,800–1,900 extra embedding calls from the two
+failed/retried attempts, call+embedding cost at flash-lite/embedding rates stays well under $1
+for this patch; exact count not instrumented per-attempt. Cumulative R6 spend still well inside
+the $20/month budget.
+
+**Left open:** IIMA (~389p), Consulting Club FMS 2025-26 (~325p), FMS 2024-25 (~279p) —
+~993 pages, not started.
+
+**Files:** `backend/ingestion/run_r6_iimcal.py`, `backend/ingestion/run_r6_iimcal_patch.py`
+(both now tracked — were untracked at session start).
+
+---
+
 ## 2026-10-31 — R6: IIM B Consulting Casebook 2025 ingested, 2-page network-failure patch, high needs_review rate traced and cleared
 **Phase:** R6 · **Type:** ingestion, fix
 
