@@ -73,7 +73,6 @@ export default function GuesstimatesPage() {
             <div style={{ marginTop: 14 }}>
               {state.data.problem && <ProblemContent markdown={state.data.problem} />}
             </div>
-            <GroundingNote groundedInCasebooks citation={state.data.citation} />
             <button
               type="button"
               onClick={load}

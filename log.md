@@ -5,6 +5,51 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Policy change: drop per-answer source citation (keep "not covered" label)
+**Phase:** (none — product decision) · **Type:** policy, frontend
+
+**What changed:** Aalhad asked to remove the per-answer "This is from the IIMK casebook"
+style line, since the site already states globally that answers are grounded in the
+casebooks. Confirmed first that this is a genuine policy change, not a styling tweak —
+`CLAUDE.md`'s grounding policy explicitly required per-answer `(school, casebook, page)`
+citations — then updated the policy doc itself (`CLAUDE.md`, `.claude/skills/grounded-
+answering/SKILL.md`) alongside the code, so the written rule and actual behavior don't
+diverge for the next session.
+
+Scoped the change carefully: removed the **source attribution** for grounded answers only.
+Kept the **"not from the casebooks" fallback label** for ungrounded answers untouched —
+that's a different, more fundamental disclosure (the one blend the grounding policy forbids
+outright: passing off general AI content as casebook content), not a citation, and nothing
+in this conversation asked to change it.
+
+`GroundingNote.tsx` (the single component every citation-rendering call site already funneled
+through — `ProbeChat.tsx`, `GuesstimatesPage.tsx`, `RolePage.tsx` x2) now renders nothing when
+`groundedInCasebooks` is true, and only the existing fallback label when false. Removed the
+now-dead `citation`/`citations` props from all 4 call sites, and the now-fully-unused
+`companyNoteCitationsByKey` state + fetch wiring in `RolePage.tsx` (nothing consumed it
+anymore). Citation data (school/casebook/page) is still computed and returned by the API —
+this is a frontend rendering change only, not a retrieval/backend change — so it's still
+available for debugging or a future admin view.
+
+**Why no student impact yet:** this whole R7/R8 frontend is still gated behind
+`ENABLE_CONSULTING_RAG_V2` (off). Good timing to make this call before it ever ships, rather
+than after.
+
+**Verification:** `npx tsc --noEmit` clean, no errors. Removed the now-orphaned
+`.grounding-note-cited`/`-badge`/`-sources` CSS rules (global.css) since nothing renders them
+anymore.
+
+**Files:** `frontend-react/src/components/GroundingNote.tsx`,
+`frontend-react/src/components/ProbeChat.tsx`, `frontend-react/src/pages/GuesstimatesPage.tsx`,
+`frontend-react/src/pages/RolePage.tsx`, `frontend-react/src/styles/global.css`, `CLAUDE.md`,
+`.claude/skills/grounded-answering/SKILL.md`.
+**Proof:** `tsc --noEmit` clean.
+**Undo:** `git diff` the files above / revert this commit.
+**Open issues:** None of this is live yet (flag off) - will carry through to R8/R9 whenever
+the switch-over happens.
+
+---
+
 ## 2026-11-02 — Ad-hoc: v2 (not-yet-live) pipeline previewed on the same 39 eval questions
 **Phase:** (none — informational probe, not a roadmap task) · **Type:** eval
 

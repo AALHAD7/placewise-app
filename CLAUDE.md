@@ -24,10 +24,15 @@ Spec: `.gsd/SPEC.md`. Session position: `.gsd/STATE.md`.
 ## Product rules (non-negotiable)
 
 **Grounding policy**
-- If the casebooks cover a question, the answer uses **casebook content only**, with
-  citations (school, casebook, page).
+- If the casebooks cover a question, the answer uses **casebook content only**. The site
+  states globally that answers are grounded in the casebooks, so individual answers do
+  **not** repeat a per-answer source line ("This is from the IIMK casebook") — that was
+  removed 2026-11-02 as redundant (Aalhad's call). School/casebook/page is still computed
+  and returned by the API for debugging/admin use; it's just not rendered to students.
 - If they don't, say so plainly, then give a general answer **clearly labelled** as not from
-  the casebooks. Never blend the two silently.
+  the casebooks. Never blend the two silently. This disclosure stays per-answer — it's the
+  one thing that must never be silently omitted, since hiding it would let general AI
+  guidance pass as casebook content.
 - Below the similarity threshold, show nothing rather than a loosely related excerpt.
 
 **What is grounded in the casebooks**

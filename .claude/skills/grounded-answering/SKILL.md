@@ -14,7 +14,14 @@ description: PlaceWise's grounding policy for any student-facing answer built fr
 4. **Never blend silently.** If an answer mixes both, each part is labelled.
 
 ## Citations
-- Every grounded claim cites its chunk: school, casebook title, year, page(s).
+- Every grounded claim is still backed by its chunk's metadata (school, casebook title,
+  year, page(s)) and the API still returns it — but the frontend does **not** render a
+  per-answer source line to students (removed 2026-11-02, Aalhad's call: the site already
+  states globally that answers are grounded, so repeating "This is from the IIMK casebook"
+  on every answer was redundant). See `GroundingNote.tsx`.
+- The one disclosure that stays per-answer, always, is the opposite case: when something is
+  **not** covered, the general-guidance label above must still show. That's the one blend
+  the policy forbids outright — silently passing off general AI content as casebook content.
 - Citations come from chunk metadata, never from the model's memory.
 - Never expose storage URLs, page images or PDFs to non-admin users.
 

@@ -59,7 +59,7 @@ export default function ProbeChat({ probe: p, showHow, showQuote = true }: Probe
           {/* R8: only what/why/how carry a grounding decision (pushback is
               explicitly ungrounded - groundedInCasebooks stays null there). */}
           {!p.loading && p.groundedInCasebooks !== null && (
-            <GroundingNote groundedInCasebooks={p.groundedInCasebooks} citation={p.citation} />
+            <GroundingNote groundedInCasebooks={p.groundedInCasebooks} />
           )}
           {p.contentCheckNotice && !p.loading && (
             <div role="alert" style={{ marginTop: 10, padding: "8px 10px", borderRadius: "var(--r-sm)", background: "#fdf3e3", color: "var(--amber-ink)", fontSize: "0.78125rem", lineHeight: 1.5 }}>
