@@ -27,10 +27,12 @@
 // a casebook name) for anyone debugging the retrieval mechanics later; nothing source-
 // identifying is printed to the terminal or the markdown summary.
 //
-// Scope unchanged: only `frameworks` and `guesstimates` questions have any v2 code path at
-// all (confirmed in run_eval.js's R4 comments - qa/role/company have no grounded route in
-// either pipeline). Those two features are scored here with real v2 retrieval; the rest are
-// recorded with the same "no_rag_route" reason as R4.
+// 2026-11-02 (third update): `qa` now has a real code path too - groundedQaAnswer
+// (backend/src/lib/qaRetrieval.js, R7's last unbuilt piece) wires free-form Q&A through
+// the same groundedConsultingLookup used by Frameworks/Guesstimates. Scored here with the
+// same local-retrieval + relevance-gate preview as those two. `role`/`company` still have
+// no grounded route in either pipeline (that's G2/G3, a later milestone) - still recorded
+// with the "no_rag_route" reason.
 //
 // Mirrors the relevance gate just added to groundedConsultingLookup (consultingRetrieval.js):
 // a row has to clear the similarity threshold AND a relevance judge, checked across every
@@ -145,9 +147,12 @@ async function judgeFaithfulness(question, excerptText) {
 
 async function evalGroundedQuestion(q, pool) {
   const isGuesstimate = q.feature === "guesstimates";
-  const queryText = isGuesstimate
-    ? q.question
-    : `${q.question} framework diagram case study real example application`;
+  const isFrameworks = q.feature === "frameworks";
+  // Frameworks mirrors findGroundingV2's query construction; Guesstimates and Q&A pass
+  // the question straight through, same as groundedGuesstimateLookup/groundedQaAnswer do.
+  const queryText = isFrameworks
+    ? `${q.question} framework diagram case study real example application`
+    : q.question;
 
   callCounts.embedding++;
   const [queryEmbedding] = await embedTexts([queryText], "RETRIEVAL_QUERY");
@@ -307,9 +312,9 @@ function buildMarkdown(output) {
   lines.push(`- Embedding calls: ${callCounts.embedding}`);
   lines.push(`- Faithfulness judge calls: ${callCounts.judge}`);
   lines.push("");
-  lines.push("## All frameworks/guesstimates questions, detail");
+  lines.push("## All frameworks/guesstimates/qa questions, detail");
   lines.push("");
-  for (const r of results.filter(r => r.feature === "frameworks" || r.feature === "guesstimates")) {
+  for (const r of results.filter(r => r.feature === "frameworks" || r.feature === "guesstimates" || r.feature === "qa")) {
     lines.push(`### ${r.id} [${r.feature}, covered:${r.covered}] -> ${r.overall}`);
     lines.push(`Q: ${r.question}`);
     for (const name of CHECK_NAMES) {
@@ -333,7 +338,7 @@ async function main() {
   const results = [];
   for (const q of questions) {
     let evalResult;
-    if (q.feature === "frameworks" || q.feature === "guesstimates") {
+    if (q.feature === "frameworks" || q.feature === "guesstimates" || q.feature === "qa") {
       evalResult = await evalGroundedQuestion(q, pool);
     } else {
       evalResult = evalDarkFeature(q.feature);

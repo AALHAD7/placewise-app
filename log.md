@@ -5,6 +5,55 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — R7 closed out: free-form Q&A grounding built
+**Phase:** R7 · **Type:** backend, retrieval
+
+**What changed:** R7's roadmap scope was "Frameworks, Guesstimates, Q&A" — Frameworks and
+Guesstimates were already done; Q&A was the one piece still missing (confirmed by reading
+every route - `chat.js` is a plain ungrounded Gemini passthrough with no casebook lookup at
+all). Built it the same way Guesstimates was built on top of `groundedConsultingLookup`:
+- `backend/src/lib/qaRetrieval.js` (new): `groundedQaAnswer(question)` - retrieves via
+  `groundedConsultingLookup` (which already applies the similarity threshold and the
+  relevance gate added earlier today), then generates either a casebook-only answer
+  (system prompt forbids adding outside facts) or a general one, never both blended
+  (grounding policy, CLAUDE.md). `buildGroundedQaPrompt` is the pure, unit-tested piece.
+- `backend/src/routes/qa.js` (new): `POST /api/qa/ask { question }`, gated behind
+  `ENABLE_CONSULTING_RAG_V2` (off by default, same posture as every other R7 switch),
+  `requireAuth` + `aiLimiter` same as `chat.js`.
+- Registered in `server.js`. No frontend page yet - that's R8's job (same split as
+  Guesstimates: R7 built the backend + route, R8 will build the UI), not blocking this.
+- `backend/test/qaRetrieval.test.js` (new, 3 tests, pure logic only - no network).
+
+**Verification:** `npm test`: 114/115 pass (the 1 failure is the pre-existing, unrelated
+macOS `sandbox.test.js` env-leakage quirk). Server boots clean with the route registered
+(`node -e "import('./src/server.js')"`, confirmed no startup error).
+
+**Eval impact (ad-hoc, not a formal re-run):** added `qa` questions to
+`run_eval_v2_preview.js`'s scoring (previously only `frameworks`/`guesstimates` had any code
+path to test). Overall preview score: **20/39 (51%)**, up from 13/39. `qa`: 7/14 pass now
+(was 0/14 - structurally impossible before, since there was no code path at all).
+
+**Found while rerunning, not swept under the rug: the relevance gate isn't perfectly
+deterministic.** q037 ("Uber rides in NYC", a known trap question) was correctly rejected in
+the last two runs but came back as a false positive this run — same gate, same excerpts,
+different outcome. Traced to `generateText`'s fixed `temperature: 0.4` on the judge call
+(`gemini.js`) - the judge is a probabilistic LLM call, not a deterministic function, so it
+can occasionally flip on a borderline case. Not fixed here (out of scope for this task); worth
+considering `temperature: 0` for judge/gate calls specifically before relying on this gate at
+R9 scale.
+
+**Files:** `backend/src/lib/qaRetrieval.js`, `backend/src/routes/qa.js`,
+`backend/test/qaRetrieval.test.js`, `backend/src/server.js`,
+`backend/eval/run_eval_v2_preview.js`, `backend/eval/results/2026-11-02-v2-preview.json`/`.md`
+(overwritten), `.gsd/ROADMAP.md`.
+**Proof:** `npm test` output; server boot check; eval script output above.
+**Undo:** Revert the files listed; remove the `app.use("/api/qa", qaRouter)` line and its
+import from `server.js`.
+**Open issues:** No frontend entry point yet (R8). Judge non-determinism noted above, not
+fixed. R5 (admin review queue) is still the real blocker before any switch-over consideration.
+
+---
+
 ## 2026-11-02 — v2 preview rerun: correctness-only scoring, no source attribution, R6 stopped at 7/9
 **Phase:** (none — informational probe) · **Type:** eval, policy
 

@@ -1,41 +1,41 @@
 {
-  "runAt": "2026-11-01T20:02:20.907Z",
+  "runAt": "2026-11-01T20:22:31.498Z",
   "label": "v2-preview",
   "isActiveTouched": false,
   "scoresSourceAttribution": false,
   "callCounts": {
-    "embedding": 21,
-    "judge": 140
+    "embedding": 35,
+    "judge": 224
   },
   "summary": {
     "totalQuestions": 39,
-    "overallPassRate": 0.3333333333333333,
-    "overallPass": 13,
+    "overallPassRate": 0.5128205128205128,
+    "overallPass": 20,
     "overallScored": 39,
     "perCheck": {
       "faithfulness": {
-        "pass": 16,
-        "fail": 19,
+        "pass": 23,
+        "fail": 5,
         "error": 0,
-        "na": 4
+        "na": 11
       },
       "coverage_label": {
-        "pass": 20,
-        "fail": 19,
+        "pass": 29,
+        "fail": 10,
         "error": 0,
         "na": 0
       },
       "diagram_intact": {
         "pass": 0,
-        "fail": 18,
+        "fail": 4,
         "error": 0,
-        "na": 21
+        "na": 35
       },
       "must_include": {
-        "pass": 9,
-        "fail": 26,
+        "pass": 14,
+        "fail": 14,
         "error": 0,
-        "na": 4
+        "na": 11
       }
     }
   },
@@ -49,7 +49,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly defines the MECE principle, explains its components, and details its application in case structuring through five specific tools and methods."
+          "reason": "The excerpt directly defines the MECE principle, explains its components, and outlines specific tools and methods for using it in case structuring."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -78,7 +78,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly defines the Pareto Principle (80/20 Rule) and directly explains its application in consulting, specifically regarding prioritization in issue trees and recommendations."
+          "reason": "The excerpt explicitly defines the Pareto Principle (80/20 Rule) and directly details its application and implications in consulting, specifically regarding prioritization in issue trees and recommendations."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -107,7 +107,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly lists and defines the components of the PESTEL framework (Political, Economic, Social, Technological, Environmental, Legal) which directly answers the student's question."
+          "reason": "The excerpt explicitly lists all the components of the PESTEL framework (Political, Economic, Social, Technological, Environmental, Legal) along with their definitions as structured in the issue tree."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -136,7 +136,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "fail",
-          "reason": "6 candidate answer(s) were found but none actually answered the question: The excerpt only provides a heading ('# Pricing Framework') and contains no information describing the three types of price discrimination. | The excerpt discusses new product pricing, frameworks, and questions to ask, but it never actually describes the three types of price discrimination. | The excerpt discusses pricing approaches like value-based, cost-plus, and competitor-based pricing rather than the three types of price discrimination. | The excerpt discusses pricing approaches (cost-based, value-based, and competitor-based) for a heli taxi service rather than describing the three types of price discrimination. | The excerpt discusses general pricing observations like dual pricing and caps, but does not describe the three types of economic price discrimination (first, second, and third degree). | The excerpt discusses a pricing framework with cost-based, benchmarking, and value-based branches, but contains no information describing the three types of price discrimination."
+          "reason": "6 candidate answer(s) were found but none actually answered the question: The excerpt only provides a heading ('Pricing Framework') and contains no information describing the three types of price discrimination. | The excerpt discusses new product pricing and frameworks, but does not describe the three types of economic price discrimination. | The excerpt discusses pricing approaches (Value Based, Cost plus, Competitor Based) rather than the three types of price discrimination. | The excerpt discusses pricing approaches (cost-based, value-based, competitor-based) for a heli taxi service rather than describing the three types of price discrimination. | The excerpt discusses general pricing observations like dual pricing and caps, but does not describe the three types of price discrimination. | The excerpt discusses general pricing frameworks, costs, and value gaps, but contains no information about the three types of price discrimination."
         },
         "coverage_label": {
           "verdict": "fail",
@@ -162,7 +162,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly addresses the exact question by providing a structured framework and assumptions for estimating the daily number of orders placed on Swiggy in Delhi."
+          "reason": "The excerpt directly addresses the exact guesstimate question about the number of orders placed on Swiggy in Delhi in a day, providing population breakdowns, assumptions, and a structured issue tree for the calculation."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -220,7 +220,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly provides assumptions, calculations, and the final estimated daily revenue for a Delhi-Gurgaon toll plaza, which precisely answers the student's question."
+          "reason": "The excerpt provides a direct, structured framework and numerical calculation specifically for estimating the daily revenue of a Delhi-Gurgaon toll plaza."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -275,7 +275,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly includes the index entry for estimating the market size of the tyre industry in India in a particular year in terms of revenue, directly addressing the student's question."
+          "reason": "The excerpt explicitly includes an index entry for the exact question asked: 'Market size of the tyre industry in India'."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -304,7 +304,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly lists the eight types of consulting cases along with a description and an example problem statement for each."
+          "reason": "The excerpt explicitly lists the eight types of consulting cases alongside an example problem statement for each in a clear table format, directly answering the user's question."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -358,26 +358,29 @@
       "feature": "qa",
       "covered": true,
       "question": "How do you break down a profitability case using the P=R-C framework?",
-      "overall": "fail",
+      "overall": "pass",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "The excerpt provides a detailed breakdown of the profitability framework starting with Revenue, Price, and Volume components, directly addressing how to structure a profitability case."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.755410108366419,
+        "content": "Case Frameworks\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": \"Profitability (1/2)\", \"source_page\": 35, \"notes\": [], \"root\": {\"label\": \"PROFITABILITY\", \"children\": [{\"label\": \"Revenue\", \"children\": [{\"label\": \"Price\", \"children\": [{\"label\": \"Price Sensitivity If Inelastic (<1) then P\\u2191 Check response of competitors\", \"children\": []}]}, {\"label\": \"Volume\", \"children\": [{\"label\": \"Market Size\", \"children\": [{\"label\": \"Demand\", \"children\": [{\"label\": \"Product\", \"children\": [{\"label\": \"Customer Behaviour Changed\", \"children\": []}, {\"label\": \"Usage Decreased\", \"children\": []}, {\"label\": \"Demographics\", \"children\": []}]}, {\"label\": \"Industry\", \"children\": [{\"label\": \"Product Life Cycle (mature/decline)\", \"children\": []}, {\"label\": \"Cyclic\", \"children\": []}, {\"label\": \"New competitors\", \"children\": []}, {\"label\": \"New Substitutes\", \"children\": []}]}, {\"label\": \"Macro Factors\", \"children\": [{\"label\": \"Economic\", \"children\": []}, {\"label\": \"PESTEL\", \"children\": []}]}, {\"label\": \"If avg prices decreases\", \"children\": [{\"label\": \"Internal\", \"children\": [{\"label\": \"P \\u2191 to \\u2191 R & it did not work\", \"children\": []}, {\"label\": \"Transfer pricing (internal division transfer)\", \"children\": []}]}, {\"label\": \"External\", \"children\": [{\"label\": \"Price wars\", \"children\": []}, {\"label\": \"Government regulations\", \"children\": []}, {\"label\": \"Change of other margins in value chain\", \"children\": []}, {\"label\": \"Customer preference changed\", \"children\": []}]}]}]}, {\"label\": \"Supply\", \"children\": [{\"label\": \"Supplier Constraints\", \"children\": []}, {\"label\": \"Raw Material\", \"children\": []}, {\"label\": \"Labor union issue\", \"children\": []}, {\"label\": \"PESTEL\", \"children\": []}]}]}, {\"label\": \"Awareness\", \"children\": [{\"label\": \"Ad spent\", \"children\": []}, {\"label\": \"Channels\", \"children\": []}, {\"label\": \"Message (purpose, communicate purchasing behavior)\", \"children\": []}, {\"label\": \"Discounts, cashbacks\", \"children\": []}, {\"label\": \"Types (Paid/ Unpaid social media word of mouth)\", \"children\": []}, {\"label\": \"Brand Perception\", \"children\": []}]}, {\"label\": \"Preference\", \"children\": [{\"label\": \"Product Quality, price for complement, perceived benefits, core attributes packaging, SKU size\", \"children\": []}, {\"label\": \"Service Quality, price\", \"children\": []}, {\"label\": \"Complement/Substitutes\", \"children\": []}, {\"label\": \"Right customer segment?\", \"children\": []}, {\"label\": \"Logistics post purchase\", \"children\": []}, {\"label\": \"Returns & After sales\", \"children\": []}]}, {\"label\": \"Availability\", \"children\": [{\"label\": \"Channels Convenience, Accessibility, feature (stock outs/replenishment, display, shelf spare, % penetration)\", \"children\": []}, {\"label\": \"Operational hours\", \"children\": []}, {\"label\": \"Distributor/Retailer margin\", \"children\": []}, {\"label\": \"Salesforce effectiveness by channel\", \"children\": []}, {\"label\": \"Place features\", \"children\": []}, {\"label\": \"6 senses: ambience, look & feel, design, size, hours, accessibility\", \"children\": []}]}]}, {\"label\": \"Market Share\", \"children\": [{\"label\": \"Demand\", \"children\": []}, {\"label\": \"Supply (find bottleneck in value chain)\", \"children\": []}]}]}, {\"label\": \"Product Mix\", \"children\": []}]}, {\"label\": \"Cost (On next slide)\", \"children\": []}]}}\n```\nDiagram summary: Profitability splits into revenue (price, volume, product mix) and cost. Volume is broken down by market size (demand, supply) and market share (demand, supply). Demand under market size branches into product, industry, macro factors, and if average prices decreases.\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers\n2025\n35\n\nISB | Consulting Prep Casebook\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\nProfitability (2/2)\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 36, \"notes\": [], \"root\": {\"label\": \"PROFITABILITY\", \"children\": [{\"label\": \"Revenue (On previous slide)\", \"children\": []}, {\"label\": \"Cost\", \"children\": [{\"label\": \"Product Mix Changed\", \"children\": [{\"label\": \"Product related problems\", \"children\": [{\"label\": \"Quality\", \"children\": []}, {\"label\": \"Inadequate product width/depth/quantity\", \"children\": []}, {\"label\": \"Network effects (with other products)\", \"children\": []}]}, {\"label\": \"Service related problems\", \"children\": [{\"label\": \"Poor service\", \"children\": []}, {\"label\": \"Costly service\", \"children\": []}, {\"label\": \"Inadequate accessibility or customer service\", \"children\": []}, {\"label\": \"Inadequate training\", \"children\": []}]}, {\"label\": \"Customer Preference\", \"children\": [{\"label\": \"Change in needs\", \"children\": []}]}]}, {\"label\": \"Costs (Fixed vs Variable)\", \"children\": [{\"label\": \"Fixed\", \"children\": [{\"label\": \"Rent\", \"children\": []}, {\"label\": \"Employee salaries\", \"children\": []}, {\"label\": \"SG&A\", \"children\": []}, {\"label\": \"Marketing\", \"children\": []}, {\"label\": \"Equipment\", \"children\": [{\"label\": \"Depreciation\", \"children\": []}, {\"label\": \"Repair and maintenance\", \"children\": []}]}, {\"label\": \"Insurance\", \"children\": []}, {\"label\": \"Interest expense\", \"children\": []}, {\"label\": \"Overhead/Other expenses\", \"children\": []}]}, {\"label\": \"Variable\", \"children\": [{\"label\": \"Contractual salaries\", \"children\": []}, {\"label\": \"Utilities\", \"children\": []}, {\"label\": \"Raw and packaging material\", \"children\": []}, {\"label\": \"Overhead/other expenses\", \"children\": []}]}]}]}]}}\n```\nDiagram summary: Profitability breaks down into revenue and cost, with cost further broken down by product mix changes and fixed versus variable costs.\n\nCosts (value chain) – (at every state it is good to ask the difference wrt competitors"
+      }
     },
     {
       "id": "q013",
@@ -388,7 +391,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly provides a pricing decision tree that addresses both new products and existing products, matching the core elements of the student's question."
+          "reason": "The excerpt provides a direct issue tree for pricing decisions that explicitly splits between new products and existing products, directly answering the question."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -417,7 +420,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly details the Go-to-Market Strategy framework, specifically covering segmentation (\"Whom to Sell?\") and channel strategy (\"Distribution Strategy Where to Sell?\")."
+          "reason": "The excerpt explicitly details the Go-to-Market Strategy framework, including segmentation (whom to sell) and channel strategy (distribution strategy/channels)."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -468,11 +471,11 @@
       "feature": "frameworks",
       "covered": true,
       "question": "What are Porter's Five Forces and what factors increase the bargaining power of suppliers?",
-      "overall": "fail",
+      "overall": "pass",
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly addresses part of Porter's Five Forces by detailing the factors that increase the bargaining power of suppliers."
+          "reason": "The excerpt explicitly provides the list of factors that increase the bargaining power of suppliers under the node 'BPOS increases with,' within Porter's Five Forces framework."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -483,13 +486,13 @@
           "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "Missing: Bargaining Power"
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
         }
       },
       "retrieved": {
-        "similarity": 0.7385845406274774,
-        "content": "# PORTER’S FIVE FORCES\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Barriers to Entry: There are a number of factors that determine the degree of difficulty to enter an industry:\",\n    \"children\": [\n      {\"label\": \"Economies of Scale\", \"children\": []},\n      {\"label\": \"Product differentiation\", \"children\": []},\n      {\"label\": \"Capital requirements\", \"children\": []},\n      {\"label\": \"Access to distribution channels\", \"children\": []},\n      {\"label\": \"Cost advantages independent of scale\", \"children\": []},\n      {\"label\": \"Propriety technologies\", \"children\": []},\n      {\"label\": \"Relationship with suppliers of raw materials\", \"children\": []},\n      {\"label\": \"Geographical presence\", \"children\": []},\n      {\"label\": \"Time compression diseconomies\", \"children\": []},\n      {\"label\": \"Government regulations\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Factors that determine the degree of difficulty to enter an industry include economies of scale, product differentiation, capital requirements, and government regulations.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Relationship with Suppliers: A supplier group is powerful if:\",\n    \"children\": [\n      {\"label\": \"There are fewer substitutable products\", \"children\": []},\n      {\"label\": \"The industry is not an important customer of the supplier group\", \"children\": []},\n      {\"label\": \"The supplier group is an import input to the buyer’s business\", \"children\": []},\n      {\"label\": \"The supplier’s products are differentiated and have high associated switching costs\", \"children\": []},\n      {\"label\": \"The supplier group poses a credible threat of forward integration\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Conditions under which a supplier group is powerful, such as having fewer substitutable products and high switching costs.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Substitute Products: Substitute products that deserve the most attention are those that:\",\n    \"children\": [\n      {\"label\": \"Compete in price with the industry’s products\", \"children\": []},\n      {\"label\": \"Are produced by industries earning higher products\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Substitute products deserving the most attention compete in price or are produced by industries earning higher products.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Relationship with Buyers: A buyer group is powerful if:\",\n    \"children\": [\n      {\"label\": \"It is concentrated or purchase large volumes as a % of seller’s sales\", \"children\": []},\n      {\"label\": \"Undifferentiated products\", \"children\": []},\n      {\"label\": \"Low switching costs\", \"children\": []},\n      {\"label\": \"Buyers pose a credible threat of backward integration\", \"children\": []},\n      {\"label\": \"The industry's product is unimportant to the quality of the buyer's products or services\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Conditions determining buyer power, including concentration, undifferentiated products, and low switching costs.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Rivalry: Rivalry among existing competitors increases if:\",\n    \"children\": [\n      {\"label\": \"Numerous or equally balanced competitors exist\", \"children\": []},\n      {\"label\": \"Industry growth is slow\", \"children\": []},\n      {\"label\": \"Fixed costs are high\", \"children\": []},\n      {\"label\": \"Undifferentiated products and low switching costs\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Factors increasing rivalry among existing competitors, such as numerous competitors and slow industry growth.\n\nSource: Michael E. Porter, Competitive Strategy: Techniques for Analysing Industries and Competitors\n\nIM CALCUTTA CONSULT CLUB"
+        "similarity": 0.7359595840826173,
+        "content": "## Porter’s Industry 5 Forces\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 15, \"notes\": [], \"root\": {\"label\": \"Porter’s Industry 5 Forces\", \"children\": [{\"label\": \"BPOB increases with,\", \"children\": [{\"label\": \"Few large size buyers\", \"children\": []}, {\"label\": \"Low switching cost\", \"children\": []}, {\"label\": \"Higher # of substitutes\", \"children\": []}, {\"label\": \"Standardized products\", \"children\": []}, {\"label\": \"High price elasticity\", \"children\": []}, {\"label\": \"High buyer awareness\", \"children\": []}]}, {\"label\": \"BPOS increases with,\", \"children\": [{\"label\": \"Low number of supplier\", \"children\": []}, {\"label\": \"High switching cost\", \"children\": []}, {\"label\": \"Lower # of substitutes\", \"children\": []}, {\"label\": \"Differentiated product\", \"children\": []}, {\"label\": \"Forward integration is possible\", \"children\": []}]}, {\"label\": \"RIVALRY increases with,\", \"children\": [{\"label\": \"High # of competitors\", \"children\": []}, {\"label\": \"Low barriers to entry\", \"children\": []}, {\"label\": \"Easily substitutable product\", \"children\": []}, {\"label\": \"Low bargaining power of suppliers\", \"children\": []}, {\"label\": \"Low focus on brand value\", \"children\": []}]}, {\"label\": \"TOS increases with,\", \"children\": [{\"label\": \"Low switching cost for customers\", \"children\": []}, {\"label\": \"High performance of substitutes\", \"children\": []}, {\"label\": \"Price-performance trade off is acceptable\", \"children\": []}]}, {\"label\": \"TONE increases with,\", \"children\": [{\"label\": \"High capital req.\", \"children\": []}, {\"label\": \"Differentiated products\", \"children\": []}, {\"label\": \"Strict govt. regulations\", \"children\": []}, {\"label\": \"High switching cost\", \"children\": []}, {\"label\": \"Supply side EOS\", \"children\": []}, {\"label\": \"High brand value of firms\", \"children\": []}]}]}}\n```\nDiagram summary: Porter’s Industry 5 Forces framework broken down into factors increasing Bargaining Power of Buyers, Bargaining Power of Suppliers, Competitive Rivalry, Threat of Substitution, and Threat of New Entrants.\n\nICON, IIM Bangalore | 2025-26 15\n\nContents"
       }
     },
     {
@@ -501,7 +504,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly explains the BCG Growth Share Matrix and details all four quadrants with their definitions and strategic implications as requested."
+          "reason": "The excerpt explicitly explains the BCG Growth Share Matrix and covers all four quadrants (Dogs/Pets, Question Marks, Stars, and Cash Cows) with their definitions and strategic implications."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -530,7 +533,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly provides the definition/diagram of the Ansoff Matrix and lists its four strategic options (Market Penetration, Market Development, Product Development, Diversification)."
+          "reason": "The excerpt explicitly provides the Ansoff Matrix and lists its four strategic options (Market Penetration, Market Development, Product Development, Diversification)."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -559,7 +562,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly and clearly defines TAM, SAM, and SOM, explaining the differences between the three market size metrics."
+          "reason": "The excerpt directly defines TAM, SAM, and SOM and clearly explains the differences between these three market size metrics."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -584,26 +587,29 @@
       "feature": "qa",
       "covered": true,
       "question": "What are the five stages of a case interview discussion?",
-      "overall": "fail",
+      "overall": "pass",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "The excerpt explicitly lists and details the five stages of a case interview discussion in a structured table format."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.754863395891279,
+        "content": "# Case Discussion Approach\n\n| Interview Stage | What to expect? | Skills Tested |\n| :--- | :--- | :--- |\n| Case Interview Question | • Interviewer shares the **case statement**, restate to confirm alignment<br>• Clarify the **business objective**, target metric, and constraints upfront<br>• Identify **case type** (profitability, growth etc.) to guide your approach | • Active listening<br>• Comprehension & synthesis<br>• Business context understanding |\n| Developing the structure | • Request a moment to **organize your thoughts** before answering<br>• Build a **MECE framework** that covers all possible drivers logically<br>• Explain your structure clearly, navigate the problem **step-by-step** | • Structured thinking<br>• Logical reasoning<br>• Communication clarity |\n| Case Analysis | • Prioritize key branches, use **80/20 rule** & eliminate low-impact areas<br>• Ask for data & **refine hypotheses** as you progress through the case<br>• Be comfortable with **number crunching**, estimations & sanity checks | • Problem solving<br>• Analytical thinking<br>• Data interpretation |\n| Summary / Recommendation | • Deliver a **clear, concise recommendation** based on your findings<br>• Back up your suggestion with **2–3 supporting** insights/assumptions<br>• Break down recommendations into **short** and **long-term actions** | • Insight synthesis<br>• Strategic thinking<br>• Clarity and conciseness |\n| Questions for Interviewer | • Ask a question that **shows curiosity** about the firm's work or culture<br>• Avoid generic queries—tailor it to the **firm, interviewer, or case**<br>• Use it as a chance to **demonstrate interest** and consulting mindset | • Consulting mindset<br>• Cultural alignment<br>• Curiosity and engagement |\n\nICON, IIM Bangalore | 2025-26 11\n\n12\n\nCommonly Used Frameworks\n\nContents\n\nCommonly Used Frameworks (1/7)\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": \"SWOT Framework\",\n  \"source_page\": 13,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"SWOT Framework\",\n    \"children\": [\n      {\n        \"label\": \"Internal\",\n        \"children\": [\n          {\n            \"label\": \"STRENGTHS\",\n            \"children\": [\n              {\n                \"label\": \"Positive tangible and intangible attributes providing competitive edge to an organization over its competitors\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What aspects of people, products, processes sets you apart?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is your USP and value proposition?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Proprietary systems, employees, brand image\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"WEAKNESSES\",\n            \"children\": [\n              {\n                \"label\": \"Factors that detract and organization from achieving its desired goals, that need further improvement\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What are the vulnerabilities & what changes are needed?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is obstructing progress and needs to be eliminated?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Weak brand, inadequate supply chain, lack of Cap.\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"label\": \"External\",\n        \"children\": [\n          {\n            \"label\": \"OPPORTUNITIES\",\n            \"children\": [\n              {\n                \"label\": \"Factors representing why an organization exists, which can provide it a competitive advantage\",\n                \"children\": []\n              },\n              {\n                \"label\": \"These factors need to be identified w.r.t. a given Time Frame\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What trends, changes could strengthen the brand, markets?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Reduced Tariffs, Tech Advancements\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"THREATS\",\n            \"children\": [\n              {\n                \"label\": \"Factors that have the potential to harm the organization, and put its goals and mission at a risk\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What external risks could impact performance?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What market shifts could disrupt the firm?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Rising cost of production, increasing competition, tight labor supply\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: The SWOT framework categorizes factors into internal (Strengths, Weaknesses) and external (Opportunities, Threats) dimensions with descriptions, prompting questions, and examples."
+      }
     },
     {
       "id": "q021",
@@ -613,23 +619,26 @@
       "overall": "fail",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "The excerpt explicitly outlines the four main stages of a case interview under the table rows for Case Interview Question, Developing the structure, Case Analysis, and Summary / Recommendation."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
         },
         "must_include": {
           "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "reason": "Missing: Analyse, Conclusion"
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.7502738803944103,
+        "content": "# Case Discussion Approach\n\n| Interview Stage | What to expect? | Skills Tested |\n| :--- | :--- | :--- |\n| Case Interview Question | • Interviewer shares the **case statement**, restate to confirm alignment<br>• Clarify the **business objective**, target metric, and constraints upfront<br>• Identify **case type** (profitability, growth etc.) to guide your approach | • Active listening<br>• Comprehension & synthesis<br>• Business context understanding |\n| Developing the structure | • Request a moment to **organize your thoughts** before answering<br>• Build a **MECE framework** that covers all possible drivers logically<br>• Explain your structure clearly, navigate the problem **step-by-step** | • Structured thinking<br>• Logical reasoning<br>• Communication clarity |\n| Case Analysis | • Prioritize key branches, use **80/20 rule** & eliminate low-impact areas<br>• Ask for data & **refine hypotheses** as you progress through the case<br>• Be comfortable with **number crunching**, estimations & sanity checks | • Problem solving<br>• Analytical thinking<br>• Data interpretation |\n| Summary / Recommendation | • Deliver a **clear, concise recommendation** based on your findings<br>• Back up your suggestion with **2–3 supporting** insights/assumptions<br>• Break down recommendations into **short** and **long-term actions** | • Insight synthesis<br>• Strategic thinking<br>• Clarity and conciseness |\n| Questions for Interviewer | • Ask a question that **shows curiosity** about the firm's work or culture<br>• Avoid generic queries—tailor it to the **firm, interviewer, or case**<br>• Use it as a chance to **demonstrate interest** and consulting mindset | • Consulting mindset<br>• Cultural alignment<br>• Curiosity and engagement |\n\nICON, IIM Bangalore | 2025-26 11\n\n12\n\nCommonly Used Frameworks\n\nContents\n\nCommonly Used Frameworks (1/7)\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": \"SWOT Framework\",\n  \"source_page\": 13,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"SWOT Framework\",\n    \"children\": [\n      {\n        \"label\": \"Internal\",\n        \"children\": [\n          {\n            \"label\": \"STRENGTHS\",\n            \"children\": [\n              {\n                \"label\": \"Positive tangible and intangible attributes providing competitive edge to an organization over its competitors\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What aspects of people, products, processes sets you apart?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is your USP and value proposition?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Proprietary systems, employees, brand image\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"WEAKNESSES\",\n            \"children\": [\n              {\n                \"label\": \"Factors that detract and organization from achieving its desired goals, that need further improvement\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What are the vulnerabilities & what changes are needed?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is obstructing progress and needs to be eliminated?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Weak brand, inadequate supply chain, lack of Cap.\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"label\": \"External\",\n        \"children\": [\n          {\n            \"label\": \"OPPORTUNITIES\",\n            \"children\": [\n              {\n                \"label\": \"Factors representing why an organization exists, which can provide it a competitive advantage\",\n                \"children\": []\n              },\n              {\n                \"label\": \"These factors need to be identified w.r.t. a given Time Frame\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What trends, changes could strengthen the brand, markets?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Reduced Tariffs, Tech Advancements\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"THREATS\",\n            \"children\": [\n              {\n                \"label\": \"Factors that have the potential to harm the organization, and put its goals and mission at a risk\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What external risks could impact performance?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What market shifts could disrupt the firm?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Rising cost of production, increasing competition, tight labor supply\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: The SWOT framework categorizes factors into internal (Strengths, Weaknesses) and external (Opportunities, Threats) dimensions with descriptions, prompting questions, and examples."
+      }
     },
     {
       "id": "q022",
@@ -692,7 +701,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly defines both top-down and bottom-up approaches with clear explanations and examples for each, perfectly answering the user's question."
+          "reason": "The excerpt directly defines both top-down and bottom-up approaches with distinct descriptions and examples, directly answering the question about their differences."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -720,23 +729,26 @@
       "overall": "fail",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "The excerpt explicitly lists specific variable and fixed cost categories (such as raw material, cooking, servicing, billing, rent, utilities, and salaries) in node 'd'."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
         },
         "must_include": {
           "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "reason": "Missing: raw materials"
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.7248800051398704,
+        "content": "## SOLUTION\n\n```placewise-diagram\n{\n  \"type\": \"flow\",\n  \"title\": null,\n  \"source_page\": 58,\n  \"notes\": [],\n  \"nodes\": [\n    {\n      \"id\": \"a\",\n      \"label\": \"That’s right. The number of couples/smaller groups has declined sharply.\"\n    },\n    {\n      \"id\": \"b\",\n      \"label\": \"I think we have arrived at the root-cause for the revenue decline\"\n    },\n    {\n      \"id\": \"c\",\n      \"label\": \"Yes, Let’s analyse costs next.\"\n    },\n    {\n      \"id\": \"d\",\n      \"label\": \"Costs can be divided into the following:\\nVariable costs:\\n• Raw material costs\\n• Cooking costs\\n• Servicing costs\\n• Billing costs\\nFixed costs:\\n• Rent\\n• Utilities\\n• Salaries\\nDo we have any information on what has increased?\"\n    },\n    {\n      \"id\": \"e\",\n      \"label\": \"The raw material costs have increased.\"\n    },\n    {\n      \"id\": \"f\",\n      \"label\": \"Despite a lower raw material consumption, our costs have increased. Have we changed the supplier? What is our arrangement with the supplier?\"\n    },\n    {\n      \"id\": \"g\",\n      \"label\": \"No, we haven’t changed the supplier. Our supplier provides all raw material every morning. He offers additional discount for larger orders.\"\n    },\n    {\n      \"id\": \"h\",\n      \"label\": \"Alright. Since our orders would have become smaller due to falling demand, the discounts would have reduced. Hence higher costs. Is it the reason?\"\n    },\n    {\n      \"id\": \"i\",\n      \"label\": \"Right. We can close the case here.\"\n    }\n  ],\n  \"edges\": [\n    {\n      \"from\": \"a\",\n      \"to\": \"b\",\n      \"label\": null\n    },\n    {\n      \"from\": \"b\",\n      \"to\": \"c\",\n      \"label\": null\n    },\n    {\n      \"from\": \"c\",\n      \"to\": \"d\",\n      \"label\": null\n    },\n    {\n      \"from\": \"d\",\n      \"to\": \"e\",\n      \"label\": null\n    },\n    {\n      \"from\": \"e\",\n      \"to\": \"f\",\n      \"label\": null\n    },\n    {\n      \"from\": \"f\",\n      \"to\": \"g\",\n      \"label\": null\n    },\n    {\n      \"from\": \"g\",\n      \"to\": \"h\",\n      \"label\": null\n    },\n    {\n      \"from\": \"h\",\n      \"to\": \"i\",\n      \"label\": null\n    }\n  ]\n}\n```\nDiagram summary: A sequential dialogue flow traces the analysis from declining customer groups to revenue decline, cost breakdown, raw material cost increases, and supplier discount analysis to conclude the case.\n\n58\n\nProfitability | Hospitality | Easy"
+      }
     },
     {
       "id": "q026",
@@ -746,49 +758,55 @@
       "overall": "fail",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "The excerpt directly addresses how to diagnose and frame an airline profitability case involving margin erosion from maintenance issues by breaking down the impacts on both costs and revenues."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
         },
         "must_include": {
           "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "reason": "Missing: value chain"
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.8434132287697084,
+        "content": "# CASE SUMMARY:\n\nThe airline’s margin erosion is driven by maintenance inefficiency that\naffects both cost and demand.\n- Costs: Higher due to frequent repairs and low technical capability.\n- Revenues: Lower due to fewer flights, weaker reliability, and declining\ncustomer preference.\nIt’s an internal, fixable issue - improving fleet management and reliability\ncan help margins recover."
+      }
     },
     {
       "id": "q027",
       "feature": "qa",
       "covered": true,
       "question": "What is the 4M Framework used for root cause analysis in operations?",
-      "overall": "fail",
+      "overall": "pass",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "The excerpt explicitly defines the 4M Framework, its purpose in root cause analysis, and details part of its components (Man and Machine)."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.6969602376151106,
+        "content": "# Commonly Used Frameworks (4/7)\n\n```placewise-diagram\n{\"type\": \"other\", \"title\": \"7S Framework\", \"source_page\": 16, \"notes\": [\"Used to analyze and improve organizational effectiveness\"], \"labels\": [\"Shared Values\", \"Style\", \"Leadership & Management style used\", \"Skills\", \"Employee capabilities\", \"System\", \"Daily activities and process\", \"Structure\", \"Organization of the company\", \"Staff\", \"Hired employees of the company\", \"Strategy\", \"Plan to grow and outcompete competitors\", \"Core beliefs, values, & mission\"]}\n```\nDiagram summary: The 7S Framework consists of Shared Values, Style, Skills, System, Structure, Staff, and Strategy, each connected to specific organizational descriptions.\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": \"AMO Framework\", \"source_page\": 16, \"notes\": [\"Used to assess employee productivity due to HR practices\"], \"root\": {\"label\": \"AMO Framework\", \"children\": [{\"label\": \"Ability\", \"children\": [{\"label\": \"Selective recruitment, hire able & qualified employees, training and development\", \"children\": []}]}, {\"label\": \"Motivation\", \"children\": [{\"label\": \"Compensation, work life balance, performance-based incentives, clarity of goals, conflict mgt.\", \"children\": []}]}, {\"label\": \"Opportunity\", \"children\": [{\"label\": \"Career planning, high performing work culture, recognition, fair appraisal\", \"children\": []}]}]}}\n```\nDiagram summary: The AMO Framework breaks down employee productivity into Ability, Motivation, and Opportunity with corresponding HR practices.\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": \"4M Framework\", \"source_page\": 16, \"notes\": [\"Establish cause-effect relationship and root cause of process variation\"], \"nodes\": [{\"id\": \"man\", \"label\": \"Man\"}, {\"id\": \"man_desc\", \"label\": \"Human-related factors—skills, training, productivity, availability, and workforce efficiency\"}, {\"id\": \"machine\", \"label\": \"Machine\"}, {\"id\": \"machine_desc\", \"label\": \"Equipment and tech includes availability, reliability, capacity, maintenance and automation level\"}, {\"id\": \"material\", \"label\": \"Material\"}, {\"id\": \"material_desc\", \"label\": \"Input resources incl. quality, availability, lead times, sourcing reliability and inventory management\"}, {\"id\": \"method\", \"label\": \"Method\"}, {\"id\": \"method_desc\", \"label\": \"Processes and workflows includes SOPs, efficiency, compliance and best practice adherence\"}], \"edges\": [{\"from\": \"man\", \"to\": \"man_desc\", \"label\": null}, {\"from\": \"machine\", \"to\": \"machine_desc\", \"label\": null}, {\"from\": \"material\", \"to\": \"material_desc\", \"label\": null}, {\"from\": \"method\", \"to\": \"method_desc\", \"label\": null}]}\n```\nDiagram summary: The 4M Framework connects Man, Machine, Material, and Method to their respective factor descriptions to establish cause-effect relationships.\n\nICON, IIM Bangalore | 2025-26 16\n\nContents"
+      }
     },
     {
       "id": "q028",
@@ -798,72 +816,78 @@
       "overall": "fail",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
         },
         "coverage_label": {
           "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.7743983094013502,
+        "content": "### Methodology\n* We will use a bottom up approach to find the number of passengers/coach and extrapolate it to find no. of passengers/day.\n* No. of passengers per day = #. of passengers/hr * Hours of operations/ day\n* No. of passengers per hour= # of metro trains/ hr * no. of coaches * capacity/coach* % occupancy\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 117, \"notes\": [], \"root\": {\"label\": \"No. of passengers\", \"children\": [{\"label\": \"Weekday\", \"children\": [{\"label\": \"High occupancy hours (6hrs)\", \"children\": [{\"label\": \"Occupancy %: 150 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 1\", \"children\": []}, {\"label\": \"# of passengers: 60*50*6*1.5 =27K\", \"children\": []}]}, {\"label\": \"Med occupancy hours(7hrs)\", \"children\": [{\"label\": \"Occupancy %: 100 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 2/3\", \"children\": []}, {\"label\": \"# of passengers: 40*50*7*1 =14K\", \"children\": []}]}, {\"label\": \"Low occupancy hours(5hrs)\", \"children\": [{\"label\": \"Occupancy %: 40 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 1/2\", \"children\": []}, {\"label\": \"# of passengers: 30*50*5*0.4 =3K\", \"children\": []}]}]}, {\"label\": \"Weekend\", \"children\": [{\"label\": \"High occupancy hours(3hrs)\", \"children\": [{\"label\": \"Occupancy %: 120 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 1\", \"children\": []}, {\"label\": \"# of passengers: 60*50*3*1.2 =10.8K\", \"children\": []}]}, {\"label\": \"Med occupancy hours (7hrs)\", \"children\": [{\"label\": \"Occupancy %: 90 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 2/3\", \"children\": []}, {\"label\": \"# of passengers: 40*50*7*0.9 =12.6K\", \"children\": []}]}, {\"label\": \"Low occupancy hours (8hrs)\", \"children\": [{\"label\": \"Occupancy %: 30 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 1/2\", \"children\": []}, {\"label\": \"# of passengers: 30*50*8*0.3 =3.6K\", \"children\": []}]}]}]}}\n```\nDiagram summary: An issue tree breaking down Delhi Metro passengers by weekday and weekend, further divided by occupancy hours, occupancy percentage, train frequency, and resulting passenger counts."
+      }
     },
     {
       "id": "q029",
       "feature": "qa",
       "covered": true,
       "question": "What does the ISB casebook describe as the 4Ss framework for case solving?",
-      "overall": "fail",
+      "overall": "pass",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "The excerpt explicitly defines the 4Ss framework described in the ISB casebook as Scope, Structure, Solve, and Synthesize, and provides a brief explanation of each component."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.8079143211612203,
+        "content": "## How to use these frameworks?\n\nUse these frameworks as a guiding tool for you to create your own notes based on daily practice and keep improving upon them with time. 4Ss are pertinent to every case: **Scope, Structure, Solve, Synthesize**. Frameworks generally form the structure and solving part of any case. Scoping and Synthesis more or less remains the same.\n\n* **Scope:** Scoping a problem statement is clarifying the and then asking relevant questions that will narrow down the scope of the problem statement for you. There are various aspects of scoping but **3CPR** is the most common way of scoping. (Do not spend a lot of time here)\n* **Structure:** Structuring the problem statement by ensuring MECE is very relevant to make sure you are taking the correct approach and the interviewer is following your approach properly. There are many ways to ensure MECE structuring. (Main portion of the case)\n* **Solve:** Solving the problem might mean drilling down to the Root Cause or solving guesstimates. (Make sure you don't make silly mistakes)\n* **Synthesize:** Synthesize does not mean summarize so do not go on summarizing everything. Synthesis should be of 1 minute and crisp and to the point. (You want to ideally cover everything in 3 points taking a top-down approach and **mentioning the hook of the case**)\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers | Click here for Contents Page\n\nISB | Consulting Prep Casebook | 2025 | 31\n\nISB | Consulting Prep Casebook 2025\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page Click here for Contents Page\n\n32\n\nSource: Being Consultant"
+      }
     },
     {
       "id": "q030",
       "feature": "qa",
       "covered": false,
       "question": "How should I prepare for a McKinsey PEI (Personal Experience Interview)?",
-      "overall": "fail",
+      "overall": "pass",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
         }
       },
       "retrieved": null
@@ -873,23 +897,23 @@
       "feature": "qa",
       "covered": false,
       "question": "What is the Victor Cheng LOMS framework for case interviews?",
-      "overall": "fail",
+      "overall": "pass",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
         }
       },
       "retrieved": null
@@ -928,23 +952,26 @@
       "overall": "fail",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
         },
         "coverage_label": {
           "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.7258387331899363,
+        "content": "## A Day in Consulting\n\n- *Check emails* – respond to urgent requests, plan\n- *Team sync* – align on goals, priorities, and blockers\n- *Client call* – discuss progress, validate hypotheses\n- *Individual work* – build slides, analyze data, refine story\n- *Manager/Partner check-in* – review, iterate\n- *Brainstorm* – whiteboard steps, draft recommendations\n- *Refine* – polish for client, align story with insights\n- *Prep* – for next day/client review\n\n*Each day in consulting is different – the challenge is to balance problem-solving and adaptability*"
+      }
     },
     {
       "id": "q034",
@@ -980,23 +1007,26 @@
       "overall": "fail",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
         },
         "coverage_label": {
           "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.6888091526609516,
+        "content": "## Tips for Future Candidates\n\n• Staying calm is essential; stick to case-solving basics.\n\nThe Consulting and Strategy Club, IIM Lucknow Go to index | 108\n\nThe Consulting and Strategy Club, IIM Lucknow 109"
+      }
     },
     {
       "id": "q036",
@@ -1029,6 +1059,35 @@
       "feature": "guesstimates",
       "covered": false,
       "question": "How would you estimate the number of Uber rides in New York City per day?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.6776330648916269,
+        "content": "# DEMAND SIDE APPROACH\n\nAPPROACH\n\nBreak down demand by identifying the target population, usage frequency, and average consumption.\n\nWHEN TO USE?\n\nWhen estimating market size, revenue, or consumption patterns.\n\nEXAMPLES\n\n* Market Size for Sanitary Pads in India\n* Estimate daily metro passengers in Delhi."
+      }
+    },
+    {
+      "id": "q038",
+      "feature": "qa",
+      "covered": false,
+      "question": "What are the key differences between consulting and investment banking as career paths?",
       "overall": "pass",
       "checks": {
         "faithfulness": {
@@ -1051,32 +1110,6 @@
       "retrieved": null
     },
     {
-      "id": "q038",
-      "feature": "qa",
-      "covered": false,
-      "question": "What are the key differences between consulting and investment banking as career paths?",
-      "overall": "fail",
-      "checks": {
-        "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
-        },
-        "coverage_label": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
-        },
-        "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
-        },
-        "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
-        }
-      },
-      "retrieved": null
-    },
-    {
       "id": "q039",
       "feature": "qa",
       "covered": false,
@@ -1084,23 +1117,26 @@
       "overall": "fail",
       "checks": {
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
         },
         "coverage_label": {
           "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
         },
         "diagram_intact": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "No grounded retrieval route exists for the \"qa\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
         }
       },
-      "retrieved": null
+      "retrieved": {
+        "similarity": 0.7747171147728282,
+        "content": "# Due Diligence - Case Structure\n\nYour client is a PE Firm. It wants to take up a stake in a chain of restaurants. Diagnose and recommend if they should acquire.\n\n| Qualitative Information | Case Framework | Quantitative Data & Analysis |\n| :--- | :--- | :--- |\n| **Case background:**<br><br>The client specifically looking to invest in a restaurant chain<br><br>**Case facts:**<br><br>•Investment fund – 30% growth rate in 4-5 years<br><br>•Explore viability by estimating revenues (demand side, supply side)<br><br>• Identify risks associated with the investment<br><br>• Explore potential due diligence steps | | Population of Delhi = 20 MN<br>Target customer segment (20-50 years) = 50%<br>Middle and higher income segment = 60%<br>Population employed in service sector = 70%<br>Potential market =<br><br>50%*60%*70%<br>= 21% (~20%) of population<br><br>Visit frequency = 20%*10 + 40%*5 + 40%*1 = 4.4 visits/month<br><br>Total market potential = 250*4.4*(20%*20 MN) = 2,640 MN/month = INR 2.6 bn/month<br><br>Italian/Spanish cuisine = 2-3% of market potential = INR 66 MN/month |\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 58, \"notes\": [], \"root\": {\"label\": \"Revenue\", \"children\": [{\"label\": \"Supply Side\", \"children\": [{\"label\": \"No. of cities\", \"children\": []}, {\"label\": \"Restaurant/city\", \"children\": []}, {\"label\": \"Growth rate\", \"children\": []}]}, {\"label\": \"Demand Side\", \"children\": [{\"label\": \"Price per meal\", \"children\": []}, {\"label\": \"Potential Market\", \"children\": []}, {\"label\": \"Visit Frequency\", \"children\": []}]}]}}\n```\nDiagram summary: Revenue breaks down into supply side (no. of cities, restaurant/city, and growth rate) and demand side (price per meal, potential market, and visit frequency).\n\n| Problems and recommendations | Interviewee feedback |\n| :--- | :--- |\n| Identified the valuation of the company using Supply and Demand approaches. Identify indirect competition while exploring risks associated with the investment by specifically looking at long term and short term consumer behaviour. Always remember the original motive of the client (in this case, 30% growth rate) while identifying risks, synergies and different levers for Due diligence. | The case had a wide number of things that could be analysed; key was in understanding the interviewer’s questions one at a time and focusing on the available information for that question. |\n\nThe Consulting and Strategy Club, IIM Lucknow\nGo to index | 58"
+      }
     }
   ]
 }
