@@ -5,6 +5,56 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Independent fidelity re-verification complete: all 1,191 flagged pages checked
+**Phase:** (none — structure-check pass per STATE.md's "human OR structure check" allowance,
+not R5) · **Type:** ingestion, fidelity
+
+**What changed:** The background agent (`backend/ingestion/run_fidelity_reverify.py`) finished
+independently re-verifying every one of the 1,191 `needs_review=true` pages across all 9 R6
+Consulting casebooks before it hit a usage rate limit on its final report-writing step - the
+actual checking work was 100% complete, only the summary was missing. Finalized that summary
+manually from its checkpoint file (`out/fidelity_reverify_progress.json`) rather than re-running
+anything already done.
+
+**Method (per page):** render the real PDF page fresh, run an independently-framed verifier
+call (not the same prompt that generated the content - framed as checking someone else's work,
+to avoid reproducing the same blind spots), and only if it found a genuine defect, regenerate
+with the finding folded in as a fix hint, up to 2 rounds, before giving up honestly.
+
+**Final tally across all 9 casebooks, 1,191 pages:**
+| Result | Count |
+|---|---|
+| Confirmed false positive (checker flag, not a real defect) | 966 |
+| Genuinely fixed (real defect found and corrected) | 170 |
+| Could not auto-resolve after 2 rounds | 55 |
+
+Per casebook (false_positive / genuinely_fixed / could_not_auto_resolve):
+SRCC 30/6/6, FMS 2021-22 63/19/10, ISB 54/18/3, IIM B 190/19/2, IIMK 128/22/10, IIM L 141/16/3,
+IIM Calcutta 98/15/4, IIMA 132/22/7, FMS 2023-24 130/33/10.
+
+One new `ingest_documents` version was written per casebook with >=1 genuine fix (insert-only,
+is_active=false, same reuse-unless-patched pattern as every R6 patch script) - exact
+version/ids in `out/fidelity_reverify_report.json`.
+
+**Not the same as SRCC's count reported earlier today**: SRCC's 6 `could_not_auto_resolve`
+pages from this agent's run were *then* followed up by hand (see the "SRCC's 6 unresolved
+pages" entry above, same day) - 5 of those 6 are now genuinely fixed, leaving 1 (page 35) still
+open. The 55 total above is this agent's raw count before that follow-up.
+
+**Files:** `backend/ingestion/run_fidelity_reverify.py` (the agent's script, now committed),
+`backend/ingestion/out/fidelity_reverify_report.json` (finalized summary).
+**Proof:** Progress checkpoint shows 1,191/1,191 pages recorded; report totals sum exactly to
+1,191.
+**Undo:** `is_active` untouched throughout - nothing live changed. Delete the new document
+versions listed in the report to fully revert.
+**Open issues:** 55 pages (50 outside SRCC) still have confirmed, unresolved real defects -
+same class of issue as SRCC's page 35 (either needs a stronger model than this pipeline's
+flash-lite cap, or an actual human look at the real PDF page). Full list of which pages, per
+casebook, is in `fidelity_reverify_report.json`. This pass is a structure-check, not R5 (the
+actual admin UI) - R5 is still unbuilt and still a separate task.
+
+---
+
 ## 2026-11-02 — SRCC's 6 unresolved pages: 5 fixed, 1 honest remaining gap
 **Phase:** (none — follow-up to the independent fidelity re-verification) · **Type:** ingestion, fix
 

@@ -75,32 +75,63 @@ export async function retrieveConsultingChunks(queryText, { domain, matchCount =
  * been shown" and "did the eval mark it faithful" stay the same question
  * asked the same way.
  */
+const RELEVANCE_SYSTEM_PROMPT =
+  "You are a strict grader checking whether a casebook excerpt shown VERBATIM to a student " +
+  "actually, faithfully and relevantly answers their interview-prep question. The excerpt " +
+  "cannot contain any claim beyond itself - your only job is to judge whether it is genuinely " +
+  "on-topic and answers what was asked, not just coincidentally sharing vocabulary with the " +
+  "question.\n\n" +
+  "Watch specifically for this failure mode (found in testing 2026-11-02): a GENERIC " +
+  "methodology/approach/framework page (e.g. \"how to approach any guesstimate\", \"demand-side " +
+  "approach\", a generic case-cracking framework) can superficially look relevant to almost " +
+  "ANY question in its category, because it never names a specific subject. That does NOT make " +
+  "it faithful. A generic methodology page is only faithful if the question itself is asking " +
+  "for that generic methodology - if the question names a specific entity, company, city, " +
+  "quantity or topic (e.g. \"Uber rides in New York City\", \"RICE prioritization\"), the " +
+  "excerpt must actually address THAT specific thing, not just be a same-category how-to.\n\n" +
+  'Respond with ONLY a JSON object, no markdown fences: {"verdict": "faithful" or ' +
+  '"unfaithful", "reasoning": "one sentence explaining your judgment"}';
+
+/**
+ * I/O: one judge call, full detail (verdict + reasoning). Exported so the eval
+ * (run_eval_v2_preview.js) can do its own 3x voting with per-call reasoning for its report,
+ * reusing this exact prompt/call instead of maintaining a second copy of it.
+ */
+export async function judgeRelevanceOnce(queryText, chunkContent) {
+  const parsed = await generateJSON({
+    system: RELEVANCE_SYSTEM_PROMPT,
+    prompt: `Question: ${queryText}\n\nExcerpt:\n"""${chunkContent.slice(0, 2000)}"""\n\nDoes this excerpt faithfully and relevantly answer the question?`,
+    maxTokens: 200,
+    temperature: 0,
+    feature: "consultingRetrieval-relevance-gate"
+  });
+  return { faithful: parsed.verdict === "faithful", reasoning: String(parsed.reasoning || "") };
+}
+
+/**
+ * I/O: 3-call majority vote (>=2/3 "faithful") on top of the similarity threshold, not a
+ * single call. Found 2026-11-02: even at temperature 0, a single judge call can flip on a
+ * genuinely borderline excerpt (confirmed - Gemini's API isn't perfectly deterministic at
+ * the infrastructure level even at temperature 0). Voting 3x costs 3x the judge calls
+ * (still flash-lite tier, still cheap) but means one flaky call can't single-handedly flip
+ * the outcome. Each call can independently fail (network/parse error); a failed call counts
+ * as "unfaithful" (fail closed, see below), not as a missing vote.
+ */
 export async function judgeRelevance(queryText, chunkContent) {
-  try {
-    const parsed = await generateJSON({
-      system:
-        "You are a strict grader checking whether a casebook excerpt shown VERBATIM to a student " +
-        "actually, faithfully and relevantly answers their interview-prep question. The excerpt " +
-        "cannot contain any claim beyond itself - your only job is to judge whether it is genuinely " +
-        "on-topic and answers what was asked, not just coincidentally sharing vocabulary with the " +
-        'question. Respond with ONLY a JSON object, no markdown fences: {"verdict": "faithful" or ' +
-        '"unfaithful", "reasoning": "one sentence explaining your judgment"}',
-      prompt: `Question: ${queryText}\n\nExcerpt:\n"""${chunkContent.slice(0, 2000)}"""\n\nDoes this excerpt faithfully and relevantly answer the question?`,
-      maxTokens: 200,
-      temperature: 0, // deterministic - a gate that flips verdicts on an identical input (found
-      // in the eval, 2026-11-02) isn't trustworthy at any scale.
-      feature: "consultingRetrieval-relevance-gate"
-    });
-    return parsed.verdict === "faithful";
-  } catch (err) {
-    // Same resilience posture as retrieveConsultingChunks: a judge failure
-    // must not take the page down. Fail closed (treat as irrelevant) rather
-    // than open - showing nothing is always safer than showing an unchecked
-    // excerpt, per the grounding policy's "show nothing rather than a
-    // loosely related excerpt" rule.
-    console.warn(`[consultingRetrieval] relevance judge failed: ${err.message}`);
-    return false;
-  }
+  const votes = await Promise.all(
+    [0, 1, 2].map(() =>
+      judgeRelevanceOnce(queryText, chunkContent).then(r => r.faithful).catch(err => {
+        // Same resilience posture as retrieveConsultingChunks: a judge failure must not
+        // take the page down. Fail closed (treat as irrelevant) rather than open - showing
+        // nothing is always safer than showing an unchecked excerpt, per the grounding
+        // policy's "show nothing rather than a loosely related excerpt" rule.
+        console.warn(`[consultingRetrieval] relevance judge call failed: ${err.message}`);
+        return false;
+      })
+    )
+  );
+  const faithfulCount = votes.filter(Boolean).length;
+  return faithfulCount >= 2;
 }
 
 /**
