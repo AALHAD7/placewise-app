@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { generateJSON } from "./gemini.js";
 
 /**
  * Pure: given one ingest_pages row's `diagrams` jsonb array (diagram-transcription
@@ -41,6 +42,54 @@ export function buildCatalogFromOccurrences(occurrences) {
   );
 }
 
+const FRAMEWORK_TITLE_JUDGE_SYSTEM =
+  "You are checking whether a diagram's title, taken from a consulting casebook, is the " +
+  "name of an ACTUAL reusable business/consulting framework, methodology, or analytical " +
+  "tool (e.g. \"BCG Matrix\", \"Porter's Five Forces\", \"MECE\", \"SWOT\", \"TAM-SAM-SOM\") " +
+  "- as opposed to a chart/table title, a data label, an org chart, a section header, " +
+  "acknowledgements, or a generic phrase that happens to sit above a diagram in the book " +
+  "(e.g. \"GDP Growth Rate\", \"Consulting Club Team (Class of 2026)\", \"Do's\", " +
+  "\"Contents\", \"For Interviewer\"). A real framework name is reusable across many " +
+  "different cases/companies, not specific to one page's numbers or people.\n\n" +
+  'Respond with ONLY a JSON object, no markdown fences: {"verdict": "framework" or ' +
+  '"not_framework"}';
+
+/**
+ * I/O: is this diagram title an actual named framework, not front-matter/chart-label
+ * boilerplate? Found 2026-11-02: extractDiagramTitles pulls every diagram's title
+ * verbatim, including chart/table/org-chart titles that are never meant to be a
+ * "framework" at all ("GDP GROWTH RATE", "Consulting Club Team (Class of 2026)") - the
+ * same "right category of page, wrong kind of content" failure as the Guesstimates
+ * index-page bug. A plain regex can't reliably separate these from real framework names
+ * (no consistent pattern distinguishes "MECE" from "HOUSEHOLD EXPENDITURE"), so this
+ * uses a judge, same approach as judgeIsWorkedProblem. Fails closed (not a framework) on
+ * error, so a judge outage shrinks the catalog rather than showing more junk.
+ */
+export async function judgeIsRealFrameworkTitle(title) {
+  try {
+    const parsed = await generateJSON({
+      system: FRAMEWORK_TITLE_JUDGE_SYSTEM,
+      prompt: `Title: "${title}"\n\nIs this an actual named framework?`,
+      maxTokens: 50,
+      temperature: 0,
+      feature: "framework-catalog-title-judge"
+    });
+    return parsed.verdict === "framework";
+  } catch (err) {
+    console.warn(`[frameworkCatalog] title judge failed for "${title}": ${err.message}`);
+    return false;
+  }
+}
+
+// In-memory cache, not DB-backed: the catalog is rebuilt from ingest_pages on every
+// uncached request, and classifying each unique title costs a Gemini call - without a
+// cache this would be hundreds of calls on every single Frameworks page load. The
+// underlying diagram data only changes when a new ingestion run happens (rare, always a
+// deliberate action, never during normal traffic), so a short TTL is purely a cost/
+// latency guard, not a freshness requirement.
+const CATALOG_CACHE_TTL_MS = 15 * 60 * 1000;
+let catalogCache = null; // { builtAt, result }
+
 /**
  * I/O: every diagram title transcribed from the ingested Consulting casebooks
  * (source_class = club_casebook only - grounding policy, CLAUDE.md), independent of
@@ -49,6 +98,9 @@ export function buildCatalogFromOccurrences(occurrences) {
  * R7 retrieval code - a catalog miss must never take down the Frameworks page.
  */
 export async function buildConsultingFrameworkCatalog() {
+  if (catalogCache && Date.now() - catalogCache.builtAt < CATALOG_CACHE_TTL_MS) {
+    return catalogCache.result;
+  }
   try {
     const { data: docs, error: docErr } = await supabase
       .from("ingest_documents")
@@ -81,7 +133,15 @@ export async function buildConsultingFrameworkCatalog() {
         });
       }
     }
-    return buildCatalogFromOccurrences(occurrences);
+    const rawCatalog = buildCatalogFromOccurrences(occurrences);
+
+    // Classify once per unique title (already deduplicated by buildCatalogFromOccurrences),
+    // not once per occurrence - a framework named 50 times across casebooks is judged once.
+    const verdicts = await Promise.all(rawCatalog.map(entry => judgeIsRealFrameworkTitle(entry.title)));
+    const result = rawCatalog.filter((_, i) => verdicts[i]);
+
+    catalogCache = { builtAt: Date.now(), result };
+    return result;
   } catch (err) {
     console.warn(`[frameworkCatalog] build failed: ${err.message}`);
     return [];

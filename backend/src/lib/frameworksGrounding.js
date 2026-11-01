@@ -120,16 +120,32 @@ async function findGrounding(fw) {
   }
 }
 
+// Found 2026-11-02: this cache had no expiry at all - a row checked once (e.g. MECE,
+// 3Cs, both checked back in September) was *permanently* excluded from ever being
+// re-checked, so it kept serving pre-R6/R7 results (stale nulls, or garbled v1-era
+// excerpts) for two months straight through the entire R6-R9 pipeline rebuild. A week
+// is long enough to still save almost every request from re-paying the Gemini call,
+// short enough that a pipeline change (new casebook activated, relevance gate fixed,
+// etc.) shows up within days, not indefinitely.
+const GROUNDED_STALE_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Pure, exported for its own test - no row should be "checked forever" again.
+export function isStale(checkedAt, now = Date.now()) {
+  if (!checkedAt) return true;
+  return now - new Date(checkedAt).getTime() > GROUNDED_STALE_AFTER_MS;
+}
+
 /**
  * Augments framework rows with `grounded_example` (a real casebook excerpt)
  * and `grounded_image` (a real diagram/image from the ingested corpus, when
  * one scores high enough) - both null if nothing relevant enough was found.
  * Computed lazily on each row's first request and cached in the DB
  * (grounded_checked_at) from then on, so a row that's already been checked
- * never re-embeds or re-queries.
+ * recently doesn't re-embed or re-query every page load - but re-checked once
+ * GROUNDED_STALE_AFTER_MS has passed, so a permanently-stale cache can't happen again.
  */
 export async function withGroundedExamples(frameworks) {
-  const toCheck = frameworks.filter(f => !f.grounded_checked_at);
+  const toCheck = frameworks.filter(f => isStale(f.grounded_checked_at));
   if (!toCheck.length) return frameworks;
 
   const updates = await Promise.all(

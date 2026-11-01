@@ -67,6 +67,7 @@ export interface Framework {
   example?: string;
   grounded_example?: { excerpt: string; sourceFile: string };
   grounded_image?: { url: string; caption: string; sourceFile: string };
+  grounded_checked_at?: string | null;
   steps?: string[];
   diagram_type?: "grid" | "funnel" | null;
   diagram_data?: FrameworkGridDiagram | FrameworkFunnelDiagram | null;

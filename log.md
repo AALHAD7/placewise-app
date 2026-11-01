@@ -5,6 +5,91 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Frameworks page: fixed the QA-found catalog bug, the stale-cache bug, and the garbled-excerpt bug Aalhad reported directly
+**Phase:** (fix, live feature - not R6-R9 gated work) · **Type:** fix
+
+**What changed:** Aalhad reported the 3Cs Framework card showed "absolute garbage" text
+under "From our casebooks" (screenshot). Investigated the actual architecture (not the gated
+R7 catalog - a different, older code path) and found three separate real bugs, all in
+code that predates this session:
+
+1. **Permanently-stale cache.** `withGroundedExamples` (`frameworksGrounding.js`) used
+   `toCheck = frameworks.filter(f => !f.grounded_checked_at)` - once a framework was ever
+   checked, it was excluded from re-checking *forever*. MECE and 3Cs were both last checked
+   in September, two months before this entire R6-R9 pipeline rebuild - they'd never see any
+   of it. Added a 7-day staleness TTL (`isStale`, now exported and pure-tested) so a pipeline
+   change surfaces within days, not never again.
+2. **The actual garbled text.** 3Cs's cached excerpt came from v1 (`document_chunks`,
+   pre-rebuild quality) querying a casebook ("The Consulting Club, FMS, Casebook 2025-26")
+   that was never even re-ingested this session. Fixed by #1 - once re-checked, this
+   casebook-domain framework routes through the fixed v2 pipeline (relevance gate included)
+   instead of serving a two-month-old v1 result.
+3. **Missing grounding label when a check found nothing.** MECE had `grounded_checked_at`
+   set but both `grounded_example`/`grounded_image` null - the card showed no citation AND
+   no "not from the casebooks" label, violating the grounding policy's "always say one or
+   the other" rule. Added the missing fallback (`GroundingNote`, `isGrounded` check).
+4. **Found while testing the fix, not reported**: `grounded_image` can carry real content
+   with `url: null` (R8's structured-diagram rendering is still pending), and the frontend's
+   `hasGroundedImage` check required a truthy `url` - so a real grounded match would show as
+   neither the image nor any indication it was found, and the new fallback label (#3) would
+   have shown a FALSE "not from the casebooks" for content that actually was grounded. Split
+   into `hasGroundedImageUrl` (gates the `<img>`) vs. `hasGroundedImageCaption` (gates a new
+   properly-rendered text box using the real caption).
+5. **The QA report's catalog finding** (196-item "From the casebooks" tag list includes
+   boilerplate like "Consulting Club Team (Class of 2026)", "GDP Growth Rate", "Do's") was
+   real: `extractDiagramTitles` pulled every diagram's title verbatim, with nothing
+   distinguishing an actual framework name from a chart/table/org-chart title. Added
+   `judgeIsRealFrameworkTitle` (same judge-based approach as `judgeIsWorkedProblem` from
+   today's Guesstimates fix - a regex can't reliably tell "MECE" from "HOUSEHOLD
+   EXPENDITURE"), classified once per unique title (not per occurrence), with a 15-minute
+   in-memory cache so this doesn't cost hundreds of Gemini calls on every page load.
+   **Verified against real data: 196 items -> 31, zero boilerplate remaining** (manually
+   inspected the full list).
+6. **Found while reading the code, not previously reported**: the raw caption/excerpt text
+   can itself contain an unparsed ` ```placewise-diagram ` JSON fence - rendering it as plain
+   text (what the code did before) is the exact "absolute garbage" bug, just waiting to
+   recur for any other framework. Extracted `MarkdownWithDiagrams` (from GuesstimatesPage's
+   existing `ProblemContent`, now a shared component used by both pages) so excerpts/captions
+   render as real structured diagrams instead of raw text, everywhere this pattern appears.
+7. Also removed the per-answer "From our casebooks — {sourceFile}" citation header,
+   consistent with today's earlier site-wide policy decision (GroundingNote) - this page had
+   its own separate, un-updated citation display that nothing else in the app has anymore.
+
+**Verified live in a real browser, not just by reading code** (CLAUDE.md: "start the dev
+server and use the feature... before reporting complete") - gstack `/browse` (Aside
+unavailable, used the `$B` headless fallback), local dev server, guest login, Consulting ->
+Case Structuring:
+- **MECE**: now shows a real, properly-rendered diagram (an issue tree: Top Down/Bottom Up/
+  Pareto/MECE/Unit Economics/Extrapolation, from SRCC's own "FRAMEWORKS" page) - not blank,
+  not raw JSON.
+- **3Cs**: no longer shows the garbled v1 excerpt - correctly shows "General guidance - not
+  from the casebooks" now that v2 found nothing for this specific framework.
+- **Catalog list**: live-confirmed zero boilerplate items, 28 (the "so far" count ticks as
+  classification runs) real framework names only.
+
+**Known remaining rough edge, not fixed (minor, not the reported bug):** MECE's rendered
+diagram content spans a chunk that mixes two source-page topics (a framework-list page and
+a following unrelated guesstimate example about license plates in Maharashtra) and has a
+couple of stray page-footer numbers ("3", "4") leaking in as plain text lines - readable and
+coherent, not garbage, but a chunking-boundary quirk worth polishing separately.
+
+**Tests:** 4 new `isStale` unit tests, all pure/no-network. `npm test`: 125/126 (same
+pre-existing unrelated sandbox failure). `tsc --noEmit` and `vite build` both clean.
+**Files:** `backend/src/lib/frameworkCatalog.js`, `backend/src/lib/frameworksGrounding.js`,
+`backend/test/frameworksGrounding.test.js`, `frontend-react/src/pages/FrameworksPage.tsx`,
+`frontend-react/src/pages/GuesstimatesPage.tsx`, `frontend-react/src/types/api.ts`,
+`frontend-react/src/components/MarkdownWithDiagrams.tsx` (new).
+**Proof:** Live browser screenshots (MECE, 3Cs) taken this session; catalog count verified
+via direct function call against real data; test/build output above.
+**Undo:** Revert the files listed above.
+**Open issues:** The chunking-boundary rough edge noted above. The QA report's other
+findings (dead-click miscall on the catalog pills - actually a working local toggle, not
+dead, confirmed by reading the code - plus Company page's ASCII diagram, duplicate news
+headlines, Skill page's missing label, Community moderation visibility) are not addressed
+in this entry.
+
+---
+
 ## 2026-11-02 — Real fix for the random-pick bug: retrieval approach itself was wrong, not just missing a filter
 **Phase:** (fix, same incident) · **Type:** fix
 

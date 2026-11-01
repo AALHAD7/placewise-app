@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "../lib/apiClient";
 import PageHeader from "../components/PageHeader";
-import PlacewiseDiagram, { DiagramFallback } from "../components/diagrams/PlacewiseDiagram";
-import { splitMarkdownBlocks } from "../lib/placewiseBlocks";
+import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
 import type { GuesstimateResponse } from "../types/api";
 
 // R8: first real UI for Guesstimates (backend-only as of R7 - GET
@@ -12,26 +11,6 @@ import type { GuesstimateResponse } from "../types/api";
 // redesign. Placeholder for Aalhad to redesign where this lives/looks.
 
 type LoadState = { loading: boolean; error: string; data: GuesstimateResponse | null };
-
-// Problem text may itself contain a ```placewise-diagram fence (diagram-
-// transcription skill) - same split-and-render pattern the admin review
-// queue already uses (ReviewQueue.tsx's RebuiltContent).
-function ProblemContent({ markdown }: { markdown: string }) {
-  const segments = splitMarkdownBlocks(markdown);
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {segments.map((s, i) =>
-        s.kind === "text" ? (
-          <p key={i} style={{ margin: 0, fontSize: "0.9375rem", lineHeight: 1.65, color: "var(--text-900)", whiteSpace: "pre-wrap" }}>{s.text}</p>
-        ) : s.parseError ? (
-          <DiagramFallback key={i} raw={s.raw} reason={s.parseError} />
-        ) : (
-          <PlacewiseDiagram key={i} block={s.json} />
-        )
-      )}
-    </div>
-  );
-}
 
 export default function GuesstimatesPage() {
   const [state, setState] = useState<LoadState>({ loading: true, error: "", data: null });
@@ -70,7 +49,7 @@ export default function GuesstimatesPage() {
               Practice problem
             </div>
             <div style={{ marginTop: 14 }}>
-              {state.data.problem && <ProblemContent markdown={state.data.problem} />}
+              {state.data.problem && <MarkdownWithDiagrams markdown={state.data.problem} />}
             </div>
             <button
               type="button"

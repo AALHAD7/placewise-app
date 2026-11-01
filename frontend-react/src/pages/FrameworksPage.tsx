@@ -4,6 +4,8 @@ import { ICON_D } from "../lib/constants";
 import { useSelectorOpenState } from "../hooks/useSelector";
 import Selector, { type SelectorOption } from "../components/Selector";
 import PageHeader from "../components/PageHeader";
+import GroundingNote from "../components/GroundingNote";
+import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
 import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksCatalogResponse, FrameworksResponse, FrameworksTaxonomyResponse } from "../types/api";
 
 // Rebuilt around a real Domain -> Subdomain -> framework browse flow instead
@@ -390,7 +392,15 @@ export default function FrameworksPage() {
               const isOpen = !!open[f.id];
               const hasExample = !!f.example;
               const hasGroundedExample = !!(f.grounded_example && f.grounded_example.excerpt);
-              const hasGroundedImage = !!(f.grounded_image && f.grounded_image.url);
+              // Split into "has a renderable image" (a real URL - still R8's job to
+              // populate, see frameworksGrounding.js's v2 comment) vs. "has real grounded
+              // content at all" (a caption, even with url: null). 2026-11-02: MECE got a
+              // real grounded_image with a real caption but url: null, and the page showed
+              // NOTHING - worse, with the naive !hasGroundedImage check it would have shown
+              // a false "not from the casebooks" label for content that IS grounded.
+              const hasGroundedImageUrl = !!(f.grounded_image && f.grounded_image.url);
+              const hasGroundedImageCaption = !!(f.grounded_image && f.grounded_image.caption);
+              const isGrounded = hasGroundedExample || hasGroundedImageUrl || hasGroundedImageCaption;
               const groundedExcerpt = f.grounded_example
                 ? f.grounded_example.excerpt.length > 420
                   ? f.grounded_example.excerpt.slice(0, 420).trim() + "…"
@@ -419,16 +429,29 @@ export default function FrameworksPage() {
                       {f.diagram_type === "grid" && f.diagram_data && "cols" in f.diagram_data && <GridDiagram data={f.diagram_data} />}
                       {f.diagram_type === "funnel" && f.diagram_data && "stages" in f.diagram_data && <FunnelDiagram data={f.diagram_data} />}
 
-                      {hasGroundedImage && (
+                      {hasGroundedImageUrl && (
                         <div style={{ marginTop: f.diagram_type ? 16 : 0 }}>
                           <img
                             src={f.grounded_image!.url}
-                            alt={f.grounded_image!.caption}
+                            alt="Diagram from the casebooks"
                             style={{ maxWidth: "100%", borderRadius: "var(--r-sm)", border: "1px solid var(--card-border)", display: "block" }}
                           />
-                          <div style={{ marginTop: 6, fontSize: "0.71875rem", color: "var(--text-lightgray)" }}>
-                            From the ingested casebooks ({f.grounded_image!.sourceFile}): {f.grounded_image!.caption}
+                        </div>
+                      )}
+                      {/* 2026-11-02: when v2 finds a diagram-bearing match but no real
+                          image URL exists yet (structured-diagram rendering is still
+                          pending - see frameworksGrounding.js's "url: null deliberately"
+                          comment), show the real caption content instead of nothing. The
+                          caption is raw markdown that may itself contain a
+                          ```placewise-diagram fence - MarkdownWithDiagrams renders it
+                          properly instead of dumping raw unparsed JSON as text (the exact
+                          "absolute garbage" bug Aalhad flagged on the 3Cs card). */}
+                      {hasGroundedImageCaption && !hasGroundedImageUrl && (
+                        <div style={{ marginTop: f.diagram_type ? 16 : 0, background: "#eef6f1", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#065f46", marginBottom: 6 }}>
+                            From the casebooks
                           </div>
+                          <MarkdownWithDiagrams markdown={f.grounded_image!.caption} textStyle={{ fontSize: "0.84375rem", color: "#111827" }} />
                         </div>
                       )}
 
@@ -441,23 +464,23 @@ export default function FrameworksPage() {
                       </div>
 
                       {f.when_to_use && (
-                        <div style={{ marginTop: 12, background: "var(--green-wash)", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--green)" }}>When to use it</div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)", textWrap: "pretty" as const }}>{f.when_to_use}</p>
+                        <div style={{ marginTop: 12, background: "#eef6f1", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#065f46" }}>When to use it</div>
+                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.when_to_use}</p>
                         </div>
                       )}
                       {f.when_not_to_use && (
                         <div style={{ marginTop: 10, background: "#fdf3e3", border: "1px solid #f5e0ab", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--amber-ink)" }}>When not to use it</div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)", textWrap: "pretty" as const }}>{f.when_not_to_use}</p>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#92400e" }}>When not to use it</div>
+                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.when_not_to_use}</p>
                         </div>
                       )}
                       {pitfalls.length > 0 && (
                         <div style={{ marginTop: 10, background: "#fdeaea", border: "1px solid #f6c8c8", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--red-dark)" }}>Common pitfalls</div>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#991b1b" }}>Common pitfalls</div>
                           <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 5 }}>
                             {pitfalls.map((p, i) => (
-                              <div key={i} style={{ fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>
+                              <div key={i} style={{ fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827" }}>
                                 • {p}
                               </div>
                             ))}
@@ -465,19 +488,40 @@ export default function FrameworksPage() {
                         </div>
                       )}
                       {hasExample && (
-                        <div style={{ marginTop: 12, background: "var(--surface-alt)", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>Example</div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)", textWrap: "pretty" as const }}>{f.example}</p>
+                        <div style={{ marginTop: 12, background: "#f0f7ff", border: "1px solid #bfdbfe", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#1d4ed8" }}>Example</div>
+                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.example}</p>
                         </div>
                       )}
                       {hasGroundedExample && (
                         <div style={{ marginTop: 12, background: "#eef6f1", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--green)" }}>
-                            From our casebooks — {f.grounded_example?.sourceFile}
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#065f46", marginBottom: 6 }}>
+                            From the casebooks
                           </div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)", textWrap: "pretty" as const, whiteSpace: "pre-wrap" }}>
-                            {groundedExcerpt}
-                          </p>
+                          {/* Only truncate plain prose - truncating mid-way through a
+                              ```placewise-diagram fence would hand MarkdownWithDiagrams
+                              broken JSON. A text-path excerpt only rarely carries one
+                              (diagram chunks normally route to grounded_image instead),
+                              but render it properly in full when it does rather than risk
+                              showing malformed/truncated raw text. */}
+                          {f.grounded_example!.excerpt.includes("```placewise-diagram") ? (
+                            <MarkdownWithDiagrams markdown={f.grounded_example!.excerpt} textStyle={{ fontSize: "0.84375rem", color: "#111827" }} />
+                          ) : (
+                            <p style={{ margin: 0, fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const, whiteSpace: "pre-wrap" }}>
+                              {groundedExcerpt}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {/* 2026-11-02: MECE had no citation AND no "not from the casebooks"
+                          label - grounding was genuinely checked (grounded_checked_at is
+                          set) and came back empty, but the card showed nothing at all,
+                          silently violating the grounding policy's "always say one or the
+                          other" rule. Shown only when a check actually happened and found
+                          nothing - never for a framework that hasn't been checked yet. */}
+                      {!isGrounded && !!f.grounded_checked_at && (
+                        <div style={{ marginTop: 12 }}>
+                          <GroundingNote groundedInCasebooks={false} />
                         </div>
                       )}
                     </div>
