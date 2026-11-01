@@ -5,6 +5,61 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — SRCC's 6 unresolved pages: 5 fixed, 1 honest remaining gap
+**Phase:** (none — follow-up to the independent fidelity re-verification) · **Type:** ingestion, fix
+
+**What changed:** The independent fidelity re-verification agent (separate task, still
+running on other casebooks) finished SRCC Guesstimates and left 6 of its 42 flagged pages as
+`could_not_auto_resolve` after 2 rounds each. Aalhad asked to keep fixing those specifically
+before going live with the rest. Took over where the agent left off:
+
+1. **v4** (`2701715d-683e-4f5f-a908-0c19c038b870`, built on top of the agent's own v3, not
+   v2, so its earlier fixes weren't lost): re-rendered all 6 pages at 2x resolution (300dpi vs
+   the standard 150) with the agent's exact prior finding fed back as a corrective hint.
+   Root cause theory: small decimal points/digits misread at normal resolution. **Verified
+   by direct content check, not assumed: 4 of 6 fixed** (p15 "118 MILLION" → ".118 MILLION",
+   p21 "20.16" → "2.016", p29 "10%"/missing "+" → "100%"/"0 + 1.68M = 1.68 MILLION", p36's
+   year correctly left matching the page's own typo rather than being silently "corrected").
+   **2 of 6 still wrong** (p35: issue tree still has empty SECONDARY/TERTIARY SECTOR
+   branches; p50: still conflates total population with urban population) - these are
+   structural/conflation errors, not digit misreads, and the higher-resolution theory didn't
+   apply to them.
+2. **v5** (`573f9914-...`): second attempt at just p35/p50 with much more explicit,
+   structurally-worded hints, 400dpi. **Verified again: zero change on either page** - both
+   came back byte-identical to the wrong v4 content. The model keeps defaulting to the same
+   misread regardless of phrasing.
+3. **v6** (`1ad48fb6-c630-4bde-9276-918bc1aebed1`): **p50 fixed manually, no vision call** -
+   the correct split is unambiguous from the page's own stated assumptions already in its
+   markdown ("India's population is 1.4 billion" + "~30% ... urban" = 420 million urban,
+   arithmetic from text already on the page, not invented, same pattern this diagram already
+   uses elsewhere e.g. "16M*90%=14.4M"). Split the one mislabeled node into a total-population
+   parent and a correctly-computed urban-population child via direct JSON edit, verified the
+   new label text. **p35 left honestly unresolved** - 2 vision attempts failed identically and
+   nothing gives grounds to guess content I can't see; this is a page a stronger model or a
+   literal human look at the PDF should resolve, not something to force here.
+
+**Final tally for the 6 originally-stuck pages: 5 genuinely fixed (15, 21, 29, 36, 50), 1
+confirmed still wrong (35).** All 6 still show `needs_review=true` - expected, not a
+contradiction: that's the same checker false-positive pattern (footer boilerplate, computed
+numbers not verbatim in the raw text layer) documented for every other page in this casebook,
+not a sign the 5 fixes didn't take.
+
+**Cost:** 6 + 2 vision calls (v4, v5) + ~185 embedding calls across v4/v5/v6 rebuilds, all
+flash-lite tier. Negligible, well under $1 for this whole follow-up.
+**Files:** `backend/ingestion/fix_srcc_six_pages.py`, `fix_srcc_two_pages_v2.py`,
+`fix_srcc_p50_manual.py` (all new).
+**Proof:** Exact substring/content checks shown above and in-session; not inferred from the
+`needs_review` flag or from "something changed."
+**Undo:** `is_active` untouched throughout (still false) - delete the 3 scripts and the
+v4/v5/v6 `ingest_documents`/`ingest_pages`/`ingest_chunks` rows to fully revert; v3 (the
+agent's own version) is unaffected either way.
+**Open issues:** Page 35 of SRCC Guesstimates genuinely still has missing diagram content
+(SECONDARY SECTOR, TERTIARY SECTOR branches) after 3 total attempts (1 original + 2 fixes).
+Recommend either excluding just this one page's chunk from `is_active` when SRCC goes live,
+or getting an actual human look at the real PDF page before including it.
+
+---
+
 ## 2026-11-02 — Relevance-gate judge made deterministic (temperature 0), partial fix
 **Phase:** (none — fix for the non-determinism flagged in today's R7 entry) · **Type:** retrieval, fix
 
