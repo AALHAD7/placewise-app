@@ -1,5 +1,5 @@
 {
-  "runAt": "2026-11-01T20:22:31.498Z",
+  "runAt": "2026-11-01T20:48:23.536Z",
   "label": "v2-preview",
   "isActiveTouched": false,
   "scoresSourceAttribution": false,
@@ -9,8 +9,8 @@
   },
   "summary": {
     "totalQuestions": 39,
-    "overallPassRate": 0.5128205128205128,
-    "overallPass": 20,
+    "overallPassRate": 0.5384615384615384,
+    "overallPass": 21,
     "overallScored": 39,
     "perCheck": {
       "faithfulness": {
@@ -32,8 +32,8 @@
         "na": 35
       },
       "must_include": {
-        "pass": 14,
-        "fail": 14,
+        "pass": 15,
+        "fail": 13,
         "error": 0,
         "na": 11
       }
@@ -49,7 +49,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly defines the MECE principle, explains its components, and outlines specific tools and methods for using it in case structuring."
+          "reason": "The excerpt directly defines the MECE principle, explains its components, and details how it is used in case structuring through five specific tools."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -78,7 +78,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly defines the Pareto Principle (80/20 Rule) and directly details its application and implications in consulting, specifically regarding prioritization in issue trees and recommendations."
+          "reason": "The excerpt explicitly defines the Pareto Principle and directly details its application in consulting, specifically regarding prioritization in issue trees and recommendations."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -107,7 +107,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly lists all the components of the PESTEL framework (Political, Economic, Social, Technological, Environmental, Legal) along with their definitions as structured in the issue tree."
+          "reason": "The excerpt explicitly lists and defines the components of the PESTEL framework (Political, Economic, Social, Technological, Environmental, Legal) which directly answers the question."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -136,7 +136,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "fail",
-          "reason": "6 candidate answer(s) were found but none actually answered the question: The excerpt only provides a heading ('Pricing Framework') and contains no information describing the three types of price discrimination. | The excerpt discusses new product pricing and frameworks, but does not describe the three types of economic price discrimination. | The excerpt discusses pricing approaches (Value Based, Cost plus, Competitor Based) rather than the three types of price discrimination. | The excerpt discusses pricing approaches (cost-based, value-based, competitor-based) for a heli taxi service rather than describing the three types of price discrimination. | The excerpt discusses general pricing observations like dual pricing and caps, but does not describe the three types of price discrimination. | The excerpt discusses general pricing frameworks, costs, and value gaps, but contains no information about the three types of price discrimination."
+          "reason": "6 candidate answer(s) were found but none actually answered the question: The excerpt only provides a heading ('# Pricing Framework') and contains no information or text describing the three types of price discrimination. | The excerpt discusses new product pricing and frameworks like cost floors, but it does not describe the three types of price discrimination. | The excerpt discusses pricing approaches (Value Based, Cost plus, Competitor Based) and product nature rather than the three types of price discrimination. | The excerpt discusses pricing approaches (cost-based, value-based, and competitor-based) rather than the three types of price discrimination. | The excerpt discusses pricing strategies like dual pricing and caps, but it does not describe the three traditional types of economic price discrimination (first, second, and third-degree). | The excerpt discusses pricing frameworks, costs, and value-based pricing, but it does not mention or describe the three types of price discrimination."
         },
         "coverage_label": {
           "verdict": "fail",
@@ -162,7 +162,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly addresses the exact guesstimate question about the number of orders placed on Swiggy in Delhi in a day, providing population breakdowns, assumptions, and a structured issue tree for the calculation."
+          "reason": "The excerpt directly and relevantly addresses the estimation of daily Swiggy orders in Delhi by providing structured assumptions and an issue tree tailored precisely to this case problem."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -191,7 +191,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt provides a structured market-sizing approach and issue tree specifically designed to estimate the number of credit cards in India by segmenting the population by income and credit willingness."
+          "reason": "The excerpt provides a structured market-sizing approach and issue tree specifically designed to estimate the number of credit cards in India by breaking down the population by income tiers, willingness for credit, and loan applications."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -220,7 +220,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt provides a direct, structured framework and numerical calculation specifically for estimating the daily revenue of a Delhi-Gurgaon toll plaza."
+          "reason": "The excerpt directly provides assumptions, vehicle volume calculations, and a final revenue estimation framework specifically for a Delhi-Gurgaon toll plaza in a day."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -275,7 +275,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly includes an index entry for the exact question asked: 'Market size of the tyre industry in India'."
+          "reason": "The excerpt explicitly includes the index entry for estimating the market size of the tyre industry in India in terms of revenue, making it directly relevant to the question."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -304,7 +304,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly lists the eight types of consulting cases alongside an example problem statement for each in a clear table format, directly answering the user's question."
+          "reason": "The excerpt explicitly lists the eight types of consulting cases and provides an example problem statement for each in a clear table format."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -333,7 +333,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly defines and breaks down the 3CPOR scoping method into Objectives, Company, Product, Competitors, Context, and Regulation, directly answering the question."
+          "reason": "The excerpt provides a detailed breakdown of the 3CPOR scoping method used before structuring a case, including all its categories (Objectives, Company, Product, Competitors, Context, Regulation) and their specific guiding questions."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -362,7 +362,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt provides a detailed breakdown of the profitability framework starting with Revenue, Price, and Volume components, directly addressing how to structure a profitability case."
+          "reason": "The excerpt provides a detailed issue tree breaking down profitability into revenue components like price and volume, directly answering how to structure a profitability case."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -391,7 +391,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt provides a direct issue tree for pricing decisions that explicitly splits between new products and existing products, directly answering the question."
+          "reason": "The excerpt provides a direct issue tree that explicitly outlines the pricing decision paths for new and existing products."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -420,7 +420,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly details the Go-to-Market Strategy framework, including segmentation (whom to sell) and channel strategy (distribution strategy/channels)."
+          "reason": "The excerpt explicitly details the Go-to-Market Strategy framework, specifically covering customer segmentation and distribution channel strategy as requested."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -475,7 +475,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly provides the list of factors that increase the bargaining power of suppliers under the node 'BPOS increases with,' within Porter's Five Forces framework."
+          "reason": "The excerpt explicitly provides the framework of Porter's Five Forces and lists the specific factors that increase the bargaining power of suppliers under the heading 'BPOS increases with'."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -504,7 +504,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly explains the BCG Growth Share Matrix and covers all four quadrants (Dogs/Pets, Question Marks, Stars, and Cash Cows) with their definitions and strategic implications."
+          "reason": "The excerpt explicitly explains the BCG Growth Share Matrix and defines all four quadrants (Dogs/Pets, Question Marks, Stars, and Cash Cows) in alignment with the student's question."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -533,7 +533,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly provides the Ansoff Matrix and lists its four strategic options (Market Penetration, Market Development, Product Development, Diversification)."
+          "reason": "The excerpt explicitly provides the Ansoff Matrix along with its four strategic options (Market Penetration, Market Development, Product Development, Diversification)."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -562,7 +562,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly defines TAM, SAM, and SOM and clearly explains the differences between these three market size metrics."
+          "reason": "The excerpt directly and clearly defines TAM, SAM, and SOM, directly answering the question about the differences between them."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -591,7 +591,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly lists and details the five stages of a case interview discussion in a structured table format."
+          "reason": "The excerpt explicitly lists the five stages of a case interview discussion in the provided table and outlines what to expect and the skills tested for each stage."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -616,11 +616,11 @@
       "feature": "qa",
       "covered": true,
       "question": "What are the four steps to approach a consulting case interview?",
-      "overall": "fail",
+      "overall": "pass",
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly outlines the four main stages of a case interview under the table rows for Case Interview Question, Developing the structure, Case Analysis, and Summary / Recommendation."
+          "reason": "The excerpt explicitly outlines the steps to approach a case interview, specifically detailing steps 1 and 2 and beginning step 3, which directly answers the user's question about the four steps."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -631,13 +631,13 @@
           "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
         },
         "must_include": {
-          "verdict": "fail",
-          "reason": "Missing: Analyse, Conclusion"
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
         }
       },
       "retrieved": {
-        "similarity": 0.7502738803944103,
-        "content": "# Case Discussion Approach\n\n| Interview Stage | What to expect? | Skills Tested |\n| :--- | :--- | :--- |\n| Case Interview Question | • Interviewer shares the **case statement**, restate to confirm alignment<br>• Clarify the **business objective**, target metric, and constraints upfront<br>• Identify **case type** (profitability, growth etc.) to guide your approach | • Active listening<br>• Comprehension & synthesis<br>• Business context understanding |\n| Developing the structure | • Request a moment to **organize your thoughts** before answering<br>• Build a **MECE framework** that covers all possible drivers logically<br>• Explain your structure clearly, navigate the problem **step-by-step** | • Structured thinking<br>• Logical reasoning<br>• Communication clarity |\n| Case Analysis | • Prioritize key branches, use **80/20 rule** & eliminate low-impact areas<br>• Ask for data & **refine hypotheses** as you progress through the case<br>• Be comfortable with **number crunching**, estimations & sanity checks | • Problem solving<br>• Analytical thinking<br>• Data interpretation |\n| Summary / Recommendation | • Deliver a **clear, concise recommendation** based on your findings<br>• Back up your suggestion with **2–3 supporting** insights/assumptions<br>• Break down recommendations into **short** and **long-term actions** | • Insight synthesis<br>• Strategic thinking<br>• Clarity and conciseness |\n| Questions for Interviewer | • Ask a question that **shows curiosity** about the firm's work or culture<br>• Avoid generic queries—tailor it to the **firm, interviewer, or case**<br>• Use it as a chance to **demonstrate interest** and consulting mindset | • Consulting mindset<br>• Cultural alignment<br>• Curiosity and engagement |\n\nICON, IIM Bangalore | 2025-26 11\n\n12\n\nCommonly Used Frameworks\n\nContents\n\nCommonly Used Frameworks (1/7)\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": \"SWOT Framework\",\n  \"source_page\": 13,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"SWOT Framework\",\n    \"children\": [\n      {\n        \"label\": \"Internal\",\n        \"children\": [\n          {\n            \"label\": \"STRENGTHS\",\n            \"children\": [\n              {\n                \"label\": \"Positive tangible and intangible attributes providing competitive edge to an organization over its competitors\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What aspects of people, products, processes sets you apart?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is your USP and value proposition?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Proprietary systems, employees, brand image\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"WEAKNESSES\",\n            \"children\": [\n              {\n                \"label\": \"Factors that detract and organization from achieving its desired goals, that need further improvement\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What are the vulnerabilities & what changes are needed?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is obstructing progress and needs to be eliminated?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Weak brand, inadequate supply chain, lack of Cap.\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"label\": \"External\",\n        \"children\": [\n          {\n            \"label\": \"OPPORTUNITIES\",\n            \"children\": [\n              {\n                \"label\": \"Factors representing why an organization exists, which can provide it a competitive advantage\",\n                \"children\": []\n              },\n              {\n                \"label\": \"These factors need to be identified w.r.t. a given Time Frame\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What trends, changes could strengthen the brand, markets?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Reduced Tariffs, Tech Advancements\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"THREATS\",\n            \"children\": [\n              {\n                \"label\": \"Factors that have the potential to harm the organization, and put its goals and mission at a risk\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What external risks could impact performance?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What market shifts could disrupt the firm?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Rising cost of production, increasing competition, tight labor supply\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: The SWOT framework categorizes factors into internal (Strengths, Weaknesses) and external (Opportunities, Threats) dimensions with descriptions, prompting questions, and examples."
+        "similarity": 0.7555594545670432,
+        "content": "# HOW TO APPROACH A CASE INTERVIEW\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 10,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"HOW TO APPROACH A CASE INTERVIEW\",\n    \"children\": [\n      {\n        \"label\": \"1 UNDERSTAND & CLARIFY THE PROBLEM STATEMENT\",\n        \"children\": [\n          {\n            \"label\": \"Candidates should understand the problem statement because a mistake here could ruin the interview.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Ask clarifying questions in order to better understand the problem and find an accurate solution.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Interviewers often don't reveal all the relevant information at once to test candidates' ability to extract information, which is similar to how they interact with clients.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Make no assumptions unless necessary; if a candidate wants to, communicate with the interviewer to validate them.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"2 STRUCTURE THE PROBLEM\",\n        \"children\": [\n          {\n            \"label\": \"This involves organizing and interpreting all received data. The A4 sheet method works well, but candidates can use their own methods depending on their familiarity.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Candidates should keep their structure simple because the interviewer may ask for the working sheet and should be able to understand the approach by looking at it.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Data can be structured using frameworks, but don't force fit them. Instead of saying \\\"I'm using profitability framework\\\", candidates should explain their solution to the interviewer.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"3 ANALYSE THE CASE\",\n        \"children\": [\n          {\n            \"label\": \"This is the main stage of problem-solving, where candidates must infer from the data. Applying the chosen framework, if any, helps structure the process.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Candidates should form a hypothesis with multiple solutions, ask leading questions to test it and narrow their set based on discussion. The candidate should keep the interviewer informed of their thoughts.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"If the candidate is thinking wrong, interviewers usually help them get back on track.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"If the candidate realizes some data is missing, ask the interviewer. No one will provide the information, but well-directed questions will help.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"4 ARRIVE AT A CONCLUSION\",\n        \"children\": [\n          {\n            \"label\": \"The final stage of problem-solving may determine a candidate's interview success. If the candidate can't reach a conclusion and a logical implementation plan, all their efforts are wasted.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Make sure the recommendations are realistic to increase their likelihood of being implemented. Remember that concrete answers score higher than vague ones.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Do a quick \\\"sanity check\\\" to see if the proposed solution, especially if quantitative, makes sense before communicating it. Bottom-up strategy can be used if the original answer was derived top-down, or vice versa.\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: A four-step approach to case interviews covering understanding the problem, structuring it, analyzing the case, and arriving at a conclusion.\n\nBEST OF 2025\nSIP CASES\nInterview transcripts from SIP 2025-26\n\nAIRLINES\n\nProfitability | PwC US | Buddy Round | Easy\n\nKONSULT GROUP\n\nOur client is an international airline operator facing significant margin erosion form the last 5 years. Figure out the root cause behind this problem.\n\nUnderstood. I would like to start by asking is this a company-specific issue, or are margins falling across the entire industry?\n\nThe issue is specific to the client. Competitors with similar market share are performing better.\n\nGot it. Where does the client operate and what’s the market share captured by the client?\n\nThe client operates only in the US, and the market is dominated by 3 players, each holding roughly equal market share.\n\nUnderstood. Since this is client-specific, I’ll focus on the internal factors and look at both sides of the profit equation - costs and revenues. Do I need to specifically analyze one aspect?\n\nAnalyze both aspects.\n\nAlright. Beginning with the cost side, I’d like to look at the client’s cost structure across its primary and secondary value chain to see where inefficiencies might have built up.\n\nGo ahead. Focus only on the primary activities of the business.\n\nOkay. In inbound activities, things like inefficient scheduling and refueling costs could be contributing factors.\n\nIn operations, aircraft operations and maintenance issues may be adding indirect costs.\n\nFor outbound processes, baggage system and rental facilities may be adding to the expenses.\n\nMarketing costs may also have increased if the company is relying heavily on discounts and campaigns to attract consumers.\n\nAnd in after-sales, larger support teams and rising backend technology expenses could have pushed up fixed expenses.\n\nThat’s a fair spread, but focus on maintenance costs for now - that’s where we’re seeing the sharpest increase in the primary chain.\n\nUnderstood. Maintenance seems to be the main cost driver. The issue likely stems from three angles -"
       }
     },
     {
@@ -701,7 +701,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly defines both top-down and bottom-up approaches with distinct descriptions and examples, directly answering the question about their differences."
+          "reason": "The excerpt directly defines both top-down and bottom-up approaches with clear explanations and examples for each, perfectly answering the difference between them."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -730,7 +730,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly lists specific variable and fixed cost categories (such as raw material, cooking, servicing, billing, rent, utilities, and salaries) in node 'd'."
+          "reason": "The excerpt explicitly lists both variable costs (raw material, cooking, servicing, billing) and fixed costs (rent, utilities, salaries) as part of a cost analysis in a profitability case."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -759,7 +759,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly addresses how to diagnose and frame an airline profitability case involving margin erosion from maintenance issues by breaking down the impacts on both costs and revenues."
+          "reason": "The excerpt directly addresses how to approach an airline profitability case driven by maintenance issues by breaking down the impact on both costs and revenues and identifying internal solutions."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -788,7 +788,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly defines the 4M Framework, its purpose in root cause analysis, and details part of its components (Man and Machine)."
+          "reason": "The excerpt explicitly defines the 4M Framework, its purpose in root cause analysis for establishing cause-effect relationships and process variation, and introduces its components."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -846,7 +846,7 @@
       "checks": {
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly defines the 4Ss framework described in the ISB casebook as Scope, Structure, Solve, and Synthesize, and provides a brief explanation of each component."
+          "reason": "The excerpt explicitly defines the 4Ss framework (Scope, Structure, Solve, Synthesize) as described in the ISB casebook and provides a brief explanation for each component."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -1024,8 +1024,8 @@
         }
       },
       "retrieved": {
-        "similarity": 0.6888091526609516,
-        "content": "## Tips for Future Candidates\n\n• Staying calm is essential; stick to case-solving basics.\n\nThe Consulting and Strategy Club, IIM Lucknow Go to index | 108\n\nThe Consulting and Strategy Club, IIM Lucknow 109"
+        "similarity": 0.6991811670947751,
+        "content": "## Tips for Future Candidates\n\n* It's good to have some hook in the HR answers to build better rapport with the interviewer. Just stay calm and think rationally. Don’t get intimidated by the interviewer, he/she is there to help solve the case with you. ]\n* Please get good sleep the night before the interview."
       }
     },
     {

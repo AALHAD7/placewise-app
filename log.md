@@ -5,6 +5,46 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Relevance-gate judge made deterministic (temperature 0), partial fix
+**Phase:** (none — fix for the non-determinism flagged in today's R7 entry) · **Type:** retrieval, fix
+
+**What changed:** `generateText`/`generateJSON` (`gemini.js`) hardcoded `temperature: 0.4`
+with no way to override it. Added a `temperature` parameter (default 0.4, so every other
+caller is unaffected) and passed `temperature: 0` from all three judge call sites: the live
+relevance gate (`consultingRetrieval.js`'s `judgeRelevance`) and both eval judges
+(`run_eval.js`, `run_eval_v2_preview.js`).
+
+**Verified, not assumed - this only partially fixes the problem.** Isolated the judge call
+on a fixed, clearly-wrong excerpt (the Ola/Uber-Delhi one that caused q037's first flip):
+6/6 identical "unfaithful" verdicts at temperature 0, vs. flaky before. Confirmed `embedTexts`
+is already fully deterministic (identical to 6 decimal places across 4 calls), so retrieval
+ranking itself isn't the source of flakiness. But rerunning the full `run_eval_v2_preview.js`
+three more times after the fix, q037 ("Uber rides in NYC") still flipped twice
+(fail/pass/fail) - tracing why: it's not the same excerpt flip-flopping. A **different**
+candidate - a generic "Demand Side Approach" methodology page (similarity 0.678, examples
+about sanitary pads and Delhi metro, not Uber or NYC) - is a genuinely more borderline case
+for the judge than the obviously-wrong Delhi excerpt, because it IS a legitimate guesstimate-
+methodology page that could superficially apply to *any* guesstimate question. That specific
+judgment remains inconsistent even at temperature 0 - real residual model uncertainty on a
+genuinely close call, not pure API-level randomness.
+
+**Honest state:** temperature 0 fixed the clear-cut cases (confirmed deterministic now); it
+did not fully fix genuinely borderline ones. This gate should be treated as "probably right,
+not provably right" until there's a second, independent check (e.g. a stricter prompt
+specifically for generic-methodology-page false positives) - not something to rely on alone
+at R9 scale without re-testing.
+
+**Files:** `backend/src/lib/gemini.js`, `backend/src/lib/consultingRetrieval.js`,
+`backend/eval/run_eval.js`, `backend/eval/run_eval_v2_preview.js`.
+**Proof:** Isolated judge-determinism test (6/6 stable) and embedding-determinism test
+(4/4 identical) above; 3 full eval reruns post-fix still showing q037 flip twice.
+**Undo:** Revert the `temperature` parameter additions; defaults preserve prior behavior
+everywhere else.
+**Open issues:** The generic-methodology-page false-positive class isn't fixed - noted for
+whoever next tunes the relevance gate's prompt.
+
+---
+
 ## 2026-11-02 — Stopgap review export (R5 isn't built yet)
 **Phase:** (none — stopgap for R5) · **Type:** ingestion
 

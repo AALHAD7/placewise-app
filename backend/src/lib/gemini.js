@@ -357,7 +357,7 @@ export async function generateGroundedText({ system, prompt, maxTokens = 500, re
   return result;
 }
 
-export async function generateText({ system, prompt, maxTokens = 1200, allowEscalation = false, onModelUsed, feature, _callType = "text" }) {
+export async function generateText({ system, prompt, maxTokens = 1200, temperature = 0.4, allowEscalation = false, onModelUsed, feature, _callType = "text" }) {
   const models = allowEscalation ? GENERATION_MODELS : GENERATION_MODELS.slice(0, MAX_CASCADE_TIER);
   const { res, model } = await fetchGeminiWithRetry(
     model => `${GEMINI_BASE}/models/${model}:generateContent`,
@@ -367,7 +367,7 @@ export async function generateText({ system, prompt, maxTokens = 1200, allowEsca
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         systemInstruction: { parts: [{ text: system }] },
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.4 }
+        generationConfig: { maxOutputTokens: maxTokens, temperature }
       })
     },
     "generateContent",
@@ -526,11 +526,11 @@ function extractJSON(raw) {
 // around the JSON (variable "thinking" token usage on reasoning-capable models can eat
 // into the output budget unpredictably) — extract just the JSON substring and retry a
 // couple of times before giving up, rather than failing on the first imperfect response.
-export async function generateJSON({ system, prompt, maxTokens = 1200, attempts = 3, allowEscalation = false, onModelUsed, feature }) {
+export async function generateJSON({ system, prompt, maxTokens = 1200, temperature = 0.4, attempts = 3, allowEscalation = false, onModelUsed, feature }) {
   let lastErr;
   for (let i = 0; i < attempts; i++) {
     try {
-      const raw = await generateText({ system, prompt, maxTokens, allowEscalation, onModelUsed, feature, _callType: "json" });
+      const raw = await generateText({ system, prompt, maxTokens, temperature, allowEscalation, onModelUsed, feature, _callType: "json" });
       return extractJSON(raw);
     } catch (err) {
       lastErr = err;

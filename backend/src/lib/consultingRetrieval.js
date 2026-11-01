@@ -87,6 +87,8 @@ export async function judgeRelevance(queryText, chunkContent) {
         '"unfaithful", "reasoning": "one sentence explaining your judgment"}',
       prompt: `Question: ${queryText}\n\nExcerpt:\n"""${chunkContent.slice(0, 2000)}"""\n\nDoes this excerpt faithfully and relevantly answer the question?`,
       maxTokens: 200,
+      temperature: 0, // deterministic - a gate that flips verdicts on an identical input (found
+      // in the eval, 2026-11-02) isn't trustworthy at any scale.
       feature: "consultingRetrieval-relevance-gate"
     });
     return parsed.verdict === "faithful";

@@ -133,6 +133,8 @@ async function judgeFaithfulness(question, excerptText) {
         '"one sentence explaining your judgment"}',
       prompt: `Question: ${question}\n\nExcerpt shown to the student:\n"""${excerptText.slice(0, 2000)}"""\n\nDoes this excerpt faithfully and relevantly answer the question?`,
       maxTokens: 200,
+      temperature: 0, // deterministic judge - see consultingRetrieval.js's relevance gate
+      // comment (2026-11-02) for why this matters.
       feature: "eval-judge-r4"
     });
     const verdict = parsed.verdict === "faithful" ? "faithful" : "unfaithful";

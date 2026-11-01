@@ -136,6 +136,9 @@ async function judgeFaithfulness(question, excerptText) {
         '"unfaithful", "reasoning": "one sentence explaining your judgment"}',
       prompt: `Question: ${question}\n\nExcerpt shown to the student:\n"""${excerptText.slice(0, 2000)}"""\n\nDoes this excerpt faithfully and relevantly answer the question?`,
       maxTokens: 200,
+      temperature: 0, // deterministic - this judge doubles as the live relevance gate's
+      // logic; a verdict that flips on an identical input isn't trustworthy (found
+      // 2026-11-02: q037 flipped pass->fail run-to-run at the old default temperature 0.4).
       feature: "eval-judge-v2-preview"
     });
     const verdict = parsed.verdict === "faithful" ? "faithful" : "unfaithful";
