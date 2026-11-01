@@ -5,6 +5,203 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — SRCC Guesstimates live: page 35 fixed, pipeline-wide domain bug found and fixed, first real is_active switch-over
+**Phase:** (R9-equivalent, scoped to one casebook — informal, not the full M1 switch-over)
+**Type:** fix, ingestion, migration
+
+**Page 35, the last of SRCC's originally-stuck 6 pages, fixed:** 3 automated vision attempts
+(Gemini flash-lite x2 with increasingly explicit hints, NVIDIA Nemotron x1 - which returned
+empty output both times, hitting its token budget before producing visible text) all failed
+identically. Rather than keep guessing, rendered the actual page and looked at it directly
+(`out/srcc_p35.png`). Found the real bug: not missing content as every automated finding
+assumed - **misplaced** content. The model had correctly transcribed every box's text but
+nested all 4 second-row boxes (SELF EMPLOYED, PUBLIC SECTOR, CORPORATE WORKERS, OTHER SERVICE
+SECTOR EMPLOYEES) under PRIMARY SECTOR alone, leaving SECONDARY/TERTIARY SECTOR as empty
+siblings. Fixed with a direct JSON edit (`fix_srcc_p35_manual.py`, v7,
+`bc00d24b-b95d-4222-8bed-28ea7d2a5e18`) - re-parented the 4 existing subtrees verbatim to
+their correct sector (no label or number invented or changed). Verified against the actual
+root/child structure in code, not assumed. **All 6 of SRCC's originally-stuck pages (15, 21,
+29, 35, 36, 50) are now genuinely resolved** - 5 by automated re-render+hint, 1 by direct
+inspection and manual edit.
+
+**AI judge improved further, Aalhad's request:** sharpened `RELEVANCE_SYSTEM_PROMPT`
+(`consultingRetrieval.js`) to explicitly name the exact failure mode found earlier (a generic
+methodology/approach page looking superficially relevant to any same-category question) and
+changed `judgeRelevance` from 1 call to a **3-call majority vote** (>=2/3 "faithful"), since
+even temperature 0 didn't fully eliminate single-call flakiness on genuinely borderline
+excerpts (found 2026-11-02 earlier today). `run_eval_v2_preview.js`'s judge now imports and
+reuses the real `judgeRelevanceOnce` (exported) instead of maintaining a second copy of the
+prompt, so the eval tests the literal production logic, not an approximation of it.
+
+**First real `is_active=true` switch, scoped to exactly one casebook:** activated all 62 of
+SRCC v7's `ingest_chunks` rows (confirmed before: 62/62 inactive; after: 62/62 active, and
+confirmed zero other document's chunks were touched - exactly 1 distinct `document_id` among
+all active rows).
+
+**Found and fixed a real, pipeline-wide bug in the same step - would have silently broken
+every casebook once any one went live:** `ingest_documents.domain` was NULL for **all 9**
+R6-ingested documents (not an SRCC-specific issue). `match_ingest_chunks`'s filter
+(`filter_domain is null or d.domain = filter_domain`) means once any route passes
+`filter_domain="Consulting"` (every Frameworks/Guesstimates/Q&A/chip-panel call does), a NULL
+domain column never matches - silently returns zero rows regardless of `is_active` or content
+quality. Confirmed by a failing end-to-end test (`groundedGuesstimateLookup` returned
+`covered:false` immediately after activating SRCC, when it should have found real content).
+Traced to this exact column, fixed for all 9 documents at once (`fix_domain_null_bug.py`,
+pure metadata correction - no content or `is_active` touched), re-ran the same test: fixed.
+**Never caught before now because no document had ever been flipped `is_active=true` until
+this moment - first real activation, first real bug this specific path could surface.**
+
+**Verified end-to-end, with the real production flag locally (not touching Render), against
+the real shared database:**
+- `getRandomGuesstimateProblem()`: returns a real SRCC problem with a real citation.
+- `groundedGuesstimateLookup("...Swiggy in Delhi...")`: `covered:true`, returns the exact page
+  we fixed earlier.
+- `groundedGuesstimateLookup("...tennis balls in a room...")` (the known trap question):
+  still correctly `covered:false` - the relevance gate holds with the domain fix in place.
+- `groundedQaAnswer("What are Porter Five Forces?")`: `groundedInCasebooks:false` - correctly
+  falls back to a labelled general answer, since no Frameworks content is active yet (only
+  SRCC is) - confirms the shared `ENABLE_CONSULTING_RAG_V2` flag degrades gracefully for
+  not-yet-activated features rather than showing anything wrong.
+
+**Confirmed production is still completely unaffected, with actual evidence, not
+inference:** queried Render's API (`RENDER_API_KEY`, used read-only per its own documented
+scope "check deploy status only" - not used to change anything) for the live backend
+service's env vars: `ENABLE_CONSULTING_RAG_V2` is not among its 6 configured vars. Everything
+above happened against the real shared Supabase database (that part is real and live-capable
+right now) but the backend route gate is still off in the only place that serves real
+students - confirmed, not assumed from a stale local `.env` file.
+
+**What's left for Aalhad, the one deliberate step this session won't take automatically:**
+set `ENABLE_CONSULTING_RAG_V2=true` on Render for the `placewise-api` service and let it
+redeploy/restart. `RENDER_API_KEY`'s comment explicitly scopes it to read-only status checks,
+not config changes, so this wasn't done here even though it may have been technically
+possible with that key. Note: this flag is shared across Frameworks/Guesstimates/Q&A/chip
+panels/role topics - flipping it affects all of them at once, but since only SRCC's 62 chunks
+are `is_active=true`, every other feature will keep correctly returning "not covered" rather
+than showing anything from an unverified casebook, as demonstrated above.
+
+**Cost:** page 35: 1 NVIDIA call (~free tier) + 0 further Gemini vision calls (manual edit) +
+~62 embedding calls for the v7 rebuild. Domain fix: 0 API calls (pure DB update). Judge
+changes: no immediate cost (only costs on actual future queries, 3x per gated row instead of
+1x going forward).
+**Files:** `backend/ingestion/fix_srcc_p35_manual.py`, `fix_domain_null_bug.py`,
+`try_p35_nvidia.py` (all new), `backend/src/lib/consultingRetrieval.js`,
+`backend/eval/run_eval_v2_preview.js`.
+**Proof:** All verification commands and their real output are in-session; re-parenting
+verified against actual JSON structure; domain fix verified via failing-then-passing
+end-to-end test; production state verified via Render API query.
+**Undo:** `UPDATE ingest_chunks SET is_active=false WHERE document_id='bc00d24b-...'` reverts
+the one live switch; the domain fix and page 35 fix are otherwise harmless to leave in place
+even if reverted. No migration file needed - this was data correction via the service-role
+client, same pattern as every other R6 patch this session.
+
+---
+
+## 2026-11-02 — Independent fidelity re-verification complete: all 1,191 flagged pages checked
+**Phase:** (none — structure-check pass per STATE.md's "human OR structure check" allowance,
+not R5) · **Type:** ingestion, fidelity
+
+**What changed:** The background agent (`backend/ingestion/run_fidelity_reverify.py`) finished
+independently re-verifying every one of the 1,191 `needs_review=true` pages across all 9 R6
+Consulting casebooks before it hit a usage rate limit on its final report-writing step - the
+actual checking work was 100% complete, only the summary was missing. Finalized that summary
+manually from its checkpoint file (`out/fidelity_reverify_progress.json`) rather than re-running
+anything already done.
+
+**Method (per page):** render the real PDF page fresh, run an independently-framed verifier
+call (not the same prompt that generated the content - framed as checking someone else's work,
+to avoid reproducing the same blind spots), and only if it found a genuine defect, regenerate
+with the finding folded in as a fix hint, up to 2 rounds, before giving up honestly.
+
+**Final tally across all 9 casebooks, 1,191 pages:**
+| Result | Count |
+|---|---|
+| Confirmed false positive (checker flag, not a real defect) | 966 |
+| Genuinely fixed (real defect found and corrected) | 170 |
+| Could not auto-resolve after 2 rounds | 55 |
+
+Per casebook (false_positive / genuinely_fixed / could_not_auto_resolve):
+SRCC 30/6/6, FMS 2021-22 63/19/10, ISB 54/18/3, IIM B 190/19/2, IIMK 128/22/10, IIM L 141/16/3,
+IIM Calcutta 98/15/4, IIMA 132/22/7, FMS 2023-24 130/33/10.
+
+One new `ingest_documents` version was written per casebook with >=1 genuine fix (insert-only,
+is_active=false, same reuse-unless-patched pattern as every R6 patch script) - exact
+version/ids in `out/fidelity_reverify_report.json`.
+
+**Not the same as SRCC's count reported earlier today**: SRCC's 6 `could_not_auto_resolve`
+pages from this agent's run were *then* followed up by hand (see the "SRCC's 6 unresolved
+pages" entry above, same day) - 5 of those 6 are now genuinely fixed, leaving 1 (page 35) still
+open. The 55 total above is this agent's raw count before that follow-up.
+
+**Files:** `backend/ingestion/run_fidelity_reverify.py` (the agent's script, now committed),
+`backend/ingestion/out/fidelity_reverify_report.json` (finalized summary).
+**Proof:** Progress checkpoint shows 1,191/1,191 pages recorded; report totals sum exactly to
+1,191.
+**Undo:** `is_active` untouched throughout - nothing live changed. Delete the new document
+versions listed in the report to fully revert.
+**Open issues:** 55 pages (50 outside SRCC) still have confirmed, unresolved real defects -
+same class of issue as SRCC's page 35 (either needs a stronger model than this pipeline's
+flash-lite cap, or an actual human look at the real PDF page). Full list of which pages, per
+casebook, is in `fidelity_reverify_report.json`. This pass is a structure-check, not R5 (the
+actual admin UI) - R5 is still unbuilt and still a separate task.
+
+---
+
+## 2026-11-02 — SRCC's 6 unresolved pages: 5 fixed, 1 honest remaining gap
+**Phase:** (none — follow-up to the independent fidelity re-verification) · **Type:** ingestion, fix
+
+**What changed:** The independent fidelity re-verification agent (separate task, still
+running on other casebooks) finished SRCC Guesstimates and left 6 of its 42 flagged pages as
+`could_not_auto_resolve` after 2 rounds each. Aalhad asked to keep fixing those specifically
+before going live with the rest. Took over where the agent left off:
+
+1. **v4** (`2701715d-683e-4f5f-a908-0c19c038b870`, built on top of the agent's own v3, not
+   v2, so its earlier fixes weren't lost): re-rendered all 6 pages at 2x resolution (300dpi vs
+   the standard 150) with the agent's exact prior finding fed back as a corrective hint.
+   Root cause theory: small decimal points/digits misread at normal resolution. **Verified
+   by direct content check, not assumed: 4 of 6 fixed** (p15 "118 MILLION" → ".118 MILLION",
+   p21 "20.16" → "2.016", p29 "10%"/missing "+" → "100%"/"0 + 1.68M = 1.68 MILLION", p36's
+   year correctly left matching the page's own typo rather than being silently "corrected").
+   **2 of 6 still wrong** (p35: issue tree still has empty SECONDARY/TERTIARY SECTOR
+   branches; p50: still conflates total population with urban population) - these are
+   structural/conflation errors, not digit misreads, and the higher-resolution theory didn't
+   apply to them.
+2. **v5** (`573f9914-...`): second attempt at just p35/p50 with much more explicit,
+   structurally-worded hints, 400dpi. **Verified again: zero change on either page** - both
+   came back byte-identical to the wrong v4 content. The model keeps defaulting to the same
+   misread regardless of phrasing.
+3. **v6** (`1ad48fb6-c630-4bde-9276-918bc1aebed1`): **p50 fixed manually, no vision call** -
+   the correct split is unambiguous from the page's own stated assumptions already in its
+   markdown ("India's population is 1.4 billion" + "~30% ... urban" = 420 million urban,
+   arithmetic from text already on the page, not invented, same pattern this diagram already
+   uses elsewhere e.g. "16M*90%=14.4M"). Split the one mislabeled node into a total-population
+   parent and a correctly-computed urban-population child via direct JSON edit, verified the
+   new label text. **p35 left honestly unresolved** - 2 vision attempts failed identically and
+   nothing gives grounds to guess content I can't see; this is a page a stronger model or a
+   literal human look at the PDF should resolve, not something to force here.
+
+**Final tally for the 6 originally-stuck pages: 5 genuinely fixed (15, 21, 29, 36, 50), 1
+confirmed still wrong (35).** All 6 still show `needs_review=true` - expected, not a
+contradiction: that's the same checker false-positive pattern (footer boilerplate, computed
+numbers not verbatim in the raw text layer) documented for every other page in this casebook,
+not a sign the 5 fixes didn't take.
+
+**Cost:** 6 + 2 vision calls (v4, v5) + ~185 embedding calls across v4/v5/v6 rebuilds, all
+flash-lite tier. Negligible, well under $1 for this whole follow-up.
+**Files:** `backend/ingestion/fix_srcc_six_pages.py`, `fix_srcc_two_pages_v2.py`,
+`fix_srcc_p50_manual.py` (all new).
+**Proof:** Exact substring/content checks shown above and in-session; not inferred from the
+`needs_review` flag or from "something changed."
+**Undo:** `is_active` untouched throughout (still false) - delete the 3 scripts and the
+v4/v5/v6 `ingest_documents`/`ingest_pages`/`ingest_chunks` rows to fully revert; v3 (the
+agent's own version) is unaffected either way.
+**Open issues:** Page 35 of SRCC Guesstimates genuinely still has missing diagram content
+(SECONDARY SECTOR, TERTIARY SECTOR branches) after 3 total attempts (1 original + 2 fixes).
+Recommend either excluding just this one page's chunk from `is_active` when SRCC goes live,
+or getting an actual human look at the real PDF page before including it.
+
+---
+
 ## 2026-11-02 — Relevance-gate judge made deterministic (temperature 0), partial fix
 **Phase:** (none — fix for the non-determinism flagged in today's R7 entry) · **Type:** retrieval, fix
 

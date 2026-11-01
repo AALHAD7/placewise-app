@@ -43,8 +43,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
-import { embedTexts, generateJSON } from "../src/lib/gemini.js";
-import { decideCoverage, AI_FALLBACK_LABEL } from "../src/lib/consultingRetrieval.js";
+import { embedTexts } from "../src/lib/gemini.js";
+import { decideCoverage, AI_FALLBACK_LABEL, judgeRelevanceOnce } from "../src/lib/consultingRetrieval.js";
 import { GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -123,29 +123,22 @@ function localRetrieve(pool, queryEmbedding, { sourceFile, matchCount }) {
     .slice(0, matchCount);
 }
 
+// 2026-11-02 (second pass): reuses the real judgeRelevanceOnce (consultingRetrieval.js) -
+// same prompt, sharpened for the generic-methodology-page failure mode found in testing -
+// called 3x with majority vote, exactly matching the live relevance gate's new behavior
+// (judgeRelevance). Not a copy: this eval now tests the literal production judge logic,
+// just collecting per-call reasoning (which the gate itself discards) for the report.
 async function judgeFaithfulness(question, excerptText) {
-  callCounts.judge++;
-  try {
-    const parsed = await generateJSON({
-      system:
-        "You are a strict grader checking whether a casebook excerpt shown VERBATIM to a student " +
-        "actually, faithfully and relevantly answers their interview-prep question. The excerpt " +
-        "cannot contain any claim beyond itself - your only job is to judge whether it is genuinely " +
-        "on-topic and answers what was asked, not just coincidentally sharing vocabulary with the " +
-        'question. Respond with ONLY a JSON object, no markdown fences: {"verdict": "faithful" or ' +
-        '"unfaithful", "reasoning": "one sentence explaining your judgment"}',
-      prompt: `Question: ${question}\n\nExcerpt shown to the student:\n"""${excerptText.slice(0, 2000)}"""\n\nDoes this excerpt faithfully and relevantly answer the question?`,
-      maxTokens: 200,
-      temperature: 0, // deterministic - this judge doubles as the live relevance gate's
-      // logic; a verdict that flips on an identical input isn't trustworthy (found
-      // 2026-11-02: q037 flipped pass->fail run-to-run at the old default temperature 0.4).
-      feature: "eval-judge-v2-preview"
-    });
-    const verdict = parsed.verdict === "faithful" ? "faithful" : "unfaithful";
-    return { verdict, reasoning: String(parsed.reasoning || "") };
-  } catch (err) {
-    return { verdict: "error", reasoning: `Judge call failed: ${err.message}` };
-  }
+  const results = await Promise.all(
+    [0, 1, 2].map(() => {
+      callCounts.judge++;
+      return judgeRelevanceOnce(question, excerptText).catch(err => ({ faithful: false, reasoning: `Judge call failed: ${err.message}`, error: true }));
+    })
+  );
+  const faithfulCount = results.filter(r => r.faithful).length;
+  const verdict = faithfulCount >= 2 ? "faithful" : "unfaithful";
+  const reasoning = results.map((r, i) => `[vote ${i + 1}: ${r.faithful ? "faithful" : "unfaithful"}] ${r.reasoning}`).join(" | ");
+  return { verdict, reasoning };
 }
 
 async function evalGroundedQuestion(q, pool) {
