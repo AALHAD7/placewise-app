@@ -5,6 +5,24 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-01 — R3 done: Consulting test question set landed
+**Phase:** R3 · **Type:** eval
+
+**What changed:** Aalhad's test question set arrived at `~/Downloads/questions.jsonl`; moved to
+`backend/eval/questions.jsonl` (the path R3's done-when and R4's eval runner expect).
+`backend/eval/` didn't exist yet, created it. Validated: 39 lines, all valid JSON, 29 questions
+marked `covered:true` (casebook should answer these) and 10 `covered:false` (casebook shouldn't
+cover these — tests the "not in casebooks" label). Schema per line: `id`, `domain`, `feature`,
+`question`, `expected_source`, `expected_pages`, `must_include`, `covered`.
+**Why:** R4 (eval runner + baseline score) can't start without this file; R3 was the ▶ task.
+**Files:** `backend/eval/questions.jsonl` (moved, not yet committed — new file, untracked).
+**Proof:** File validated above; 39/39 lines parse as JSON.
+**Undo:** Move the file back to `~/Downloads/questions.jsonl`.
+**Open issues:** None of the questions' `expected_source`/`expected_pages` have been checked
+against the actual re-ingested (R6) content yet — R4 will surface any mismatches.
+
+---
+
 ## 2026-11-01 — R6: IIM Calcutta Consulting CaseBook 2025-26 ingested, 1-page network-failure patch (retried twice after transient failures), needs_review rate traced
 **Phase:** R6 · **Type:** ingestion, fix
 
