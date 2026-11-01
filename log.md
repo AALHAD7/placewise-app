@@ -5,6 +5,49 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — v2 preview rerun: correctness-only scoring, no source attribution, R6 stopped at 7/9
+**Phase:** (none — informational probe) · **Type:** eval, policy
+
+**Two decisions from Aalhad, both applied:**
+1. **Stop R6 ingestion at the current 7 casebooks** ("we have enough data for consulting
+   now") — `FMS Consulting Club 2025-26` and `FMS 2024-25` will not be ingested.
+   `.gsd/ROADMAP.md`'s R6 row marked `done (2026-11-02)`, explicitly noting this is a
+   deliberate stop at 7/9, not an oversight.
+2. **Stop scoring/showing which casebook an answer came from, in this eval.** The prior
+   v2-preview run showed several questions failing their strict source-match check while
+   still getting a correct, faithful answer from a different valid casebook (e.g. MECE from
+   FMS 2023-24 instead of FMS 2021-22) — Aalhad decided this eval should only score whether
+   the answer is actually correct, not which book it cites. Dropped the `retrieval_hit` and
+   `citations` checks from `run_eval_v2_preview.js` entirely; `expected_source`/
+   `expected_pages` are no longer read from `questions.jsonl` for scoring. No casebook name,
+   page number, or source file appears in the console output or the `.md` report; the raw
+   `.json` keeps only `similarity`, nothing source-identifying, for future debugging.
+
+**Also fixed a real scoring bug found while rerunning**: for a `covered:false` question that
+was correctly rejected (all candidates judged off-topic), `faithfulness` was being marked
+`fail` even though rejecting them was the *correct* outcome — dragging a genuine success down
+to an overall "fail". `coverage_label` alone already captures correctness for a not-covered
+question; `faithfulness` is now `n/a` for those, not a second penalty for the same thing done
+right.
+
+**Result: 13/39 (33%)**, up from the 5/39 the strict-source-match version scored and the 8/39
+the original narrow-pool version scored - this number is the most honest one yet, since it no
+longer penalizes "right answer, different valid casebook" and no longer double-penalizes a
+correctly-rejected question. The 4 known trap questions (RICE, Jobs-to-be-Done, tennis balls,
+Uber-NYC) now correctly show as passes - the relevance gate still holds across the full
+9-casebook pool. Remaining real gaps: q004 (price discrimination genuinely not well answered
+by any candidate), and 7 must_include phrasing misses (q006, q009, q013, q014, q016, q019,
+q024 - correct, faithful answers missing one specific required phrase, not wrong answers).
+`qa`/`role`/`company` (18/39) remain unscored - no grounded route exists for them in either
+pipeline, unchanged finding from every prior run.
+
+**Cost:** 21 embedding + 140 judge calls, negligible.
+**Files:** `backend/eval/run_eval_v2_preview.js`, `backend/eval/results/2026-11-02-v2-preview.json`/`.md` (overwritten), `.gsd/ROADMAP.md`.
+**Proof:** Script output above; full per-question detail in the `.md` file (no source info present, confirmed by reading it).
+**Undo:** `git diff`/revert; prior runs' numbers are preserved in this file's git history.
+
+---
+
 ## 2026-11-02 — R6: IIMA Consult Prep Book Case Book 2025-26 ingested, 1-page network-failure patch, needs_review rate traced
 **Phase:** R6 · **Type:** ingestion, fix
 

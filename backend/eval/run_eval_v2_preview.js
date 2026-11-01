@@ -1,33 +1,40 @@
 // Ad-hoc preview: how would the NEW (R6-R8) pipeline score on the same 39 questions,
-// right now, before the R9 switch-over? Aalhad asked directly ("is it possible to test
-// against whatever new changes we have made") after seeing R4's 0/39 baseline reflected
-// only the OLD live path. This is NOT R4, NOT R9, and does not change roadmap status -
-// it's an informational probe run once on request.
+// right now, before the R9 switch-over? This is NOT R4, NOT R9, and does not change
+// roadmap status - it's an informational probe run on request.
 //
 // Why this can't just be "set ENABLE_CONSULTING_RAG_V2=true and rerun run_eval.js":
 // match_ingest_chunks (migration_044) hardcodes `where c.is_active = true` in SQL. Every
-// ingest_chunks row from R6 is still is_active=false (the switch-over is a deliberate R9
+// ingest_chunks row from R6 is still is_active=false (switch-over is a deliberate R9
 // decision, not flipped here or anywhere in this script). So calling the real v2 functions
-// (groundedConsultingLookup, groundedGuesstimateLookup) right now would see zero rows
-// regardless of the flag - not useful. This script does NOT touch is_active. It is a
-// read-only SELECT of the same (inactive) rows, with similarity computed locally in JS,
-// purely to preview retrieval+faithfulness quality ahead of the real switch. No student
-// sees any of this; no table is written to.
+// right now would see zero rows regardless of the flag - not useful. This script does NOT
+// touch is_active. It is a read-only SELECT of the same (inactive) rows, with similarity
+// computed locally in JS. No student sees any of this; no table is written to.
 //
-// Reuses the real pure scoring functions from consultingRetrieval.js (decideCoverage,
-// buildCitation, thresholds) - only the I/O (the RPC call, which can't see inactive rows)
-// is replaced with a local equivalent that queries the same inactive rows directly.
+// 2026-11-02 (second update, Aalhad's call): dropped the source-match check entirely.
+// The earlier version required the retrieved excerpt to come from the exact casebook
+// questions.jsonl named (`expected_source`) - but as more casebooks got ingested, several
+// questions started failing that check while still getting a correct, faithful answer from
+// a *different* valid casebook (e.g. MECE answered correctly from FMS 2023-24 instead of
+// FMS 2021-22 - see the prior log.md entry). Aalhad decided this eval should score whether
+// the answer is actually correct, period - not which specific book it cites. So:
+//   - expected_source/expected_pages from questions.jsonl are no longer read or scored.
+//   - The per-question report shows only the question and whether the answer was correct
+//     (faithfulness + correct coverage/not-coverage + must_include) - no casebook name, no
+//     page number, no source file, anywhere in the console output or the .md report.
+//   - The citations check is dropped too - it was itself a "where did this come from"
+//     check, not a correctness check.
+// Source metadata is still present in the raw .json result file only (as `similarity`, not
+// a casebook name) for anyone debugging the retrieval mechanics later; nothing source-
+// identifying is printed to the terminal or the markdown summary.
 //
-// 2026-11-02 update: widened DOC_IDS from the original 5 to all 9 Consulting casebooks
-// R6 has re-ingested so far (Aalhad's request - "test against the new ingestion"), and
-// the scoring now mirrors the relevance gate just added to groundedConsultingLookup
-// (consultingRetrieval.js) - a row has to clear similarity AND a relevance judge to
-// count as covered, same as the live function now does.
+// Scope unchanged: only `frameworks` and `guesstimates` questions have any v2 code path at
+// all (confirmed in run_eval.js's R4 comments - qa/role/company have no grounded route in
+// either pipeline). Those two features are scored here with real v2 retrieval; the rest are
+// recorded with the same "no_rag_route" reason as R4.
 //
-// Scope: only `frameworks` and `guesstimates` questions have any v2 code path at all
-// (confirmed in run_eval.js's R4 comments - qa/role/company have no grounded route in
-// either pipeline). Those two features are scored here with real v2 retrieval; the rest
-// are recorded with the same "no_rag_route" reason as R4, unchanged by this.
+// Mirrors the relevance gate just added to groundedConsultingLookup (consultingRetrieval.js):
+// a row has to clear the similarity threshold AND a relevance judge, checked across every
+// candidate above threshold (not just the top one), to count as "covered".
 
 import "dotenv/config";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -35,27 +42,17 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { embedTexts, generateJSON } from "../src/lib/gemini.js";
-import {
-  decideCoverage,
-  buildCitation,
-  SIMILARITY_THRESHOLD,
-  DIAGRAM_SIMILARITY_THRESHOLD,
-  AI_FALLBACK_LABEL
-} from "../src/lib/consultingRetrieval.js";
+import { decideCoverage, AI_FALLBACK_LABEL } from "../src/lib/consultingRetrieval.js";
 import { GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const QUESTIONS_PATH = path.join(__dirname, "questions.jsonl");
 const RESULTS_DIR = path.join(__dirname, "results");
 
-// Every Consulting casebook R6 has re-ingested so far (is_active=false), latest version
-// per source - identified this session by querying ingest_documents directly. 2026-11-02:
-// widened from the original 5 (the only ones questions.jsonl names) to all 9, on Aalhad's
-// request, to see how the broader candidate pool (IIM L, IIM Calcutta, IIMA, FMS 2023-24
-// added) changes retrieval - a bigger pool can mean MORE cross-casebook "wrong source"
-// misses for a universal framework like PESTEL, not fewer, since there's more competing
-// content to match against. Two casebooks aren't in here yet because R6 hasn't reached
-// them: FMS Consulting Club 2025-26, FMS 2024-25.
+// Every Consulting casebook R6 ingested (is_active=false), latest version per source.
+// Stopped at these 9 - Aalhad's call ("we have enough data for consulting now"), FMS
+// Consulting Club 2025-26 and FMS 2024-25 deliberately not ingested (see log.md, R6 marked
+// done in .gsd/ROADMAP.md at 7/9 by decision, not a gap).
 const DOC_IDS = [
   "e9229429-3eec-478b-b54a-7d5a1cdf6de0", // The FMS Consulting Casebook 2021-22, v3
   "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14", // ISB Consulting Casebook 2025, v2
@@ -64,11 +61,11 @@ const DOC_IDS = [
   "ab676b81-3b29-4c35-b288-6dff71756e26", // SRCC Guesstimates-Book-Volume-1-6, v2
   "fa763d15-dac2-408f-9228-8a5f34785128", // IIM L Consulting Casebook 2025, v1
   "f2c1333f-b205-46fa-991e-551548dffef7", // IIM Calcutta Consulting CaseBook 2025-26, v2
-  "54ece01c-c876-4533-82c6-bd91fabfb983", // IIMA-Consult-Prep-Book-Case-Book-2025-26, v1
+  "09c41590-6f53-40be-a19c-60fa645610f4", // IIMA-Consult-Prep-Book-Case-Book-2025-26, v2
   "faa13328-c4bc-4ed7-8172-6ec5ba38c162"  // The FMS Consulting CaseBook 2023-24, v6
 ];
 
-const CHECK_NAMES = ["retrieval_hit", "faithfulness", "citations", "coverage_label", "diagram_intact", "must_include"];
+const CHECK_NAMES = ["faithfulness", "coverage_label", "diagram_intact", "must_include"];
 const NO_RAG_REASON =
   'No grounded retrieval route exists for the "{feature}" feature in EITHER pipeline ' +
   "(same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active).";
@@ -89,20 +86,17 @@ function cosine(a, b) {
   return dot / (Math.sqrt(na) * Math.sqrt(nb));
 }
 
-// Read-only: fetches the (still is_active=false) chunks for the 5 docs above, with their
-// embeddings, and the parent document's school/club/year/source_file. No write of any
-// kind. Parses each embedding (stored as a string by pgvector over PostgREST) into a
-// plain float array once, up front, so every question's similarity pass is pure JS.
+// Read-only: fetches the (still is_active=false) chunks for the docs above, with their
+// embeddings. No write of any kind. source_file/school/club/year are fetched only because
+// the join comes back with them - never read into checks, retrieved, or any printed output
+// below (see the no-source-attribution note at the top of this file).
 async function loadChunkPool(sb) {
-  // PostgREST caps a single response at 1000 rows by default - 1334 chunks across these
-  // 5 docs silently truncated to 1000 without pagination. Page through in 1000-row
-  // batches until a page comes back short.
   const PAGE = 1000;
   let all = [];
   for (let offset = 0; ; offset += PAGE) {
     const { data, error } = await sb
       .from("ingest_chunks")
-      .select("id, document_id, page_start, page_end, content, has_diagram, embedding, ingest_documents(source_file, school, club, year)")
+      .select("id, document_id, page_start, page_end, content, has_diagram, embedding, ingest_documents(source_file)")
       .in("document_id", DOC_IDS)
       .range(offset, offset + PAGE - 1);
     if (error) throw error;
@@ -110,57 +104,21 @@ async function loadChunkPool(sb) {
     if (data.length < PAGE) break;
   }
   return all.map(r => ({
-    id: r.id,
     document_id: r.document_id,
-    page_start: r.page_start,
-    page_end: r.page_end,
     content: r.content,
     has_diagram: r.has_diagram,
-    source_file: r.ingest_documents?.source_file || null,
-    school: r.ingest_documents?.school || null,
-    club: r.ingest_documents?.club || null,
-    year: r.ingest_documents?.year || null,
+    source_file: r.ingest_documents?.source_file || null, // used only to scope guesstimates, never printed
     embedding: JSON.parse(r.embedding)
   }));
 }
 
-// Local equivalent of match_ingest_chunks, minus the `is_active = true` filter (the one
-// thing that makes it "preview" rather than "live"). Same column shape as the real RPC's
-// return table, so decideCoverage/buildCitation (unmodified, imported) work unchanged.
+// Local equivalent of match_ingest_chunks, minus the `is_active = true` filter.
 function localRetrieve(pool, queryEmbedding, { sourceFile, matchCount }) {
   const scoped = sourceFile ? pool.filter(c => c.source_file === sourceFile) : pool;
   return scoped
-    .map(c => ({
-      content: c.content,
-      has_diagram: c.has_diagram,
-      similarity: cosine(queryEmbedding, c.embedding),
-      school: c.school,
-      club: c.club,
-      year: c.year,
-      source_file: c.source_file,
-      page_start: c.page_start,
-      page_end: c.page_end
-    }))
+    .map(c => ({ content: c.content, has_diagram: c.has_diagram, similarity: cosine(queryEmbedding, c.embedding) }))
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, matchCount);
-}
-
-function stem(name) {
-  return (name || "").replace(/\.(pdf|txt)$/i, "").trim().toLowerCase();
-}
-
-function sourceMatches(retrievedFile, expectedSource) {
-  if (!expectedSource) return false;
-  const a = stem(retrievedFile);
-  const b = stem(expectedSource);
-  return !!a && !!b && (a === b || a.includes(b) || b.includes(a));
-}
-
-function pagesOverlap(citationPages, expectedPages) {
-  if (!expectedPages || expectedPages.length === 0) return null; // nothing to check
-  if (!citationPages || citationPages.length === 0) return false;
-  const [lo, hi] = citationPages.length === 2 ? citationPages : [citationPages[0], citationPages[0]];
-  return expectedPages.some(p => p >= lo && p <= hi);
 }
 
 async function judgeFaithfulness(question, excerptText) {
@@ -187,8 +145,6 @@ async function judgeFaithfulness(question, excerptText) {
 
 async function evalGroundedQuestion(q, pool) {
   const isGuesstimate = q.feature === "guesstimates";
-  // Mirrors findGroundingV2's query construction for frameworks; groundedGuesstimateLookup
-  // passes the topic straight through for guesstimates - same as the live v2 functions do.
   const queryText = isGuesstimate
     ? q.question
     : `${q.question} framework diagram case study real example application`;
@@ -201,12 +157,8 @@ async function evalGroundedQuestion(q, pool) {
   });
   const { covered: thresholdCovered, rows: coveringRows } = decideCoverage(rows);
 
-  // 2026-11-02: mirrors the live relevance gate just added to
-  // groundedConsultingLookup (consultingRetrieval.js) - every row that clears the
-  // similarity threshold also has to clear a relevance judge before counting as
-  // "covered". judgeFaithfulness below is the same prompt/tier as that gate; reused
-  // directly here (not called twice) so the one judge call per row serves both the
-  // gate decision AND the faithfulness check's reported reasoning.
+  // Relevance gate: every row above threshold also has to clear a faithfulness judge,
+  // same as the live groundedConsultingLookup now does.
   const judgedByRow = new Map();
   let relevantRows = [];
   if (thresholdCovered) {
@@ -215,99 +167,67 @@ async function evalGroundedQuestion(q, pool) {
     relevantRows = coveringRows.filter((_, i) => verdicts[i].verdict === "faithful");
   }
   const covered = relevantRows.length > 0;
-  const gateFiltered = thresholdCovered && !covered; // cleared similarity, rejected by the relevance gate
 
   const checks = {};
   const top = relevantRows[0] || null;
-  const citation = top ? buildCitation(top) : null;
 
+  // Faithfulness only measures something for a question that should be covered - whether
+  // the shown answer is actually correct. For a covered:false question, correctly showing
+  // nothing is a full, complete success already captured by coverage_label; judging
+  // "faithfulness of the thing we didn't show" isn't a meaningful separate check and must
+  // not drag the overall verdict down for getting it right.
   if (!q.covered) {
-    checks.retrieval_hit = { verdict: "n/a", reason: "covered:false - no expected_source to match against." };
-  } else if (!covered) {
-    checks.retrieval_hit = {
-      verdict: "fail",
-      reason: gateFiltered
-        ? `${coveringRows.length} row(s) cleared similarity (top ${coveringRows[0].similarity.toFixed(3)}) but the relevance gate rejected all of them as off-topic.`
-        : `Nothing above threshold (top similarity seen: ${rows[0] ? rows[0].similarity.toFixed(3) : "n/a"}, needs >= ${SIMILARITY_THRESHOLD}).`
-    };
-  } else {
-    const matched = sourceMatches(top.source_file, q.expected_source);
-    const pageCheck = pagesOverlap(citation.pages, q.expected_pages);
-    checks.retrieval_hit = {
-      verdict: matched ? "pass" : "fail",
-      reason: matched
-        ? `Retrieved from "${top.source_file}" p${citation.pages.join("-")}, matching expected_source. ` +
-          (pageCheck === null ? "" : pageCheck ? "Page overlap confirmed with expected_pages." : "WARNING: page does NOT overlap expected_pages.")
-        : `Retrieved from "${top.source_file}", which does not match expected_source "${q.expected_source}".`
-    };
-  }
-
-  if (!thresholdCovered) {
-    checks.faithfulness = { verdict: "n/a", reason: "Nothing was retrieved, so there is nothing to judge." };
+    checks.faithfulness = { verdict: "n/a", reason: "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here." };
+  } else if (!thresholdCovered) {
+    checks.faithfulness = { verdict: "n/a", reason: "Nothing was retrieved above the similarity threshold - no answer to judge." };
   } else if (!covered) {
     checks.faithfulness = {
       verdict: "fail",
-      reason: `All ${coveringRows.length} row(s) above threshold were judged unfaithful by the relevance gate: ` +
+      reason: `${coveringRows.length} candidate answer(s) were found but none actually answered the question: ` +
         coveringRows.map(r => judgedByRow.get(r).reasoning).join(" | ")
     };
   } else {
-    const judged = judgedByRow.get(top);
-    checks.faithfulness = { verdict: "pass", reason: judged.reasoning };
-  }
-
-  if (!covered) {
-    checks.citations = { verdict: "n/a", reason: "Nothing retrieved, so no citation is shown either way." };
-  } else {
-    checks.citations = {
-      verdict: "pass",
-      reason: `Full (school, casebook, page) citation available: ${JSON.stringify(citation)}. ` +
-        "ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the " +
-        "one check that genuinely improves once switched on."
-    };
+    checks.faithfulness = { verdict: "pass", reason: judgedByRow.get(top).reasoning };
   }
 
   if (q.covered) {
     checks.coverage_label = {
       verdict: covered ? "pass" : "fail",
-      reason: covered ? "A grounded excerpt was found for a question the casebooks should cover." : "Nothing found for a question the casebooks should cover."
+      reason: covered ? "A correct, relevant answer was found." : "No correct answer was found for a question that should have one."
     };
   } else {
     checks.coverage_label = {
       verdict: covered ? "fail" : "pass",
       reason: covered
-        ? `Something was shown for a question that should NOT be covered (source: "${top.source_file}", similarity ${top.similarity.toFixed(3)}).`
-        : `Correctly showed nothing below threshold (would return label "${AI_FALLBACK_LABEL}").`
+        ? "An answer was shown for a question that should have returned 'not covered'."
+        : `Correctly returned nothing (would show the label "${AI_FALLBACK_LABEL}").`
     };
   }
 
   if (!top || !top.has_diagram) {
-    checks.diagram_intact = { verdict: "n/a", reason: "No diagram-bearing chunk was retrieved for this question." };
+    checks.diagram_intact = { verdict: "n/a", reason: "No diagram-bearing answer was retrieved for this question." };
   } else {
     checks.diagram_intact = {
       verdict: "n/a",
-      reason: "A diagram-bearing chunk matched, but R8 (rendering the structured ingest_pages.diagrams " +
-        "block by page) hasn't landed - this path has no image/diagram payload to check yet, same gap " +
-        "frameworksGrounding.js's findGroundingV2 already documents (image.url deliberately null)."
+      reason: "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) " +
+        "hasn't landed - nothing to check yet."
     };
   }
 
   if (!q.must_include || q.must_include.length === 0) {
-    checks.must_include = { verdict: "n/a", reason: "No must_include terms specified for this question." };
+    checks.must_include = { verdict: "n/a", reason: "No required terms specified for this question." };
   } else if (!covered) {
-    checks.must_include = { verdict: "fail", reason: "Nothing retrieved, so none of the must_include terms could be present." };
+    checks.must_include = { verdict: "fail", reason: "No answer was found, so none of the required terms could be present." };
   } else {
     const haystack = top.content.toLowerCase();
     const missing = q.must_include.filter(t => !haystack.includes(String(t).toLowerCase()));
     checks.must_include = {
       verdict: missing.length === 0 ? "pass" : "fail",
-      reason: missing.length === 0 ? "All must_include terms found in the retrieved text." : `Missing: ${missing.join(", ")}`
+      reason: missing.length === 0 ? "All required terms were present in the answer." : `Missing: ${missing.join(", ")}`
     };
   }
 
-  return {
-    checks,
-    retrieved: top ? { sourceFile: top.source_file, similarity: top.similarity, pages: citation.pages, content: top.content } : null
-  };
+  return { checks, retrieved: top ? { similarity: top.similarity, content: top.content } : null };
 }
 
 function evalDarkFeature(feature) {
@@ -347,13 +267,13 @@ function pct(n, d) {
 function buildMarkdown(output) {
   const { summary, results, callCounts } = output;
   const lines = [];
-  lines.push(`# RAG eval — v2 preview (${output.runAt})`);
+  lines.push(`# RAG eval — v2 preview, correctness only (${output.runAt})`);
   lines.push("");
   lines.push("**This is NOT a live-site measurement.** `is_active` was not touched - every row read " +
-    "here is still inactive. This previews what switching on R6's re-ingested content would score, " +
-    "using a local (JS, read-only) copy of match_ingest_chunks' similarity search since the real RPC " +
-    "cannot see inactive rows. Only `frameworks` and `guesstimates` questions have any v2 code path; " +
-    "the rest are unchanged from R4 (no grounded route exists in either pipeline).");
+    "here is still inactive. This previews what switching on R6's re-ingested content would score. " +
+    "**Scoring no longer checks which casebook an answer came from** (Aalhad's call, 2026-11-02) - only " +
+    "whether the answer is actually correct and properly labelled covered/not-covered. No casebook name, " +
+    "page number, or source file appears anywhere below.");
   lines.push("");
   lines.push(`**Overall pass rate:** ${summary.overallPass}/${summary.overallScored} (${pct(summary.overallPass, summary.overallScored)}) of ${summary.totalQuestions} total questions.`);
   lines.push("");
@@ -421,8 +341,7 @@ async function main() {
     const overall = overallVerdict(evalResult.checks);
     results.push({
       id: q.id, feature: q.feature, covered: q.covered, question: q.question,
-      expected_source: q.expected_source || null, expected_pages: q.expected_pages || [],
-      must_include: q.must_include || [], overall, checks: evalResult.checks, retrieved: evalResult.retrieved
+      overall, checks: evalResult.checks, retrieved: evalResult.retrieved
     });
     console.log(`  ${q.id} [${q.feature}] -> ${overall}`);
   }
@@ -433,7 +352,7 @@ async function main() {
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const jsonPath = path.join(RESULTS_DIR, `${dateStr}-v2-preview.json`);
   const mdPath = path.join(RESULTS_DIR, `${dateStr}-v2-preview.md`);
-  const output = { runAt: new Date().toISOString(), label: "v2-preview", isActiveTouched: false, callCounts, summary, results };
+  const output = { runAt: new Date().toISOString(), label: "v2-preview", isActiveTouched: false, scoresSourceAttribution: false, callCounts, summary, results };
   writeFileSync(jsonPath, JSON.stringify(output, null, 2));
   writeFileSync(mdPath, buildMarkdown(output));
 
