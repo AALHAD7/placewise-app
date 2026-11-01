@@ -5,6 +5,47 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Guesstimates pulled back offline: random-pick showed the book's index page as a "problem"
+**Phase:** (incident, same day as the SRCC go-live) · **Type:** fix, rollback
+
+**What happened:** Aalhad reported (with a screenshot) that `/guesstimates`'s "random
+practice problem" showed SRCC's own table-of-contents/index page (page 2, "180 DEGREES
+CONSULTING, SRCC PRESENTS GUESSTIMATE BOOK VOLUME 1 INDEX...") as if it were a problem to
+solve. Real bug, not a false alarm.
+
+**Immediate action: hidden from students right away**, without waiting on a redeploy -
+deactivated all 62 of SRCC v7's `ingest_chunks` rows again (`is_active=false`). Verified
+against the live production API, not assumed: `GET /api/guesstimates/random` now returns
+`available:false`, same as before today's activation - students see the normal "not
+available" state, nothing broken or confusing shown.
+
+**Root cause:** `getRandomGuesstimateProblem()` (`guesstimateRetrieval.js`) searches
+broadly ("guesstimate practice problem estimate market size number of units volume") and
+`pickRandomCoveringChunk` picks any matching row at random. SRCC's front matter - pages 1
+(title), 2-3 (index), 4 (acknowledgements), 5-9 (theory/approach pages), 10-11 (cheatsheet) -
+is genuinely *about* guesstimates (it literally names many problem titles), so it can clear
+both the similarity threshold and the relevance gate for that broad query. This is a
+**different failure mode than the one the relevance gate was built for** - not "wrong topic,"
+but "right topic, wrong page type" (meta/front-matter content vs. an actual worked problem).
+Nothing currently distinguishes the two. Real problems start at page 14 (confirmed: pages
+1-13 are title/index/acknowledgements/theory/cheatsheet, page 14 is the first real named
+problem, "MARKET SIZE OF HEALTHY BISCUIT INDUSTRY").
+
+**Not fixed yet** - Aalhad said "we'll need to work on it," not an immediate demand; the
+urgent part (get it off the live site) is done. Proposed fix (not yet built, pending
+confirmation): sharpen the relevance judge specifically for the random-pick path to reject
+"a list, index, or theory/methodology page" as not itself being a practice problem - same
+kind of targeted prompt fix as the earlier generic-methodology false-positive class, not a
+hardcoded SRCC-specific page-range exclusion (which wouldn't generalize to the next
+guesstimates casebook).
+
+**Files:** None changed - this entry documents the `is_active` rollback and root cause only.
+**Proof:** Real production API response (`available:false`) shown above.
+**Undo:** N/A (this entry is the undo of today's earlier SRCC activation).
+**Open issues:** The random-pick page-type filtering fix itself, before SRCC goes live again.
+
+---
+
 ## 2026-11-02 — Guesstimates confirmed live on production, verified directly against the real API
 **Phase:** (R9-equivalent, scoped to SRCC) · **Type:** verification
 
