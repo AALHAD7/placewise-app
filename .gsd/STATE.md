@@ -1,6 +1,12 @@
 # STATE
 
-**Position:** ▶ R4 (rag-evaluator: eval runner + baseline score on current live chunks). Updated 2026-11-01.
+**Position:** ▶ R5 (backend-engineer, frontend-engineer: admin review queue). Updated 2026-11-02.
+R4 done 2026-11-02: `backend/eval/run_eval.js` built and run against the live (flag-off)
+behavior. Baseline: 0/39 (0%) pass. Two findings beyond the expected "mostly not live yet":
+`document_chunks` actually has active Consulting rows under older `.txt`-named source files
+(not just the inactive `.pdf` re-ingestion rows already found), and v1 citations can never
+carry a page number (no page column exists in `document_chunks` at all). Full breakdown:
+`backend/eval/results/2026-11-02-baseline.json`/`.md`, log.md's 2026-11-02 R4 entry.
 R3 done 2026-11-01: Aalhad dropped `backend/eval/questions.jsonl` (39 questions, 29 covered /
 10 not-covered) into `backend/eval/` — moved there from Downloads this session.
 R2 done 2026-10-21 (owner: "Flagged = pass"; p56 "Leave to review"). Best version: v5 doc

@@ -5,6 +5,98 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — R4 done: eval runner built, baseline score on live chunks
+**Phase:** R4 · **Type:** eval
+
+**What changed:** Built `backend/eval/run_eval.js` (imports the real lib functions the
+routes use, no HTTP round-trip, no copy) and ran all 39 questions in
+`backend/eval/questions.jsonl` against today's live behavior
+(`ENABLE_CONSULTING_RAG_V2` unset/false - the runner refuses to run if it's `"true"`).
+Scored all 6 checks from the rag-eval skill: retrieval hit, citations, coverage label,
+diagram intact and must-include in code; faithfulness with a cheap Gemini judge
+(flash-lite tier, `generateJSON`'s default cascade, reasoning captured per question).
+
+**Mapping decisions** (each feature's live path was read from the code first, not assumed):
+- `frameworks` (14 q): the v1 path (`frameworksGrounding.js`'s `findGrounding`, called via
+  the exported `withGroundedExamples` - the exact function `routes/frameworks.js` calls) is
+  built for seeded `frameworks` rows, not free text. Mapped each question onto a synthetic,
+  never-persisted row (`{name: question text, domain: question.domain}`) so the real function
+  builds the same query string it would for a real row. `withGroundedExamples` does write
+  back to the `frameworks` table; confirmed live first that an update keyed on a fresh random
+  uuid matches zero rows (table count unchanged at 27) - safe, no row created or touched.
+- `guesstimates` (7 q): `routes/guesstimates.js` returns `{available:false,
+  reason:"feature_disabled"}` unconditionally while the flag is off. Recorded that fact
+  directly rather than calling `guesstimateRetrieval.js`'s lib functions, which would bypass
+  the route's gate and fabricate a result no student can get today.
+- `qa` / `role` / `company` (18 q): no grounded retrieval route exists for these at all -
+  `chat.js` is an ungrounded Gemini passthrough with no casebook lookup. Recorded as
+  `no_rag_route` with every check failed, rather than routing through `chat.js` (tests "does
+  Gemini know things", not RAG) or through `groundedConsultingLookup` (the new, flag-gated
+  v2 pipeline, not live).
+
+**Score: 0/39 (0%) pass overall.** Per-check: retrieval_hit 4/37 (11%), faithfulness 5/39
+(13%), citations 0/39 (0%), coverage_label 12/39 (31%), diagram_intact 0/25 (0%, 14 n/a),
+must_include 5/37 (14%). Per-feature: frameworks 0/14, guesstimates 0/7, qa 0/14, role 0/2,
+company 0/2.
+
+**What the baseline actually shows, beyond the expected "most content isn't live yet":**
+1. **`document_chunks` is not empty for Consulting** - correcting an assumption from this
+   session's earlier briefing. The `.pdf`-named rows from the R6 re-ingestion are 0% active
+   (as already found), but an **older pipeline's `.txt`-named rows are fully active** (e.g.
+   `The FMS Consulting Casebook 2021-22.txt` 54/54, `ISB Consulting Casebook 2025.txt`
+   98/98, `IIM B Consulting Casebook 2025.txt` 84/84, `IIMK Kasebook 2025.txt` 65/65,
+   `IIM Calcutta Consulting CaseBook 2025-26.txt` 72/72, plus `FMS_Casebook_20-21.txt`,
+   `MIT Consulting Casebook.txt`, `IIM L Consulting Casebook 2025.txt`,
+   `IIMA-...-2025-26.txt`, `The Consulting Club FMS Casebook 2025-26.txt`). A live query for
+   "MECE" genuinely retrieves a correct, on-topic MECE excerpt at similarity 0.77. The v1
+   Frameworks path is not dead - it just answers from different (older, page-less) rows than
+   the eval's `expected_source` names.
+2. **`document_chunks` has no page column at all** (`select page_start` throws "column ...
+   does not exist") - citations fail the "school, casebook, page" bar in CLAUDE.md's
+   grounding policy for every single v1 result, by construction, not as a per-question bug.
+   Also means `expected_pages` in questions.jsonl can never be checked against this table.
+3. **The 0.5 similarity threshold lets real false positives through** for exactly the
+   `covered:false` "frameworks" questions meant to test this (q032 RICE, q036 Jobs-to-be-Done):
+   both retrieved unrelated excerpts (a delivery-membership guesstimate; a competitive-
+   positioning passage) scoring 0.63-0.68, and the UI would show them as "From our casebooks"
+   with no warning. This is the exact failure CLAUDE.md's "show nothing rather than a loosely
+   related excerpt" rule exists to prevent.
+4. **Even on-topic covered:true frameworks questions often retrieve the wrong casebook or an
+   incomplete excerpt** - e.g. q014 (Go-to-Market Strategy) retrieved a complete, correct TAM/
+   SAM/SOM passage from `IIM B Consulting Casebook 2025.txt` - on-topic for a *different*
+   question (q019), not this one; q010/q011 retrieved excerpts that visibly cut off
+   mid-explanation.
+5. **The live Frameworks UI has no "not from the casebooks, AI-generated" fallback at all**
+   (checked `frontend-react/src/pages/FrameworksPage.tsx`) - when nothing is found it just
+   omits the casebook box silently. That satisfies "show nothing," not CLAUDE.md's "say so
+   plainly, then give a labelled general answer."
+6. **`guesstimates`, `qa`, `role`, `company` have zero live grounded path today** - not a
+   partial/low-quality RAG, a complete absence. 25/39 questions (64%) fall here.
+7. Noted, not scored here: `grounded_image.url` (v1's image citation) is a raw
+   `document_chunks.image_url` Storage URL returned through an `optionalAuth` route with no
+   admin check - whenever an image clears the 0.58 threshold it reaches a non-admin student
+   directly, which CLAUDE.md's diagram-privacy rule forbids. Fired zero times in this run (no
+   `covered:true` frameworks question matched an image), so it doesn't show up in the score,
+   but the code path exists and should be checked before any switch-over.
+
+**Files:** `backend/eval/run_eval.js` (new),
+`backend/eval/results/2026-11-02-baseline.json` (new),
+`backend/eval/results/2026-11-02-baseline.md` (new), `.gsd/ROADMAP.md`, `.gsd/STATE.md`.
+**Proof:** `node backend/eval/run_eval.js baseline` → "Overall: 0/39 scored questions pass
+(39 total, 0 n/a)." Full per-question checks and reasoning in the JSON/Markdown results
+files above.
+**Cost:** 14 embedding calls (`gemini-embedding-001`, free tier) + 14 faithfulness-judge
+calls (flash-lite tier, `generateJSON` default cascade - no escalation). Both well inside
+the $20/month budget; effectively free-tier.
+**Undo:** Delete `backend/eval/run_eval.js` and the two results files; revert
+`.gsd/ROADMAP.md` / `.gsd/STATE.md`.
+**Open issues:** This is the first eval run - no prior baseline exists, so "regressions vs
+previous" is explicitly "none to compare" rather than a real check. R9 will be the first run
+with something to regress against. The raw `image_url` exposure (point 7 above) should get
+its own fix before any switch-over, not just a note here.
+
+---
+
 ## 2026-11-02 — R3 fix: eval question page numbers and two mislabeled questions corrected
 **Phase:** R3 · **Type:** eval, fix
 
