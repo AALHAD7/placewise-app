@@ -18,6 +18,12 @@
 // buildCitation, thresholds) - only the I/O (the RPC call, which can't see inactive rows)
 // is replaced with a local equivalent that queries the same inactive rows directly.
 //
+// 2026-11-02 update: widened DOC_IDS from the original 5 to all 9 Consulting casebooks
+// R6 has re-ingested so far (Aalhad's request - "test against the new ingestion"), and
+// the scoring now mirrors the relevance gate just added to groundedConsultingLookup
+// (consultingRetrieval.js) - a row has to clear similarity AND a relevance judge to
+// count as covered, same as the live function now does.
+//
 // Scope: only `frameworks` and `guesstimates` questions have any v2 code path at all
 // (confirmed in run_eval.js's R4 comments - qa/role/company have no grounded route in
 // either pipeline). Those two features are scored here with real v2 retrieval; the rest
@@ -42,17 +48,24 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const QUESTIONS_PATH = path.join(__dirname, "questions.jsonl");
 const RESULTS_DIR = path.join(__dirname, "results");
 
-// The latest ingested (is_active=false) version of each casebook a question in
-// questions.jsonl actually names as expected_source - identified this session by
-// querying ingest_documents directly. Scoping to these exact document_ids (rather than
-// "every Consulting ingest_chunks row") mirrors what a real switch-over would activate:
-// the latest version per source, not every historical attempt.
+// Every Consulting casebook R6 has re-ingested so far (is_active=false), latest version
+// per source - identified this session by querying ingest_documents directly. 2026-11-02:
+// widened from the original 5 (the only ones questions.jsonl names) to all 9, on Aalhad's
+// request, to see how the broader candidate pool (IIM L, IIM Calcutta, IIMA, FMS 2023-24
+// added) changes retrieval - a bigger pool can mean MORE cross-casebook "wrong source"
+// misses for a universal framework like PESTEL, not fewer, since there's more competing
+// content to match against. Two casebooks aren't in here yet because R6 hasn't reached
+// them: FMS Consulting Club 2025-26, FMS 2024-25.
 const DOC_IDS = [
   "e9229429-3eec-478b-b54a-7d5a1cdf6de0", // The FMS Consulting Casebook 2021-22, v3
   "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14", // ISB Consulting Casebook 2025, v2
   "17a7c482-5181-423c-b8d5-44f79e90e392", // IIM B Consulting Casebook 2025, v2
   "6ae47aaa-ad2e-4848-9775-75ac2072f79e", // IIMK Kasebook 2025, v2
-  "ab676b81-3b29-4c35-b288-6dff71756e26"  // SRCC Guesstimates-Book-Volume-1-6, v2
+  "ab676b81-3b29-4c35-b288-6dff71756e26", // SRCC Guesstimates-Book-Volume-1-6, v2
+  "fa763d15-dac2-408f-9228-8a5f34785128", // IIM L Consulting Casebook 2025, v1
+  "f2c1333f-b205-46fa-991e-551548dffef7", // IIM Calcutta Consulting CaseBook 2025-26, v2
+  "54ece01c-c876-4533-82c6-bd91fabfb983", // IIMA-Consult-Prep-Book-Case-Book-2025-26, v1
+  "faa13328-c4bc-4ed7-8172-6ec5ba38c162"  // The FMS Consulting CaseBook 2023-24, v6
 ];
 
 const CHECK_NAMES = ["retrieval_hit", "faithfulness", "citations", "coverage_label", "diagram_intact", "must_include"];
@@ -186,10 +199,26 @@ async function evalGroundedQuestion(q, pool) {
     sourceFile: isGuesstimate ? GUESSTIMATES_SOURCE_FILE : undefined,
     matchCount: isGuesstimate ? 8 : 6
   });
-  const { covered, rows: coveringRows } = decideCoverage(rows);
+  const { covered: thresholdCovered, rows: coveringRows } = decideCoverage(rows);
+
+  // 2026-11-02: mirrors the live relevance gate just added to
+  // groundedConsultingLookup (consultingRetrieval.js) - every row that clears the
+  // similarity threshold also has to clear a relevance judge before counting as
+  // "covered". judgeFaithfulness below is the same prompt/tier as that gate; reused
+  // directly here (not called twice) so the one judge call per row serves both the
+  // gate decision AND the faithfulness check's reported reasoning.
+  const judgedByRow = new Map();
+  let relevantRows = [];
+  if (thresholdCovered) {
+    const verdicts = await Promise.all(coveringRows.map(r => judgeFaithfulness(q.question, r.content)));
+    coveringRows.forEach((r, i) => judgedByRow.set(r, verdicts[i]));
+    relevantRows = coveringRows.filter((_, i) => verdicts[i].verdict === "faithful");
+  }
+  const covered = relevantRows.length > 0;
+  const gateFiltered = thresholdCovered && !covered; // cleared similarity, rejected by the relevance gate
 
   const checks = {};
-  const top = coveringRows[0] || null;
+  const top = relevantRows[0] || null;
   const citation = top ? buildCitation(top) : null;
 
   if (!q.covered) {
@@ -197,7 +226,9 @@ async function evalGroundedQuestion(q, pool) {
   } else if (!covered) {
     checks.retrieval_hit = {
       verdict: "fail",
-      reason: `Nothing above threshold (top similarity seen: ${rows[0] ? rows[0].similarity.toFixed(3) : "n/a"}, needs >= ${SIMILARITY_THRESHOLD}).`
+      reason: gateFiltered
+        ? `${coveringRows.length} row(s) cleared similarity (top ${coveringRows[0].similarity.toFixed(3)}) but the relevance gate rejected all of them as off-topic.`
+        : `Nothing above threshold (top similarity seen: ${rows[0] ? rows[0].similarity.toFixed(3) : "n/a"}, needs >= ${SIMILARITY_THRESHOLD}).`
     };
   } else {
     const matched = sourceMatches(top.source_file, q.expected_source);
@@ -211,14 +242,17 @@ async function evalGroundedQuestion(q, pool) {
     };
   }
 
-  if (!covered) {
+  if (!thresholdCovered) {
     checks.faithfulness = { verdict: "n/a", reason: "Nothing was retrieved, so there is nothing to judge." };
-  } else {
-    const judged = await judgeFaithfulness(q.question, top.content);
+  } else if (!covered) {
     checks.faithfulness = {
-      verdict: judged.verdict === "faithful" ? "pass" : judged.verdict === "unfaithful" ? "fail" : "error",
-      reason: judged.reasoning
+      verdict: "fail",
+      reason: `All ${coveringRows.length} row(s) above threshold were judged unfaithful by the relevance gate: ` +
+        coveringRows.map(r => judgedByRow.get(r).reasoning).join(" | ")
     };
+  } else {
+    const judged = judgedByRow.get(top);
+    checks.faithfulness = { verdict: "pass", reason: judged.reasoning };
   }
 
   if (!covered) {

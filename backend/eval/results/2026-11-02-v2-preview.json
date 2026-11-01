@@ -1,38 +1,38 @@
 {
-  "runAt": "2026-11-01T19:16:41.586Z",
+  "runAt": "2026-11-01T19:52:27.896Z",
   "label": "v2-preview",
   "isActiveTouched": false,
   "callCounts": {
     "embedding": 21,
-    "judge": 21
+    "judge": 140
   },
   "summary": {
     "totalQuestions": 39,
-    "overallPassRate": 0.20512820512820512,
-    "overallPass": 8,
+    "overallPassRate": 0.1282051282051282,
+    "overallPass": 5,
     "overallScored": 39,
     "perCheck": {
       "retrieval_hit": {
-        "pass": 12,
-        "fail": 23,
+        "pass": 7,
+        "fail": 28,
         "error": 0,
         "na": 4
       },
       "faithfulness": {
-        "pass": 13,
-        "fail": 26,
+        "pass": 16,
+        "fail": 23,
         "error": 0,
         "na": 0
       },
       "citations": {
-        "pass": 21,
+        "pass": 16,
         "fail": 18,
         "error": 0,
-        "na": 0
+        "na": 5
       },
       "coverage_label": {
-        "pass": 17,
-        "fail": 22,
+        "pass": 20,
+        "fail": 19,
         "error": 0,
         "na": 0
       },
@@ -43,8 +43,8 @@
         "na": 21
       },
       "must_include": {
-        "pass": 11,
-        "fail": 24,
+        "pass": 9,
+        "fail": 26,
         "error": 0,
         "na": 4
       }
@@ -65,19 +65,19 @@
         "Mutually Exclusive",
         "Collectively Exhaustive"
       ],
-      "overall": "pass",
+      "overall": "fail",
       "checks": {
         "retrieval_hit": {
-          "verdict": "pass",
-          "reason": "Retrieved from \"The FMS Consulting Casebook 2021-22.pdf\" p25, matching expected_source. Page overlap confirmed with expected_pages."
+          "verdict": "fail",
+          "reason": "Retrieved from \"The FMS Consulting CaseBook 2023-24 (1).pdf\", which does not match expected_source \"The FMS Consulting Casebook 2021-22\"."
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly defines the MECE principle (Mutually Exclusive Collectively Exhaustive) and explains its application in structuring analyses for case interviews using examples like issue trees."
+          "reason": "The excerpt directly defines the MECE principle, explains its components, and outlines specific tools and methods for using it in case structuring."
         },
         "citations": {
           "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"FMS Delhi\",\"club\":null,\"casebook\":\"The FMS Consulting Casebook 2021-22.pdf\",\"year\":\"2021-22\",\"pages\":[25]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "reason": "Full (school, casebook, page) citation available: {\"school\":\"FMS Delhi\",\"club\":null,\"casebook\":\"The FMS Consulting CaseBook 2023-24 (1).pdf\",\"year\":\"2023-24\",\"pages\":[31,32]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -93,12 +93,13 @@
         }
       },
       "retrieved": {
-        "sourceFile": "The FMS Consulting Casebook 2021-22.pdf",
-        "similarity": 0.7822693598840332,
+        "sourceFile": "The FMS Consulting CaseBook 2023-24 (1).pdf",
+        "similarity": 0.7842629050478239,
         "pages": [
-          25
+          31,
+          32
         ],
-        "content": "# MECE Segmentation\n\nMECE = Mutually Exclusive Collectively Exhaustive\n\nMutually Exclusive  \nContents of the segments does not overlap.\n\nCollectively Exhaustive  \nTogether, the statements answer the question or fully describe the overall idea.\n\nUsing MECE segmentation is extremely effective in structuring one’s analysis, in a case interview, guesstimate or otherwise.\n\nExample 1: Unstructured grocery list: apples, milk, bananas, spinach, carrots, grapes, butter, okra, eggs becomes:\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 25,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Groceries\",\n    \"children\": [\n      {\n        \"label\": \"Dairy\",\n        \"children\": [\n          {\n            \"label\": \"Milk\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Butter\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Egg\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Fruits\",\n        \"children\": [\n          {\n            \"label\": \"Apple\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Grapes\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Banana\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Vegetables\",\n        \"children\": [\n          {\n            \"label\": \"Spinach\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Carrots\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Okra\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: Groceries splits into Dairy (Milk, Butter, Egg), Fruits (Apple, Grapes, Banana), and Vegetables (Spinach, Carrots, Okra).\n\nExample 2: Profit Structure\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 25,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Profits\",\n    \"children\": [\n      {\n        \"label\": \"Revenues\",\n        \"children\": [\n          {\n            \"label\": \"Can be further segmented based on: • Geography (Regional/Country Wise) • Customer Segments (Income/B2B/B2C) • Revenue Streams (Ads/Distribution) • Distribution Channel (Online/Retail)\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Costs\",\n        \"children\": [\n          {\n            \"label\": \"Can be further segmented based on: • Fixed Costs/Variable Costs • Costs across the Value Chain\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: Profits splits into Revenues (with further segmentation options) and Costs (with further segmentation options).\n\n© The Consulting Club, FMS Delhi 2021-22 24"
+        "content": "# MECE Segmentation\n\nThe Consulting Club\n\nMECE = Mutually Exclusive Collectively Exhaustive\n\nMutually Exclusive\nContents of the segments does not overlap.\n\nCollectively Exhaustive\nTogether, the statements answer the question or fully describe the overall idea.\n\nUsing MECE segmentation is extremely effective in structuring one’s analysis, in a case interview, guesstimate or otherwise.\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": \"How to be MECE?\", \"source_page\": 31, \"notes\": [], \"root\": {\"label\": \"There are 5 tools one can use to be MECE in their cases:\", \"children\": [{\"label\": \"1. Algebraic Structure\", \"children\": [{\"label\": \"Break down problem into equations. \\u2022 Ex: Revenue = No. of customers x Avg ticket price of each customer x Product mix.\", \"children\": []}]}, {\"label\": \"2. Process Structure\", \"children\": [{\"label\": \"Break down problem into the stages of a process \\u2022 Ex: Value chain, customer journey, billing process, purchase process in e-Commerce\", \"children\": []}]}, {\"label\": \"3. Segmentation Structure\", \"children\": [{\"label\": \"Break down problem into divisions of a particular segment \\u2022 Ex: Income (High, Mid, Low income), Distribution channels (Retail, D2C)\", \"children\": []}]}, {\"label\": \"4. Conceptual Frameworks\", \"children\": [{\"label\": \"Break down problem by using established frameworks \\u2022 Ex: 4P (Product, Price, Place, Promotion), 3C (Customer, Company, Competitor)\", \"children\": []}]}, {\"label\": \"5. Opposite Words\", \"children\": [{\"label\": \"Break down problem into inherently opposing words \\u2022 Ex: Internal vs. External, Supply vs. Demand, Revenue vs. Cost\", \"children\": []}]}]}}\n```\nDiagram summary: How to be MECE lists 5 tools: Algebraic Structure, Process Structure, Segmentation Structure, Conceptual Frameworks, and Opposite Words, each with its description and examples.\n\nThe MECE principle suggests that to understand any large problem, you need to understand your options by sorting them into categories. Doing so will help you avoid dependencies between different branches of the tree and thus sub-problems can be properly isolated.\n\n© The Consulting Club, FMS Delhi\n2023-24\n30\n\nMain Index"
       }
     },
     {
@@ -122,7 +123,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly defines the Pareto Principle (80/20 Rule), provides examples, and discusses its application and implications in the context of consulting interviews."
+          "reason": "The excerpt explicitly defines the Pareto Principle (80/20 Rule) and directly addresses its application and key takeaways in consulting interviews."
         },
         "citations": {
           "verdict": "pass",
@@ -176,7 +177,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly lists and defines the components of the PESTEL framework (Political, Economic, Social, Technological, Environmental, Legal) which directly answers the student's question."
+          "reason": "The excerpt explicitly lists and defines the six components of the PESTEL framework (Political, Economic, Social, Technological, Environmental, Legal), directly answering the question."
         },
         "citations": {
           "verdict": "pass",
@@ -223,19 +224,19 @@
       "checks": {
         "retrieval_hit": {
           "verdict": "fail",
-          "reason": "Retrieved from \"IIM B Consulting Casebook 2025.pdf\", which does not match expected_source \"The FMS Consulting Casebook 2021-22\"."
+          "reason": "6 row(s) cleared similarity (top 0.701) but the relevance gate rejected all of them as off-topic."
         },
         "faithfulness": {
           "verdict": "fail",
-          "reason": "The excerpt only provides a heading ('Pricing Framework') and contains no information about the three types of price discrimination."
+          "reason": "All 6 row(s) above threshold were judged unfaithful by the relevance gate: The excerpt only provides a heading ('Pricing Framework') and contains no information about the three types of price discrimination. | The excerpt discusses pricing frameworks and segmentation lenses, but it does not describe the three traditional types of price discrimination (first, second, and third-degree). | The excerpt discusses pricing approaches like value-based, cost-plus, and competitor-based pricing rather than describing the three types of price discrimination. | The excerpt discusses pricing approaches (cost-based, value-based, and competitor-based) for a heli taxi service rather than describing the three types of price discrimination. | The excerpt discusses general pricing observations like dual pricing and segment-level economics, but it does not describe the three types of price discrimination. | The excerpt discusses pricing frameworks, costs, and value-based pricing, but it contains no information about the three types of price discrimination."
         },
         "citations": {
-          "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"IIM Bangalore\",\"club\":null,\"casebook\":\"IIM B Consulting Casebook 2025.pdf\",\"year\":\"2025\",\"pages\":[24]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "verdict": "n/a",
+          "reason": "Nothing retrieved, so no citation is shown either way."
         },
         "coverage_label": {
-          "verdict": "pass",
-          "reason": "A grounded excerpt was found for a question the casebooks should cover."
+          "verdict": "fail",
+          "reason": "Nothing found for a question the casebooks should cover."
         },
         "diagram_intact": {
           "verdict": "n/a",
@@ -243,17 +244,10 @@
         },
         "must_include": {
           "verdict": "fail",
-          "reason": "Missing: First Degree, Second Degree, Third Degree"
+          "reason": "Nothing retrieved, so none of the must_include terms could be present."
         }
       },
-      "retrieved": {
-        "sourceFile": "IIM B Consulting Casebook 2025.pdf",
-        "similarity": 0.7014706153384912,
-        "pages": [
-          24
-        ],
-        "content": "# Pricing Framework"
-      }
+      "retrieved": null
     },
     {
       "id": "q005",
@@ -277,7 +271,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly addresses the exact question by providing a structured framework and assumptions for estimating the number of daily Swiggy orders in Delhi."
+          "reason": "The excerpt directly addresses the exact question by providing a structured framework, assumptions, and population breakdown specifically for estimating the number of daily Swiggy orders in Delhi."
         },
         "citations": {
           "verdict": "pass",
@@ -327,7 +321,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt provides a structured market-sizing approach and issue tree specifically designed to estimate the number of credit cards in India by segmenting the population by income and credit willingness."
+          "reason": "The excerpt provides a structured market-sizing approach and issue tree specifically designed to estimate the number of credit cards in India by segmenting the population by income tiers and credit willingness."
         },
         "citations": {
           "verdict": "pass",
@@ -377,7 +371,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt directly provides assumptions, calculations, and the final estimated daily revenue for a Delhi-Gurgaon toll plaza, which answers the student's question."
+          "reason": "The excerpt provides a direct, structured framework and numerical calculation specifically for estimating the daily revenue of a Delhi-Gurgaon toll plaza, which directly answers the student's interview-prep question."
         },
         "citations": {
           "verdict": "pass",
@@ -421,15 +415,15 @@
         },
         "faithfulness": {
           "verdict": "fail",
-          "reason": "The excerpt only defines what a guesstimate is and does not provide the specific approach or calculation method needed to estimate the number of tennis balls that fit in a room."
+          "reason": "All 8 row(s) above threshold were judged unfaithful by the relevance gate: The excerpt only defines what a guesstimate is, rather than explaining the specific approach or steps to estimate the number of tennis balls in a room. | The excerpt only contains a section heading and does not provide any approach, steps, or explanation for estimating the number of tennis balls that can fit in a room. | The excerpt only contains a section heading and does not provide any approach, steps, or explanation for estimating the number of tennis balls in a room. | The excerpt explains what guesstimates are used to gauge rather than providing the actual approach or steps to estimate the number of tennis balls that can fit in a room. | The excerpt only provides a chapter title and does not contain any approach or methodology for estimating the number of tennis balls that can fit in a room. | The excerpt provides generic estimation framework tips rather than the specific approach or calculation for estimating the number of tennis balls that fit in a room. | The excerpt provides a generic 5-step framework for solving guesstimates rather than a specific approach or calculation for estimating the number of tennis balls that fit in a room. | The excerpt discusses using analogies for comparative estimation between countries rather than explaining the volumetric approach to estimate tennis balls in a room."
         },
         "citations": {
-          "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"SRCC\",\"club\":null,\"casebook\":\"SRCC Guesstimates-Book-Volume-1-6.pdf\",\"year\":null,\"pages\":[6]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "verdict": "n/a",
+          "reason": "Nothing retrieved, so no citation is shown either way."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "Something was shown for a question that should NOT be covered (source: \"SRCC Guesstimates-Book-Volume-1-6.pdf\", similarity 0.729)."
+          "verdict": "pass",
+          "reason": "Correctly showed nothing below threshold (would return label \"General guidance — not from the casebooks\")."
         },
         "diagram_intact": {
           "verdict": "n/a",
@@ -440,14 +434,7 @@
           "reason": "No must_include terms specified for this question."
         }
       },
-      "retrieved": {
-        "sourceFile": "SRCC Guesstimates-Book-Volume-1-6.pdf",
-        "similarity": 0.7292701134516519,
-        "pages": [
-          6
-        ],
-        "content": "Guesstimates are questions which involve estimation of a number based on very limited information using a combination of guess work and reasonable assumptions."
-      }
+      "retrieved": null
     },
     {
       "id": "q009",
@@ -466,15 +453,15 @@
       "checks": {
         "retrieval_hit": {
           "verdict": "pass",
-          "reason": "Retrieved from \"SRCC Guesstimates-Book-Volume-1-6.pdf\" p26-28, matching expected_source. Page overlap confirmed with expected_pages."
+          "reason": "Retrieved from \"SRCC Guesstimates-Book-Volume-1-6.pdf\" p1-4, matching expected_source. WARNING: page does NOT overlap expected_pages."
         },
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "The excerpt discusses estimating the number of Bollywood movies released in India rather than the market size of the tyre industry."
+          "verdict": "pass",
+          "reason": "The excerpt explicitly includes the index entry for estimating the market size of the tyre industry in India in a particular year in terms of revenue, directly addressing the student's question."
         },
         "citations": {
           "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"SRCC\",\"club\":null,\"casebook\":\"SRCC Guesstimates-Book-Volume-1-6.pdf\",\"year\":null,\"pages\":[26,28]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "reason": "Full (school, casebook, page) citation available: {\"school\":\"SRCC\",\"club\":null,\"casebook\":\"SRCC Guesstimates-Book-Volume-1-6.pdf\",\"year\":null,\"pages\":[1,4]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -482,21 +469,21 @@
         },
         "diagram_intact": {
           "verdict": "n/a",
-          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured ingest_pages.diagrams block by page) hasn't landed - this path has no image/diagram payload to check yet, same gap frameworksGrounding.js's findGroundingV2 already documents (image.url deliberately null)."
+          "reason": "No diagram-bearing chunk was retrieved for this question."
         },
         "must_include": {
-          "verdict": "pass",
-          "reason": "All must_include terms found in the retrieved text."
+          "verdict": "fail",
+          "reason": "Missing: rural, urban"
         }
       },
       "retrieved": {
         "sourceFile": "SRCC Guesstimates-Book-Volume-1-6.pdf",
-        "similarity": 0.741221038522783,
+        "similarity": 0.6937315309246636,
         "pages": [
-          26,
-          28
+          1,
+          4
         ],
-        "content": "# BOLLYWOOD MOVIES RELEASED IN INDIA IN A YEAR\n\nBain Capability Network | ☐☐☐☐\n\nClick here to view detailed spreadsheet XLS\n\nASSUMPTIONS\n\n1. Movies are also released on national holidays like republic day.\n2. Movies in India are released on Fridays.\n3. An average of 4 movies are specially released by media houses on National Holidays.\n\n```placewise-diagram\n{\n  \"type\": \"flow\",\n  \"title\": null,\n  \"source_page\": 26,\n  \"notes\": [],\n  \"nodes\": [\n    {\"id\": \"a\", \"label\": \"MOVIES\"},\n    {\"id\": \"b\", \"label\": \"HIGH BUDGET\"},\n    {\"id\": \"c\", \"label\": \"MEDIUM BUDGET\"},\n    {\"id\": \"d\", \"label\": \"LOW BUDGET\"},\n    {\"id\": \"e\", \"label\": \"NO OF MOVIES PER FRIDAY 1\"},\n    {\"id\": \"f\", \"label\": \"NO OF MOVIES PER FRIDAY 2\"},\n    {\"id\": \"g\", \"label\": \"NO OF MOVIES PER FRIDAY 4\"},\n    {\"id\": \"h\", \"label\": \"NO. OF FRIDAYS 48\"},\n    {\"id\": \"i\", \"label\": \"NO. OF FRIDAYS 48\"},\n    {\"id\": \"j\", \"label\": \"NO. OF FRIDAYS 48\"},\n    {\"id\": \"k\", \"label\": \"TOTAL NO. OF MOVIES 48\"},\n    {\"id\": \"l\", \"label\": \"TOTAL NO. OF MOVIES 96\"},\n    {\"id\": \"m\", \"label\": \"TOTAL NO. OF MOVIES 192\"}\n  ],\n  \"edges\": [\n    {\"from\": \"a\", \"to\": \"b\", \"label\": null},\n    {\"from\": \"a\", \"to\": \"c\", \"label\": null},\n    {\"from\": \"a\", \"to\": \"d\", \"label\": null},\n    {\"from\": \"b\", \"to\": \"e\", \"label\": null},\n    {\"from\": \"c\", \"to\": \"f\", \"label\": null},\n    {\"from\": \"d\", \"to\": \"g\", \"label\": null},\n    {\"from\": \"e\", \"to\": \"h\", \"label\": null},\n    {\"from\": \"f\", \"to\": \"i\", \"label\": null},\n    {\"from\": \"g\", \"to\": \"j\", \"label\": null},\n    {\"from\": \"h\", \"to\": \"k\", \"label\": null},\n    {\"from\": \"i\", \"to\": \"l\", \"label\": null},\n    {\"from\": \"j\", \"to\": \"m\", \"label\": null}\n  ]\n}\n```\nDiagram summary: Movies split into high, medium, and low budgets, which each multiply movies per Friday by number of Fridays to reach total movies for each budget category.\n\n```placewise-diagram\n{\n  \"type\": \"flow\",\n  \"title\": null,\n  \"source_page\": 26,\n  \"notes\": [],\n  \"nodes\": [\n    {\"id\": \"a\", \"label\": \"MOVIES RELEASED ON FRIDAYS\"},\n    {\"id\": \"b\", \"label\": \"+\"},\n    {\"id\": \"c\", \"label\": \"MOVIES RELEASED ON NATIONAL HOLIDAYS\"},\n    {\"id\": \"d\", \"label\": \"=\"},\n    {\"id\": \"e\", \"label\": \"340 MOVIES PER YEAR\"}\n  ],\n  \"edges\": [\n    {\"from\": \"a\", \"to\": \"b\", \"label\": null},\n    {\"from\": \"c\", \"to\": \"b\", \"label\": null},\n    {\"from\": \"b\", \"to\": \"d\", \"label\": null},\n    {\"from\": \"d\", \"to\": \"e\", \"label\": null}\n  ]\n}\n```\nDiagram summary: Movies released on Fridays plus movies released on national holidays equals 340 movies per year.\n\nNumber of bollywood movies that are released in India in a year is 340.\n\n22\n\nMARKET SIZE OF THE TYRE INDUSTY IN INDIA IN A PARTICULAR YEAR IN TERMS OF REVENUE\n\nBain Capability Network | [UNREADABLE]\n\nClick here to view detailed spreadsheet XLS\n\nASSUMPTIONS\n\n1 The approach has to be based on the residential aspect.\n\n2 Only four wheelers are to be taken into consideration.\n\n3 The population of India is 1.4 Billion.\n\n4 70% of the population of India resides in Rural India. 30% of the population of India resides in Urban India.\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 27, \"notes\": [], \"root\": {\"label\": \"POPULATION OF INDIA\", \"children\": [{\"label\": \"RURAL POPULATION 70%\", \"children\": [{\"label\": \"POPULATION USING 4 WHEELERS 30%\", \"children\": [{\"label\": \"AVERAGE SIZE OF A FAMILY (NUMBER OF MEMBERS) 5\", \"children\": [{\"label\": \"NUMBER OF HOUSEHOLDS (AFFORD 4 WHEELERS) 0.426\", \"children\": [{\"label\": \"AVERAGE NUMBER OF CARS WITH EACH HOUSEHOLD 1\", \"children\": [{\"label\": \"TOTAL NUMBER OF CARS 4.26 MILLION\", \"children\": [{\"label\": \"TOTAL NUMBER OF TYRES 21.30 MILLION\", \"children\": []}]}]}]}]}]}]}, {\"label\": \"URBAN POPULATION 30%\", \"children\": [{\"label\": \"POPULATION USING 4 WHEELERS 90%\", \"children\": [{\"label\": \"AVERAGE SIZE OF A FAMILY (NUMBER OF MEMBERS) 4\", \"children\": [{\"label\": \"NUMBER OF HOUSEHOLDS (AFFORD 4 WHEELERS) 0.548\", \"children\": [{\"label\": \"AVERAGE NUMBER OF CARS WITH EACH HOUSEHOLD 3\", \"children\": [{\"label\": \"TOTAL NUMBER OF CARS 16.44 MILLION\", \"children\": [{\"label\": \"TOTAL NUMBER OF TYRES 82.17 MILLION\", \"children\": []}]}]}]}]}]}]}]}}\n```\nDiagram summary: Population of India splits into rural population and urban population, each following a distinct calculation path down to total number of tyres.\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": null, \"source_page\": 27, \"notes\": [], \"nodes\": [{\"id\": \"a\", \"label\": \"TOTAL NUMBER OF TYRES 103.48 MILLION\"}, {\"id\": \"b\", \"label\": \"AVERAGE PRICE OF A TYRE RS. 4000\"}, {\"id\": \"c\", \"label\": \"REVENUE RS. 413.91 BILLION (APPROX.)\"}], \"edges\": [{\"from\": \"a\", \"to\": \"c\", \"label\": \"X\"}, {\"from\": \"b\", \"to\": \"c\", \"label\": \"=\"}]}\n```\nDiagram summary: Total number of tyres multiplied by average price of a tyre yields revenue.\n\nThe market size of the tyre industy in India in a particular year in terms of revenue is Rs. 410 Billion.\n\n23\n\nGUESSTIMATES"
+        "content": "1 8 0 D E G R E E S C O N S U L T I N G , S R C C\n\nP R E S E N T S\n\nGUESSTIMATE\n\nBOOK\n\nV O L U M E 1\n\nINDEX\n\n| PARTICULARS                                                                        | LEVEL   |   PAGE |\n|------------------------------------------------------------------------------------|---------|--------|\n| THEORY                                                                             | --      |      1 |\n| CHEATSHEET                                                                         | --      |      6 |\n| ACCENTURE                                                                          |         |        |\n| Market size of healthy biscuit industry                                            |         |     10 |\n| Number of Ola and Uber cabs running in Delhi NCR in a day                          |         |     11 |\n| Number of flights taking off from Delhi in a week                                  |         |     12 |\n| Number of teacups consumed in Delhi in one day                                     |         |     13 |\n| BAIN CAPABILITY NETWORK                                                            |         |        |\n| Estimating the revenue of a salon                                                  |         |     15 |\n| Market size of fantasy sports                                                      |         |     16 |\n| Number of orders placed on Swiggy in Delhi in a day                                |         |     17 |\n| Revenue of a Delhi - Gurgaon toll plaza in a day                                   |         |     18 |\n| Number of credit cards in India                                                    |         |     19 |\n| Amount of paint required to paint your car                                         |         |     21 |\n| Bollywood movies released in India in a year                                       |         |     22 |\n| Market size of the tyre industry in India in a particular year in terms of revenue |         |     23 |\n| BOSTON CONSULTING GROUP                                                            |         |        |\n| Number of outstanding education loans in India                                     |         |     25 |\n| INDUS INSIGHTS                                                                     |         |        |\n| Revenue of a dentist in a day                                                      |         |     27 |\n| Annual revenue of a laundry service in Delhi                                       |         |     28 |\n| Weekly revenue from the food stalls in a food court in a mall in Delhi             |         |     29 |\n| Number of books read by an Indian during their lifetime                            |         |     30 |\n| Weekly commute time for office-goers in Delhi                                      |         |     31 |\n| Expenditure incurred by the Government of India in the Lok Sabha elections 2024    |         |     32 |\n\nINDEX\n\n| PARTICULARS                                                                                   | LEVEL   |   PAGE |\n|-----------------------------------------------------------------------------------------------|---------|--------|\n| KEPLER CANNON                                                                                 |         |        |\n| Market size for an Alco-beverage firm in Mumbai                                               |         |     34 |\n| NATION WITH NAMO                                                                              |         |        |\n| Number of red cars in Delhi                                                                   |         |     36 |\n| Number of chairs in households of Delhi                                                       |         |     37 |\n| Number of students in SRCC who travel by metro everyday                                       |         |     38 |\n| Number of wine bottles sold in India                                                          |         |     39 |\n| Number of people that visit India Gate                                                        |         |     40 |\n| Number of students that use the metro to commute to North Campus colleges of Delhi University |         |     41 |\n| Number of flights at Delhi airport in a day                                                   |         |     42 |\n| Monthly revenue of Sarvana Bhavana                                                            |         |     43 |\n| REDSEER STRATEGY CONSULTANTS                                                                  |         |        |\n| Market size of quick commerce in India                                                        |         |     46 |\n| Size of the advertising market on platforms other than the traditional advertising platforms  |         |     47 |\n| Size for Animation/VFX market in India                                                        |         |     48 |\n| TRINITY LIFE SCIENCES                                                                         |         |        |\n| Volume of paint required to paint an Airbus 620                                               |         |     50 |\n| Milk required by each coffee shop in Connaught place                                          |         |     51 |\n| Number of pens bought in a day in India                                                       |         |     54 |\n| Number of Spotify premium subscribers in India                                                |         |     55 |\n\nACKNOWLEDGEMENTS\n\nWe would like to thank all our mentors and seniors who have helped us immensely by sharing their cases, guesstimates and interview experiences, which has enabled us to put together 'Guesstimate Guide' a comprehensive guesstimate and consulting interview preparation resource for the incoming batches."
       }
     },
     {
@@ -523,7 +510,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly lists the eight types of consulting cases alongside an example problem statement for each in a clear table format, directly answering the user's question."
+          "reason": "The excerpt explicitly lists the eight types of consulting cases alongside an example problem statement for each in a clear table format."
         },
         "citations": {
           "verdict": "pass",
@@ -576,7 +563,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly defines and breaks down the 3CPOR scoping method with its specific components (Objectives, Company, Product, Competitors, Context, Regulation) exactly as asked in the question."
+          "reason": "The excerpt explicitly defines and breaks down the 3CPOR scoping method into its component buckets (Objectives, Company, Product, Competitors, Context, Regulation) with specific guiding questions, directly answering the question."
         },
         "citations": {
           "verdict": "pass",
@@ -668,16 +655,16 @@
       "overall": "fail",
       "checks": {
         "retrieval_hit": {
-          "verdict": "pass",
-          "reason": "Retrieved from \"ISB Consulting Casebook 2025.pdf\" p37-38, matching expected_source. Page overlap confirmed with expected_pages."
+          "verdict": "fail",
+          "reason": "Retrieved from \"IIM Calcutta Consulting CaseBook 2025-26.pdf\", which does not match expected_source \"ISB Consulting Casebook 2025\"."
         },
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "The excerpt provides a pricing framework table focusing on new product pricing and competitive response questions, but it cuts off and does not contain a comprehensive pricing decision tree for both new and existing products."
+          "verdict": "pass",
+          "reason": "The excerpt provides a direct issue tree that outlines the pricing decision paths for both new and existing products."
         },
         "citations": {
           "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"ISB\",\"club\":null,\"casebook\":\"ISB Consulting Casebook 2025.pdf\",\"year\":\"2025\",\"pages\":[37,38]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "reason": "Full (school, casebook, page) citation available: {\"school\":\"IIM Calcutta\",\"club\":null,\"casebook\":\"IIM Calcutta Consulting CaseBook 2025-26.pdf\",\"year\":\"2025-26\",\"pages\":[237]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -689,17 +676,16 @@
         },
         "must_include": {
           "verdict": "fail",
-          "reason": "Missing: Value Based, Cost Based, Competitor Based"
+          "reason": "Missing: Competitor Based"
         }
       },
       "retrieved": {
-        "sourceFile": "ISB Consulting Casebook 2025.pdf",
-        "similarity": 0.7583919907813171,
+        "sourceFile": "IIM Calcutta Consulting CaseBook 2025-26.pdf",
+        "similarity": 0.7960864948608041,
         "pages": [
-          37,
-          38
+          237
         ],
-        "content": "# Problem-Framework Mapping- Pricing\n\n| Problem | Frameworks | Questions You can ask |\n| :--- | :--- | :--- |\n| **New Product or Service Pricing**<br>We have a new product. What price should we launch it at?<br>**Specific Questions You'll Tackle:**<br>• What is the **value** this product provides to the customer ?<br>• What is the customer's **willingness to pay**?<br>• What are our **costs**? This determines the price floor.<br>• Are there any **competitors or substitutes**? How are they priced? | **Cost floor & Unit Economics *(Focus for New Products)*** | • **Profitability Split (High-Level):** Asking whether the client is aiming for topline (revenue) or bottom-line (profit margin) growth is a crucial first filter in any pricing discussion.<br>• **Segmentation & Price Discrimination Lens:** Asking whether different customer segments, channels, or geographies have distinct willingness-to-pay helps reveal opportunities for tiered pricing or versioning.<br>• **Scenario & Sensitivity Lens:** Asking what success would look like in base, optimistic, and pessimistic cases ensures financial robustness and prepares for volatility.<br>• **Pilot & Experimentation Lens:** Asking whether the client is open to A/B testing or geo-based pilots de-risks the recommendation before full rollout.<br>• **Risk Assessment Lens:** Asking what risks (price wars, churn, cannibalization, regulation) the client is most concerned about helps prioritize mitigations. |\n| **Competitive Response**<br>How should we react to a competitor's price change, or how can we change our price to gain an advantage?<br>**Specific Questions You'll Tackle:**<br>• What is the price elasticity of demand for our product?<br>• How will our competitors react if we change our price?<br>• What is our brand positioning?<br>• What is the cost structure of our company Vs competitors?<br>(Can we afford a price war?) | **Analysing Customers’ Willingness to pay *(Imp for all 3)*** | |\n| **Pricing Model Optimisation**<br>Is our current pricing model the best one, or is there a better way to capture value?<br>**Specific Questions You'll Tackle:**<br>• How do different customer segments value our product?<br>• Can we create a recurring revenue stream instead of one-off?<br>• Can we use bundling to create more attractive offers?<br>• How will a change in the pricing model affect customer behavior and long-term value? | **Competitive benchmark *(Focus for Competitive Response)*** | |\n| | **Generate Pricing options *(Focus for Model Optimisation)*** | |\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Frameworks\",\n    \"children\": [\n      {\n        \"label\": \"Cost floor & Unit Economics (Focus for New Products)\",\n        \"children\": [\n          {\n            \"label\": \"Cost-plus pricing,\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Breakeven analysis\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Contribution margin\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Analysing Customers’ Willingness to pay (Imp for all 3)\",\n        \"children\": [\n          {\n            \"label\": \"Price elasticity\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Conjoint analysis\",\n            \"children\": []\n          },\n          {\n            \"label\": \"demand & Supply curve estimation\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Competitive benchmark (Focus for Competitive Response)\",\n        \"children\": [\n          {\n            \"label\": \"Value & Position Mapping\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Ansoff Matrix\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Balanced Scorecard\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Generate Pricing options (Focus for Model Optimisation)\",\n        \"children\": [\n          {\n            \"label\": \"Bundling Economics\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Versioning pricing\",\n            \"children\": []\n          },\n          {\n            \"label\": \"CLV impact\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: Frameworks categorizes pricing approaches into cost floor and unit economics, analyzing customers' willingness to pay, competitive benchmarks, and generating pricing options, each containing specific analytical tools.\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\nISB | Consulting Prep Casebook 2025 | 2025 | 37\n\nISB | Consulting Prep Casebook\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\nPricing"
+        "content": "## APPROACH\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 237, \"notes\": [], \"root\": {\"label\": \"Pricing\", \"children\": [{\"label\": \"New product\", \"children\": []}, {\"label\": \"Existing product (innovation)\", \"children\": [{\"label\": \"Competition exists\", \"children\": []}, {\"label\": \"No competition\", \"children\": [{\"label\": \"Value based pricing\", \"children\": [{\"label\": \"Additional revenue generated\", \"children\": []}, {\"label\": \"Extra cost incurred\", \"children\": []}]}, {\"label\": \"Cost based pricing\", \"children\": []}]}]}]}}\n```\nDiagram summary: Pricing breaks down into new product and existing product innovation, with existing product further splitting based on competition into value-based pricing (derived from additional revenue and extra cost) and cost-based pricing."
       }
     },
     {
@@ -726,7 +712,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly details the Go-to-Market Strategy framework, specifically covering segmentation and distribution channel strategy as requested."
+          "reason": "The excerpt explicitly outlines the Go-to-Market Strategy framework, specifically detailing segmentation and distribution channel strategy as requested."
         },
         "citations": {
           "verdict": "pass",
@@ -814,19 +800,19 @@
         "switching cost",
         "forward integration"
       ],
-      "overall": "pass",
+      "overall": "fail",
       "checks": {
         "retrieval_hit": {
-          "verdict": "pass",
-          "reason": "Retrieved from \"IIM B Consulting Casebook 2025.pdf\" p15-16, matching expected_source. Page overlap confirmed with expected_pages."
+          "verdict": "fail",
+          "reason": "Retrieved from \"IIM Calcutta Consulting CaseBook 2025-26.pdf\", which does not match expected_source \"IIM B Consulting Casebook 2025\"."
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly provides Porter's Five Forces and specifically lists the factors that increase the bargaining power of suppliers under the node 'BPOS increases with'."
+          "reason": "The excerpt directly addresses part of the question by listing factors that increase the power of suppliers, even though it only partially covers Porter's Five Forces overall."
         },
         "citations": {
           "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"IIM Bangalore\",\"club\":null,\"casebook\":\"IIM B Consulting Casebook 2025.pdf\",\"year\":\"2025\",\"pages\":[15,16]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "reason": "Full (school, casebook, page) citation available: {\"school\":\"IIM Calcutta\",\"club\":null,\"casebook\":\"IIM Calcutta Consulting CaseBook 2025-26.pdf\",\"year\":\"2025-26\",\"pages\":[37,38]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -837,18 +823,18 @@
           "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured ingest_pages.diagrams block by page) hasn't landed - this path has no image/diagram payload to check yet, same gap frameworksGrounding.js's findGroundingV2 already documents (image.url deliberately null)."
         },
         "must_include": {
-          "verdict": "pass",
-          "reason": "All must_include terms found in the retrieved text."
+          "verdict": "fail",
+          "reason": "Missing: Bargaining Power"
         }
       },
       "retrieved": {
-        "sourceFile": "IIM B Consulting Casebook 2025.pdf",
-        "similarity": 0.7359595840826173,
+        "sourceFile": "IIM Calcutta Consulting CaseBook 2025-26.pdf",
+        "similarity": 0.7385845406274774,
         "pages": [
-          15,
-          16
+          37,
+          38
         ],
-        "content": "## Porter’s Industry 5 Forces\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 15, \"notes\": [], \"root\": {\"label\": \"Porter’s Industry 5 Forces\", \"children\": [{\"label\": \"BPOB increases with,\", \"children\": [{\"label\": \"Few large size buyers\", \"children\": []}, {\"label\": \"Low switching cost\", \"children\": []}, {\"label\": \"Higher # of substitutes\", \"children\": []}, {\"label\": \"Standardized products\", \"children\": []}, {\"label\": \"High price elasticity\", \"children\": []}, {\"label\": \"High buyer awareness\", \"children\": []}]}, {\"label\": \"BPOS increases with,\", \"children\": [{\"label\": \"Low number of supplier\", \"children\": []}, {\"label\": \"High switching cost\", \"children\": []}, {\"label\": \"Lower # of substitutes\", \"children\": []}, {\"label\": \"Differentiated product\", \"children\": []}, {\"label\": \"Forward integration is possible\", \"children\": []}]}, {\"label\": \"RIVALRY increases with,\", \"children\": [{\"label\": \"High # of competitors\", \"children\": []}, {\"label\": \"Low barriers to entry\", \"children\": []}, {\"label\": \"Easily substitutable product\", \"children\": []}, {\"label\": \"Low bargaining power of suppliers\", \"children\": []}, {\"label\": \"Low focus on brand value\", \"children\": []}]}, {\"label\": \"TOS increases with,\", \"children\": [{\"label\": \"Low switching cost for customers\", \"children\": []}, {\"label\": \"High performance of substitutes\", \"children\": []}, {\"label\": \"Price-performance trade off is acceptable\", \"children\": []}]}, {\"label\": \"TONE increases with,\", \"children\": [{\"label\": \"High capital req.\", \"children\": []}, {\"label\": \"Differentiated products\", \"children\": []}, {\"label\": \"Strict govt. regulations\", \"children\": []}, {\"label\": \"High switching cost\", \"children\": []}, {\"label\": \"Supply side EOS\", \"children\": []}, {\"label\": \"High brand value of firms\", \"children\": []}]}]}}\n```\nDiagram summary: Porter’s Industry 5 Forces framework broken down into factors increasing Bargaining Power of Buyers, Bargaining Power of Suppliers, Competitive Rivalry, Threat of Substitution, and Threat of New Entrants.\n\nICON, IIM Bangalore | 2025-26 15\n\nContents"
+        "content": "# PORTER’S FIVE FORCES\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Barriers to Entry: There are a number of factors that determine the degree of difficulty to enter an industry:\",\n    \"children\": [\n      {\"label\": \"Economies of Scale\", \"children\": []},\n      {\"label\": \"Product differentiation\", \"children\": []},\n      {\"label\": \"Capital requirements\", \"children\": []},\n      {\"label\": \"Access to distribution channels\", \"children\": []},\n      {\"label\": \"Cost advantages independent of scale\", \"children\": []},\n      {\"label\": \"Propriety technologies\", \"children\": []},\n      {\"label\": \"Relationship with suppliers of raw materials\", \"children\": []},\n      {\"label\": \"Geographical presence\", \"children\": []},\n      {\"label\": \"Time compression diseconomies\", \"children\": []},\n      {\"label\": \"Government regulations\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Factors that determine the degree of difficulty to enter an industry include economies of scale, product differentiation, capital requirements, and government regulations.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Relationship with Suppliers: A supplier group is powerful if:\",\n    \"children\": [\n      {\"label\": \"There are fewer substitutable products\", \"children\": []},\n      {\"label\": \"The industry is not an important customer of the supplier group\", \"children\": []},\n      {\"label\": \"The supplier group is an import input to the buyer’s business\", \"children\": []},\n      {\"label\": \"The supplier’s products are differentiated and have high associated switching costs\", \"children\": []},\n      {\"label\": \"The supplier group poses a credible threat of forward integration\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Conditions under which a supplier group is powerful, such as having fewer substitutable products and high switching costs.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Substitute Products: Substitute products that deserve the most attention are those that:\",\n    \"children\": [\n      {\"label\": \"Compete in price with the industry’s products\", \"children\": []},\n      {\"label\": \"Are produced by industries earning higher products\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Substitute products deserving the most attention compete in price or are produced by industries earning higher products.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Relationship with Buyers: A buyer group is powerful if:\",\n    \"children\": [\n      {\"label\": \"It is concentrated or purchase large volumes as a % of seller’s sales\", \"children\": []},\n      {\"label\": \"Undifferentiated products\", \"children\": []},\n      {\"label\": \"Low switching costs\", \"children\": []},\n      {\"label\": \"Buyers pose a credible threat of backward integration\", \"children\": []},\n      {\"label\": \"The industry's product is unimportant to the quality of the buyer's products or services\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Conditions determining buyer power, including concentration, undifferentiated products, and low switching costs.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Rivalry: Rivalry among existing competitors increases if:\",\n    \"children\": [\n      {\"label\": \"Numerous or equally balanced competitors exist\", \"children\": []},\n      {\"label\": \"Industry growth is slow\", \"children\": []},\n      {\"label\": \"Fixed costs are high\", \"children\": []},\n      {\"label\": \"Undifferentiated products and low switching costs\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Factors increasing rivalry among existing competitors, such as numerous competitors and slow industry growth.\n\nSource: Michael E. Porter, Competitive Strategy: Techniques for Analysing Industries and Competitors\n\nIM CALCUTTA CONSULT CLUB"
       }
     },
     {
@@ -866,19 +852,19 @@
         "Question Mark",
         "Dog"
       ],
-      "overall": "pass",
+      "overall": "fail",
       "checks": {
         "retrieval_hit": {
-          "verdict": "pass",
-          "reason": "Retrieved from \"IIM B Consulting Casebook 2025.pdf\" p17-18, matching expected_source. Page overlap confirmed with expected_pages."
+          "verdict": "fail",
+          "reason": "Retrieved from \"The FMS Consulting CaseBook 2023-24 (1).pdf\", which does not match expected_source \"IIM B Consulting Casebook 2025\"."
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly explains the BCG Growth Share Matrix and details all four quadrants (Star, Question Mark, Cash Cow, and Dog) along with their characteristics."
+          "reason": "The excerpt explicitly explains the BCG Growth Share Matrix and defines all four quadrants (Stars, Question Marks, Cash Cows, and Dogs/Pets) with their characteristics."
         },
         "citations": {
           "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"IIM Bangalore\",\"club\":null,\"casebook\":\"IIM B Consulting Casebook 2025.pdf\",\"year\":\"2025\",\"pages\":[17,18]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "reason": "Full (school, casebook, page) citation available: {\"school\":\"FMS Delhi\",\"club\":null,\"casebook\":\"The FMS Consulting CaseBook 2023-24 (1).pdf\",\"year\":\"2023-24\",\"pages\":[16,17]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -894,13 +880,13 @@
         }
       },
       "retrieved": {
-        "sourceFile": "IIM B Consulting Casebook 2025.pdf",
-        "similarity": 0.7896455311974173,
+        "sourceFile": "The FMS Consulting CaseBook 2023-24 (1).pdf",
+        "similarity": 0.7904884370051737,
         "pages": [
-          17,
-          18
+          16,
+          17
         ],
-        "content": "## BCG Growth Share Matrix\n*BCG matrix can be used as a portfolio management tool to decide among different business opportunities, depending on their profitability*\n\n```placewise-diagram\n{\"type\": \"matrix\", \"title\": \"BCG Growth Share Matrix\", \"source_page\": 17, \"notes\": [], \"xAxis\": null, \"yAxis\": null, \"cols\": [\"High Market Share\", \"Low Market Share\"], \"rows\": [\"High Growth Rate\", \"Low Growth Rate\"], \"cells\": [[\"STAR\\n\\n• Growth stage of product lifecycle, significant market share\\n• High future potential, make significant investment\\n• High profits, high costs, high competition\\n• These can be turned into Cash Cows\", \"QUESTION MARK\\n\\n• New business venture, low market share, high growth rate\\n• Continued growth can help them become Star, and reduced growth can lead to Dog\\n• Invest/discard based on their chances of becoming a Star\"], [\"CASH COW\\n\\n• Mature state of product lifecycle, low growth rate\\n• Huge market share, businesses should take maximum profit by delivering the product, to reinvest\\n• Included under Dog category, once product in decline phase\", \"DOG\\n\\n• Low market share, and are growing at a very low rate\\n• Products in declining phase, generating little to no profits\\n• These must be liquidated, repositioned, or divested, the resources used for these products must be reallocated\"]]}\n```\nDiagram summary: A 2x2 BCG growth share matrix categorizing business opportunities into Star, Question Mark, Cash Cow, and Dog based on market share and growth rate.\n\nICON, IIM Bangalore | 2025-26 | 17\n\nContents"
+        "content": "# BCG Matrix\n\n```placewise-diagram\n{\"type\": \"matrix\", \"title\": \"BCG Matrix\", \"source_page\": 16, \"notes\": [], \"xAxis\": \"Market Share\", \"yAxis\": \"Growth\", \"cols\": [\"High\", \"Low\"], \"rows\": [\"High\", \"Low\"], \"cells\": [[\"Stars\", \"Question marks\"], [\"Cash Cows\", \"Dogs/Pets\"]]}\n```\nDiagram summary: A 2x2 matrix categorizing business units or products by market share and growth rate into Stars, Question Marks, Cash Cows, and Dogs/Pets.\n\n| | | |\n|---|---|---|\n| Dogs/Pets | Low Share/Low Growth | Sustained cash flows but will never be stars; companies should liquidate or divest |\n| Question Marks | Low Share/High Growth | Companies can invest (can turn into stars) or discard (can become dogs/pets) |\n| Stars | High Share/High Growth | Large cash flows, market-leading; companies can heavily invest to turn into cash cows |\n| Cash cows | Low Share/Low Growth | Don’t require further investment, can be used to reinvest if properly “milked” |\n\nUseful while analyzing costs related problems, also in new business setup\n\n© The Consulting Club, FMS Delhi | 2023-24 | 15\n\nMain Index"
       }
     },
     {
@@ -921,16 +907,16 @@
       "overall": "fail",
       "checks": {
         "retrieval_hit": {
-          "verdict": "pass",
-          "reason": "Retrieved from \"IIM B Consulting Casebook 2025.pdf\" p18-19, matching expected_source. Page overlap confirmed with expected_pages."
+          "verdict": "fail",
+          "reason": "Retrieved from \"The FMS Consulting CaseBook 2023-24 (1).pdf\", which does not match expected_source \"IIM B Consulting Casebook 2025\"."
         },
         "faithfulness": {
-          "verdict": "fail",
-          "reason": "The excerpt only provides bullet points of conditions and case types rather than defining the Ansoff Matrix or clearly explaining its four strategic options."
+          "verdict": "pass",
+          "reason": "The excerpt explicitly provides the definition of the Ansoff Matrix and lists its four strategic options in both the diagram and its summary."
         },
         "citations": {
           "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"IIM Bangalore\",\"club\":null,\"casebook\":\"IIM B Consulting Casebook 2025.pdf\",\"year\":\"2025\",\"pages\":[18,19]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "reason": "Full (school, casebook, page) citation available: {\"school\":\"FMS Delhi\",\"club\":null,\"casebook\":\"The FMS Consulting CaseBook 2023-24 (1).pdf\",\"year\":\"2023-24\",\"pages\":[20,21]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
         },
         "coverage_label": {
           "verdict": "pass",
@@ -946,13 +932,13 @@
         }
       },
       "retrieved": {
-        "sourceFile": "IIM B Consulting Casebook 2025.pdf",
-        "similarity": 0.7622427085747381,
+        "sourceFile": "The FMS Consulting CaseBook 2023-24 (1).pdf",
+        "similarity": 0.7825309824906532,
         "pages": [
-          18,
-          19
+          20,
+          21
         ],
-        "content": "# Commonly Used Frameworks (6/7)\n\n```placewise-diagram\n{\"type\": \"matrix\", \"title\": \"Ansoff Matrix\", \"source_page\": 18, \"notes\": [], \"xAxis\": \"PRODUCTS\", \"yAxis\": \"MARKETS\", \"cols\": [\"Existing\", \"New\"], \"rows\": [\"New\", \"Existing\"], \"cells\": [[[\"• Market growth rate lower than management’s growth expectations\", \"• High market share w.r.t. closest competitor\", \"• Concentrated in a small market\", \"• Demand in other markets\", \"• Typical Market Entry Case\"], [\"• Product - Market growth rate lower than management’s growth expectations\", \"• Management’s objective\", \"• High concentration in a single product/ category\", \"• Diversification strategy case\"]], [[\"• Market growth rate in line with management’s growth expectations\", \"• Low market share w.r.t. market leader\", \"• Growth rate w.r.t competitor\", \"• A derived profitability case\"], [\"• Market growth rate lower than management’s growth expectations\", \"• Product in maturation or decline phase\", \"• Product Launch Case\"]]]}\n```\nDiagram summary: Ansoff Matrix showing Market Development Strategy, Diversification Strategy, Market Penetration/ Entry Strategy, and Product Development Strategy across existing and new products and markets.\n\nICON, IIM Bangalore | 2025-26 18\n\nContents"
+        "content": "# Ansoff Matrix\n\n```placewise-diagram\n{\"type\": \"matrix\", \"title\": \"Ansoff Matrix\", \"source_page\": 20, \"notes\": [], \"xAxis\": \"Market\", \"yAxis\": \"Product\", \"cols\": [\"Existing\", \"New\"], \"rows\": [\"Existing\", \"New\"], \"cells\": [[\"Market Penetration\", \"Market Development\"], [\"Product Development\", \"Diversification\"]]}\n```\nDiagram summary: A 2x2 Ansoff Matrix displaying growth strategies (Market Penetration, Market Development, Product Development, Diversification) across existing and new products and markets.\n\n*Best suitable for Growth Strategy cases, also handy for Market Entry, Revenue Expansion*\n\n© The Consulting Club, FMS Delhi | 2023-24 | 19\n\nMain Index"
       }
     },
     {
@@ -977,7 +963,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly defines and contrasts TAM, SAM, and SOM, directly answering the question about the differences between them."
+          "reason": "The excerpt directly defines TAM, SAM, and SOM and clearly explains the differences between these three market size categories."
         },
         "citations": {
           "verdict": "pass",
@@ -1207,7 +1193,7 @@
         },
         "faithfulness": {
           "verdict": "pass",
-          "reason": "The excerpt explicitly defines and contrasts both the top-down approach and the bottom-up approach with clear examples, directly answering the user's question."
+          "reason": "The excerpt directly defines both the top-down and bottom-up approaches with clear explanations and examples for each, perfectly answering the difference between them."
         },
         "citations": {
           "verdict": "pass",
@@ -1541,15 +1527,15 @@
         },
         "faithfulness": {
           "verdict": "fail",
-          "reason": "The excerpt only contains the heading 'Case Frameworks' and does not provide any explanation of the RICE prioritization framework."
+          "reason": "All 6 row(s) above threshold were judged unfaithful by the relevance gate: The excerpt only contains a section heading and does not provide any explanation of the RICE prioritization framework. | The excerpt only contains a section heading and does not provide any explanation of the RICE prioritization framework. | The excerpt only contains the heading 'Case Frameworks' and provides no information about the RICE prioritization framework. | The excerpt only contains a section heading and does not provide any explanation of the RICE prioritization framework. | The excerpt discusses value-based pricing and market segmentation, which are entirely unrelated to the RICE prioritization framework asked about in the question. | The excerpt discusses general relevance in frameworks rather than explaining the specific RICE (Reach, Impact, Confidence, Effort) prioritization framework."
         },
         "citations": {
-          "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"ISB\",\"club\":null,\"casebook\":\"ISB Consulting Casebook 2025.pdf\",\"year\":\"2025\",\"pages\":[48]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "verdict": "n/a",
+          "reason": "Nothing retrieved, so no citation is shown either way."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "Something was shown for a question that should NOT be covered (source: \"ISB Consulting Casebook 2025.pdf\", similarity 0.669)."
+          "verdict": "pass",
+          "reason": "Correctly showed nothing below threshold (would return label \"General guidance — not from the casebooks\")."
         },
         "diagram_intact": {
           "verdict": "n/a",
@@ -1560,14 +1546,7 @@
           "reason": "No must_include terms specified for this question."
         }
       },
-      "retrieved": {
-        "sourceFile": "ISB Consulting Casebook 2025.pdf",
-        "similarity": 0.6693234616855661,
-        "pages": [
-          48
-        ],
-        "content": "Case Frameworks"
-      }
+      "retrieved": null
     },
     {
       "id": "q033",
@@ -1696,15 +1675,15 @@
         },
         "faithfulness": {
           "verdict": "fail",
-          "reason": "The excerpt only contains a title about growth strategy and does not explain the Jobs-to-be-Done framework or its application to product strategy."
+          "reason": "All 6 row(s) above threshold were judged unfaithful by the relevance gate: The excerpt only contains the heading 'APPROACH/ FRAMEWORK' and provides no content explaining the Jobs-to-be-Done framework or its application to product strategy. | The excerpt only contains a heading and does not provide any explanation of the Jobs-to-be-Done framework or its application to product strategy. | The excerpt only provides a heading for 'Growth Strategy Framework' and does not explain the Jobs-to-be-Done framework or its application to product strategy. | The excerpt discusses Go-To-Market strategy frameworks like CAGE, PESTEL, and Ansoff, but it does not mention or explain the Jobs-to-be-Done framework. | The excerpt discusses the customer journey approach and maps an e-commerce flow, but it contains no mention or explanation of the Jobs-to-be-Done framework or its application to product strategy. | The excerpt discusses a food delivery app case study and an issue tree for subscription conversion, but does not mention or explain the Jobs-to-be-Done framework."
         },
         "citations": {
-          "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"IIM Bangalore\",\"club\":null,\"casebook\":\"IIM B Consulting Casebook 2025.pdf\",\"year\":\"2025\",\"pages\":[23]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "verdict": "n/a",
+          "reason": "Nothing retrieved, so no citation is shown either way."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "Something was shown for a question that should NOT be covered (source: \"IIM B Consulting Casebook 2025.pdf\", similarity 0.672)."
+          "verdict": "pass",
+          "reason": "Correctly showed nothing below threshold (would return label \"General guidance — not from the casebooks\")."
         },
         "diagram_intact": {
           "verdict": "n/a",
@@ -1715,14 +1694,7 @@
           "reason": "No must_include terms specified for this question."
         }
       },
-      "retrieved": {
-        "sourceFile": "IIM B Consulting Casebook 2025.pdf",
-        "similarity": 0.672131633761593,
-        "pages": [
-          23
-        ],
-        "content": "# Growth Strategy Framework"
-      }
+      "retrieved": null
     },
     {
       "id": "q037",
@@ -1740,33 +1712,26 @@
         },
         "faithfulness": {
           "verdict": "fail",
-          "reason": "The excerpt estimates the number of cabs in Delhi NCR, whereas the question asks about Uber rides in New York City."
+          "reason": "All 8 row(s) above threshold were judged unfaithful by the relevance gate: The excerpt estimates rides for Ola and Uber in Delhi NCR, whereas the question asks for Uber rides in New York City. | The excerpt provides generic estimation framework tips rather than an actual estimation or answer for the number of Uber rides in NYC. | The excerpt only provides a brief general tip about analogies, failing to provide a substantive framework or data to estimate the specific number of Uber rides in NYC per day. | The excerpt only provides a generic framework for a demand-side approach and examples like sanitary pads or metro passengers, without offering specific data, calculations, or a direct answer for estimating daily Uber rides in New York City. | The excerpt is about estimating Swiggy food delivery orders in Delhi, whereas the question asks about estimating Uber rides in New York City. | The excerpt merely defines what a guesestimate is rather than providing a method or calculation to estimate the number of Uber rides in NYC. | The excerpt only defines a supply-side approach and lists unrelated examples, failing to provide any estimation or specific steps for calculating the number of Uber rides in NYC. | The excerpt only contains a section heading and does not provide any method, data, or calculation to answer how to estimate the number of Uber rides in NYC."
         },
         "citations": {
-          "verdict": "pass",
-          "reason": "Full (school, casebook, page) citation available: {\"school\":\"SRCC\",\"club\":null,\"casebook\":\"SRCC Guesstimates-Book-Volume-1-6.pdf\",\"year\":null,\"pages\":[15]}. ingest_chunks carries page_start/page_end (unlike v1's document_chunks), so this is the one check that genuinely improves once switched on."
+          "verdict": "n/a",
+          "reason": "Nothing retrieved, so no citation is shown either way."
         },
         "coverage_label": {
-          "verdict": "fail",
-          "reason": "Something was shown for a question that should NOT be covered (source: \"SRCC Guesstimates-Book-Volume-1-6.pdf\", similarity 0.714)."
+          "verdict": "pass",
+          "reason": "Correctly showed nothing below threshold (would return label \"General guidance — not from the casebooks\")."
         },
         "diagram_intact": {
           "verdict": "n/a",
-          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured ingest_pages.diagrams block by page) hasn't landed - this path has no image/diagram payload to check yet, same gap frameworksGrounding.js's findGroundingV2 already documents (image.url deliberately null)."
+          "reason": "No diagram-bearing chunk was retrieved for this question."
         },
         "must_include": {
           "verdict": "n/a",
           "reason": "No must_include terms specified for this question."
         }
       },
-      "retrieved": {
-        "sourceFile": "SRCC Guesstimates-Book-Volume-1-6.pdf",
-        "similarity": 0.7143817537569714,
-        "pages": [
-          15
-        ],
-        "content": "# NUMBER OF OLA AND UBER CABS RUNNING IN DELHI NCR IN A DAY\n\nAccenture | ⬜ ⬜ ⬜ ⬜ ⬜\n\nClick here to view detailed spreadsheet XLS\n\nASSUMPTIONS\n\n1. Since Ola and Uber are the primary cab service providers so the demand of cabs in general is estimated and no company wise split is made.\n2. Since cabs run full fay, demand will be calculated for all 24 hours.\n3. To estimate the market share of cabs, the types of transportation can be categorised as—public, personal, and commercial, with cabs coming under the category of commercial vehicles.\n\n```placewise-diagram\n{\n  \"type\": \"flow\",\n  \"title\": null,\n  \"source_page\": 15,\n  \"notes\": [],\n  \"nodes\": [\n    {\n      \"id\": \"pop\",\n      \"label\": \"POPULATION OF DELHI 33 MILLION\"\n    },\n    {\n      \"id\": \"rural\",\n      \"label\": \"RURAL 19.8 MILLION\"\n    },\n    {\n      \"id\": \"urban\",\n      \"label\": \"URBAN 13.2 MILLION\"\n    },\n    {\n      \"id\": \"r_upper\",\n      \"label\": \"UPPER 1.98 MILLION\"\n    },\n    {\n      \"id\": \"r_middle\",\n      \"label\": \"MIDDLE .594 MILLION\"\n    },\n    {\n      \"id\": \"r_lower\",\n      \"label\": \"LOWER 118 MILLION\"\n    },\n    {\n      \"id\": \"u_lower\",\n      \"label\": \"LOWER 2.64 MILLION\"\n    },\n    {\n      \"id\": \"u_middle\",\n      \"label\": \"MIDDLE 6.6 MILLION\"\n    },\n    {\n      \"id\": \"u_upper\",\n      \"label\": \"UPPER 3.96 MILLION\"\n    },\n    {\n      \"id\": \"r_upper_10\",\n      \"label\": \"10% 198 THOUSAND\"\n    },\n    {\n      \"id\": \"r_middle_10\",\n      \"label\": \"10% 594 THOUSAND\"\n    },\n    {\n      \"id\": \"u_middle_10\",\n      \"label\": \"10% 660 THOUSAND\"\n    },\n    {\n      \"id\": \"u_upper_20\",\n      \"label\": \"20% 792 THOUSAND\"\n    },\n    {\n      \"id\": \"total_sum\",\n      \"label\": \"2.24 MILLION\"\n    },\n    {\n      \"id\": \"peak\",\n      \"label\": \"PEAK HOURS (40%) 897 THOUSAND\"\n    },\n    {\n      \"id\": \"non_peak\",\n      \"label\": \"NON PEAK HOURS (60%) 1.34 MILLION\"\n    },\n    {\n      \"id\": \"peak_occ\",\n      \"label\": \"50% OCCUPANCY\"\n    },\n    {\n      \"id\": \"non_peak_occ\",\n      \"label\": \"20% OCCUPANCY\"\n    },\n    {\n      \"id\": \"peak_res\",\n      \"label\": \"448 THOUSAND\"\n    },\n    {\n      \"id\": \"non_peak_res\",\n      \"label\": \"269 THOUSAND\"\n    },\n    {\n      \"id\": \"final_sum\",\n      \"label\": \"718 THOUSAND\"\n    },\n    {\n      \"id\": \"cabs_used\",\n      \"label\": \"NO. OF CABS USED IN A DAY 718 THOUSAND\"\n    },\n    {\n      \"id\": \"rides_per_cab\",\n      \"label\": \"NO. OF RIDES PER CAB IN A DAY 10\"\n    },\n    {\n      \"id\": \"cabs_running\",\n      \"label\": \"NO OF CABS RUNNING IN DELHI 71.8 THOUSAND\"\n    }\n  ],\n  \"edges\": [\n    {\n      \"from\": \"pop\",\n      \"to\": \"rural\",\n      \"label\": null\n    },\n    {\n      \"from\": \"pop\",\n      \"to\": \"urban\",\n      \"label\": null\n    },\n    {\n      \"from\": \"rural\",\n      \"to\": \"r_upper\",\n      \"label\": null\n    },\n    {\n      \"from\": \"rural\",\n      \"to\": \"r_middle\",\n      \"label\": null\n    },\n    {\n      \"from\": \"rural\",\n      \"to\": \"r_lower\",\n      \"label\": null\n    },\n    {\n      \"from\": \"urban\",\n      \"to\": \"u_lower\",\n      \"label\": null\n    },\n    {\n      \"from\": \"urban\",\n      \"to\": \"u_middle\",\n      \"label\": null\n    },\n    {\n      \"from\": \"urban\",\n      \"to\": \"u_upper\",\n      \"label\": null\n    },\n    {\n      \"from\": \"r_upper\",\n      \"to\": \"r_upper_10\",\n      \"label\": null\n    },\n    {\n      \"from\": \"r_middle\",\n      \"to\": \"r_middle_10\",\n      \"label\": null\n    },\n    {\n      \"from\": \"u_middle\",\n      \"to\": \"u_middle_10\",\n      \"label\": null\n    },\n    {\n      \"from\": \"u_upper\",\n      \"to\": \"u_upper_20\",\n      \"label\": null\n    },\n    {\n      \"from\": \"r_upper_10\",\n      \"to\": \"total_sum\",\n      \"label\": null\n    },\n    {\n      \"from\": \"r_middle_10\",\n      \"to\": \"total_sum\",\n      \"label\": null\n    },\n    {\n      \"from\": \"u_middle_10\",\n      \"to\": \"total_sum\",\n      \"label\": null\n    },\n    {\n      \"from\": \"u_upper_20\",\n      \"to\": \"total_sum\",\n      \"label\": null\n    },\n    {\n      \"from\": \"total_sum\",\n      \"to\": \"peak\",\n      \"label\": null\n    },\n    {\n      \"from\": \"total_sum\",\n      \"to\": \"non_peak\",\n      \"label\": null\n    },\n    {\n      \"from\": \"peak\",\n      \"to\": \"peak_occ\",\n      \"label\": null\n    },\n    {\n      \"from\": \"non_peak\",\n      \"to\": \"non_peak_occ\",\n      \"label\": null\n    },\n    {\n      \"from\": \"peak_occ\",\n      \"to\": \"peak_res\",\n      \"label\": null\n    },\n    {\n      \"from\": \"non_peak_occ\",\n      \"to\": \"non_peak_res\",\n      \"label\": null\n    },\n    {\n      \"from\": \"peak_res\",\n      \"to\": \"final_sum\",\n      \"label\": null\n    },\n    {\n      \"from\": \"non_peak_res\",\n      \"to\": \"final_sum\",\n      \"label\": null\n    },\n    {\n      \"from\": \"cabs_used\",\n      \"to\": \"cabs_running\",\n      \"label\": \"÷\"\n    },\n    {\n      \"from\": \"rides_per_cab\",\n      \"to\": \"cabs_running\",\n      \"label\": \"=\"\n    }\n  ]\n}\n```\nDiagram summary: A flow chart breaking down the population of Delhi into rural and urban segments, their income levels, peak and non-peak hour distributions, and occupancy rates to calculate the number of cabs running in Delhi.\n\nThe number of cabs running in Delhi is equal to 71.8 thousand\n\n11"
-      }
+      "retrieved": null
     },
     {
       "id": "q038",

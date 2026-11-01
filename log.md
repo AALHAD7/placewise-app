@@ -5,6 +5,47 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — v2 preview rerun: widened to all 9 ingested casebooks + the new relevance gate
+**Phase:** (none — informational probe, follow-up to the earlier v2-preview entry) · **Type:** eval
+
+**What changed:** Aalhad asked to test the 39 questions against everything ingested so far,
+not just the 5 the question set names. Widened `run_eval_v2_preview.js`'s `DOC_IDS` from 5 to
+all 9 Consulting casebooks R6 has done (adds IIM L, IIM Calcutta, IIMA, FMS 2023-24 to the
+candidate pool — 3,883 chunks total now, up from 1,334). Also updated the scoring to mirror
+the relevance gate just added to `groundedConsultingLookup` (today's earlier entry): a row now
+has to clear similarity **and** the relevance judge to count as covered, run across every
+candidate above threshold (not just the top one), same as the live function now does.
+
+**Result: 5/39 (13%), down from the 8/39 the narrower pool scored.** This is not a quality
+regression — it's an honest side effect of a bigger, genuinely useful pool, confirmed by
+reading every failing case rather than just the number:
+
+- **The relevance gate holds up at scale.** All 4 known false positives (RICE, Jobs-to-be-
+  Done, tennis balls, Uber-NYC) are still correctly rejected, even with 8-9 candidate rows
+  per question above threshold now instead of 1-2 — the gate checked every one of them and
+  rejected every one, same conclusion as the narrower-pool run.
+- **The score drop is entirely the "wrong casebook, right answer" pattern getting more
+  common**, exactly as flagged as a risk before running this: q001, q016, q017, q018, q019,
+  q013, q024 all now retrieve a **faithful, correct** excerpt from a *different* casebook than
+  the one the question names (e.g. MECE answered correctly from FMS 2023-24 instead of FMS
+  2021-22; Porter's Five Forces from IIM Calcutta instead of IIM B). `faithfulness`,
+  `citations` and `coverage_label` all pass on these — only the eval's strict single-source
+  `retrieval_hit` check fails them, because multiple casebooks genuinely teach the same
+  universal framework and a bigger pool surfaces more of that competition.
+
+**Implication for the real R9 gate:** as more casebooks get ingested, this eval's strict
+source-match design will keep looking worse even with zero real quality loss, unless
+`retrieval_hit` is redefined to accept any faithful match (not just the one named casebook) -
+an eval-design question to settle before R9, not a retrieval bug to fix now.
+
+**Cost:** 21 embedding + 140 judge calls (up from 21 - now judging every row above threshold,
+not just the top one, across a 3x bigger pool). Still negligible.
+**Files:** `backend/eval/run_eval_v2_preview.js` (updated), `backend/eval/results/2026-11-02-v2-preview.json`/`.md` (overwritten with this rerun).
+**Proof:** Script output above; full per-question detail in the `.md` file.
+**Undo:** `git diff`/revert; the superseded 8/39 run is still in this file's git history.
+
+---
+
 ## 2026-11-02 — Relevance gate added to groundedConsultingLookup, fixes the known false-positive class
 **Phase:** (none — fix for a finding from the v2-preview probe) · **Type:** retrieval, fix
 
