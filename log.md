@@ -5,6 +5,42 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Fix for the index-page bug: structural filter + sharpened judge
+**Phase:** (fix, same incident as the entry above) · **Type:** fix
+
+**What changed:** Two-layer fix for the random-pick-showed-the-index-page bug.
+1. `looksLikeWorkedProblem()` (new, `guesstimateRetrieval.js`) - a cheap, deterministic,
+   no-API-call filter: a candidate must contain "assumptions" (case-insensitive) to be
+   eligible for random pick. Every real problem in this book states its assumptions
+   explicitly; front matter never does. `getRandomGuesstimateProblem` now filters candidates
+   through this before `pickRandomCoveringChunk` runs, reusing that function unchanged.
+2. Sharpened the shared relevance judge prompt (`consultingRetrieval.js`,
+   `RELEVANCE_SYSTEM_PROMPT`) to explicitly name this failure mode too (an index/TOC/
+   acknowledgements/theory page naming a topic is not the same as answering it) - defense in
+   depth for the topic-ask path, not just random-pick.
+
+**Verified against the real data, not assumed:** ran `looksLikeWorkedProblem` against all 62
+of SRCC v7's actual `ingest_chunks` rows directly (no need to risk reactivating `is_active`
+just to test). 37/62 pass as eligible problems; the 25 filtered out are exactly the front
+matter that caused the bug - index, acknowledgements, theory, cheatsheet, "THANK YOU!",
+framework-explainer pages (TAM-SAM-SOM, round-off-numbers tips, etc.). None of the 37 passing
+ones look like front matter by inspection.
+
+**Tests:** 4 new unit tests (`guesstimateRetrieval.test.js`) for `looksLikeWorkedProblem` -
+a real problem passes, the actual index page content fails, a theory page fails,
+case-insensitivity and empty/undefined input handled safely. `npm test`: 118/119 pass (same
+pre-existing unrelated sandbox failure).
+
+**Files:** `backend/src/lib/guesstimateRetrieval.js`, `backend/src/lib/consultingRetrieval.js`,
+`backend/test/guesstimateRetrieval.test.js`.
+**Proof:** Test output and the 37/62 real-data verification above.
+**Undo:** Revert the two lib files and the test file.
+**Open issues:** SRCC is still deactivated (`is_active=false`) from the incident rollback -
+reactivating it is a separate, deliberate next step, not done automatically just because the
+fix is in place.
+
+---
+
 ## 2026-11-02 — Guesstimates pulled back offline: random-pick showed the book's index page as a "problem"
 **Phase:** (incident, same day as the SRCC go-live) · **Type:** fix, rollback
 

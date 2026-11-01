@@ -36,6 +36,27 @@ export function pickRandomCoveringChunk(result, rng = Math.random) {
 }
 
 /**
+ * Pure: does this chunk look like an actual worked guesstimate problem (a title plus
+ * stated assumptions), not front matter (title page, table of contents, acknowledgements,
+ * theory/methodology, cheatsheet)? Found 2026-11-02: the random-pick path showed SRCC's own
+ * index page as if it were a problem - the index is genuinely *about* guesstimates (it
+ * names dozens of real problem titles), so it cleared both the similarity threshold and the
+ * relevance judge for the broad "give me a guesstimate" query. That's a different failure
+ * mode than "wrong topic" (which the judge already catches) - this is "right topic, wrong
+ * kind of page," and nothing was checking for it.
+ *
+ * Every real problem in this book states its assumptions explicitly (confirmed across every
+ * problem page read this session - Swiggy orders, toll plaza, credit cards, tyre industry,
+ * etc. all have an "ASSUMPTIONS" section); front matter never does. This is cheap,
+ * deterministic, and runs with no extra API call - checked before a candidate is even
+ * eligible to be picked. It also generalizes past this one casebook: stating assumptions is
+ * fundamental to how a guesstimate write-up works, not an SRCC-specific quirk.
+ */
+export function looksLikeWorkedProblem(content) {
+  return /assumptions/i.test(content || "");
+}
+
+/**
  * Full "give me a guesstimate to practice" lookup. Distinct from the grounding policy's
  * usual "not covered -> labelled general answer" path: a miss here means "the casebook
  * isn't live yet" (an R9 gating condition - is_active is still false everywhere), not
@@ -49,7 +70,16 @@ export async function getRandomGuesstimateProblem() {
   if (!result.covered) {
     return { available: false, reason: "not_yet_live", label: AI_FALLBACK_LABEL };
   }
-  const picked = pickRandomCoveringChunk(result);
+  // Only front-matter-filtered candidates are eligible to be picked - see
+  // looksLikeWorkedProblem's comment for why (2026-11-02 incident).
+  const worked = result.chunks
+    .map((chunk, i) => ({ chunk, citation: result.citations[i] }))
+    .filter(({ chunk }) => looksLikeWorkedProblem(chunk.content));
+  const picked = pickRandomCoveringChunk({
+    covered: worked.length > 0,
+    chunks: worked.map(w => w.chunk),
+    citations: worked.map(w => w.citation)
+  });
   if (!picked) return { available: false, reason: "not_yet_live", label: AI_FALLBACK_LABEL };
 
   return {

@@ -89,6 +89,13 @@ const RELEVANCE_SYSTEM_PROMPT =
   "for that generic methodology - if the question names a specific entity, company, city, " +
   "quantity or topic (e.g. \"Uber rides in New York City\", \"RICE prioritization\"), the " +
   "excerpt must actually address THAT specific thing, not just be a same-category how-to.\n\n" +
+  "Also watch for this different failure mode (found 2026-11-02): an excerpt that is a TABLE " +
+  "OF CONTENTS, INDEX, ACKNOWLEDGEMENTS page, or a THEORY/CHEATSHEET/METHODOLOGY overview " +
+  "page is NOT a faithful answer, even when it names the exact topic asked about (e.g. an " +
+  "index page listing \"Number of orders placed on Swiggy in Delhi\" as a chapter title is " +
+  "NOT an answer to a question about Swiggy orders - it only tells you such a chapter " +
+  "exists). A faithful excerpt must actually contain the worked content (the assumptions, " +
+  "the numbers, the answer), not just reference or list it.\n\n" +
   'Respond with ONLY a JSON object, no markdown fences: {"verdict": "faithful" or ' +
   '"unfaithful", "reasoning": "one sentence explaining your judgment"}';
 

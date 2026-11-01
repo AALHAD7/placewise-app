@@ -5,7 +5,7 @@
 // they're intentionally left to the same resilience posture, not re-tested here.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickRandomCoveringChunk, GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
+import { pickRandomCoveringChunk, looksLikeWorkedProblem, GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
 
 test("pickRandomCoveringChunk: not covered returns null", () => {
   const picked = pickRandomCoveringChunk({ covered: false, chunks: [], citations: [] });
@@ -40,4 +40,28 @@ test("pickRandomCoveringChunk: rng=0 picks the first pair, never out of bounds",
 
 test("GUESSTIMATES_SOURCE_FILE names the actual ingested casebook, not a placeholder", () => {
   assert.equal(GUESSTIMATES_SOURCE_FILE, "SRCC Guesstimates-Book-Volume-1-6.pdf");
+});
+
+// --- looksLikeWorkedProblem (2026-11-02 incident: random-pick showed the book's own
+// index page as if it were a practice problem) ---
+
+test("looksLikeWorkedProblem: a real problem with an ASSUMPTIONS section passes", () => {
+  const content = "# NUMBER OF ORDERS PLACED ON SWIGGY IN DELHI IN A DAY\n\nASSUMPTIONS\n\n1. Rural part of Delhi population will not prefer food delivery.";
+  assert.equal(looksLikeWorkedProblem(content), true);
+});
+
+test("looksLikeWorkedProblem: the book's own index/table of contents page fails", () => {
+  const content = "180 DEGREES CONSULTING, SRCC PRESENTS\n\nGUESSTIMATE BOOK VOLUME 1\n\nINDEX\n\n| PARTICULARS | LEVEL | PAGE |\n| Number of orders placed on Swiggy in Delhi in a day | | 17 |";
+  assert.equal(looksLikeWorkedProblem(content), false);
+});
+
+test("looksLikeWorkedProblem: a theory/methodology page fails", () => {
+  const content = "# INTRODUCTION TO A GUESSTIMATE\n\nA guesstimate is an estimate made using a combination of guesswork and reasoning.";
+  assert.equal(looksLikeWorkedProblem(content), false);
+});
+
+test("looksLikeWorkedProblem: case-insensitive match, and empty/undefined content fails safely", () => {
+  assert.equal(looksLikeWorkedProblem("Key ASSUMPTIONS made here"), true);
+  assert.equal(looksLikeWorkedProblem(""), false);
+  assert.equal(looksLikeWorkedProblem(undefined), false);
 });
