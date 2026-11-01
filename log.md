@@ -5,6 +5,46 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — R3 fix: eval question page numbers and two mislabeled questions corrected
+**Phase:** R3 · **Type:** eval, fix
+
+**What changed:** Checked all 29 `covered:true` questions in `backend/eval/questions.jsonl`
+against the actual re-ingested (R6) page content, not just JSON syntax. Found two systematic
+page-number bugs plus two wrong classifications:
+- **FMS Consulting Casebook 2021-22 — consistent +1 page offset** (a cover page shifts the
+  pipeline's page_no one ahead of the casebook's own printed footer number): fixed q001
+  (24,25→25,26), q002 (26→27), q003 (20→21), q004 (21→22), q024 (29→30).
+- **SRCC Guesstimates-Book-Volume-1-6 — consistent +4 page offset** (questions were numbered
+  from the "Theory" section, skipping 4 front-matter pages the pipeline counts): fixed q005
+  (17→21), q006 (19,20→23,24), q007 (18→22), q009 (23→27).
+- **q008 ("tennis balls that fit in a room") reclassified `covered:true`→`false`:** this topic
+  doesn't appear anywhere in SRCC Guesstimates or anywhere else in the ingested corpus
+  (checked `ilike` across all `ingest_pages`, zero hits for "tennis"). Cleared
+  `expected_source`/`expected_pages`/`must_include`.
+- **q028 ("daily revenue of Delhi Metro") reclassified `covered:true`→`false`:** wrong source —
+  there's a real "Delhi Metro Passengers" guesstimate, but it's in **The FMS Consulting
+  CaseBook 2023-24** (page 117, latest version `faa13328-...`), not SRCC, and it computes
+  passenger count, not revenue (`ticket`/`fare` don't appear on that page at all). No real
+  revenue-focused Delhi Metro guesstimate exists in the corpus, so reclassified rather than
+  reassigning to a page that doesn't actually answer the question asked.
+**Why:** R4 (eval runner) can't produce a trustworthy baseline against a test set with wrong
+page numbers — every one of these would register a false retrieval-miss even with perfect
+grounding. `.gsd/STATE.md`'s known-gap note on an off-by-one page bug flagged this risk.
+**Verification:** Re-ran exact-match check (must_include terms found verbatim on the exact
+expected pages, no tolerance range) for all 27 remaining `covered:true` questions: 26/27 pass.
+The one remaining gap (`q006`, "income segmentation") is a phrasing nuance — the page covers
+income-tier segmentation conceptually but not that exact two-word phrase — left as Aalhad's
+call per the rag-eval skill ("Aalhad writes these ... help with formatting only").
+**Files:** `backend/eval/questions.jsonl`.
+**Proof:** 39/39 lines still valid JSON; 27 covered / 12 not-covered; 26/27 covered questions'
+must_include terms now verified present verbatim on their exact expected pages.
+**Undo:** `git diff backend/eval/questions.jsonl` / revert the file.
+**Open issues:** ISB/IIM B/IIMK questions' page numbers weren't independently re-verified
+against printed footer numbers the way FMS/SRCC were (they passed the loose range check
+already, so wording lines up, but a footer-number audit wasn't done for those three).
+
+---
+
 ## 2026-11-01 — R3 done: Consulting test question set landed
 **Phase:** R3 · **Type:** eval
 
