@@ -5,6 +5,45 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Relevance gate added to groundedConsultingLookup, fixes the known false-positive class
+**Phase:** (none — fix for a finding from the v2-preview probe) · **Type:** retrieval, fix
+
+**What changed:** The 2026-11-02 v2-preview entry above found 4 real false positives
+(RICE, Jobs-to-be-Done, "tennis balls in a room", "Uber rides in NYC") — unrelated excerpts
+clearing similarity threshold (0.63-0.73) and would've shown as "from the casebooks" with no
+warning. Discussed the fix with Aalhad: tuning the threshold higher was rejected (only 4 known
+examples, risks rejecting real matches). Instead added `judgeRelevance()` to
+`consultingRetrieval.js` — a cheap Gemini call (same prompt/tier as the eval's
+`judgeFaithfulness`) that actually reads the question and excerpt, run on every row that
+clears the similarity threshold, before `groundedConsultingLookup` returns `covered: true`.
+Fails closed (treats a judge error as "not relevant" — showing nothing is always safer than
+showing an unchecked excerpt, per the grounding policy). Kept `decideCoverage` itself pure/
+unit-testable (no I/O) — the judge call sits in `groundedConsultingLookup`, after the
+threshold filter, so it only ever runs on rows that already cleared similarity (cheapest
+check first).
+
+**Verification, not assumed:** didn't need a fresh test run — the v2-preview probe already
+ran this exact judge prompt against these exact excerpts. All 4 false positives already came
+back `unfaithful`; all 8 questions that passed the full preview already came back `faithful`.
+Applying the same judge as a live gate would keep the 8 good ones and filter the 4 bad ones -
+confirmed from existing data, not re-run speculatively.
+
+`npm test`: 111/112 pass (the 1 failure, `sandbox.test.js`'s env-leakage check, is a
+pre-existing macOS `__CF_USER_TEXT_ENCODING` quirk unrelated to this change — confirmed by
+running the suite before touching anything).
+
+**Cost:** +1 cheap Gemini call (flash-lite tier) per covering row per live lookup, going
+forward once this pipeline is switched on. Negligible at current volume.
+**Files:** `backend/src/lib/consultingRetrieval.js`.
+**Proof:** `npm test` output above; v2-preview's existing per-question faithfulness verdicts
+(`backend/eval/results/2026-11-02-v2-preview.json`).
+**Undo:** Revert `consultingRetrieval.js`; `groundedGuesstimateLookup` inherits this
+automatically since it calls `groundedConsultingLookup` underneath, so nothing else to revert.
+**Open issues:** Not live yet (flag off) - will need an actual eval rerun once R9's
+switch-over happens, to catch anything this prompt doesn't.
+
+---
+
 ## 2026-11-02 — Policy change: drop per-answer source citation (keep "not covered" label)
 **Phase:** (none — product decision) · **Type:** policy, frontend
 
