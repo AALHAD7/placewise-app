@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "../lib/apiClient";
 import PageHeader from "../components/PageHeader";
-import GroundingNote from "../components/GroundingNote";
 import PlacewiseDiagram, { DiagramFallback } from "../components/diagrams/PlacewiseDiagram";
 import { splitMarkdownBlocks } from "../lib/placewiseBlocks";
 import type { GuesstimateResponse } from "../types/api";
@@ -73,7 +72,6 @@ export default function GuesstimatesPage() {
             <div style={{ marginTop: 14 }}>
               {state.data.problem && <ProblemContent markdown={state.data.problem} />}
             </div>
-            <GroundingNote groundedInCasebooks citation={state.data.citation} />
             <button
               type="button"
               onClick={load}

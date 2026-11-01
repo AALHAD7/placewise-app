@@ -85,7 +85,6 @@ export default function RolePage() {
   // payload anymore. Keyed in state by "role@@company" so switching role or
   // company doesn't show stale notes from a previous pairing.
   const [companyNotesByKey, setCompanyNotesByKey] = useState<Record<string, Record<string, string>>>({});
-  const [companyNoteCitationsByKey, setCompanyNoteCitationsByKey] = useState<Record<string, Record<string, import("../types/api").GuesstimateCitation[]>>>({});
 
   // Last successfully-loaded overview for the CURRENT role (any company) -
   // switching companies re-fetches (it's a different, AI-generated result),
@@ -277,13 +276,11 @@ export default function RolePage() {
     )
       .then((data) => {
         setCompanyNotesByKey((s) => ({ ...s, [companyNotesKey]: data.notes || {} }));
-        setCompanyNoteCitationsByKey((s) => ({ ...s, [companyNotesKey]: data.citations || {} }));
       })
       .catch(() => setCompanyNotesByKey((s) => ({ ...s, [companyNotesKey]: {} })));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, company, topics.length]);
   const companyNote = current ? companyNotesByKey[companyNotesKey]?.[current.name] : undefined;
-  const companyNoteCitations = current ? companyNoteCitationsByKey[companyNotesKey]?.[current.name] : undefined;
   const topicShown = topicSel.query.trim() ? topics.map((t) => t.name).filter((o) => o.toLowerCase().includes(topicSel.query.trim().toLowerCase())) : topics.map((t) => t.name);
   const topicDisabled = td.loading || !!td.error || topics.length === 0;
   // Topics come back as one big non-streaming generation (unlike Resume's
@@ -449,7 +446,7 @@ export default function RolePage() {
                         citation, or general AI guidance - set once per topics load,
                         not per topic, since groundedInCasebooks/citations are a
                         response-level decision (see consultingRetrieval.js). */}
-                    <GroundingNote groundedInCasebooks={td.groundedInCasebooks} citations={td.citations} />
+                    <GroundingNote groundedInCasebooks={td.groundedInCasebooks} />
                     {/* Phase 1.5 item 8: no .toLowerCase() on the topic name (it used
                         to mangle acronyms - "M&A Synergies" read as "m&a synergies") and
                         a real a/an check on the role instead of a hardcoded "a". */}
@@ -571,12 +568,6 @@ export default function RolePage() {
                       <>
                         <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>How this shows up at {company}</div>
                         <p style={{ margin: "11px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>{companyNote}</p>
-                        {/* This note only exists when a real casebook chunk literally
-                            mentioned the company (grounding gate above) - so it's
-                            always cited when present, never a fallback label here. */}
-                        {companyNoteCitations && companyNoteCitations.length > 0 && (
-                          <GroundingNote groundedInCasebooks citations={companyNoteCitations} />
-                        )}
                       </>
                     )}
                   </>

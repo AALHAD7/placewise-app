@@ -1,0 +1,1142 @@
+{
+  "runAt": "2026-11-01T20:48:23.536Z",
+  "label": "v2-preview",
+  "isActiveTouched": false,
+  "scoresSourceAttribution": false,
+  "callCounts": {
+    "embedding": 35,
+    "judge": 224
+  },
+  "summary": {
+    "totalQuestions": 39,
+    "overallPassRate": 0.5384615384615384,
+    "overallPass": 21,
+    "overallScored": 39,
+    "perCheck": {
+      "faithfulness": {
+        "pass": 23,
+        "fail": 5,
+        "error": 0,
+        "na": 11
+      },
+      "coverage_label": {
+        "pass": 29,
+        "fail": 10,
+        "error": 0,
+        "na": 0
+      },
+      "diagram_intact": {
+        "pass": 0,
+        "fail": 4,
+        "error": 0,
+        "na": 35
+      },
+      "must_include": {
+        "pass": 15,
+        "fail": 13,
+        "error": 0,
+        "na": 11
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "q001",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the MECE principle and how is it used in case structuring?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt directly defines the MECE principle, explains its components, and details how it is used in case structuring through five specific tools."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7842629050478239,
+        "content": "# MECE Segmentation\n\nThe Consulting Club\n\nMECE = Mutually Exclusive Collectively Exhaustive\n\nMutually Exclusive\nContents of the segments does not overlap.\n\nCollectively Exhaustive\nTogether, the statements answer the question or fully describe the overall idea.\n\nUsing MECE segmentation is extremely effective in structuring one’s analysis, in a case interview, guesstimate or otherwise.\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": \"How to be MECE?\", \"source_page\": 31, \"notes\": [], \"root\": {\"label\": \"There are 5 tools one can use to be MECE in their cases:\", \"children\": [{\"label\": \"1. Algebraic Structure\", \"children\": [{\"label\": \"Break down problem into equations. \\u2022 Ex: Revenue = No. of customers x Avg ticket price of each customer x Product mix.\", \"children\": []}]}, {\"label\": \"2. Process Structure\", \"children\": [{\"label\": \"Break down problem into the stages of a process \\u2022 Ex: Value chain, customer journey, billing process, purchase process in e-Commerce\", \"children\": []}]}, {\"label\": \"3. Segmentation Structure\", \"children\": [{\"label\": \"Break down problem into divisions of a particular segment \\u2022 Ex: Income (High, Mid, Low income), Distribution channels (Retail, D2C)\", \"children\": []}]}, {\"label\": \"4. Conceptual Frameworks\", \"children\": [{\"label\": \"Break down problem by using established frameworks \\u2022 Ex: 4P (Product, Price, Place, Promotion), 3C (Customer, Company, Competitor)\", \"children\": []}]}, {\"label\": \"5. Opposite Words\", \"children\": [{\"label\": \"Break down problem into inherently opposing words \\u2022 Ex: Internal vs. External, Supply vs. Demand, Revenue vs. Cost\", \"children\": []}]}]}}\n```\nDiagram summary: How to be MECE lists 5 tools: Algebraic Structure, Process Structure, Segmentation Structure, Conceptual Frameworks, and Opposite Words, each with its description and examples.\n\nThe MECE principle suggests that to understand any large problem, you need to understand your options by sorting them into categories. Doing so will help you avoid dependencies between different branches of the tree and thus sub-problems can be properly isolated.\n\n© The Consulting Club, FMS Delhi\n2023-24\n30\n\nMain Index"
+      }
+    },
+    {
+      "id": "q002",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Explain the Pareto Principle and its application in consulting.",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly defines the Pareto Principle and directly details its application in consulting, specifically regarding prioritization in issue trees and recommendations."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.8002610767601215,
+        "content": "# Pareto Principle (80/20 Principle)\n\n* As per the 80/20 Rule (aka Pareto Principle) a small number of causes (the \"vital\" or \"critical\" few) drive the vast majority of the results, with roughly 20% of the causes driving 80% of the results.\n* It is a ubiquitous phenomenon with examples across multiple industries:\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 27, \"notes\": [], \"root\": {\"label\": \"Industries\", \"children\": [{\"label\": \"Manufacturer ~20% of the product lines generate ~80% of scrap\", \"children\": []}, {\"label\": \"Sales organisation ~20% of the product categories account for ~80% of sales\", \"children\": []}, {\"label\": \"Service facility ~20% of tickets take up ~80% of time\", \"children\": []}]}}\n```\nDiagram summary: Examples of the Pareto principle across manufacturer, sales organisation, and service facility industries.\n\n* The primary implication of this concept is that you can realize a lot of impact by investing your effort in addressing a relatively small number of issues and hence, prioritizing of issues is important.\n* The key takeaway from this principle in the context of interviews is that while constructing an issue tree or making recommendations (using the pyramid principle) one must prioritize the bigger issues by stating them first.\n\n© The Consulting Club, FMS Delhi\n2021-22\n26\n\nIntroduction to Guesstimates\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 28, \"notes\": [], \"root\": {\"label\": \"What is evaluated through Guesstimates?\", \"children\": [{\"label\": \"Ability to think on your feet\", \"children\": []}, {\"label\": \"Approach & Structure\", \"children\": []}, {\"label\": \"Quantitative Skills\", \"children\": []}]}}\n```\nDiagram summary: What is evaluated through guesstimates includes the ability to think on your feet, approach and structure, and quantitative skills.\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 28, \"notes\": [], \"root\": {\"label\": \"What is necessary to solve a good Guesstimate?\", \"children\": [{\"label\": \"Logical Thinking\", \"children\": []}, {\"label\": \"Communication & Presentation\", \"children\": []}]}}\n```\nDiagram summary: What is necessary to solve a good guesstimate includes logical thinking and communication and presentation."
+      }
+    },
+    {
+      "id": "q003",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What are the components of the PESTEL framework?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly lists and defines the components of the PESTEL framework (Political, Economic, Social, Technological, Environmental, Legal) which directly answers the question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7608894036098458,
+        "content": "```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": \"PESTEL Analysis\",\n  \"source_page\": 13,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"PESTEL Analysis\",\n    \"children\": [\n      {\n        \"label\": \"Political\",\n        \"children\": [\n          {\n            \"label\": \"Extent to which governments and its policies affect an organization and the industry like fiscal policy, trade policies, tax policies, labor laws, corruptions etc.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Economic\",\n        \"children\": [\n          {\n            \"label\": \"Factors affecting the economy of the country directly like interest rates, exchange rates, disposable income, unemployment rate and other micro and macro economic factors\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Social\",\n        \"children\": [\n          {\n            \"label\": \"Factors affecting the social environment and any growing trends like population growth, demographics, age distribution, health standards, career attitudes, employment, etc.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Technological\",\n        \"children\": [\n          {\n            \"label\": \"Factors affecting rate of technological improvements that affect a market such as digital tech, R&D, adoption rates, trends and awareness, new ways of production & distribution\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Environmental\",\n        \"children\": [\n          {\n            \"label\": \"Factors which influence the surrounding environment such as carbon footprint, sustainable business practices, availability of natural sources of raw material, CSR initiatives, ethics, etc.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Legal\",\n        \"children\": [\n          {\n            \"label\": \"Considers the legal factors of the industry in which organization operates Laws pertaining to health, safety, advertising standards, product labelling, IP, Licenses, permits, industrial regulations\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: PESTEL Analysis breaks down external macro-environmental factors into Political, Economic, Social, Technological, Environmental, and Legal categories.\n\nICON, IIM Bangalore | 2025-26 13\n\nContents"
+      }
+    },
+    {
+      "id": "q004",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Describe the three types of price discrimination.",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "6 candidate answer(s) were found but none actually answered the question: The excerpt only provides a heading ('# Pricing Framework') and contains no information or text describing the three types of price discrimination. | The excerpt discusses new product pricing and frameworks like cost floors, but it does not describe the three types of price discrimination. | The excerpt discusses pricing approaches (Value Based, Cost plus, Competitor Based) and product nature rather than the three types of price discrimination. | The excerpt discusses pricing approaches (cost-based, value-based, and competitor-based) rather than the three types of price discrimination. | The excerpt discusses pricing strategies like dual pricing and caps, but it does not describe the three traditional types of economic price discrimination (first, second, and third-degree). | The excerpt discusses pricing frameworks, costs, and value-based pricing, but it does not mention or describe the three types of price discrimination."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No correct answer was found for a question that should have one."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No answer was found, so none of the required terms could be present."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q005",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "How would you estimate the number of orders placed on Swiggy in Delhi in a day?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt directly and relevantly addresses the estimation of daily Swiggy orders in Delhi by providing structured assumptions and an issue tree tailored precisely to this case problem."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.8320834112644401,
+        "content": "# NUMBER OF ORDERS PLACED ON SWIGGY IN DELHI IN A DAY\n\nBain Capability Network | ⬜⬜⬜⬜⬜\n\nClick here to view detailed spreadsheet XLS\n\nASSUMPTIONS\n\n1. Rural part of Delhi population will not prefer food delivery platforms\n2. BPL population in the urban areas will not use food delivery platforms\n3. Middle Income class population will place only 1 order and High Income class population will place 2 orders in a day.\n4. Market Share of Swiggy is 40%\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 21,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"DELHI POPULATION 40 MILLION\",\n    \"children\": [\n      {\n        \"label\": \"URBAN 16 MILLION (40%)\",\n        \"children\": [\n          {\n            \"label\": \"BELOW POVERTY LINE 6.4 MILLION (40%)\",\n            \"children\": []\n          },\n          {\n            \"label\": \"MIDDLE INCOME 6.4 MILLION (40%)\",\n            \"children\": [\n              {\n                \"label\": \"MOBILE PENETRATION 5.44 MILLION (85%)\",\n                \"children\": [\n                  {\n                    \"label\": \"INTERNET PENETRATION 4.35 MILLION (80%)\",\n                    \"children\": [\n                      {\n                        \"label\": \"ADOPTION RATE 2.16 MILLION (50%)\",\n                        \"children\": [\n                          {\n                            \"label\": \"SWIGGY’S MKT. SHARE 8,70,400 (40%)\",\n                            \"children\": []\n                          }\n                        ]\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          },\n          {\n            \"label\": \"HIGH INCOME 3.2 MILLION (20%)\",\n            \"children\": [\n              {\n                \"label\": \"MOBILE PENETRATION 3.2 MILLION (100%)\",\n                \"children\": [\n                  {\n                    \"label\": \"INTERNET PENETRATION 2.88 MILLION (90%)\",\n                    \"children\": [\n                      {\n                        \"label\": \"ADOPTION RATE 20.16 MILLION (70%)\",\n                        \"children\": [\n                          {\n                            \"label\": \"SWIGGY’S MKT.SHARE 8,06,400 (40%)\",\n                            \"children\": []\n                          }\n                        ]\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"label\": \"RURAL 24 MILLION (60%)\",\n        \"children\": []\n      }\n    ]\n  }\n}\n```\nDiagram summary: Delhi population splits into urban and rural segments, with the urban population further broken down by income groups, penetration rates, adoption rates, and Swiggy's market share.\n\n```placewise-diagram\n{\n  \"type\": \"flow\",\n  \"title\": null,\n  \"source_page\": 21,\n  \"notes\": [],\n  \"nodes\": [\n    {\n      \"id\": \"a\",\n      \"label\": \"MIDDLE INCOME MARKET SHARE\"\n    },\n    {\n      \"id\": \"b\",\n      \"label\": \"1 ORDER PER DAY\"\n    },\n    {\n      \"id\": \"c\",\n      \"label\": \"870,400 ORDERS\"\n    },\n    {\n      \"id\": \"d\",\n      \"label\": \"HIGH INCOME MARKET SHARE\"\n    },\n    {\n      \"id\": \"e\",\n      \"label\": \"2 ORDERS PER DAY\"\n    },\n    {\n      \"id\": \"f\",\n      \"label\": \"1,612,800 ORDERS\"\n    }\n  ],\n  \"edges\": [\n    {\n      \"from\": \"a\",\n      \"to\": \"c\",\n      \"label\": \"X\"\n    },\n    {\n      \"from\": \"b\",\n      \"to\": \"c\",\n      \"label\": \"=\"\n    },\n    {\n      \"from\": \"d\",\n      \"to\": \"f\",\n      \"label\": \"X\"\n    },\n    {\n      \"from\": \"e\",\n      \"to\": \"f\",\n      \"label\": \"=\"\n    }\n  ]\n}\n```\nDiagram summary: Middle income market share multiplied by one order per day equals 870,400 orders, and high income market share multiplied by two orders per day equals 1,612,800 orders.\n\nNumber of orders placed on Swiggy in Delhi in a day is 24,83,200\n\n17"
+      }
+    },
+    {
+      "id": "q006",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "What approach would you use to estimate the number of credit cards in India?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt provides a structured market-sizing approach and issue tree specifically designed to estimate the number of credit cards in India by breaking down the population by income tiers, willingness for credit, and loan applications."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: income segmentation"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7861490254290313,
+        "content": "# NUMBER OF CREDIT CARDS IN INDIA\n\nBain Capability Network | ☐☐☐☐☐\n\nClick here to view detailed spreadsheet XLS\n\nASSUMPTIONS\n\n1. Includes all the credit cards taken by Indians, not just the active ones.\n2. India is a low to middle-income earning country and hence the low percentage of high-income earners.\n3. The percentage of working women in the high and low-income categories is higher compared to the middle-income category.\n4. Low-income earners would prefer informal loans over credit cards.\n5. Middle-income earners are a growing population with growing credit needs.\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 23, \"notes\": [], \"root\": {\"label\": \"TOTAL POPULATION 1.4 BILLION\", \"children\": [{\"label\": \"HIGH-INCOME- 10% 140 MILLION\", \"children\": []}, {\"label\": \"MEDIUM-INCOME- 60% 840 MILLION\", \"children\": []}, {\"label\": \"LOW-INCOME- 30% 420 MILLION\", \"children\": []}, {\"label\": \"PEOPLE EARNING\", \"children\": [{\"label\": \"HIGH-INCOME- 100% 140 MILLION\", \"children\": []}, {\"label\": \"MEDIUM-INCOME- 50% 420 MILLION\", \"children\": []}, {\"label\": \"LOW-INCOME- 100% 420 MILLION\", \"children\": []}, {\"label\": \"WILLINGNESS FOR CREDIT/LOAN\", \"children\": [{\"label\": \"HIGH-INCOME- 50% 70 MILLION\", \"children\": []}, {\"label\": \"MEDIUM-INCOME- 30% 126 MILLION\", \"children\": []}, {\"label\": \"LOW-INCOME- 10% 42 MILLION\", \"children\": []}, {\"label\": \"ACTUALLY APPLYING FOR LOANS\", \"children\": [{\"label\": \"HIGH-INCOME- 70% 50 MILLION\", \"children\": []}, {\"label\": \"MEDIUM-INCOME- 40% 50 MILLION\", \"children\": []}, {\"label\": \"LOW-INCOME- 20% 10 MILLION\", \"children\": []}]}]}]}]}}\n```\nDiagram summary: Total population splits into income tiers, leading through people earning and willingness for credit or loan to actually applying for loans.\n\n19\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 24, \"notes\": [], \"root\": {\"label\": \"CREDIT CARDS AFFORDABLE\", \"children\": [{\"label\": \"HIGH-INCOME 2\", \"children\": []}, {\"label\": \"MEDIUM-INCOME 1\", \"children\": []}, {\"label\": \"LOW-INCOME 1\", \"children\": []}]}}\n```\nDiagram summary: Credit cards affordable splits into high-income, medium-income, and low-income categories.\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 24, \"notes\": [], \"root\": {\"label\": \"NUMBER OF CREDIT CARDS\", \"children\": [{\"label\": \"HIGH-INCOME 100 MILLION\", \"children\": []}, {\"label\": \"MEDIUM-INCOME 50 MILLION\", \"children\": []}, {\"label\": \"LOW-INCOME 10 MILLION\", \"children\": []}]}}\n```\nDiagram summary: Number of credit cards splits into high-income, medium-income, and low-income totals.\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": null, \"source_page\": 24, \"nodes\": [{\"id\": \"a\", \"label\": \"100 MILLION\"}, {\"id\": \"b\", \"label\": \"+\"}, {\"id\": \"c\", \"label\": \"50 MILLION\"}, {\"id\": \"d\", \"label\": \"+\"}, {\"id\": \"e\", \"label\": \"10 MILLION\"}, {\"id\": \"f\", \"label\": \"=\"}, {\"id\": \"g\", \"label\": \"160 MILLION\"}], \"edges\": [{\"from\": \"a\", \"to\": \"b\", \"label\": null}, {\"from\": \"b\", \"to\": \"c\", \"label\": null}, {\"from\": \"c\", \"to\": \"d\", \"label\": null}, {\"from\": \"d\", \"to\": \"e\", \"label\": null}, {\"from\": \"e\", \"to\": \"f\", \"label\": null}, {\"from\": \"f\", \"to\": \"g\", \"label\": null}]}\n```\nDiagram summary: An addition equation summing 100 million, 50 million, and 10 million to equal 160 million.\n\nTotal number of credit cards in India is 160 Million.\n\n20"
+      }
+    },
+    {
+      "id": "q007",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "How do you estimate the revenue of a Delhi-Gurgaon toll plaza in a day?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt directly provides assumptions, vehicle volume calculations, and a final revenue estimation framework specifically for a Delhi-Gurgaon toll plaza in a day."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.8389944422361224,
+        "content": "# REVENUE OF A DELHI-GURGAON TOLL PLAZA IN A DAY\n\nClick here to view detailed spreadsheet XLS\n\nBain Capability Network | ☐☐☐☐☐\n\nASSUMPTIONS\n\n1. Toll is operational 24 hours a day.\n2. A vehicle passes by every 10 minutes, 5 minutes, and every minute through one of the booths in low, medium and high frequency hours respectively\n3. Assume there are 15 booths for Delhi-Gurgaon and 15 booths for Gurgaon-Delhi.\n4. Assume Low, Medium & High frequency hours as 10, 6, 8 respectively.\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": null, \"source_page\": 22, \"notes\": [], \"nodes\": [{\"id\": \"lf\", \"label\": \"LOW FREQUENCY\"}, {\"id\": \"lf_booths\", \"label\": \"30 BOOTHS\"}, {\"id\": \"lf_hours\", \"label\": \"10 HOURS\"}, {\"id\": \"lf_vehicles_per_h\", \"label\": \"6 VEHICLES\"}, {\"id\": \"lf_total_veh\", \"label\": \"1800 VEHICLES\"}, {\"id\": \"mf\", \"label\": \"MEDIUM FREQUENCY\"}, {\"id\": \"mf_booths\", \"label\": \"30 BOOTHS\"}, {\"id\": \"mf_hours\", \"label\": \"6 HOURS\"}, {\"id\": \"mf_vehicles_per_h\", \"label\": \"12 VEHICLES\"}, {\"id\": \"mf_total_veh\", \"label\": \"2160 VEHICLES\"}, {\"id\": \"hf\", \"label\": \"HIGH FREQUENCY\"}, {\"id\": \"hf_booths\", \"label\": \"30 BOOTHS\"}, {\"id\": \"hf_hours\", \"label\": \"8 HOURS\"}, {\"id\": \"hf_vehicles_per_h\", \"label\": \"60 VEHICLES\"}, {\"id\": \"hf_total_veh\", \"label\": \"14400 VEHICLES\"}, {\"id\": \"total_veh\", \"label\": \"18360 VEHICLES\"}, {\"id\": \"tw\", \"label\": \"TWO-WHEELER 10%\"}, {\"id\": \"tw_rate\", \"label\": \"50 RS.\"}, {\"id\": \"tw_rev\", \"label\": \"91,800 RS.\"}, {\"id\": \"fw\", \"label\": \"FOUR-WHEELER 60%\"}, {\"id\": \"fw_rate\", \"label\": \"100 RS.\"}, {\"id\": \"fw_rev\", \"label\": \"11,01,600 RS.\"}, {\"id\": \"hw\", \"label\": \"HEAVY VEHICLES 30%\"}, {\"id\": \"hw_rate\", \"label\": \"300 RS.\"}, {\"id\": \"hw_rev\", \"label\": \"16,52,400 RS.\"}, {\"id\": \"final_rev\", \"label\": \"Revenue of a Delhi-Gurgaon toll plaza in a day (in rupees) is 28,45,800\"}], \"edges\": [{\"from\": \"lf\", \"label\": null, \"to\": \"lf_booths\"}, {\"from\": \"lf_booths\", \"label\": null, \"to\": \"lf_hours\"}, {\"from\": \"lf_hours\", \"label\": null, \"to\": \"lf_vehicles_per_h\"}, {\"from\": \"lf_vehicles_per_h\", \"label\": null, \"to\": \"lf_total_veh\"}, {\"from\": \"mf\", \"label\": null, \"to\": \"mf_booths\"}, {\"from\": \"mf_booths\", \"label\": null, \"to\": \"mf_hours\"}, {\"from\": \"mf_hours\", \"label\": null, \"to\": \"mf_vehicles_per_h\"}, {\"from\": \"mf_vehicles_per_h\", \"label\": null, \"to\": \"mf_total_veh\"}, {\"from\": \"hf\", \"label\": null, \"to\": \"hf_booths\"}, {\"from\": \"hf_booths\", \"label\": null, \"to\": \"hf_hours\"}, {\"from\": \"hf_hours\", \"label\": null, \"to\": \"hf_vehicles_per_h\"}, {\"from\": \"hf_vehicles_per_h\", \"label\": null, \"to\": \"hf_total_veh\"}, {\"from\": \"lf_total_veh\", \"label\": null, \"to\": \"total_veh\"}, {\"from\": \"mf_total_veh\", \"label\": null, \"to\": \"total_veh\"}, {\"from\": \"hf_total_veh\", \"label\": null, \"to\": \"total_veh\"}, {\"from\": \"total_veh\", \"label\": null, \"to\": \"tw\"}, {\"from\": \"total_veh\", \"label\": null, \"to\": \"fw\"}, {\"from\": \"total_veh\", \"label\": null, \"to\": \"hw\"}, {\"from\": \"tw\", \"label\": null, \"to\": \"tw_rate\"}, {\"from\": \"tw_rate\", \"label\": null, \"to\": \"tw_rev\"}, {\"from\": \"fw\", \"label\": null, \"to\": \"fw_rate\"}, {\"from\": \"fw_rate\", \"label\": null, \"to\": \"fw_rev\"}, {\"from\": \"hw\", \"label\": null, \"to\": \"hw_rate\"}, {\"from\": \"hw_rate\", \"label\": null, \"to\": \"hw_rev\"}, {\"from\": \"tw_rev\", \"label\": null, \"to\": \"final_rev\"}, {\"from\": \"fw_rev\", \"label\": null, \"to\": \"final_rev\"}, {\"from\": \"hw_rev\", \"label\": null, \"to\": \"final_rev\"}]}\n```\nDiagram summary: A calculation breakdown of toll plaza revenue based on low, medium, and high frequency hours, vehicle types, and toll rates.\n\n18"
+      }
+    },
+    {
+      "id": "q008",
+      "feature": "guesstimates",
+      "covered": false,
+      "question": "What is the approach to estimate the number of tennis balls that can fit in a room?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q009",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "How would you estimate the market size of the tyre industry in India?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly includes the index entry for estimating the market size of the tyre industry in India in terms of revenue, making it directly relevant to the question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: rural, urban"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.6937315309246636,
+        "content": "1 8 0 D E G R E E S C O N S U L T I N G , S R C C\n\nP R E S E N T S\n\nGUESSTIMATE\n\nBOOK\n\nV O L U M E 1\n\nINDEX\n\n| PARTICULARS                                                                        | LEVEL   |   PAGE |\n|------------------------------------------------------------------------------------|---------|--------|\n| THEORY                                                                             | --      |      1 |\n| CHEATSHEET                                                                         | --      |      6 |\n| ACCENTURE                                                                          |         |        |\n| Market size of healthy biscuit industry                                            |         |     10 |\n| Number of Ola and Uber cabs running in Delhi NCR in a day                          |         |     11 |\n| Number of flights taking off from Delhi in a week                                  |         |     12 |\n| Number of teacups consumed in Delhi in one day                                     |         |     13 |\n| BAIN CAPABILITY NETWORK                                                            |         |        |\n| Estimating the revenue of a salon                                                  |         |     15 |\n| Market size of fantasy sports                                                      |         |     16 |\n| Number of orders placed on Swiggy in Delhi in a day                                |         |     17 |\n| Revenue of a Delhi - Gurgaon toll plaza in a day                                   |         |     18 |\n| Number of credit cards in India                                                    |         |     19 |\n| Amount of paint required to paint your car                                         |         |     21 |\n| Bollywood movies released in India in a year                                       |         |     22 |\n| Market size of the tyre industry in India in a particular year in terms of revenue |         |     23 |\n| BOSTON CONSULTING GROUP                                                            |         |        |\n| Number of outstanding education loans in India                                     |         |     25 |\n| INDUS INSIGHTS                                                                     |         |        |\n| Revenue of a dentist in a day                                                      |         |     27 |\n| Annual revenue of a laundry service in Delhi                                       |         |     28 |\n| Weekly revenue from the food stalls in a food court in a mall in Delhi             |         |     29 |\n| Number of books read by an Indian during their lifetime                            |         |     30 |\n| Weekly commute time for office-goers in Delhi                                      |         |     31 |\n| Expenditure incurred by the Government of India in the Lok Sabha elections 2024    |         |     32 |\n\nINDEX\n\n| PARTICULARS                                                                                   | LEVEL   |   PAGE |\n|-----------------------------------------------------------------------------------------------|---------|--------|\n| KEPLER CANNON                                                                                 |         |        |\n| Market size for an Alco-beverage firm in Mumbai                                               |         |     34 |\n| NATION WITH NAMO                                                                              |         |        |\n| Number of red cars in Delhi                                                                   |         |     36 |\n| Number of chairs in households of Delhi                                                       |         |     37 |\n| Number of students in SRCC who travel by metro everyday                                       |         |     38 |\n| Number of wine bottles sold in India                                                          |         |     39 |\n| Number of people that visit India Gate                                                        |         |     40 |\n| Number of students that use the metro to commute to North Campus colleges of Delhi University |         |     41 |\n| Number of flights at Delhi airport in a day                                                   |         |     42 |\n| Monthly revenue of Sarvana Bhavana                                                            |         |     43 |\n| REDSEER STRATEGY CONSULTANTS                                                                  |         |        |\n| Market size of quick commerce in India                                                        |         |     46 |\n| Size of the advertising market on platforms other than the traditional advertising platforms  |         |     47 |\n| Size for Animation/VFX market in India                                                        |         |     48 |\n| TRINITY LIFE SCIENCES                                                                         |         |        |\n| Volume of paint required to paint an Airbus 620                                               |         |     50 |\n| Milk required by each coffee shop in Connaught place                                          |         |     51 |\n| Number of pens bought in a day in India                                                       |         |     54 |\n| Number of Spotify premium subscribers in India                                                |         |     55 |\n\nACKNOWLEDGEMENTS\n\nWe would like to thank all our mentors and seniors who have helped us immensely by sharing their cases, guesstimates and interview experiences, which has enabled us to put together 'Guesstimate Guide' a comprehensive guesstimate and consulting interview preparation resource for the incoming batches."
+      }
+    },
+    {
+      "id": "q010",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What are the eight types of consulting cases and give an example problem statement for each?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly lists the eight types of consulting cases and provides an example problem statement for each in a clear table format."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.813777438565292,
+        "content": "# Types of Cases\n\n```placewise-diagram\n{\"type\": \"table\", \"title\": null, \"source_page\": 32, \"notes\": [], \"header\": [\"#\", \"Case Topic\", \"Description\", \"Example Problem Statement\"], \"rows\": [[\"1\", \"Profitability\", \"Diagnose declining profits and identify improvement levers.\", \"A premium coffee chain in London has seen its same-store profits decline by 15% over the past six months. Diagnose the reasons and suggest ways to restore profitability.\"], [\"2\", \"Market Entry\", \"Evaluate if the client should enter a new market\", \"A European electric vehicle manufacturer is considering entering the Southeast Asian market. Should they proceed?\"], [\"3\", \"Growth Strategy\", \"Explore ways to grow revenues or market share.\", \"A regional quick-service restaurant chain wants to double its revenues in the next 3 years. How should they achieve this?\"], [\"4\", \"M&A (Merger & Acquisition)\", \"Assess whether acquiring or merging with another company makes sense.\", \"A global consumer goods company is evaluating the acquisition of a niche organic skincare brand. Should they go ahead?\"], [\"5\", \"Pricing Strategy\", \"Determine optimal pricing for a product\", \"A software company is launching a new SaaS product for SMEs. What should be the optimal pricing strategy?\"], [\"6\", \"Operational Efficiency Improvement\", \"Identify cost-reduction or process-optimization opportunities.\", \"A luxury hotel chain is facing rising operating costs despite stable occupancy rates. How can it improve efficiency without compromising guest experience?\"], [\"7\", \"Investment\", \"Evaluate potential investment opportunities and expected returns.\", \"A private equity firm is considering investing $200M in a renewable energy startup. Should they proceed, and what ROI can they expect over five years?\"], [\"8\", \"Capacity Expansion\", \"Decide whether to increase production capacity.\", \"An Indian cement manufacturer is running at 95% capacity utilization. Should they invest in new capacity?\"]]}\n```\n\nDiagram summary: A table outlining eight types of cases with their descriptions and example problem statements.\n\nConsulting is spread across several industries, diverse practice covering all topics and industries is key\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers\n\nClick here for Contents Page\n\nISB | Consulting Prep Casebook\n\n2025\n\n32\n\nISB | Consulting Prep Casebook\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\nScoping\n\n2025"
+      }
+    },
+    {
+      "id": "q011",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the 3CPOR scoping method used before structuring a case?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt provides a detailed breakdown of the 3CPOR scoping method used before structuring a case, including all its categories (Objectives, Company, Product, Competitors, Context, Regulation) and their specific guiding questions."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7749483594788033,
+        "content": "# Scoping (3CPOR):\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 33, \"notes\": [], \"root\": {\"label\": \"Scoping (3CPOR)\", \"children\": [{\"label\": \"A. Objectives\", \"children\": [{\"label\": \"Clarify the objective of the case & repeat the case statement\", \"children\": []}, {\"label\": \"Is there a secondary objective?\", \"children\": []}]}, {\"label\": \"B. Company\", \"children\": [{\"label\": \"Current business model\", \"children\": []}, {\"label\": \"Value chain and capabilities\", \"children\": []}, {\"label\": \"Geographies\", \"children\": []}, {\"label\": \"Consumers (Target)- Any specific demographic (\", \"children\": []}, {\"label\": \"Channel of sales/ distribution\", \"children\": []}]}, {\"label\": \"C. Product\", \"children\": [{\"label\": \"Product mix?\", \"children\": []}, {\"label\": \"What is the USP?\", \"children\": []}, {\"label\": \"Any substitutes available?\", \"children\": []}, {\"label\": \"Where is the product in the lifecycle?\", \"children\": []}, {\"label\": \"Is the concern due to cyclicity/ seasonality?\", \"children\": []}]}, {\"label\": \"D. Competitors\", \"children\": [{\"label\": \"Is it an industry wide issue?\", \"children\": []}, {\"label\": \"Market fragmented or concentrated? Our market position?\", \"children\": []}]}, {\"label\": \"E. Context\", \"children\": [{\"label\": \"From how long is the decline seen ?\", \"children\": []}, {\"label\": \"Any specific geography or product seeing the decline?\", \"children\": []}, {\"label\": \"Quantum of decline?\", \"children\": []}]}, {\"label\": \"F. Regulation\", \"children\": [{\"label\": \"Any government regulation/constraint that should be considered?\", \"children\": []}, {\"label\": \"Any impact due to Covid? (depends on the timeline of the issue)\", \"children\": []}]}]}}\n```\nDiagram summary: Scoping breaks down into objectives, company, product, competitors, context, and regulation, each with specific guiding questions.\n\nTip: *The major buckets of the scoping questions mostly falls under the given buckets for almost all the framework, only the type of question changes depending on the problem at hand.*\n\n*E.g. Context for profitability would be to access the period of decline, but for market entry problem, context question would be ‘why do we want to enter the market, what is our target?’*\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\nISB | Consulting Prep Casebook\n\n2025\n\n33\n\nISB | Consulting Prep Casebook 2025\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\n**Problem-Framework Mapping- Profitability**"
+      }
+    },
+    {
+      "id": "q012",
+      "feature": "qa",
+      "covered": true,
+      "question": "How do you break down a profitability case using the P=R-C framework?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt provides a detailed issue tree breaking down profitability into revenue components like price and volume, directly answering how to structure a profitability case."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.755410108366419,
+        "content": "Case Frameworks\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": \"Profitability (1/2)\", \"source_page\": 35, \"notes\": [], \"root\": {\"label\": \"PROFITABILITY\", \"children\": [{\"label\": \"Revenue\", \"children\": [{\"label\": \"Price\", \"children\": [{\"label\": \"Price Sensitivity If Inelastic (<1) then P\\u2191 Check response of competitors\", \"children\": []}]}, {\"label\": \"Volume\", \"children\": [{\"label\": \"Market Size\", \"children\": [{\"label\": \"Demand\", \"children\": [{\"label\": \"Product\", \"children\": [{\"label\": \"Customer Behaviour Changed\", \"children\": []}, {\"label\": \"Usage Decreased\", \"children\": []}, {\"label\": \"Demographics\", \"children\": []}]}, {\"label\": \"Industry\", \"children\": [{\"label\": \"Product Life Cycle (mature/decline)\", \"children\": []}, {\"label\": \"Cyclic\", \"children\": []}, {\"label\": \"New competitors\", \"children\": []}, {\"label\": \"New Substitutes\", \"children\": []}]}, {\"label\": \"Macro Factors\", \"children\": [{\"label\": \"Economic\", \"children\": []}, {\"label\": \"PESTEL\", \"children\": []}]}, {\"label\": \"If avg prices decreases\", \"children\": [{\"label\": \"Internal\", \"children\": [{\"label\": \"P \\u2191 to \\u2191 R & it did not work\", \"children\": []}, {\"label\": \"Transfer pricing (internal division transfer)\", \"children\": []}]}, {\"label\": \"External\", \"children\": [{\"label\": \"Price wars\", \"children\": []}, {\"label\": \"Government regulations\", \"children\": []}, {\"label\": \"Change of other margins in value chain\", \"children\": []}, {\"label\": \"Customer preference changed\", \"children\": []}]}]}]}, {\"label\": \"Supply\", \"children\": [{\"label\": \"Supplier Constraints\", \"children\": []}, {\"label\": \"Raw Material\", \"children\": []}, {\"label\": \"Labor union issue\", \"children\": []}, {\"label\": \"PESTEL\", \"children\": []}]}]}, {\"label\": \"Awareness\", \"children\": [{\"label\": \"Ad spent\", \"children\": []}, {\"label\": \"Channels\", \"children\": []}, {\"label\": \"Message (purpose, communicate purchasing behavior)\", \"children\": []}, {\"label\": \"Discounts, cashbacks\", \"children\": []}, {\"label\": \"Types (Paid/ Unpaid social media word of mouth)\", \"children\": []}, {\"label\": \"Brand Perception\", \"children\": []}]}, {\"label\": \"Preference\", \"children\": [{\"label\": \"Product Quality, price for complement, perceived benefits, core attributes packaging, SKU size\", \"children\": []}, {\"label\": \"Service Quality, price\", \"children\": []}, {\"label\": \"Complement/Substitutes\", \"children\": []}, {\"label\": \"Right customer segment?\", \"children\": []}, {\"label\": \"Logistics post purchase\", \"children\": []}, {\"label\": \"Returns & After sales\", \"children\": []}]}, {\"label\": \"Availability\", \"children\": [{\"label\": \"Channels Convenience, Accessibility, feature (stock outs/replenishment, display, shelf spare, % penetration)\", \"children\": []}, {\"label\": \"Operational hours\", \"children\": []}, {\"label\": \"Distributor/Retailer margin\", \"children\": []}, {\"label\": \"Salesforce effectiveness by channel\", \"children\": []}, {\"label\": \"Place features\", \"children\": []}, {\"label\": \"6 senses: ambience, look & feel, design, size, hours, accessibility\", \"children\": []}]}]}, {\"label\": \"Market Share\", \"children\": [{\"label\": \"Demand\", \"children\": []}, {\"label\": \"Supply (find bottleneck in value chain)\", \"children\": []}]}]}, {\"label\": \"Product Mix\", \"children\": []}]}, {\"label\": \"Cost (On next slide)\", \"children\": []}]}}\n```\nDiagram summary: Profitability splits into revenue (price, volume, product mix) and cost. Volume is broken down by market size (demand, supply) and market share (demand, supply). Demand under market size branches into product, industry, macro factors, and if average prices decreases.\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers\n2025\n35\n\nISB | Consulting Prep Casebook\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\nProfitability (2/2)\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 36, \"notes\": [], \"root\": {\"label\": \"PROFITABILITY\", \"children\": [{\"label\": \"Revenue (On previous slide)\", \"children\": []}, {\"label\": \"Cost\", \"children\": [{\"label\": \"Product Mix Changed\", \"children\": [{\"label\": \"Product related problems\", \"children\": [{\"label\": \"Quality\", \"children\": []}, {\"label\": \"Inadequate product width/depth/quantity\", \"children\": []}, {\"label\": \"Network effects (with other products)\", \"children\": []}]}, {\"label\": \"Service related problems\", \"children\": [{\"label\": \"Poor service\", \"children\": []}, {\"label\": \"Costly service\", \"children\": []}, {\"label\": \"Inadequate accessibility or customer service\", \"children\": []}, {\"label\": \"Inadequate training\", \"children\": []}]}, {\"label\": \"Customer Preference\", \"children\": [{\"label\": \"Change in needs\", \"children\": []}]}]}, {\"label\": \"Costs (Fixed vs Variable)\", \"children\": [{\"label\": \"Fixed\", \"children\": [{\"label\": \"Rent\", \"children\": []}, {\"label\": \"Employee salaries\", \"children\": []}, {\"label\": \"SG&A\", \"children\": []}, {\"label\": \"Marketing\", \"children\": []}, {\"label\": \"Equipment\", \"children\": [{\"label\": \"Depreciation\", \"children\": []}, {\"label\": \"Repair and maintenance\", \"children\": []}]}, {\"label\": \"Insurance\", \"children\": []}, {\"label\": \"Interest expense\", \"children\": []}, {\"label\": \"Overhead/Other expenses\", \"children\": []}]}, {\"label\": \"Variable\", \"children\": [{\"label\": \"Contractual salaries\", \"children\": []}, {\"label\": \"Utilities\", \"children\": []}, {\"label\": \"Raw and packaging material\", \"children\": []}, {\"label\": \"Overhead/other expenses\", \"children\": []}]}]}]}]}}\n```\nDiagram summary: Profitability breaks down into revenue and cost, with cost further broken down by product mix changes and fixed versus variable costs.\n\nCosts (value chain) – (at every state it is good to ask the difference wrt competitors"
+      }
+    },
+    {
+      "id": "q013",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the pricing decision tree for new versus existing products?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt provides a direct issue tree that explicitly outlines the pricing decision paths for new and existing products."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: Competitor Based"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7960864948608041,
+        "content": "## APPROACH\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 237, \"notes\": [], \"root\": {\"label\": \"Pricing\", \"children\": [{\"label\": \"New product\", \"children\": []}, {\"label\": \"Existing product (innovation)\", \"children\": [{\"label\": \"Competition exists\", \"children\": []}, {\"label\": \"No competition\", \"children\": [{\"label\": \"Value based pricing\", \"children\": [{\"label\": \"Additional revenue generated\", \"children\": []}, {\"label\": \"Extra cost incurred\", \"children\": []}]}, {\"label\": \"Cost based pricing\", \"children\": []}]}]}]}}\n```\nDiagram summary: Pricing breaks down into new product and existing product innovation, with existing product further splitting based on competition into value-based pricing (derived from additional revenue and extra cost) and cost-based pricing."
+      }
+    },
+    {
+      "id": "q014",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Explain the Go-to-Market Strategy framework including segmentation and channel strategy.",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly details the Go-to-Market Strategy framework, specifically covering customer segmentation and distribution channel strategy as requested."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: STP, AARRR, Channel Strategy"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7630042029452982,
+        "content": "# Go To Market Strategy/New Product Launch\n\nUnderstand the Question and Clarify the Objectives\n\nProvide a blueprint for launching a product in a market, positioning it to achieve competitive advantage. You would typically look at defining the 4Ps after deciding on the target segment. Touching upon all relevant aspects of the problem is much more important that the correct answer. The idea is to identify one/a few issue(s) examining the trade-offs.\n\nSet Context\n\nObjectives, Capabilities, Competition (How many, who all, Market Share, Growth Rate), Customers (Growth Rate, Potential Segments), Products (Existing Products, Substitutes).\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": null, \"source_page\": 40, \"notes\": [], \"nodes\": [{\"id\": \"a\", \"label\": \"Segmentation Whom to Sell? Use only relevant bases from the following: \\u2022 Geographic \\u2022 Demographic \\u2022 Psychographic \\u2022 Behavioural\"}, {\"id\": \"b\", \"label\": \"Product Development What to Sell? \\u2022 Features \\u2022 Packaging \\u2022 Use-cases \\u2022 Size (SKU) \\u2022 Product Name \\u2022 Differentiation \\u2022 Pricing\"}, {\"id\": \"c\", \"label\": \"Distribution Strategy Where to Sell? \\u2022 Distribution Channel \\u2022 Distribution Model \\u2022 WC Turnover \\u2022 Margins \\u2022 Sales Force T&D\"}, {\"id\": \"d\", \"label\": \"Communication Strategy What to Say? \\u2022 Positioning \\u2022 Communication Strategy o Advertising o Personal Selling o Sales Promotion o Direct Mktg o Public Relations\"}, {\"id\": \"e\", \"label\": \"Idea GTM strategies are supposed to be integrated in nature and thus the processes strongly follow from each other.\"}, {\"id\": \"f\", \"label\": \"Be Selective The idea is to not do everything, rather to focus on one issue and nail it. E.g. Too many sales channels can lead to channel conflict, Too much communication is expensive.\"}], \"edges\": []}\n```\nDiagram summary: A process breakdown of Go-To-Market strategy elements including Segmentation, Product Development, Distribution Strategy, and Communication Strategy, along with guiding principles of being selective and integrated.\n\n© The Consulting Club, FMS Delhi\n2021-22\n39\n\n© The Consulting Club, FMS Delhi 2021-22"
+      }
+    },
+    {
+      "id": "q015",
+      "feature": "role",
+      "covered": true,
+      "question": "What is the STAR structure used in consulting interviews?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q016",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What are Porter's Five Forces and what factors increase the bargaining power of suppliers?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly provides the framework of Porter's Five Forces and lists the specific factors that increase the bargaining power of suppliers under the heading 'BPOS increases with'."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7359595840826173,
+        "content": "## Porter’s Industry 5 Forces\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 15, \"notes\": [], \"root\": {\"label\": \"Porter’s Industry 5 Forces\", \"children\": [{\"label\": \"BPOB increases with,\", \"children\": [{\"label\": \"Few large size buyers\", \"children\": []}, {\"label\": \"Low switching cost\", \"children\": []}, {\"label\": \"Higher # of substitutes\", \"children\": []}, {\"label\": \"Standardized products\", \"children\": []}, {\"label\": \"High price elasticity\", \"children\": []}, {\"label\": \"High buyer awareness\", \"children\": []}]}, {\"label\": \"BPOS increases with,\", \"children\": [{\"label\": \"Low number of supplier\", \"children\": []}, {\"label\": \"High switching cost\", \"children\": []}, {\"label\": \"Lower # of substitutes\", \"children\": []}, {\"label\": \"Differentiated product\", \"children\": []}, {\"label\": \"Forward integration is possible\", \"children\": []}]}, {\"label\": \"RIVALRY increases with,\", \"children\": [{\"label\": \"High # of competitors\", \"children\": []}, {\"label\": \"Low barriers to entry\", \"children\": []}, {\"label\": \"Easily substitutable product\", \"children\": []}, {\"label\": \"Low bargaining power of suppliers\", \"children\": []}, {\"label\": \"Low focus on brand value\", \"children\": []}]}, {\"label\": \"TOS increases with,\", \"children\": [{\"label\": \"Low switching cost for customers\", \"children\": []}, {\"label\": \"High performance of substitutes\", \"children\": []}, {\"label\": \"Price-performance trade off is acceptable\", \"children\": []}]}, {\"label\": \"TONE increases with,\", \"children\": [{\"label\": \"High capital req.\", \"children\": []}, {\"label\": \"Differentiated products\", \"children\": []}, {\"label\": \"Strict govt. regulations\", \"children\": []}, {\"label\": \"High switching cost\", \"children\": []}, {\"label\": \"Supply side EOS\", \"children\": []}, {\"label\": \"High brand value of firms\", \"children\": []}]}]}}\n```\nDiagram summary: Porter’s Industry 5 Forces framework broken down into factors increasing Bargaining Power of Buyers, Bargaining Power of Suppliers, Competitive Rivalry, Threat of Substitution, and Threat of New Entrants.\n\nICON, IIM Bangalore | 2025-26 15\n\nContents"
+      }
+    },
+    {
+      "id": "q017",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Explain the BCG Growth Share Matrix including all four quadrants.",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly explains the BCG Growth Share Matrix and defines all four quadrants (Dogs/Pets, Question Marks, Stars, and Cash Cows) in alignment with the student's question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7904884370051737,
+        "content": "# BCG Matrix\n\n```placewise-diagram\n{\"type\": \"matrix\", \"title\": \"BCG Matrix\", \"source_page\": 16, \"notes\": [], \"xAxis\": \"Market Share\", \"yAxis\": \"Growth\", \"cols\": [\"High\", \"Low\"], \"rows\": [\"High\", \"Low\"], \"cells\": [[\"Stars\", \"Question marks\"], [\"Cash Cows\", \"Dogs/Pets\"]]}\n```\nDiagram summary: A 2x2 matrix categorizing business units or products by market share and growth rate into Stars, Question Marks, Cash Cows, and Dogs/Pets.\n\n| | | |\n|---|---|---|\n| Dogs/Pets | Low Share/Low Growth | Sustained cash flows but will never be stars; companies should liquidate or divest |\n| Question Marks | Low Share/High Growth | Companies can invest (can turn into stars) or discard (can become dogs/pets) |\n| Stars | High Share/High Growth | Large cash flows, market-leading; companies can heavily invest to turn into cash cows |\n| Cash cows | Low Share/Low Growth | Don’t require further investment, can be used to reinvest if properly “milked” |\n\nUseful while analyzing costs related problems, also in new business setup\n\n© The Consulting Club, FMS Delhi | 2023-24 | 15\n\nMain Index"
+      }
+    },
+    {
+      "id": "q018",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the Ansoff Matrix and what are its four strategic options?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly provides the Ansoff Matrix along with its four strategic options (Market Penetration, Market Development, Product Development, Diversification)."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7825309824906532,
+        "content": "# Ansoff Matrix\n\n```placewise-diagram\n{\"type\": \"matrix\", \"title\": \"Ansoff Matrix\", \"source_page\": 20, \"notes\": [], \"xAxis\": \"Market\", \"yAxis\": \"Product\", \"cols\": [\"Existing\", \"New\"], \"rows\": [\"Existing\", \"New\"], \"cells\": [[\"Market Penetration\", \"Market Development\"], [\"Product Development\", \"Diversification\"]]}\n```\nDiagram summary: A 2x2 Ansoff Matrix displaying growth strategies (Market Penetration, Market Development, Product Development, Diversification) across existing and new products and markets.\n\n*Best suitable for Growth Strategy cases, also handy for Market Entry, Revenue Expansion*\n\n© The Consulting Club, FMS Delhi | 2023-24 | 19\n\nMain Index"
+      }
+    },
+    {
+      "id": "q019",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the difference between TAM, SAM, and SOM?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt directly and clearly defines TAM, SAM, and SOM, directly answering the question about the differences between them."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: Serviceable Addressable Market"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7501578522164111,
+        "content": "## TAM-SAM-SOM FRAMEWORK\n\nTAM-SAM-SOM is a framework used in business that helps businesses understand the size of their market and identify their revenue potential.\n\n- **TAM (Total Addressable Market)** – It represents the maximum market opportunity.\n- **SAM (Serviceable Available Market)** – It denotes that portion of TAM that a company can serve based on its capabilities and the demographics it operates in.\n- **SOM (Serviceable Obtainable Market)** – It denotes that portion of SAM that a company can capture given its current resources, competition, etc."
+      }
+    },
+    {
+      "id": "q020",
+      "feature": "qa",
+      "covered": true,
+      "question": "What are the five stages of a case interview discussion?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly lists the five stages of a case interview discussion in the provided table and outlines what to expect and the skills tested for each stage."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.754863395891279,
+        "content": "# Case Discussion Approach\n\n| Interview Stage | What to expect? | Skills Tested |\n| :--- | :--- | :--- |\n| Case Interview Question | • Interviewer shares the **case statement**, restate to confirm alignment<br>• Clarify the **business objective**, target metric, and constraints upfront<br>• Identify **case type** (profitability, growth etc.) to guide your approach | • Active listening<br>• Comprehension & synthesis<br>• Business context understanding |\n| Developing the structure | • Request a moment to **organize your thoughts** before answering<br>• Build a **MECE framework** that covers all possible drivers logically<br>• Explain your structure clearly, navigate the problem **step-by-step** | • Structured thinking<br>• Logical reasoning<br>• Communication clarity |\n| Case Analysis | • Prioritize key branches, use **80/20 rule** & eliminate low-impact areas<br>• Ask for data & **refine hypotheses** as you progress through the case<br>• Be comfortable with **number crunching**, estimations & sanity checks | • Problem solving<br>• Analytical thinking<br>• Data interpretation |\n| Summary / Recommendation | • Deliver a **clear, concise recommendation** based on your findings<br>• Back up your suggestion with **2–3 supporting** insights/assumptions<br>• Break down recommendations into **short** and **long-term actions** | • Insight synthesis<br>• Strategic thinking<br>• Clarity and conciseness |\n| Questions for Interviewer | • Ask a question that **shows curiosity** about the firm's work or culture<br>• Avoid generic queries—tailor it to the **firm, interviewer, or case**<br>• Use it as a chance to **demonstrate interest** and consulting mindset | • Consulting mindset<br>• Cultural alignment<br>• Curiosity and engagement |\n\nICON, IIM Bangalore | 2025-26 11\n\n12\n\nCommonly Used Frameworks\n\nContents\n\nCommonly Used Frameworks (1/7)\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": \"SWOT Framework\",\n  \"source_page\": 13,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"SWOT Framework\",\n    \"children\": [\n      {\n        \"label\": \"Internal\",\n        \"children\": [\n          {\n            \"label\": \"STRENGTHS\",\n            \"children\": [\n              {\n                \"label\": \"Positive tangible and intangible attributes providing competitive edge to an organization over its competitors\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What aspects of people, products, processes sets you apart?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is your USP and value proposition?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Proprietary systems, employees, brand image\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"WEAKNESSES\",\n            \"children\": [\n              {\n                \"label\": \"Factors that detract and organization from achieving its desired goals, that need further improvement\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What are the vulnerabilities & what changes are needed?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is obstructing progress and needs to be eliminated?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Weak brand, inadequate supply chain, lack of Cap.\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"label\": \"External\",\n        \"children\": [\n          {\n            \"label\": \"OPPORTUNITIES\",\n            \"children\": [\n              {\n                \"label\": \"Factors representing why an organization exists, which can provide it a competitive advantage\",\n                \"children\": []\n              },\n              {\n                \"label\": \"These factors need to be identified w.r.t. a given Time Frame\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What trends, changes could strengthen the brand, markets?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Reduced Tariffs, Tech Advancements\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"THREATS\",\n            \"children\": [\n              {\n                \"label\": \"Factors that have the potential to harm the organization, and put its goals and mission at a risk\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What external risks could impact performance?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What market shifts could disrupt the firm?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Rising cost of production, increasing competition, tight labor supply\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: The SWOT framework categorizes factors into internal (Strengths, Weaknesses) and external (Opportunities, Threats) dimensions with descriptions, prompting questions, and examples."
+      }
+    },
+    {
+      "id": "q021",
+      "feature": "qa",
+      "covered": true,
+      "question": "What are the four steps to approach a consulting case interview?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly outlines the steps to approach a case interview, specifically detailing steps 1 and 2 and beginning step 3, which directly answers the user's question about the four steps."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7555594545670432,
+        "content": "# HOW TO APPROACH A CASE INTERVIEW\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 10,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"HOW TO APPROACH A CASE INTERVIEW\",\n    \"children\": [\n      {\n        \"label\": \"1 UNDERSTAND & CLARIFY THE PROBLEM STATEMENT\",\n        \"children\": [\n          {\n            \"label\": \"Candidates should understand the problem statement because a mistake here could ruin the interview.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Ask clarifying questions in order to better understand the problem and find an accurate solution.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Interviewers often don't reveal all the relevant information at once to test candidates' ability to extract information, which is similar to how they interact with clients.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Make no assumptions unless necessary; if a candidate wants to, communicate with the interviewer to validate them.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"2 STRUCTURE THE PROBLEM\",\n        \"children\": [\n          {\n            \"label\": \"This involves organizing and interpreting all received data. The A4 sheet method works well, but candidates can use their own methods depending on their familiarity.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Candidates should keep their structure simple because the interviewer may ask for the working sheet and should be able to understand the approach by looking at it.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Data can be structured using frameworks, but don't force fit them. Instead of saying \\\"I'm using profitability framework\\\", candidates should explain their solution to the interviewer.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"3 ANALYSE THE CASE\",\n        \"children\": [\n          {\n            \"label\": \"This is the main stage of problem-solving, where candidates must infer from the data. Applying the chosen framework, if any, helps structure the process.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Candidates should form a hypothesis with multiple solutions, ask leading questions to test it and narrow their set based on discussion. The candidate should keep the interviewer informed of their thoughts.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"If the candidate is thinking wrong, interviewers usually help them get back on track.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"If the candidate realizes some data is missing, ask the interviewer. No one will provide the information, but well-directed questions will help.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"4 ARRIVE AT A CONCLUSION\",\n        \"children\": [\n          {\n            \"label\": \"The final stage of problem-solving may determine a candidate's interview success. If the candidate can't reach a conclusion and a logical implementation plan, all their efforts are wasted.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Make sure the recommendations are realistic to increase their likelihood of being implemented. Remember that concrete answers score higher than vague ones.\",\n            \"children\": []\n          },\n          {\n            \"label\": \"Do a quick \\\"sanity check\\\" to see if the proposed solution, especially if quantitative, makes sense before communicating it. Bottom-up strategy can be used if the original answer was derived top-down, or vice versa.\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: A four-step approach to case interviews covering understanding the problem, structuring it, analyzing the case, and arriving at a conclusion.\n\nBEST OF 2025\nSIP CASES\nInterview transcripts from SIP 2025-26\n\nAIRLINES\n\nProfitability | PwC US | Buddy Round | Easy\n\nKONSULT GROUP\n\nOur client is an international airline operator facing significant margin erosion form the last 5 years. Figure out the root cause behind this problem.\n\nUnderstood. I would like to start by asking is this a company-specific issue, or are margins falling across the entire industry?\n\nThe issue is specific to the client. Competitors with similar market share are performing better.\n\nGot it. Where does the client operate and what’s the market share captured by the client?\n\nThe client operates only in the US, and the market is dominated by 3 players, each holding roughly equal market share.\n\nUnderstood. Since this is client-specific, I’ll focus on the internal factors and look at both sides of the profit equation - costs and revenues. Do I need to specifically analyze one aspect?\n\nAnalyze both aspects.\n\nAlright. Beginning with the cost side, I’d like to look at the client’s cost structure across its primary and secondary value chain to see where inefficiencies might have built up.\n\nGo ahead. Focus only on the primary activities of the business.\n\nOkay. In inbound activities, things like inefficient scheduling and refueling costs could be contributing factors.\n\nIn operations, aircraft operations and maintenance issues may be adding indirect costs.\n\nFor outbound processes, baggage system and rental facilities may be adding to the expenses.\n\nMarketing costs may also have increased if the company is relying heavily on discounts and campaigns to attract consumers.\n\nAnd in after-sales, larger support teams and rising backend technology expenses could have pushed up fixed expenses.\n\nThat’s a fair spread, but focus on maintenance costs for now - that’s where we’re seeing the sharpest increase in the primary chain.\n\nUnderstood. Maintenance seems to be the main cost driver. The issue likely stems from three angles -"
+      }
+    },
+    {
+      "id": "q022",
+      "feature": "role",
+      "covered": true,
+      "question": "What is the typical career progression in management consulting from entry level to partner?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q023",
+      "feature": "company",
+      "covered": true,
+      "question": "What are the four key service areas of management consulting?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q024",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "What is the difference between top-down and bottom-up approaches in guesstimates?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt directly defines both top-down and bottom-up approaches with clear explanations and examples for each, perfectly answering the difference between them."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: population"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7481147716698796,
+        "content": "## FRAMEWORKS\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 7,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"FRAMEWORKS\",\n    \"children\": [\n      {\n        \"label\": \"TOP DOWN APPROACH\",\n        \"children\": [\n          {\n            \"label\": \"Start with a high-level estimate and break it down into smaller components. Example: Estimating the total revenue of the coffee industry by starting with global coffee consumption and working down to per-cup pricing.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"BOTTOM UP APPROACH\",\n        \"children\": [\n          {\n            \"label\": \"Start with small, measurable components and aggregate them to form a larger estimate. Example: Estimating the total number of cars in a city by calculating the number of cars per household and multiplying by the number of households.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"PARETO PRINCIPLE\",\n        \"children\": [\n          {\n            \"label\": \"The 80/20 rule states that 20% of activities drive 80% of results, enabling efficient estimation with accuracy. Example: In a city's restaurant revenue, 80% likely comes from the top 20% of restaurants, as suggested by the Pareto Principle.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"MECE\",\n        \"children\": [\n          {\n            \"label\": \"A method for breaking down problems into mutually exclusive, collectively exhaustive categories to ensure completeness and prevent overlap. Example: Estimating the effectiveness of marketing campaigns as total impressions × conversion rate.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"UNIT ECONOMICS\",\n        \"children\": [\n          {\n            \"label\": \"Break down the problem into individual units (e.g., per customer, per product) and scale up. Example: Estimating the total cost of running a delivery service by calculating the cost per delivery and multiplying by the number of deliveries.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"EXTRAPOLATION\",\n        \"children\": [\n          {\n            \"label\": \"Use existing data trends to project future estimates, when variable grow at a percentage rate. Formula: Y = Y’ × (1 + r)^t Y = Estimated future value, Y’ = Current known value, r = Growth rate, t = time period\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: Frameworks for estimation and problem solving, categorized into top down approach, bottom up approach, pareto principle, MECE, unit economics, and extrapolation.\n\n3"
+      }
+    },
+    {
+      "id": "q025",
+      "feature": "qa",
+      "covered": true,
+      "question": "What are the fixed and variable cost categories in a profitability analysis?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly lists both variable costs (raw material, cooking, servicing, billing) and fixed costs (rent, utilities, salaries) as part of a cost analysis in a profitability case."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: raw materials"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7248800051398704,
+        "content": "## SOLUTION\n\n```placewise-diagram\n{\n  \"type\": \"flow\",\n  \"title\": null,\n  \"source_page\": 58,\n  \"notes\": [],\n  \"nodes\": [\n    {\n      \"id\": \"a\",\n      \"label\": \"That’s right. The number of couples/smaller groups has declined sharply.\"\n    },\n    {\n      \"id\": \"b\",\n      \"label\": \"I think we have arrived at the root-cause for the revenue decline\"\n    },\n    {\n      \"id\": \"c\",\n      \"label\": \"Yes, Let’s analyse costs next.\"\n    },\n    {\n      \"id\": \"d\",\n      \"label\": \"Costs can be divided into the following:\\nVariable costs:\\n• Raw material costs\\n• Cooking costs\\n• Servicing costs\\n• Billing costs\\nFixed costs:\\n• Rent\\n• Utilities\\n• Salaries\\nDo we have any information on what has increased?\"\n    },\n    {\n      \"id\": \"e\",\n      \"label\": \"The raw material costs have increased.\"\n    },\n    {\n      \"id\": \"f\",\n      \"label\": \"Despite a lower raw material consumption, our costs have increased. Have we changed the supplier? What is our arrangement with the supplier?\"\n    },\n    {\n      \"id\": \"g\",\n      \"label\": \"No, we haven’t changed the supplier. Our supplier provides all raw material every morning. He offers additional discount for larger orders.\"\n    },\n    {\n      \"id\": \"h\",\n      \"label\": \"Alright. Since our orders would have become smaller due to falling demand, the discounts would have reduced. Hence higher costs. Is it the reason?\"\n    },\n    {\n      \"id\": \"i\",\n      \"label\": \"Right. We can close the case here.\"\n    }\n  ],\n  \"edges\": [\n    {\n      \"from\": \"a\",\n      \"to\": \"b\",\n      \"label\": null\n    },\n    {\n      \"from\": \"b\",\n      \"to\": \"c\",\n      \"label\": null\n    },\n    {\n      \"from\": \"c\",\n      \"to\": \"d\",\n      \"label\": null\n    },\n    {\n      \"from\": \"d\",\n      \"to\": \"e\",\n      \"label\": null\n    },\n    {\n      \"from\": \"e\",\n      \"to\": \"f\",\n      \"label\": null\n    },\n    {\n      \"from\": \"f\",\n      \"to\": \"g\",\n      \"label\": null\n    },\n    {\n      \"from\": \"g\",\n      \"to\": \"h\",\n      \"label\": null\n    },\n    {\n      \"from\": \"h\",\n      \"to\": \"i\",\n      \"label\": null\n    }\n  ]\n}\n```\nDiagram summary: A sequential dialogue flow traces the analysis from declining customer groups to revenue decline, cost breakdown, raw material cost increases, and supplier discount analysis to conclude the case.\n\n58\n\nProfitability | Hospitality | Easy"
+      }
+    },
+    {
+      "id": "q026",
+      "feature": "qa",
+      "covered": true,
+      "question": "How do you solve an airline profitability case where margins have been eroding due to maintenance issues?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt directly addresses how to approach an airline profitability case driven by maintenance issues by breaking down the impact on both costs and revenues and identifying internal solutions."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: value chain"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.8434132287697084,
+        "content": "# CASE SUMMARY:\n\nThe airline’s margin erosion is driven by maintenance inefficiency that\naffects both cost and demand.\n- Costs: Higher due to frequent repairs and low technical capability.\n- Revenues: Lower due to fewer flights, weaker reliability, and declining\ncustomer preference.\nIt’s an internal, fixable issue - improving fleet management and reliability\ncan help margins recover."
+      }
+    },
+    {
+      "id": "q027",
+      "feature": "qa",
+      "covered": true,
+      "question": "What is the 4M Framework used for root cause analysis in operations?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly defines the 4M Framework, its purpose in root cause analysis for establishing cause-effect relationships and process variation, and introduces its components."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.6969602376151106,
+        "content": "# Commonly Used Frameworks (4/7)\n\n```placewise-diagram\n{\"type\": \"other\", \"title\": \"7S Framework\", \"source_page\": 16, \"notes\": [\"Used to analyze and improve organizational effectiveness\"], \"labels\": [\"Shared Values\", \"Style\", \"Leadership & Management style used\", \"Skills\", \"Employee capabilities\", \"System\", \"Daily activities and process\", \"Structure\", \"Organization of the company\", \"Staff\", \"Hired employees of the company\", \"Strategy\", \"Plan to grow and outcompete competitors\", \"Core beliefs, values, & mission\"]}\n```\nDiagram summary: The 7S Framework consists of Shared Values, Style, Skills, System, Structure, Staff, and Strategy, each connected to specific organizational descriptions.\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": \"AMO Framework\", \"source_page\": 16, \"notes\": [\"Used to assess employee productivity due to HR practices\"], \"root\": {\"label\": \"AMO Framework\", \"children\": [{\"label\": \"Ability\", \"children\": [{\"label\": \"Selective recruitment, hire able & qualified employees, training and development\", \"children\": []}]}, {\"label\": \"Motivation\", \"children\": [{\"label\": \"Compensation, work life balance, performance-based incentives, clarity of goals, conflict mgt.\", \"children\": []}]}, {\"label\": \"Opportunity\", \"children\": [{\"label\": \"Career planning, high performing work culture, recognition, fair appraisal\", \"children\": []}]}]}}\n```\nDiagram summary: The AMO Framework breaks down employee productivity into Ability, Motivation, and Opportunity with corresponding HR practices.\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": \"4M Framework\", \"source_page\": 16, \"notes\": [\"Establish cause-effect relationship and root cause of process variation\"], \"nodes\": [{\"id\": \"man\", \"label\": \"Man\"}, {\"id\": \"man_desc\", \"label\": \"Human-related factors—skills, training, productivity, availability, and workforce efficiency\"}, {\"id\": \"machine\", \"label\": \"Machine\"}, {\"id\": \"machine_desc\", \"label\": \"Equipment and tech includes availability, reliability, capacity, maintenance and automation level\"}, {\"id\": \"material\", \"label\": \"Material\"}, {\"id\": \"material_desc\", \"label\": \"Input resources incl. quality, availability, lead times, sourcing reliability and inventory management\"}, {\"id\": \"method\", \"label\": \"Method\"}, {\"id\": \"method_desc\", \"label\": \"Processes and workflows includes SOPs, efficiency, compliance and best practice adherence\"}], \"edges\": [{\"from\": \"man\", \"to\": \"man_desc\", \"label\": null}, {\"from\": \"machine\", \"to\": \"machine_desc\", \"label\": null}, {\"from\": \"material\", \"to\": \"material_desc\", \"label\": null}, {\"from\": \"method\", \"to\": \"method_desc\", \"label\": null}]}\n```\nDiagram summary: The 4M Framework connects Man, Machine, Material, and Method to their respective factor descriptions to establish cause-effect relationships.\n\nICON, IIM Bangalore | 2025-26 16\n\nContents"
+      }
+    },
+    {
+      "id": "q028",
+      "feature": "qa",
+      "covered": false,
+      "question": "Walk me through how to estimate the daily revenue of Delhi Metro.",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7743983094013502,
+        "content": "### Methodology\n* We will use a bottom up approach to find the number of passengers/coach and extrapolate it to find no. of passengers/day.\n* No. of passengers per day = #. of passengers/hr * Hours of operations/ day\n* No. of passengers per hour= # of metro trains/ hr * no. of coaches * capacity/coach* % occupancy\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 117, \"notes\": [], \"root\": {\"label\": \"No. of passengers\", \"children\": [{\"label\": \"Weekday\", \"children\": [{\"label\": \"High occupancy hours (6hrs)\", \"children\": [{\"label\": \"Occupancy %: 150 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 1\", \"children\": []}, {\"label\": \"# of passengers: 60*50*6*1.5 =27K\", \"children\": []}]}, {\"label\": \"Med occupancy hours(7hrs)\", \"children\": [{\"label\": \"Occupancy %: 100 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 2/3\", \"children\": []}, {\"label\": \"# of passengers: 40*50*7*1 =14K\", \"children\": []}]}, {\"label\": \"Low occupancy hours(5hrs)\", \"children\": [{\"label\": \"Occupancy %: 40 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 1/2\", \"children\": []}, {\"label\": \"# of passengers: 30*50*5*0.4 =3K\", \"children\": []}]}]}, {\"label\": \"Weekend\", \"children\": [{\"label\": \"High occupancy hours(3hrs)\", \"children\": [{\"label\": \"Occupancy %: 120 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 1\", \"children\": []}, {\"label\": \"# of passengers: 60*50*3*1.2 =10.8K\", \"children\": []}]}, {\"label\": \"Med occupancy hours (7hrs)\", \"children\": [{\"label\": \"Occupancy %: 90 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 2/3\", \"children\": []}, {\"label\": \"# of passengers: 40*50*7*0.9 =12.6K\", \"children\": []}]}, {\"label\": \"Low occupancy hours (8hrs)\", \"children\": [{\"label\": \"Occupancy %: 30 %\", \"children\": []}, {\"label\": \"Frequency of trains / min: 1/2\", \"children\": []}, {\"label\": \"# of passengers: 30*50*8*0.3 =3.6K\", \"children\": []}]}]}]}}\n```\nDiagram summary: An issue tree breaking down Delhi Metro passengers by weekday and weekend, further divided by occupancy hours, occupancy percentage, train frequency, and resulting passenger counts."
+      }
+    },
+    {
+      "id": "q029",
+      "feature": "qa",
+      "covered": true,
+      "question": "What does the ISB casebook describe as the 4Ss framework for case solving?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly defines the 4Ss framework (Scope, Structure, Solve, Synthesize) as described in the ISB casebook and provides a brief explanation for each component."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the answer."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.8079143211612203,
+        "content": "## How to use these frameworks?\n\nUse these frameworks as a guiding tool for you to create your own notes based on daily practice and keep improving upon them with time. 4Ss are pertinent to every case: **Scope, Structure, Solve, Synthesize**. Frameworks generally form the structure and solving part of any case. Scoping and Synthesis more or less remains the same.\n\n* **Scope:** Scoping a problem statement is clarifying the and then asking relevant questions that will narrow down the scope of the problem statement for you. There are various aspects of scoping but **3CPR** is the most common way of scoping. (Do not spend a lot of time here)\n* **Structure:** Structuring the problem statement by ensuring MECE is very relevant to make sure you are taking the correct approach and the interviewer is following your approach properly. There are many ways to ensure MECE structuring. (Main portion of the case)\n* **Solve:** Solving the problem might mean drilling down to the Root Cause or solving guesstimates. (Make sure you don't make silly mistakes)\n* **Synthesize:** Synthesize does not mean summarize so do not go on summarizing everything. Synthesis should be of 1 minute and crisp and to the point. (You want to ideally cover everything in 3 points taking a top-down approach and **mentioning the hook of the case**)\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers | Click here for Contents Page\n\nISB | Consulting Prep Casebook | 2025 | 31\n\nISB | Consulting Prep Casebook 2025\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page Click here for Contents Page\n\n32\n\nSource: Being Consultant"
+      }
+    },
+    {
+      "id": "q030",
+      "feature": "qa",
+      "covered": false,
+      "question": "How should I prepare for a McKinsey PEI (Personal Experience Interview)?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q031",
+      "feature": "qa",
+      "covered": false,
+      "question": "What is the Victor Cheng LOMS framework for case interviews?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q032",
+      "feature": "frameworks",
+      "covered": false,
+      "question": "Explain the RICE prioritization framework used by product managers.",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q033",
+      "feature": "qa",
+      "covered": false,
+      "question": "What is the typical day-in-the-life of a first-year consultant at Bain?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7258387331899363,
+        "content": "## A Day in Consulting\n\n- *Check emails* – respond to urgent requests, plan\n- *Team sync* – align on goals, priorities, and blockers\n- *Client call* – discuss progress, validate hypotheses\n- *Individual work* – build slides, analyze data, refine story\n- *Manager/Partner check-in* – review, iterate\n- *Brainstorm* – whiteboard steps, draft recommendations\n- *Refine* – polish for client, align story with insights\n- *Prep* – for next day/client review\n\n*Each day in consulting is different – the challenge is to balance problem-solving and adaptability*"
+      }
+    },
+    {
+      "id": "q034",
+      "feature": "company",
+      "covered": false,
+      "question": "What are the differences between McKinsey, BCG, and Bain interview formats?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q035",
+      "feature": "qa",
+      "covered": false,
+      "question": "How do you prepare for a stress interview at a consulting firm?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.6991811670947751,
+        "content": "## Tips for Future Candidates\n\n* It's good to have some hook in the HR answers to build better rapport with the interviewer. Just stay calm and think rationally. Don’t get intimidated by the interviewer, he/she is there to help solve the case with you. ]\n* Please get good sleep the night before the interview."
+      }
+    },
+    {
+      "id": "q036",
+      "feature": "frameworks",
+      "covered": false,
+      "question": "Explain the Jobs-to-be-Done framework and how it applies to product strategy.",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q037",
+      "feature": "guesstimates",
+      "covered": false,
+      "question": "How would you estimate the number of Uber rides in New York City per day?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.6776330648916269,
+        "content": "# DEMAND SIDE APPROACH\n\nAPPROACH\n\nBreak down demand by identifying the target population, usage frequency, and average consumption.\n\nWHEN TO USE?\n\nWhen estimating market size, revenue, or consumption patterns.\n\nEXAMPLES\n\n* Market Size for Sanitary Pads in India\n* Estimate daily metro passengers in Delhi."
+      }
+    },
+    {
+      "id": "q038",
+      "feature": "qa",
+      "covered": false,
+      "question": "What are the key differences between consulting and investment banking as career paths?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q039",
+      "feature": "qa",
+      "covered": false,
+      "question": "How do you solve a private equity due diligence case?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but R8 (rendering the structured diagram block by page) hasn't landed - nothing to check yet."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7747171147728282,
+        "content": "# Due Diligence - Case Structure\n\nYour client is a PE Firm. It wants to take up a stake in a chain of restaurants. Diagnose and recommend if they should acquire.\n\n| Qualitative Information | Case Framework | Quantitative Data & Analysis |\n| :--- | :--- | :--- |\n| **Case background:**<br><br>The client specifically looking to invest in a restaurant chain<br><br>**Case facts:**<br><br>•Investment fund – 30% growth rate in 4-5 years<br><br>•Explore viability by estimating revenues (demand side, supply side)<br><br>• Identify risks associated with the investment<br><br>• Explore potential due diligence steps | | Population of Delhi = 20 MN<br>Target customer segment (20-50 years) = 50%<br>Middle and higher income segment = 60%<br>Population employed in service sector = 70%<br>Potential market =<br><br>50%*60%*70%<br>= 21% (~20%) of population<br><br>Visit frequency = 20%*10 + 40%*5 + 40%*1 = 4.4 visits/month<br><br>Total market potential = 250*4.4*(20%*20 MN) = 2,640 MN/month = INR 2.6 bn/month<br><br>Italian/Spanish cuisine = 2-3% of market potential = INR 66 MN/month |\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 58, \"notes\": [], \"root\": {\"label\": \"Revenue\", \"children\": [{\"label\": \"Supply Side\", \"children\": [{\"label\": \"No. of cities\", \"children\": []}, {\"label\": \"Restaurant/city\", \"children\": []}, {\"label\": \"Growth rate\", \"children\": []}]}, {\"label\": \"Demand Side\", \"children\": [{\"label\": \"Price per meal\", \"children\": []}, {\"label\": \"Potential Market\", \"children\": []}, {\"label\": \"Visit Frequency\", \"children\": []}]}]}}\n```\nDiagram summary: Revenue breaks down into supply side (no. of cities, restaurant/city, and growth rate) and demand side (price per meal, potential market, and visit frequency).\n\n| Problems and recommendations | Interviewee feedback |\n| :--- | :--- |\n| Identified the valuation of the company using Supply and Demand approaches. Identify indirect competition while exploring risks associated with the investment by specifically looking at long term and short term consumer behaviour. Always remember the original motive of the client (in this case, 30% growth rate) while identifying risks, synergies and different levers for Due diligence. | The case had a wide number of things that could be analysed; key was in understanding the interviewer’s questions one at a time and focusing on the available information for that question. |\n\nThe Consulting and Strategy Club, IIM Lucknow\nGo to index | 58"
+      }
+    }
+  ]
+}

@@ -5,6 +5,609 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Relevance-gate judge made deterministic (temperature 0), partial fix
+**Phase:** (none — fix for the non-determinism flagged in today's R7 entry) · **Type:** retrieval, fix
+
+**What changed:** `generateText`/`generateJSON` (`gemini.js`) hardcoded `temperature: 0.4`
+with no way to override it. Added a `temperature` parameter (default 0.4, so every other
+caller is unaffected) and passed `temperature: 0` from all three judge call sites: the live
+relevance gate (`consultingRetrieval.js`'s `judgeRelevance`) and both eval judges
+(`run_eval.js`, `run_eval_v2_preview.js`).
+
+**Verified, not assumed - this only partially fixes the problem.** Isolated the judge call
+on a fixed, clearly-wrong excerpt (the Ola/Uber-Delhi one that caused q037's first flip):
+6/6 identical "unfaithful" verdicts at temperature 0, vs. flaky before. Confirmed `embedTexts`
+is already fully deterministic (identical to 6 decimal places across 4 calls), so retrieval
+ranking itself isn't the source of flakiness. But rerunning the full `run_eval_v2_preview.js`
+three more times after the fix, q037 ("Uber rides in NYC") still flipped twice
+(fail/pass/fail) - tracing why: it's not the same excerpt flip-flopping. A **different**
+candidate - a generic "Demand Side Approach" methodology page (similarity 0.678, examples
+about sanitary pads and Delhi metro, not Uber or NYC) - is a genuinely more borderline case
+for the judge than the obviously-wrong Delhi excerpt, because it IS a legitimate guesstimate-
+methodology page that could superficially apply to *any* guesstimate question. That specific
+judgment remains inconsistent even at temperature 0 - real residual model uncertainty on a
+genuinely close call, not pure API-level randomness.
+
+**Honest state:** temperature 0 fixed the clear-cut cases (confirmed deterministic now); it
+did not fully fix genuinely borderline ones. This gate should be treated as "probably right,
+not provably right" until there's a second, independent check (e.g. a stricter prompt
+specifically for generic-methodology-page false positives) - not something to rely on alone
+at R9 scale without re-testing.
+
+**Files:** `backend/src/lib/gemini.js`, `backend/src/lib/consultingRetrieval.js`,
+`backend/eval/run_eval.js`, `backend/eval/run_eval_v2_preview.js`.
+**Proof:** Isolated judge-determinism test (6/6 stable) and embedding-determinism test
+(4/4 identical) above; 3 full eval reruns post-fix still showing q037 flip twice.
+**Undo:** Revert the `temperature` parameter additions; defaults preserve prior behavior
+everywhere else.
+**Open issues:** The generic-methodology-page false-positive class isn't fixed - noted for
+whoever next tunes the relevance gate's prompt.
+
+---
+
+## 2026-11-02 — Stopgap review export (R5 isn't built yet)
+**Phase:** (none — stopgap for R5) · **Type:** ingestion
+
+**What changed:** Aalhad asked exactly where the file is for him to manually review flagged
+pages. Honest answer: no such file exists — that's what R5 (admin review queue) is supposed
+to build, and R5 hasn't been built yet (it's the ▶ task). Rather than leave him with nothing,
+wrote `backend/ingestion/export_review_queue.py` - a read-only script (doesn't touch
+`needs_review`/`is_active` on any row) that exports every flagged page across all 9 Consulting
+`ingest_documents` into one CSV: casebook, page number, review reasons, coverage numbers,
+diagram count, and a markdown excerpt (truncated at 3000 chars).
+
+**Output:** `backend/ingestion/out/r6_review_queue.csv` (1,191 flagged pages total, gitignored
+per the existing `backend/ingestion/out/` rule - same as every other local review JSON this
+project has produced). Per casebook: FMS 2021-22 (92), ISB (75), IIM B (211), IIMK (160), SRCC
+(42), IIM L (160), IIM Calcutta (117), IIMA (161), FMS 2023-24 (173).
+
+**Files:** `backend/ingestion/export_review_queue.py` (tracked); the CSV itself is not
+tracked (gitignored).
+**Proof:** Script output above.
+**Open issues:** This is a stopgap, not R5. It has no approve/fix workflow - just a flat list
+for Aalhad to read. R5 (actual admin queue + endpoint) is still the real next step.
+
+---
+
+## 2026-11-02 — R7 closed out: free-form Q&A grounding built
+**Phase:** R7 · **Type:** backend, retrieval
+
+**What changed:** R7's roadmap scope was "Frameworks, Guesstimates, Q&A" — Frameworks and
+Guesstimates were already done; Q&A was the one piece still missing (confirmed by reading
+every route - `chat.js` is a plain ungrounded Gemini passthrough with no casebook lookup at
+all). Built it the same way Guesstimates was built on top of `groundedConsultingLookup`:
+- `backend/src/lib/qaRetrieval.js` (new): `groundedQaAnswer(question)` - retrieves via
+  `groundedConsultingLookup` (which already applies the similarity threshold and the
+  relevance gate added earlier today), then generates either a casebook-only answer
+  (system prompt forbids adding outside facts) or a general one, never both blended
+  (grounding policy, CLAUDE.md). `buildGroundedQaPrompt` is the pure, unit-tested piece.
+- `backend/src/routes/qa.js` (new): `POST /api/qa/ask { question }`, gated behind
+  `ENABLE_CONSULTING_RAG_V2` (off by default, same posture as every other R7 switch),
+  `requireAuth` + `aiLimiter` same as `chat.js`.
+- Registered in `server.js`. No frontend page yet - that's R8's job (same split as
+  Guesstimates: R7 built the backend + route, R8 will build the UI), not blocking this.
+- `backend/test/qaRetrieval.test.js` (new, 3 tests, pure logic only - no network).
+
+**Verification:** `npm test`: 114/115 pass (the 1 failure is the pre-existing, unrelated
+macOS `sandbox.test.js` env-leakage quirk). Server boots clean with the route registered
+(`node -e "import('./src/server.js')"`, confirmed no startup error).
+
+**Eval impact (ad-hoc, not a formal re-run):** added `qa` questions to
+`run_eval_v2_preview.js`'s scoring (previously only `frameworks`/`guesstimates` had any code
+path to test). Overall preview score: **20/39 (51%)**, up from 13/39. `qa`: 7/14 pass now
+(was 0/14 - structurally impossible before, since there was no code path at all).
+
+**Found while rerunning, not swept under the rug: the relevance gate isn't perfectly
+deterministic.** q037 ("Uber rides in NYC", a known trap question) was correctly rejected in
+the last two runs but came back as a false positive this run — same gate, same excerpts,
+different outcome. Traced to `generateText`'s fixed `temperature: 0.4` on the judge call
+(`gemini.js`) - the judge is a probabilistic LLM call, not a deterministic function, so it
+can occasionally flip on a borderline case. Not fixed here (out of scope for this task); worth
+considering `temperature: 0` for judge/gate calls specifically before relying on this gate at
+R9 scale.
+
+**Files:** `backend/src/lib/qaRetrieval.js`, `backend/src/routes/qa.js`,
+`backend/test/qaRetrieval.test.js`, `backend/src/server.js`,
+`backend/eval/run_eval_v2_preview.js`, `backend/eval/results/2026-11-02-v2-preview.json`/`.md`
+(overwritten), `.gsd/ROADMAP.md`.
+**Proof:** `npm test` output; server boot check; eval script output above.
+**Undo:** Revert the files listed; remove the `app.use("/api/qa", qaRouter)` line and its
+import from `server.js`.
+**Open issues:** No frontend entry point yet (R8). Judge non-determinism noted above, not
+fixed. R5 (admin review queue) is still the real blocker before any switch-over consideration.
+
+---
+
+## 2026-11-02 — v2 preview rerun: correctness-only scoring, no source attribution, R6 stopped at 7/9
+**Phase:** (none — informational probe) · **Type:** eval, policy
+
+**Two decisions from Aalhad, both applied:**
+1. **Stop R6 ingestion at the current 7 casebooks** ("we have enough data for consulting
+   now") — `FMS Consulting Club 2025-26` and `FMS 2024-25` will not be ingested.
+   `.gsd/ROADMAP.md`'s R6 row marked `done (2026-11-02)`, explicitly noting this is a
+   deliberate stop at 7/9, not an oversight.
+2. **Stop scoring/showing which casebook an answer came from, in this eval.** The prior
+   v2-preview run showed several questions failing their strict source-match check while
+   still getting a correct, faithful answer from a different valid casebook (e.g. MECE from
+   FMS 2023-24 instead of FMS 2021-22) — Aalhad decided this eval should only score whether
+   the answer is actually correct, not which book it cites. Dropped the `retrieval_hit` and
+   `citations` checks from `run_eval_v2_preview.js` entirely; `expected_source`/
+   `expected_pages` are no longer read from `questions.jsonl` for scoring. No casebook name,
+   page number, or source file appears in the console output or the `.md` report; the raw
+   `.json` keeps only `similarity`, nothing source-identifying, for future debugging.
+
+**Also fixed a real scoring bug found while rerunning**: for a `covered:false` question that
+was correctly rejected (all candidates judged off-topic), `faithfulness` was being marked
+`fail` even though rejecting them was the *correct* outcome — dragging a genuine success down
+to an overall "fail". `coverage_label` alone already captures correctness for a not-covered
+question; `faithfulness` is now `n/a` for those, not a second penalty for the same thing done
+right.
+
+**Result: 13/39 (33%)**, up from the 5/39 the strict-source-match version scored and the 8/39
+the original narrow-pool version scored - this number is the most honest one yet, since it no
+longer penalizes "right answer, different valid casebook" and no longer double-penalizes a
+correctly-rejected question. The 4 known trap questions (RICE, Jobs-to-be-Done, tennis balls,
+Uber-NYC) now correctly show as passes - the relevance gate still holds across the full
+9-casebook pool. Remaining real gaps: q004 (price discrimination genuinely not well answered
+by any candidate), and 7 must_include phrasing misses (q006, q009, q013, q014, q016, q019,
+q024 - correct, faithful answers missing one specific required phrase, not wrong answers).
+`qa`/`role`/`company` (18/39) remain unscored - no grounded route exists for them in either
+pipeline, unchanged finding from every prior run.
+
+**Cost:** 21 embedding + 140 judge calls, negligible.
+**Files:** `backend/eval/run_eval_v2_preview.js`, `backend/eval/results/2026-11-02-v2-preview.json`/`.md` (overwritten), `.gsd/ROADMAP.md`.
+**Proof:** Script output above; full per-question detail in the `.md` file (no source info present, confirmed by reading it).
+**Undo:** `git diff`/revert; prior runs' numbers are preserved in this file's git history.
+
+---
+
+## 2026-11-02 — R6: IIMA Consult Prep Book Case Book 2025-26 ingested, 1-page network-failure patch, needs_review rate traced
+**Phase:** R6 · **Type:** ingestion, fix
+
+**Ingested:** IIMA-Consult-Prep-Book-Case-Book-2025-26.pdf (389 pages), insert-only,
+`is_active=false`. Classification already confirmed `club_casebook` (school IIM Ahmedabad) in
+the batch check logged 2026-10-31. v1 first attempt hit Gemini's prepayment credits being
+depleted (402 `RESOURCE_EXHAUSTED`) partway through embedding — no partial document was
+written (the whole insert is one `write_version` call, not row-by-row), so this cost nothing
+beyond the vision calls already spent; Aalhad topped up credits and the rerun completed
+clean: v1 (`54ece01c-c876-4533-82c6-bd91fabfb983`), 389 pages, 824 chunks, 502 vision + 825
+embedding calls. One page (138) failed v1 with a transient `ReadTimeout`, correctly stored
+`[UNREADABLE]` and flagged `needs_review`.
+
+**v1 → v2 patch:** retried page 138 (`run_r6_iima_patch.py`, same reuse-unless-patched
+pattern as every other R6 patch), succeeded cleanly first try — `number_coverage=1.0`,
+`word_coverage=1.0`, still `needs_review` for unrelated reasons (`seq_diff`,
+`diagram_missing_box`). v2 (`09c41590-6f53-40be-a19c-60fa645610f4`), 389 pages, 825 chunks,
+`status=done`.
+
+**Investigated: 161 of 389 pages (41.4%) flagged `needs_review`** — same range as IIMK
+(40.6%)/IIM Calcutta (25.6%), not an outlier. Reason breakdown: `seq_diff` (107, by far the
+largest), `diagram_structure` (23), `diagram_missing_box` (23), `number_coverage` (22),
+`word_coverage` (19), `diagram_invalid` (15), `unreadable` (11), `diagram_label_altered` (10),
+`diagram_label` (5), `ragged_table` (4), `diagram_flattened` (3), `invented_text` (2),
+`vision_failed` (1), `diagram_other` (1).
+- **`seq_diff` (107 pages)** — same page-template pattern as every prior R6 casebook: a
+  footer copyright line ("© Consult Club, IIM Ahmedabad 2025-26 N"), a stylized "FRAMEWORK"/
+  "INDEX" header that sometimes duplicates as letter-spaced text ("F R A M E W O R K"), and a
+  case-tag line ("Profitability | Logistics | Moderate") — all vary per page (page number,
+  case type/difficulty) so they dodge the exact-boilerplate filter. Confirmed on 8 sampled
+  pages (1, 3, 4, 5, 8, 49, 80, 160): every op traces to this template pattern, not a real
+  content difference.
+- **`unreadable` (11 pages) / `vision_failed` (1)** — the 1 genuine network failure (patched
+  above) plus 9 pages where the tag correctly marks a logo-only "Key players" table cell that
+  has no selectable text (e.g. p328, p334, p342, p354, p374, p376 — same accepted false-
+  positive class as every prior casebook's "Major Players"/branding stamps), and one genuine
+  content gap in running prose (p243, mid-sentence) left as `[UNREADABLE]` rather than
+  invented, correctly flagged.
+- **p104 is a real (not false-positive) defect**, flagged `diagram_invalid`: its second
+  diagram block is empty/malformed (`invalid JSON: Expecting value: line 1 column 1`) — a
+  genuine vision-generation gap, not a checker false positive. Correctly caught by `needs_review`,
+  left for the review queue (R5) rather than silently dropped or guessed at here.
+- **Diagram-structure flags (`diagram_structure`/`diagram_missing_box`, 46 pages)** — not
+  individually sampled this run given time, but consistent in count/shape with prior
+  casebooks' dashboard/multi-panel page pattern; flagged for review, not fixed here.
+
+**No genuine invented/hallucinated content found in any page checked.** Same conclusion as
+every prior R6 casebook: a checker false-positive pattern driven by this casebook's own page
+template, plus one real (correctly-caught) generation defect on p104.
+
+**Proof:** `document_chunks` (live) unchanged at 22,457 rows.
+**Cost:** v1: 502 vision + 825 embedding calls (one extra API-budget-depleted attempt before
+the topped-up rerun, cost already sunk in vision calls only — no embeddings/writes from that
+attempt). Patch: 2 vision + 826 embedding calls. Still well inside the $20/month budget.
+**Left open in R6:** FMS Consulting Club 2025-26 (~325p), FMS 2024-25 (~279p) — ~604 pages,
+not started.
+**Files:** `backend/ingestion/run_r6_iima.py`, `backend/ingestion/run_r6_iima_patch.py` (both
+now tracked — were untracked/didn't exist at session start).
+
+---
+
+## 2026-11-02 — v2 preview rerun: widened to all 9 ingested casebooks + the new relevance gate
+**Phase:** (none — informational probe, follow-up to the earlier v2-preview entry) · **Type:** eval
+
+**What changed:** Aalhad asked to test the 39 questions against everything ingested so far,
+not just the 5 the question set names. Widened `run_eval_v2_preview.js`'s `DOC_IDS` from 5 to
+all 9 Consulting casebooks R6 has done (adds IIM L, IIM Calcutta, IIMA, FMS 2023-24 to the
+candidate pool — 3,883 chunks total now, up from 1,334). Also updated the scoring to mirror
+the relevance gate just added to `groundedConsultingLookup` (today's earlier entry): a row now
+has to clear similarity **and** the relevance judge to count as covered, run across every
+candidate above threshold (not just the top one), same as the live function now does.
+
+**Result: 5/39 (13%), down from the 8/39 the narrower pool scored.** This is not a quality
+regression — it's an honest side effect of a bigger, genuinely useful pool, confirmed by
+reading every failing case rather than just the number:
+
+- **The relevance gate holds up at scale.** All 4 known false positives (RICE, Jobs-to-be-
+  Done, tennis balls, Uber-NYC) are still correctly rejected, even with 8-9 candidate rows
+  per question above threshold now instead of 1-2 — the gate checked every one of them and
+  rejected every one, same conclusion as the narrower-pool run.
+- **The score drop is entirely the "wrong casebook, right answer" pattern getting more
+  common**, exactly as flagged as a risk before running this: q001, q016, q017, q018, q019,
+  q013, q024 all now retrieve a **faithful, correct** excerpt from a *different* casebook than
+  the one the question names (e.g. MECE answered correctly from FMS 2023-24 instead of FMS
+  2021-22; Porter's Five Forces from IIM Calcutta instead of IIM B). `faithfulness`,
+  `citations` and `coverage_label` all pass on these — only the eval's strict single-source
+  `retrieval_hit` check fails them, because multiple casebooks genuinely teach the same
+  universal framework and a bigger pool surfaces more of that competition.
+
+**Implication for the real R9 gate:** as more casebooks get ingested, this eval's strict
+source-match design will keep looking worse even with zero real quality loss, unless
+`retrieval_hit` is redefined to accept any faithful match (not just the one named casebook) -
+an eval-design question to settle before R9, not a retrieval bug to fix now.
+
+**Cost:** 21 embedding + 140 judge calls (up from 21 - now judging every row above threshold,
+not just the top one, across a 3x bigger pool). Still negligible.
+**Files:** `backend/eval/run_eval_v2_preview.js` (updated), `backend/eval/results/2026-11-02-v2-preview.json`/`.md` (overwritten with this rerun).
+**Proof:** Script output above; full per-question detail in the `.md` file.
+**Undo:** `git diff`/revert; the superseded 8/39 run is still in this file's git history.
+
+---
+
+## 2026-11-02 — Relevance gate added to groundedConsultingLookup, fixes the known false-positive class
+**Phase:** (none — fix for a finding from the v2-preview probe) · **Type:** retrieval, fix
+
+**What changed:** The 2026-11-02 v2-preview entry above found 4 real false positives
+(RICE, Jobs-to-be-Done, "tennis balls in a room", "Uber rides in NYC") — unrelated excerpts
+clearing similarity threshold (0.63-0.73) and would've shown as "from the casebooks" with no
+warning. Discussed the fix with Aalhad: tuning the threshold higher was rejected (only 4 known
+examples, risks rejecting real matches). Instead added `judgeRelevance()` to
+`consultingRetrieval.js` — a cheap Gemini call (same prompt/tier as the eval's
+`judgeFaithfulness`) that actually reads the question and excerpt, run on every row that
+clears the similarity threshold, before `groundedConsultingLookup` returns `covered: true`.
+Fails closed (treats a judge error as "not relevant" — showing nothing is always safer than
+showing an unchecked excerpt, per the grounding policy). Kept `decideCoverage` itself pure/
+unit-testable (no I/O) — the judge call sits in `groundedConsultingLookup`, after the
+threshold filter, so it only ever runs on rows that already cleared similarity (cheapest
+check first).
+
+**Verification, not assumed:** didn't need a fresh test run — the v2-preview probe already
+ran this exact judge prompt against these exact excerpts. All 4 false positives already came
+back `unfaithful`; all 8 questions that passed the full preview already came back `faithful`.
+Applying the same judge as a live gate would keep the 8 good ones and filter the 4 bad ones -
+confirmed from existing data, not re-run speculatively.
+
+`npm test`: 111/112 pass (the 1 failure, `sandbox.test.js`'s env-leakage check, is a
+pre-existing macOS `__CF_USER_TEXT_ENCODING` quirk unrelated to this change — confirmed by
+running the suite before touching anything).
+
+**Cost:** +1 cheap Gemini call (flash-lite tier) per covering row per live lookup, going
+forward once this pipeline is switched on. Negligible at current volume.
+**Files:** `backend/src/lib/consultingRetrieval.js`.
+**Proof:** `npm test` output above; v2-preview's existing per-question faithfulness verdicts
+(`backend/eval/results/2026-11-02-v2-preview.json`).
+**Undo:** Revert `consultingRetrieval.js`; `groundedGuesstimateLookup` inherits this
+automatically since it calls `groundedConsultingLookup` underneath, so nothing else to revert.
+**Open issues:** Not live yet (flag off) - will need an actual eval rerun once R9's
+switch-over happens, to catch anything this prompt doesn't.
+
+---
+
+## 2026-11-02 — Policy change: drop per-answer source citation (keep "not covered" label)
+**Phase:** (none — product decision) · **Type:** policy, frontend
+
+**What changed:** Aalhad asked to remove the per-answer "This is from the IIMK casebook"
+style line, since the site already states globally that answers are grounded in the
+casebooks. Confirmed first that this is a genuine policy change, not a styling tweak —
+`CLAUDE.md`'s grounding policy explicitly required per-answer `(school, casebook, page)`
+citations — then updated the policy doc itself (`CLAUDE.md`, `.claude/skills/grounded-
+answering/SKILL.md`) alongside the code, so the written rule and actual behavior don't
+diverge for the next session.
+
+Scoped the change carefully: removed the **source attribution** for grounded answers only.
+Kept the **"not from the casebooks" fallback label** for ungrounded answers untouched —
+that's a different, more fundamental disclosure (the one blend the grounding policy forbids
+outright: passing off general AI content as casebook content), not a citation, and nothing
+in this conversation asked to change it.
+
+`GroundingNote.tsx` (the single component every citation-rendering call site already funneled
+through — `ProbeChat.tsx`, `GuesstimatesPage.tsx`, `RolePage.tsx` x2) now renders nothing when
+`groundedInCasebooks` is true, and only the existing fallback label when false. Removed the
+now-dead `citation`/`citations` props from all 4 call sites, and the now-fully-unused
+`companyNoteCitationsByKey` state + fetch wiring in `RolePage.tsx` (nothing consumed it
+anymore). Citation data (school/casebook/page) is still computed and returned by the API —
+this is a frontend rendering change only, not a retrieval/backend change — so it's still
+available for debugging or a future admin view.
+
+**Why no student impact yet:** this whole R7/R8 frontend is still gated behind
+`ENABLE_CONSULTING_RAG_V2` (off). Good timing to make this call before it ever ships, rather
+than after.
+
+**Verification:** `npx tsc --noEmit` clean, no errors. Removed the now-orphaned
+`.grounding-note-cited`/`-badge`/`-sources` CSS rules (global.css) since nothing renders them
+anymore.
+
+**Files:** `frontend-react/src/components/GroundingNote.tsx`,
+`frontend-react/src/components/ProbeChat.tsx`, `frontend-react/src/pages/GuesstimatesPage.tsx`,
+`frontend-react/src/pages/RolePage.tsx`, `frontend-react/src/styles/global.css`, `CLAUDE.md`,
+`.claude/skills/grounded-answering/SKILL.md`.
+**Proof:** `tsc --noEmit` clean.
+**Undo:** `git diff` the files above / revert this commit.
+**Open issues:** None of this is live yet (flag off) - will carry through to R8/R9 whenever
+the switch-over happens.
+
+---
+
+## 2026-11-02 — Ad-hoc: v2 (not-yet-live) pipeline previewed on the same 39 eval questions
+**Phase:** (none — informational probe, not a roadmap task) · **Type:** eval
+
+**What changed:** Aalhad asked directly whether R4's eval could be run against the new R6
+re-ingested content instead of the old live tables. It can't be done by just setting
+`ENABLE_CONSULTING_RAG_V2=true` and rerunning `run_eval.js` — `match_ingest_chunks`
+(migration_044) hardcodes `where c.is_active = true` in SQL, and every R6 row is still
+`is_active=false` (switch-over is a deliberate, separate R9 decision, untouched here). Built
+`backend/eval/run_eval_v2_preview.js`: a **read-only** script that fetches the still-inactive
+`ingest_chunks` rows for the 5 latest-version casebooks the question set references (FMS
+2021-22, ISB, IIM B, IIMK, SRCC — 1,334 chunks, paginated past PostgREST's 1000-row cap),
+computes cosine similarity locally in JS, and reuses the real `decideCoverage`/`buildCitation`
+pure functions from `consultingRetrieval.js` unmodified. **No row's `is_active` was changed; no
+student-facing behavior changed.**
+
+**Result: 8/39 (21%) overall, up from R4's 0/39.** Only `frameworks` (6/14) and `guesstimates`
+(2/7) have any v2 code path at all — `qa`/`role`/`company` (18/39, 46% of the set) still have
+zero grounded route in either pipeline, unaffected by switch-over. Citations check went from
+0/39 to 21/39 pass — `ingest_chunks` carries real `page_start`/`page_end`, unlike the live
+`document_chunks` table, so this is a genuine structural improvement, not just better content.
+
+**What's still broken, even in the new pipeline:**
+- 4 "wrong casebook" misses (q003, q014, q019, q024) are mostly benign: the retrieved chunk
+  was faithful, on-topic content from a *different* casebook that also covers the same
+  universal framework (e.g. PESTEL retrieved from IIM B instead of FMS 2021-22) — the eval's
+  strict single-source match treats this as a fail, but a student would likely get a correct
+  answer. Noted, not treated as a real defect.
+- q004 (price discrimination) retrieved a heading-only chunk with no body text — a chunking
+  boundary issue worth a look during R6/R7 polish.
+- **4 real false positives on `covered:false` questions (q008, q032, q036, q037)** — RICE,
+  Jobs-to-be-Done, tennis balls, NYC Uber rides — each retrieved an unrelated excerpt at
+  0.67–0.73 similarity, above threshold, that would show as "from the casebook" with no
+  warning. This is the same failure class R4 found in the old pipeline; re-ingesting better
+  content did **not** fix it, because the problem is the similarity threshold alone being an
+  insufficient filter, not the content quality. Worth addressing before R9, independent of
+  R6/R7/R8 progress.
+
+**Cost:** 21 embedding + 21 judge calls, negligible.
+**Files:** `backend/eval/run_eval_v2_preview.js` (new), `backend/eval/results/2026-11-02-v2-preview.json`/`.md`.
+**Proof:** Script output above; `is_active` unchanged (no UPDATE statement anywhere in this script).
+**Undo:** Delete the new files; nothing else to revert.
+**Not a roadmap update:** `.gsd/ROADMAP.md`/`STATE.md` unchanged — this isn't R4 or R9, just an
+early look Aalhad asked for. The real R9 eval (after R7/R8 land and switch-over is deliberately
+flipped) is still the one that counts for the gate.
+
+---
+
+## 2026-11-02 — R4 done: eval runner built, baseline score on live chunks
+**Phase:** R4 · **Type:** eval
+
+**What changed:** Built `backend/eval/run_eval.js` (imports the real lib functions the
+routes use, no HTTP round-trip, no copy) and ran all 39 questions in
+`backend/eval/questions.jsonl` against today's live behavior
+(`ENABLE_CONSULTING_RAG_V2` unset/false - the runner refuses to run if it's `"true"`).
+Scored all 6 checks from the rag-eval skill: retrieval hit, citations, coverage label,
+diagram intact and must-include in code; faithfulness with a cheap Gemini judge
+(flash-lite tier, `generateJSON`'s default cascade, reasoning captured per question).
+
+**Mapping decisions** (each feature's live path was read from the code first, not assumed):
+- `frameworks` (14 q): the v1 path (`frameworksGrounding.js`'s `findGrounding`, called via
+  the exported `withGroundedExamples` - the exact function `routes/frameworks.js` calls) is
+  built for seeded `frameworks` rows, not free text. Mapped each question onto a synthetic,
+  never-persisted row (`{name: question text, domain: question.domain}`) so the real function
+  builds the same query string it would for a real row. `withGroundedExamples` does write
+  back to the `frameworks` table; confirmed live first that an update keyed on a fresh random
+  uuid matches zero rows (table count unchanged at 27) - safe, no row created or touched.
+- `guesstimates` (7 q): `routes/guesstimates.js` returns `{available:false,
+  reason:"feature_disabled"}` unconditionally while the flag is off. Recorded that fact
+  directly rather than calling `guesstimateRetrieval.js`'s lib functions, which would bypass
+  the route's gate and fabricate a result no student can get today.
+- `qa` / `role` / `company` (18 q): no grounded retrieval route exists for these at all -
+  `chat.js` is an ungrounded Gemini passthrough with no casebook lookup. Recorded as
+  `no_rag_route` with every check failed, rather than routing through `chat.js` (tests "does
+  Gemini know things", not RAG) or through `groundedConsultingLookup` (the new, flag-gated
+  v2 pipeline, not live).
+
+**Score: 0/39 (0%) pass overall.** Per-check: retrieval_hit 4/37 (11%), faithfulness 5/39
+(13%), citations 0/39 (0%), coverage_label 12/39 (31%), diagram_intact 0/25 (0%, 14 n/a),
+must_include 5/37 (14%). Per-feature: frameworks 0/14, guesstimates 0/7, qa 0/14, role 0/2,
+company 0/2.
+
+**What the baseline actually shows, beyond the expected "most content isn't live yet":**
+1. **`document_chunks` is not empty for Consulting** - correcting an assumption from this
+   session's earlier briefing. The `.pdf`-named rows from the R6 re-ingestion are 0% active
+   (as already found), but an **older pipeline's `.txt`-named rows are fully active** (e.g.
+   `The FMS Consulting Casebook 2021-22.txt` 54/54, `ISB Consulting Casebook 2025.txt`
+   98/98, `IIM B Consulting Casebook 2025.txt` 84/84, `IIMK Kasebook 2025.txt` 65/65,
+   `IIM Calcutta Consulting CaseBook 2025-26.txt` 72/72, plus `FMS_Casebook_20-21.txt`,
+   `MIT Consulting Casebook.txt`, `IIM L Consulting Casebook 2025.txt`,
+   `IIMA-...-2025-26.txt`, `The Consulting Club FMS Casebook 2025-26.txt`). A live query for
+   "MECE" genuinely retrieves a correct, on-topic MECE excerpt at similarity 0.77. The v1
+   Frameworks path is not dead - it just answers from different (older, page-less) rows than
+   the eval's `expected_source` names.
+2. **`document_chunks` has no page column at all** (`select page_start` throws "column ...
+   does not exist") - citations fail the "school, casebook, page" bar in CLAUDE.md's
+   grounding policy for every single v1 result, by construction, not as a per-question bug.
+   Also means `expected_pages` in questions.jsonl can never be checked against this table.
+3. **The 0.5 similarity threshold lets real false positives through** for exactly the
+   `covered:false` "frameworks" questions meant to test this (q032 RICE, q036 Jobs-to-be-Done):
+   both retrieved unrelated excerpts (a delivery-membership guesstimate; a competitive-
+   positioning passage) scoring 0.63-0.68, and the UI would show them as "From our casebooks"
+   with no warning. This is the exact failure CLAUDE.md's "show nothing rather than a loosely
+   related excerpt" rule exists to prevent.
+4. **Even on-topic covered:true frameworks questions often retrieve the wrong casebook or an
+   incomplete excerpt** - e.g. q014 (Go-to-Market Strategy) retrieved a complete, correct TAM/
+   SAM/SOM passage from `IIM B Consulting Casebook 2025.txt` - on-topic for a *different*
+   question (q019), not this one; q010/q011 retrieved excerpts that visibly cut off
+   mid-explanation.
+5. **The live Frameworks UI has no "not from the casebooks, AI-generated" fallback at all**
+   (checked `frontend-react/src/pages/FrameworksPage.tsx`) - when nothing is found it just
+   omits the casebook box silently. That satisfies "show nothing," not CLAUDE.md's "say so
+   plainly, then give a labelled general answer."
+6. **`guesstimates`, `qa`, `role`, `company` have zero live grounded path today** - not a
+   partial/low-quality RAG, a complete absence. 25/39 questions (64%) fall here.
+7. Noted, not scored here: `grounded_image.url` (v1's image citation) is a raw
+   `document_chunks.image_url` Storage URL returned through an `optionalAuth` route with no
+   admin check - whenever an image clears the 0.58 threshold it reaches a non-admin student
+   directly, which CLAUDE.md's diagram-privacy rule forbids. Fired zero times in this run (no
+   `covered:true` frameworks question matched an image), so it doesn't show up in the score,
+   but the code path exists and should be checked before any switch-over.
+
+**Files:** `backend/eval/run_eval.js` (new),
+`backend/eval/results/2026-11-02-baseline.json` (new),
+`backend/eval/results/2026-11-02-baseline.md` (new), `.gsd/ROADMAP.md`, `.gsd/STATE.md`.
+**Proof:** `node backend/eval/run_eval.js baseline` → "Overall: 0/39 scored questions pass
+(39 total, 0 n/a)." Full per-question checks and reasoning in the JSON/Markdown results
+files above.
+**Cost:** 14 embedding calls (`gemini-embedding-001`, free tier) + 14 faithfulness-judge
+calls (flash-lite tier, `generateJSON` default cascade - no escalation). Both well inside
+the $20/month budget; effectively free-tier.
+**Undo:** Delete `backend/eval/run_eval.js` and the two results files; revert
+`.gsd/ROADMAP.md` / `.gsd/STATE.md`.
+**Open issues:** This is the first eval run - no prior baseline exists, so "regressions vs
+previous" is explicitly "none to compare" rather than a real check. R9 will be the first run
+with something to regress against. The raw `image_url` exposure (point 7 above) should get
+its own fix before any switch-over, not just a note here.
+
+---
+
+## 2026-11-02 — R3 fix: eval question page numbers and two mislabeled questions corrected
+**Phase:** R3 · **Type:** eval, fix
+
+**What changed:** Checked all 29 `covered:true` questions in `backend/eval/questions.jsonl`
+against the actual re-ingested (R6) page content, not just JSON syntax. Found two systematic
+page-number bugs plus two wrong classifications:
+- **FMS Consulting Casebook 2021-22 — consistent +1 page offset** (a cover page shifts the
+  pipeline's page_no one ahead of the casebook's own printed footer number): fixed q001
+  (24,25→25,26), q002 (26→27), q003 (20→21), q004 (21→22), q024 (29→30).
+- **SRCC Guesstimates-Book-Volume-1-6 — consistent +4 page offset** (questions were numbered
+  from the "Theory" section, skipping 4 front-matter pages the pipeline counts): fixed q005
+  (17→21), q006 (19,20→23,24), q007 (18→22), q009 (23→27).
+- **q008 ("tennis balls that fit in a room") reclassified `covered:true`→`false`:** this topic
+  doesn't appear anywhere in SRCC Guesstimates or anywhere else in the ingested corpus
+  (checked `ilike` across all `ingest_pages`, zero hits for "tennis"). Cleared
+  `expected_source`/`expected_pages`/`must_include`.
+- **q028 ("daily revenue of Delhi Metro") reclassified `covered:true`→`false`:** wrong source —
+  there's a real "Delhi Metro Passengers" guesstimate, but it's in **The FMS Consulting
+  CaseBook 2023-24** (page 117, latest version `faa13328-...`), not SRCC, and it computes
+  passenger count, not revenue (`ticket`/`fare` don't appear on that page at all). No real
+  revenue-focused Delhi Metro guesstimate exists in the corpus, so reclassified rather than
+  reassigning to a page that doesn't actually answer the question asked.
+**Why:** R4 (eval runner) can't produce a trustworthy baseline against a test set with wrong
+page numbers — every one of these would register a false retrieval-miss even with perfect
+grounding. `.gsd/STATE.md`'s known-gap note on an off-by-one page bug flagged this risk.
+**Verification:** Re-ran exact-match check (must_include terms found verbatim on the exact
+expected pages, no tolerance range) for all 27 remaining `covered:true` questions: 26/27 pass.
+The one remaining gap (`q006`, "income segmentation") is a phrasing nuance — the page covers
+income-tier segmentation conceptually but not that exact two-word phrase — left as Aalhad's
+call per the rag-eval skill ("Aalhad writes these ... help with formatting only").
+**Files:** `backend/eval/questions.jsonl`.
+**Proof:** 39/39 lines still valid JSON; 27 covered / 12 not-covered; 26/27 covered questions'
+must_include terms now verified present verbatim on their exact expected pages.
+**Undo:** `git diff backend/eval/questions.jsonl` / revert the file.
+**Open issues:** ISB/IIM B/IIMK questions' page numbers weren't independently re-verified
+against printed footer numbers the way FMS/SRCC were (they passed the loose range check
+already, so wording lines up, but a footer-number audit wasn't done for those three).
+
+---
+
+## 2026-11-01 — R3 done: Consulting test question set landed
+**Phase:** R3 · **Type:** eval
+
+**What changed:** Aalhad's test question set arrived at `~/Downloads/questions.jsonl`; moved to
+`backend/eval/questions.jsonl` (the path R3's done-when and R4's eval runner expect).
+`backend/eval/` didn't exist yet, created it. Validated: 39 lines, all valid JSON, 29 questions
+marked `covered:true` (casebook should answer these) and 10 `covered:false` (casebook shouldn't
+cover these — tests the "not in casebooks" label). Schema per line: `id`, `domain`, `feature`,
+`question`, `expected_source`, `expected_pages`, `must_include`, `covered`.
+**Why:** R4 (eval runner + baseline score) can't start without this file; R3 was the ▶ task.
+**Files:** `backend/eval/questions.jsonl` (moved, not yet committed — new file, untracked).
+**Proof:** File validated above; 39/39 lines parse as JSON.
+**Undo:** Move the file back to `~/Downloads/questions.jsonl`.
+**Open issues:** None of the questions' `expected_source`/`expected_pages` have been checked
+against the actual re-ingested (R6) content yet — R4 will surface any mismatches.
+
+---
+
+## 2026-11-01 — R6: IIM Calcutta Consulting CaseBook 2025-26 ingested, 1-page network-failure patch (retried twice after transient failures), needs_review rate traced
+**Phase:** R6 · **Type:** ingestion, fix
+
+**Ingested:** IIM Calcutta Consulting CaseBook 2025-26 (457 pages), insert-only, `is_active=false`.
+Classification already confirmed `club_casebook` (school IIM Calcutta) in the batch check logged
+2026-10-31. v1 (`dbfc78ec-1879-4623-8639-ac836049b274`): 457 pages, 930 chunks, 559 vision +
+931 embedding calls, one page (421) failed with a transient `ReadTimeout` during the vision
+call, correctly stored `[UNREADABLE]` and flagged `needs_review` rather than silently wrong.
+
+**v1 → v2 patch, retried twice:** the patch script (retry page 421, rebuild v2) failed on its
+first two attempts, both on dropped network connections, not code bugs:
+1. First attempt (run before this session) died with `httpcore.ConnectError: Connection reset
+   by peer` while inserting the new `ingest_documents` row — no v2 document existed afterward.
+2. Second attempt (rerun this session) got through the vision retry (page 421,
+   `number_coverage=1.0`, `word_coverage=1.0`, still `needs_review` for unrelated reasons:
+   `ragged_table`, `diagram_in_table`) but then hit `socket.gaierror` / DNS resolution failure
+   on `generativelanguage.googleapis.com` partway through re-embedding all 931 chunks — again
+   no v2 write.
+3. Third attempt (after confirming DNS/network was back via `ping`/`nslookup`) completed clean:
+   v2 (`f2c1333f-b205-46fa-991e-551548dffef7`), 457 pages, 931 chunks, `status=done`.
+
+The script is idempotent by design (`version_status(...) == "done"` short-circuits), so rerunning
+after each failure was safe — no duplicate v2 rows were created.
+
+**Investigated: 117 of 457 pages (25.6%) flagged `needs_review`** — lower than IIMB (72%) and
+IIMK (40.6%), same "trace before accepting" standard as those runs. Reason breakdown: `seq_diff`
+(50), `ragged_table` (37), `diagram_in_table` (35), `invented_text` (18), `diagram_label` (12),
+`diagram_structure` (12), `diagram_label_altered` (11), `number_coverage`/`word_coverage` (11
+each), `diagram_missing_box` (9), `diagram_invalid` (7), `diagram_flattened` (5), `unreadable` (4).
+Flags cluster heavily on pages ~18–31 (an "Industry Overview" dashboard section, e.g. Automobile,
+Iron & Steel). Sampled pages 20 and 27: `text_layer` on both is almost empty — just a source
+citation and the page title/number (e.g. page 20's entire `text_layer` is "Source: IBEF, Invest
+India / Note: Mfg. refers to Manufacturing / AUTOMOBILE INDUSTRY / 20") — because these pages are
+near-fully graphic infographics, not selectable text. The vision model reads the infographic
+correctly into table/diagram markdown, but the checker's `label_not_on_page`/`number_not_on_page`/
+coverage checks compare against `text_layer`, so they flag almost every label and number as "not
+on page" when there's barely any real text layer to match against. Same false-positive class as
+IIMB's Industry Report pages and IIMK's branding stamps, more pronounced here because these pages
+are closer to 100% image. **Traced, not fixed** — checker tuning for near-empty-text-layer pages
+is out of scope for an ingestion run; flagged for review as usual.
+
+**Not independently verified against the rendered page image** (only against `text_layer`/
+markdown this time, no page-image render check) — lower-confidence than prior entries' spot
+checks; worth a `fidelity-reviewer` pass if this cluster matters before switch-over.
+
+**Proof:** `document_chunks` (live) unchanged at 22,457 rows. v2 `ingest_documents` row
+`status=done`, 457 pages, 931 chunks, `is_active=false`.
+
+**Cost:** v1 (prior session): 559 vision + 931 embedding calls. Patch: vision retried once per
+attempt (3 attempts × 1 page ≈ 3 vision calls); embeddings re-ran in full on both the failed DNS
+attempt and the successful attempt (≈931 calls each, most of the failed attempt's calls likely
+landed before the DNS drop) — rough estimate ≈1,800–1,900 extra embedding calls from the two
+failed/retried attempts, call+embedding cost at flash-lite/embedding rates stays well under $1
+for this patch; exact count not instrumented per-attempt. Cumulative R6 spend still well inside
+the $20/month budget.
+
+**Left open:** IIMA (~389p), Consulting Club FMS 2025-26 (~325p), FMS 2024-25 (~279p) —
+~993 pages, not started.
+
+**Files:** `backend/ingestion/run_r6_iimcal.py`, `backend/ingestion/run_r6_iimcal_patch.py`
+(both now tracked — were untracked at session start).
+
+---
+
 ## 2026-10-31 — R6: IIM B Consulting Casebook 2025 ingested, 2-page network-failure patch, high needs_review rate traced and cleared
 **Phase:** R6 · **Type:** ingestion, fix
 

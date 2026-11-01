@@ -1,5 +1,5 @@
 import { supabase } from "./supabase.js";
-import { embedTexts } from "./gemini.js";
+import { embedTexts, generateJSON } from "./gemini.js";
 
 // Same text threshold frameworksGrounding.js already uses (match_document_chunks) -
 // kept identical rather than re-derived, since R4's eval hasn't run against this
@@ -63,9 +63,54 @@ export async function retrieveConsultingChunks(queryText, { domain, matchCount =
 }
 
 /**
- * Full grounded lookup for one query: retrieve, decide coverage, and either
- * return casebook-only material with citations, or the labelled "not
- * covered" marker - never both blended (grounding policy, CLAUDE.md).
+ * I/O: a cheap second gate on top of the similarity threshold. The eval found
+ * real cases (RICE, Jobs-to-be-Done, "tennis balls in a room", "Uber rides in
+ * NYC" - see log.md's 2026-11-02 v2-preview entry) where a chunk cleared
+ * 0.63-0.73 similarity while being genuinely unrelated to the question - it
+ * shared vocabulary, not topic. A single cosine threshold can't structurally
+ * fix that (raising it risks rejecting real matches, on just 4 known
+ * examples); a relevance check actually reads the two texts. Same prompt and
+ * model tier as the eval's judgeFaithfulness (run_eval.js /
+ * run_eval_v2_preview.js) - kept identical on purpose so "would this have
+ * been shown" and "did the eval mark it faithful" stay the same question
+ * asked the same way.
+ */
+export async function judgeRelevance(queryText, chunkContent) {
+  try {
+    const parsed = await generateJSON({
+      system:
+        "You are a strict grader checking whether a casebook excerpt shown VERBATIM to a student " +
+        "actually, faithfully and relevantly answers their interview-prep question. The excerpt " +
+        "cannot contain any claim beyond itself - your only job is to judge whether it is genuinely " +
+        "on-topic and answers what was asked, not just coincidentally sharing vocabulary with the " +
+        'question. Respond with ONLY a JSON object, no markdown fences: {"verdict": "faithful" or ' +
+        '"unfaithful", "reasoning": "one sentence explaining your judgment"}',
+      prompt: `Question: ${queryText}\n\nExcerpt:\n"""${chunkContent.slice(0, 2000)}"""\n\nDoes this excerpt faithfully and relevantly answer the question?`,
+      maxTokens: 200,
+      temperature: 0, // deterministic - a gate that flips verdicts on an identical input (found
+      // in the eval, 2026-11-02) isn't trustworthy at any scale.
+      feature: "consultingRetrieval-relevance-gate"
+    });
+    return parsed.verdict === "faithful";
+  } catch (err) {
+    // Same resilience posture as retrieveConsultingChunks: a judge failure
+    // must not take the page down. Fail closed (treat as irrelevant) rather
+    // than open - showing nothing is always safer than showing an unchecked
+    // excerpt, per the grounding policy's "show nothing rather than a
+    // loosely related excerpt" rule.
+    console.warn(`[consultingRetrieval] relevance judge failed: ${err.message}`);
+    return false;
+  }
+}
+
+/**
+ * Full grounded lookup for one query: retrieve, decide coverage, relevance-
+ * check every surviving candidate, and either return casebook-only material
+ * with citations, or the labelled "not covered" marker - never both blended
+ * (grounding policy, CLAUDE.md). The relevance gate is deliberately kept out
+ * of decideCoverage (which stays pure/unit-testable, no I/O) and applied
+ * here instead, after the threshold filter - cheapest-check-first, so the
+ * judge only ever runs on rows that already cleared similarity.
  */
 export async function groundedConsultingLookup(queryText, { domain = "Consulting", matchCount = 6, sourceFile } = {}) {
   const rows = await retrieveConsultingChunks(queryText, { domain, matchCount, sourceFile });
@@ -75,14 +120,21 @@ export async function groundedConsultingLookup(queryText, { domain = "Consulting
     return { covered: false, label: AI_FALLBACK_LABEL, chunks: [], citations: [] };
   }
 
+  const verdicts = await Promise.all(coveringRows.map(r => judgeRelevance(queryText, r.content)));
+  const relevantRows = coveringRows.filter((_, i) => verdicts[i]);
+
+  if (relevantRows.length === 0) {
+    return { covered: false, label: AI_FALLBACK_LABEL, chunks: [], citations: [] };
+  }
+
   return {
     covered: true,
     label: null,
-    chunks: coveringRows.map(r => ({
+    chunks: relevantRows.map(r => ({
       content: r.content,
       hasDiagram: r.has_diagram,
       similarity: r.similarity
     })),
-    citations: coveringRows.map(buildCitation)
+    citations: relevantRows.map(buildCitation)
   };
 }

@@ -1,12 +1,25 @@
 # STATE
 
-**Position:** ▶ R3 (Aalhad: write 20–30 Consulting test questions in `backend/eval/questions.jsonl`). Updated 2026-10-21.
+**Position:** ▶ R5 (backend-engineer, frontend-engineer: admin review queue). Updated 2026-11-02.
+R4 done 2026-11-02: `backend/eval/run_eval.js` built and run against the live (flag-off)
+behavior. Baseline: 0/39 (0%) pass. Two findings beyond the expected "mostly not live yet":
+`document_chunks` actually has active Consulting rows under older `.txt`-named source files
+(not just the inactive `.pdf` re-ingestion rows already found), and v1 citations can never
+carry a page number (no page column exists in `document_chunks` at all). Full breakdown:
+`backend/eval/results/2026-11-02-baseline.json`/`.md`, log.md's 2026-11-02 R4 entry.
+R3 done 2026-11-01: Aalhad dropped `backend/eval/questions.jsonl` (39 questions, 29 covered /
+10 not-covered) into `backend/eval/` — moved there from Downloads this session.
 R2 done 2026-10-21 (owner: "Flagged = pass"; p56 "Leave to review"). Best version: v5 doc
 `c1521f01-bcbf-4163-923d-dc501859dc31` (inactive, 248/386, 173 flagged); sample 39/40, raw faithful 21/40.
 For R5: import per-page findings from `backend/ingestion/out/r2_*review*.json` and `r2_sweep_*.json` into the review queue.
 For R6: add the R2.12 free fixes first (ragged tables, title-strip guard, inner-label check, titles in seq_diff).
 R1 done 2026-10-20 (Aalhad: "R1 approved").
 See `.gsd/ROADMAP.md` and the top entries of `log.md`.
+
+## R6 re-ingestion progress (running in parallel with R3/R4)
+Done: IIM Lucknow, ISB, SRCC, FMS 2021-22, IIM Kozhikode, IIM Bangalore, IIM Calcutta (all
+`is_active=false`, needs_review rates traced in log.md). IIMA ingestion started 2026-11-01,
+still running as of this entry. Left: FMS Consulting Club 2025-26 (~325p), FMS 2024-25 (~279p).
 
 ## Where R1 left things
 - FMS 2023-24 stored three times, all inactive (0 active chunks): v1 `67371722…` 248/363,

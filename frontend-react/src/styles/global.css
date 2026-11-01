@@ -541,10 +541,7 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 .feature-title{ font-size:var(--fs-body-lg); font-weight:700; margin-bottom:8px; color:var(--text-ink); letter-spacing:-.006em; }
 .feature-desc{ font-size:var(--fs-small); color:var(--text-gray2); line-height:1.55; margin-bottom:14px; }
 
-/* R8: casebook citation vs. AI-fallback - never ambiguous which one applies
-   (grounding policy, CLAUDE.md). Visually distinct: cited = green badge,
-   fallback = plain gray note, no badge. */
+/* Only fires for the NOT-grounded case now (2026-11-02: per-answer source
+   attribution removed - see GroundingNote.tsx). Grounded answers render nothing. */
 .grounding-note{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:10px 0; font-size:0.78125rem; line-height:1.4; }
 .grounding-note-fallback{ color:var(--text-lightgray); font-style:italic; }
-.grounding-note-cited .grounding-note-badge{ flex:none; padding:3px 9px; border-radius:999px; background:var(--green-wash); color:var(--green-dark); font-weight:600; font-size:0.6875rem; letter-spacing:.02em; text-transform:uppercase; }
-.grounding-note-cited .grounding-note-sources{ color:var(--text-gray2); }

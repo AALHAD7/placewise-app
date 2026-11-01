@@ -1,0 +1,1790 @@
+{
+  "runAt": "2026-11-01T19:03:57.147Z",
+  "label": "baseline",
+  "enableConsultingRagV2": false,
+  "callCounts": {
+    "embedding": 14,
+    "judge": 14
+  },
+  "summary": {
+    "totalQuestions": 39,
+    "overallPassRate": 0,
+    "overallPass": 0,
+    "overallScored": 39,
+    "perCheck": {
+      "retrieval_hit": {
+        "pass": 4,
+        "fail": 33,
+        "error": 0,
+        "na": 2
+      },
+      "faithfulness": {
+        "pass": 5,
+        "fail": 34,
+        "error": 0,
+        "na": 0
+      },
+      "citations": {
+        "pass": 0,
+        "fail": 39,
+        "error": 0,
+        "na": 0
+      },
+      "coverage_label": {
+        "pass": 12,
+        "fail": 27,
+        "error": 0,
+        "na": 0
+      },
+      "diagram_intact": {
+        "pass": 0,
+        "fail": 25,
+        "error": 0,
+        "na": 14
+      },
+      "must_include": {
+        "pass": 5,
+        "fail": 32,
+        "error": 0,
+        "na": 2
+      }
+    }
+  },
+  "comparison": {
+    "note": "No previous results file exists in backend/eval/results/ - this is the first eval run, there is nothing to regress against.",
+    "regressions": []
+  },
+  "results": [
+    {
+      "id": "q001",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the MECE principle and how is it used in case structuring?",
+      "expected_source": "The FMS Consulting Casebook 2021-22",
+      "expected_pages": [
+        25,
+        26
+      ],
+      "must_include": [
+        "Mutually Exclusive",
+        "Collectively Exhaustive"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "pass",
+          "reason": "Retrieved from \"The FMS Consulting Casebook 2021-22.txt\", matching expected_source \"The FMS Consulting Casebook 2021-22\". NOTE: document_chunks has no page column at all, so expected_pages ([25,26]) could not be verified - a structural gap in the live v1 table, not a per-question miss."
+        },
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt directly defines the MECE principle, explains how it is used in case structuring to sort problems into categories, and provides concrete examples of MECE frameworks."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"The FMS Consulting Casebook 2021-22.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: Mutually Exclusive, Collectively Exhaustive"
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "The FMS Consulting Casebook 2021-22.txt",
+          "similarity": 0.76724397519486,
+          "excerpt": "MECE Segmentation\n\nExample 3: Customer Segmentation\n\nCustomer Clients\n\nIndividuals/Households (B2C)\n- Low Income\n- Medium Income\n- High Income\n\nInstitutions/Organizations\n- Public Sector\n- Private Sector\n\nExample 4: Increasing Sales\n\nIncrease Sales\n\nIncrease Sales per Customer\n- Increase Price\n- Increase Quantity\n- Inc. # Visits\n- Inc. Quantity per consumption\n\nIncrease # Customer\n- New Segments in the same market\n- New Markets (Market Development)\n\nThe MECE principle suggests that to understand and fix any large problem, you need to understand your options by sorting them into categories. Doing so will help you avoid dependencies between different branches of the tree and thus sub-problems can be properly isolated."
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q002",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Explain the Pareto Principle and its application in consulting.",
+      "expected_source": "The FMS Consulting Casebook 2021-22",
+      "expected_pages": [
+        27
+      ],
+      "must_include": [
+        "80/20",
+        "prioritize"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "Retrieved from \"ISB Consulting Casebook 2025.txt\", which does not match expected_source \"The FMS Consulting Casebook 2021-22\"."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "The excerpt discusses consulting practice types and case study prompts, but contains no mention or explanation of the Pareto Principle."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"ISB Consulting Casebook 2025.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: 80/20, prioritize"
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "ISB Consulting Casebook 2025.txt",
+          "similarity": 0.706010857464229,
+          "excerpt": "ating costs despite stable occupancy rates. How can it improve efficiency without compromising guest experience?* |\n| 7 | Investment | Evaluate potential investment opportunities and expected returns. | *A private equity firm is considering investing $200M in a renewable energy startup. Should they proceed, and what ROI can they expect over five years?* |\n| 8 | Capacity Expansion | Decide whether to increase production capacity. | *An Indian cement manufacturer is running at 95% capacity utilization. Should they invest in new capacity?* |\n\nConsulting is spread across several industries, diverse practice covering all topics and industries is key"
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q003",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What are the components of the PESTEL framework?",
+      "expected_source": "The FMS Consulting Casebook 2021-22",
+      "expected_pages": [
+        21
+      ],
+      "must_include": [
+        "Political",
+        "Economic",
+        "Social",
+        "Technological",
+        "Environmental",
+        "Legal"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "Retrieved from \"The Consulting Club, FMS, Casebook 2025-26.txt\", which does not match expected_source \"The FMS Consulting Casebook 2021-22\"."
+        },
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly lists and defines all six components of the PESTEL framework (Political, Technological, Economic, Environmental, Social, and Legal), directly answering the user's question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"The Consulting Club, FMS, Casebook 2025-26.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All must_include terms found in the retrieved text."
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "The Consulting Club, FMS, Casebook 2025-26.txt",
+          "similarity": 0.755872240908506,
+          "excerpt": "Main Index\n\n# PESTEL\n\n*PESTEL Analysis can be done to identify the macro/external forces surrounding the organisation*\n\n* **Political:**\n  Extent to which governments and its policies affect an organisation and the industry it is a part of, such as:\n  * Fiscal policies\n  * Taxation policies\n  * Trade policies\n  * Corruption\n  * Labour laws\n* **Technological:**\n  Considers rate of technological improvements/advancements that affect a market/industry, such as:\n  * Digital/mobile technology\n  * Automation\n  * AI/ML (GenAI)\n  * R&D advancements\n  * Awareness of technology\n* **Economic:**\n  Factors affecting the economy of the country directly, hence affecting the organisation directly, such as:\n  * Unemployment/employment rates\n  * Interest rates\n  * FX rates\n* **Environmental:**\n  Consists of factors which influence the surrounding environment on the ecological front, such as:\n  * CSR Initiatives (i.e. sustainability)\n  * Climate change, carbon footprint\n  * Recycling, waste disposal, reusing\n* **Social:**\n  Factors affecting the social environment and any emerging trends, such as:\n  * Population demographics\n  * Education levels\n  * Cultural trends\n  * Lifestyle changes\n  * Changes in attitudes\n* **Legal:**\n  Considers the legal factors of the environment in which organisation operates, such as:\n  * Health and safety standards\n  * Anti-trust laws\n  * Employment laws\n  * Copyright and patent laws\n  * Consumer protection laws\n\n*Note: Legal factors are different from political. Le"
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q004",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Describe the three types of price discrimination.",
+      "expected_source": "The FMS Consulting Casebook 2021-22",
+      "expected_pages": [
+        22
+      ],
+      "must_include": [
+        "First Degree",
+        "Second Degree",
+        "Third Degree"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "pass",
+          "reason": "Retrieved from \"The FMS Consulting Casebook 2021-22.txt\", matching expected_source \"The FMS Consulting Casebook 2021-22\". NOTE: document_chunks has no page column at all, so expected_pages ([22]) could not be verified - a structural gap in the live v1 table, not a per-question miss."
+        },
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly defines and lists the three types of price discrimination (First Degree, Second Degree, and Third Degree) requested by the question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"The FMS Consulting Casebook 2021-22.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All must_include terms found in the retrieved text."
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "The FMS Consulting Casebook 2021-22.txt",
+          "similarity": 0.684917589476918,
+          "excerpt": "Basics of Economics\n\nSupply-Demand\n\nPrice\nDemand\nSupply\nEquilibrium\nP*\nQ*\nQuantity\n\nPrice Discrimination\n\nFirst Degree\nWith first-degree discrimination, the company charges the maximum possible price for each unit consumed.\n\nSecond Degree\nSecond-degree discrimination involves discounts for products or services bought in bulk.\n\nThird Degree\nThird-degree discrimination reflects different prices for different consumer groups\n\nPrice Elasticities\n\nSensitivity of demand to price changes\n$$e = -\\frac{dQ/Q}{dp/P}$$\n\nMarket Characteristics\n4 Types of Market Structure\n\nPerfect Competition\nMonopolistic Competition\nOligopoly\nMonopoly\n\nMost Competitive <=====> Less Competitive"
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q005",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "How would you estimate the number of orders placed on Swiggy in Delhi in a day?",
+      "expected_source": "SRCC Guesstimates-Book-Volume-1-6",
+      "expected_pages": [
+        21
+      ],
+      "must_include": [
+        "population",
+        "urban",
+        "market share"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q006",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "What approach would you use to estimate the number of credit cards in India?",
+      "expected_source": "SRCC Guesstimates-Book-Volume-1-6",
+      "expected_pages": [
+        23,
+        24
+      ],
+      "must_include": [
+        "income segmentation",
+        "willingness"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q007",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "How do you estimate the revenue of a Delhi-Gurgaon toll plaza in a day?",
+      "expected_source": "SRCC Guesstimates-Book-Volume-1-6",
+      "expected_pages": [
+        22
+      ],
+      "must_include": [
+        "booths",
+        "vehicle types"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q008",
+      "feature": "guesstimates",
+      "covered": false,
+      "question": "What is the approach to estimate the number of tennis balls that can fit in a room?",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q009",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "How would you estimate the market size of the tyre industry in India?",
+      "expected_source": "SRCC Guesstimates-Book-Volume-1-6",
+      "expected_pages": [
+        27
+      ],
+      "must_include": [
+        "rural",
+        "urban"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q010",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What are the eight types of consulting cases and give an example problem statement for each?",
+      "expected_source": "ISB Consulting Casebook 2025",
+      "expected_pages": [
+        32
+      ],
+      "must_include": [
+        "Profitability",
+        "Market Entry",
+        "Growth Strategy",
+        "M&A",
+        "Pricing Strategy"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "pass",
+          "reason": "Retrieved from \"ISB Consulting Casebook 2025.txt\", matching expected_source \"ISB Consulting Casebook 2025\". NOTE: document_chunks has no page column at all, so expected_pages ([32]) could not be verified - a structural gap in the live v1 table, not a per-question miss."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "The excerpt cuts off before completing the list of eight types of cases and is missing the example problem statement for the seventh type as well as the entire eighth type."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"ISB Consulting Casebook 2025.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All must_include terms found in the retrieved text."
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "ISB Consulting Casebook 2025.txt",
+          "similarity": 0.802132015014327,
+          "excerpt": "Types of Cases\n\n| # | Case Topic | Description | Example Problem Statement |\n|---|---|---|---|\n| 1 | Profitability | Diagnose declining profits and identify improvement levers. | *A premium coffee chain in London has seen its same-store profits decline by 15% over the past six months. Diagnose the reasons and suggest ways to restore profitability.* |\n| 2 | Market Entry | Evaluate if the client should enter a new market | *A European electric vehicle manufacturer is considering entering the Southeast Asian market. Should they proceed?* |\n| 3 | Growth Strategy | Explore ways to grow revenues or market share. | *A regional quick-service restaurant chain wants to double its revenues in the next 3 years. How should they achieve this?* |\n| 4 | M&A (Merger & Acquisition) | Assess whether acquiring or merging with another company makes sense. | *A global consumer goods company is evaluating the acquisition of a niche organic skincare brand. Should they go ahead?* |\n| 5 | Pricing Strategy | Determine optimal pricing for a product | *A software company is launching a new SaaS product for SMEs. What should be the optimal pricing strategy?* |\n| 6 | Operational Efficiency Improvement | Identify cost-reduction or process-optimization opportunities. | *A luxury hotel chain is facing rising operating costs despite stable occupancy rates. How can it improve efficiency without compromising guest experience?* |\n| 7 | Investment | Evaluate potential investment opportunities and expected returns."
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q011",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the 3CPOR scoping method used before structuring a case?",
+      "expected_source": "ISB Consulting Casebook 2025",
+      "expected_pages": [
+        33
+      ],
+      "must_include": [
+        "Company",
+        "Product",
+        "Competitors",
+        "Context",
+        "Regulation"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "pass",
+          "reason": "Retrieved from \"ISB Consulting Casebook 2025.txt\", matching expected_source \"ISB Consulting Casebook 2025\". NOTE: document_chunks has no page column at all, so expected_pages ([33]) could not be verified - a structural gap in the live v1 table, not a per-question miss."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "The excerpt mentions scoping and references '3CPR', but it cuts off before explaining what the scoping method actually entails."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"ISB Consulting Casebook 2025.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: Company, Product, Competitors, Context, Regulation"
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "ISB Consulting Casebook 2025.txt",
+          "similarity": 0.688260956964261,
+          "excerpt": "Overview\n\nWhat it entails?\n- Frameworks are useful tools to structure thoughts in a case. They help you ask the right questions and find answers.\n- Frameworks are effective for standardized cases like Profitability and Market Entry.\n- Interviewers may present abstract cases where standard frameworks don't apply. For abstract cases, relate the problem to a business situation and create a custom framework.\n- The provided frameworks cover classic cases from profitability to M&A. Use these frameworks as guidelines and adapt them for specific cases. Not all aspects of a framework may be relevant; use judgment to focus on key components. Demonstrate awareness of other relevant aspects by mentioning them verbally for efficiency.\n\nHow to use these frameworks?\nUse these frameworks as a guiding tool for you to create your own notes based on daily practice and keep improving upon them with time. 4Ss are pertinent to every case: Scope, Structure, Solve, Synthesize. Frameworks generally form the structure and solving part of any case. Scoping and Synthesis more or less remains the same.\n- Scope: Scoping a problem statement is clarifying the and then asking relevant questions that will narrow down the scope of the problem statement for you. There are various aspects of scoping but 3CPR is the most common way of scoping. (Do not spend a lot of time here)\n- Structure: Structuring the problem statement by ensuring MECE is very relevant to make sure you are taking the correct approach and the "
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q012",
+      "feature": "qa",
+      "covered": true,
+      "question": "How do you break down a profitability case using the P=R-C framework?",
+      "expected_source": "ISB Consulting Casebook 2025",
+      "expected_pages": [
+        34,
+        35,
+        36
+      ],
+      "must_include": [
+        "revenue",
+        "cost",
+        "volume",
+        "price"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q013",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the pricing decision tree for new versus existing products?",
+      "expected_source": "ISB Consulting Casebook 2025",
+      "expected_pages": [
+        38
+      ],
+      "must_include": [
+        "Value Based",
+        "Cost Based",
+        "Competitor Based"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "Retrieved from \"IIMK Kasebook 2025.txt\", which does not match expected_source \"ISB Consulting Casebook 2025\"."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "The excerpt only mentions general pricing methods and does not provide a decision tree specifically for new versus existing products."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"IIMK Kasebook 2025.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All must_include terms found in the retrieved text."
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "IIMK Kasebook 2025.txt",
+          "similarity": 0.728222611850597,
+          "excerpt": "APPROACH/ FRAMEWORK\n\nA flowchart diagram showing \"Pricing Method\" branching into three methods: \"Cost Based\", \"Value Based\", and \"Competitor Based\"."
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q014",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Explain the Go-to-Market Strategy framework including segmentation and channel strategy.",
+      "expected_source": "ISB Consulting Casebook 2025",
+      "expected_pages": [
+        39,
+        40
+      ],
+      "must_include": [
+        "STP",
+        "AARRR",
+        "Positioning",
+        "Channel Strategy"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "Retrieved from \"IIM B Consulting Casebook 2025.txt\", which does not match expected_source \"ISB Consulting Casebook 2025\"."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "The excerpt discusses market sizing frameworks (TAM, SAM, SOM) rather than explaining a Go-to-Market Strategy framework, segmentation, or channel strategy."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"IIM B Consulting Casebook 2025.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: STP, AARRR, Positioning, Channel Strategy"
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "IIM B Consulting Casebook 2025.txt",
+          "similarity": 0.699396985067261,
+          "excerpt": "# Commonly Used Frameworks (7/7)\n\n## Addressable & Obtainable Markets\n\n* **TAM =** *The market that exists*\n* **SAM =** *The market that is accessible*\n* **SOM =** *The market that is winnable*\n\n* **Total Addressable Market**<br>The **total demand** for a product or service across **all geographies, segments, and use cases**, assuming no constraints on distribution or competition.<br>• Helps size the **maximum** opportunity<br>• Typically calculated top-down using industry data, population stats, or macro indicators.\n* **Serviceable Addressable Market**<br>The portion of TAM that a company can **realistically target** based on **its current offerings, regulatory access, and distribution reach**.<br>• Accounts for what fits your current capability and market coverage.<br>• Given by **(TAM) * Market Penetration Percentage**\n* **Serviceable Obtainable Market**<br>The **share of SAM** that a company can **actually capture** in the near term, based on **salesforce strength, brand equity, pricing, and competitive intensity**.<br>• Calculated bottom-up using internal data (e.g., conversion rates, sales pipeline)<br>• Given by **(SAM) * Market Share Percentage**"
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q015",
+      "feature": "role",
+      "covered": true,
+      "question": "What is the STAR structure used in consulting interviews?",
+      "expected_source": "ISB Consulting Casebook 2025",
+      "expected_pages": [
+        23
+      ],
+      "must_include": [
+        "Situation",
+        "Task",
+        "Action",
+        "Result"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q016",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What are Porter's Five Forces and what factors increase the bargaining power of suppliers?",
+      "expected_source": "IIM B Consulting Casebook 2025",
+      "expected_pages": [
+        15
+      ],
+      "must_include": [
+        "Bargaining Power",
+        "Suppliers",
+        "switching cost",
+        "forward integration"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "Retrieved from \"IIM Calcutta Consulting CaseBook 2025-26.txt\", which does not match expected_source \"IIM B Consulting Casebook 2025\"."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "While the excerpt names Porter's Five Forces and lists the bargaining power of suppliers, it fails to state the factors that increase the bargaining power of suppliers."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"IIM Calcutta Consulting CaseBook 2025-26.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: switching cost, forward integration"
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "IIM Calcutta Consulting CaseBook 2025-26.txt",
+          "similarity": 0.754574938807001,
+          "excerpt": "PORTER’S FIVE FORCES\n\nMichael Porter's Five Forces is probably the most famous framework used in preparing case interviews. It has endured as one of the frameworks most talked about by many in and out of the consulting field. Although the Five Forces is an excellent framework in helping you organize your thoughts, its analysis is not complete. It should be used in conjunction with other frameworks to enable you to fully understand the issues at hand.\n\nCompetitive advantage in an industry is dependent on five primary forces:\n- The threat of new entrants\n- The bargaining power of buyers\n- The bargaining power of suppliers\n- The threat of substitute products\n- Rivalry with competitors\n\nThe degree of these threats determines the attractiveness of the market\n- Intense competition allows minimal profit margins\n- Mild competition allows wider profit margins\n\nThe goal is to assess whether a company should enter/exit the industry or find a position in the industry where it can best defend itself against these forces or can influence them in its favour.\n\nA diagram shows Porter's Five Forces with a central circle \"Competitive Rivalry\" surrounded by \"New Entrants\" at the top, \"Buyers\" on the left, \"Suppliers\" on the right, and \"Substitute Products\" at the bottom.\n\n**Note:** Identification of buyers and suppliers is key. Here's an easy heuristic:\n- The company pays money to a supplier\n- The company gets money from a buyer\n\n*Source: Michael E. Porter, Competitive Strategy: Techniques for A"
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q017",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Explain the BCG Growth Share Matrix including all four quadrants.",
+      "expected_source": "IIM B Consulting Casebook 2025",
+      "expected_pages": [
+        17
+      ],
+      "must_include": [
+        "Star",
+        "Cash Cow",
+        "Question Mark",
+        "Dog"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "Retrieved from \"FMS_Casebook_20-21.txt\", which does not match expected_source \"IIM B Consulting Casebook 2025\"."
+        },
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly explains the BCG Growth Share Matrix and defines all four quadrants (Dogs, Question marks, Stars, and Cash cows) as requested by the question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"FMS_Casebook_20-21.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All must_include terms found in the retrieved text."
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "FMS_Casebook_20-21.txt",
+          "similarity": 0.777729474887134,
+          "excerpt": "BCG Matrix\n\nRelative Market Share\nHigh | Low\n\nMarket Growth Rate\nHigh\n- Stars\n- Question marks\n\nLow\n- Cash cows\n- Dogs\n\n1. Dogs: They are weak in markets and difficult to make profits.\n2. Question marks or Problem Child: Confused state as they are not clear about decisions on opportunities.\n3. Stars: Monopolies and first-to-market products.\n4. Cash cows: Doing well with no growth and limited opportunities.\n\nUseful while analyzing costs related problems, also in new business setup."
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q018",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the Ansoff Matrix and what are its four strategic options?",
+      "expected_source": "IIM B Consulting Casebook 2025",
+      "expected_pages": [
+        18
+      ],
+      "must_include": [
+        "Market Penetration",
+        "Market Development",
+        "Product Development",
+        "Diversification"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "Retrieved from \"The FMS Consulting Casebook 2021-22.txt\", which does not match expected_source \"IIM B Consulting Casebook 2025\"."
+        },
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "The excerpt explicitly names the Ansoff Matrix and lists its four strategic options (Market Penetration, Market Development, Product Development, and Diversification) in a clear visual layout."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"The FMS Consulting Casebook 2021-22.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: Market Development, Product Development"
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "The FMS Consulting Casebook 2021-22.txt",
+          "similarity": 0.78800458260197,
+          "excerpt": "Ansoff Matrix\n\nProduct\n\nExisting\n\nNew\n\nExisting\n\nMarket\n\nNew\n\nMarket Penetration\n\nMarket\nDevelopment\n\nProduct\nDevelopment\n\nDiversification\n\n_Best suitable for Growth Strategy cases, also handy for Market Entry, Revenue Expansion etc._"
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q019",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the difference between TAM, SAM, and SOM?",
+      "expected_source": "IIM B Consulting Casebook 2025",
+      "expected_pages": [
+        19
+      ],
+      "must_include": [
+        "Total Addressable Market",
+        "Serviceable Addressable Market",
+        "Serviceable Obtainable Market"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "Retrieved from \"The Consulting Club, FMS, Casebook 2025-26.txt\", which does not match expected_source \"IIM B Consulting Casebook 2025\"."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "The excerpt is missing the definition and explanation for TAM (Total Addressable Market), only providing formulas and definitions for SAM and SOM."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"The Consulting Club, FMS, Casebook 2025-26.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A grounded excerpt/image was shown for a question the casebooks should cover."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing: Total Addressable Market"
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "The Consulting Club, FMS, Casebook 2025-26.txt",
+          "similarity": 0.722369971957726,
+          "excerpt": "op-down approach, which involves estimating the total market size at a high level.\n  *How big is the cumulative market?*\n* **Serviceable Addressable Market**\n  SAM = (TAM) x (Market Penetration Percentage)\n  *How big is the market that can be reached right now?*\n* **Serviceable Obtainable Market**\n  SOM = (SAM) x (Market Share Percentage)\n  *What is the market that can be reached with current resources?*"
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q020",
+      "feature": "qa",
+      "covered": true,
+      "question": "What are the five stages of a case interview discussion?",
+      "expected_source": "IIM B Consulting Casebook 2025",
+      "expected_pages": [
+        11
+      ],
+      "must_include": [
+        "Case Interview Question",
+        "Developing the Structure",
+        "Case Analysis",
+        "Summary",
+        "Recommendation"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q021",
+      "feature": "qa",
+      "covered": true,
+      "question": "What are the four steps to approach a consulting case interview?",
+      "expected_source": "IIMK Kasebook 2025",
+      "expected_pages": [
+        10
+      ],
+      "must_include": [
+        "Understand",
+        "Clarify",
+        "Structure",
+        "Analyse",
+        "Conclusion"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q022",
+      "feature": "role",
+      "covered": true,
+      "question": "What is the typical career progression in management consulting from entry level to partner?",
+      "expected_source": "IIMK Kasebook 2025",
+      "expected_pages": [
+        7
+      ],
+      "must_include": [
+        "Business Analyst",
+        "Associate",
+        "Engagement Manager",
+        "Principal",
+        "Partner"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q023",
+      "feature": "company",
+      "covered": true,
+      "question": "What are the four key service areas of management consulting?",
+      "expected_source": "IIMK Kasebook 2025",
+      "expected_pages": [
+        6
+      ],
+      "must_include": [
+        "Strategy Consulting",
+        "Financial Advisory",
+        "Tech Consulting",
+        "Operations Consulting"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q024",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "What is the difference between top-down and bottom-up approaches in guesstimates?",
+      "expected_source": "The FMS Consulting Casebook 2021-22",
+      "expected_pages": [
+        30
+      ],
+      "must_include": [
+        "top down",
+        "bottom up",
+        "population",
+        "scale up"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q025",
+      "feature": "qa",
+      "covered": true,
+      "question": "What are the fixed and variable cost categories in a profitability analysis?",
+      "expected_source": "ISB Consulting Casebook 2025",
+      "expected_pages": [
+        36
+      ],
+      "must_include": [
+        "Fixed",
+        "Variable",
+        "rent",
+        "salaries",
+        "raw materials"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q026",
+      "feature": "qa",
+      "covered": true,
+      "question": "How do you solve an airline profitability case where margins have been eroding due to maintenance issues?",
+      "expected_source": "IIMK Kasebook 2025",
+      "expected_pages": [
+        12,
+        13,
+        14
+      ],
+      "must_include": [
+        "value chain",
+        "maintenance",
+        "Revenue",
+        "Cost"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q027",
+      "feature": "qa",
+      "covered": true,
+      "question": "What is the 4M Framework used for root cause analysis in operations?",
+      "expected_source": "IIM B Consulting Casebook 2025",
+      "expected_pages": [
+        16
+      ],
+      "must_include": [
+        "Man",
+        "Machine",
+        "Material",
+        "Method"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q028",
+      "feature": "qa",
+      "covered": false,
+      "question": "Walk me through how to estimate the daily revenue of Delhi Metro.",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q029",
+      "feature": "qa",
+      "covered": true,
+      "question": "What does the ISB casebook describe as the 4Ss framework for case solving?",
+      "expected_source": "ISB Consulting Casebook 2025",
+      "expected_pages": [
+        31
+      ],
+      "must_include": [
+        "Scope",
+        "Structure",
+        "Solve",
+        "Synthesize"
+      ],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q030",
+      "feature": "qa",
+      "covered": false,
+      "question": "How should I prepare for a McKinsey PEI (Personal Experience Interview)?",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q031",
+      "feature": "qa",
+      "covered": false,
+      "question": "What is the Victor Cheng LOMS framework for case interviews?",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q032",
+      "feature": "frameworks",
+      "covered": false,
+      "question": "Explain the RICE prioritization framework used by product managers.",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "n/a",
+          "reason": "covered:false - no expected_source to match against."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "The excerpt discusses delivery savings, discounts, company costs, and profit margins, but it never mentions or explains the RICE prioritization framework."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"IIMA-Consult-Prep-Book-Case-Book-2025-26.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "Something was shown for a question that should NOT be covered (source: \"IIMA-Consult-Prep-Book-Case-Book-2025-26.txt\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No must_include terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "IIMA-Consult-Prep-Book-Case-Book-2025-26.txt",
+          "similarity": 0.63776371422121,
+          "excerpt": "\nThen we add the value of discounts. Could you share the average monthly discount value for a medium user?\nAround ₹200.\nSo, medium users get ₹225 in delivery savings and ₹200 in discounts - ₹425 in total value per month. Heavy users would get ₹450 in delivery savings plus, say, ₹350 in discounts (assuming we cap monthly credits), making it ₹800 in value. Light users be at ₹100 plus maybe ₹100 in discounts - ₹200 total.\nThat’s reasonable.\nNext, I’d like to understand the cost to the company for providing these benefits - what’s the cost per standard and express delivery?\nStandard costs us ₹20 per order, express costs ₹30 per order.\nSo for medium users, our delivery cost per month is (₹20 × 3) + (₹30 × 3) = ₹150. Add the ₹200 discount cost, total cost is ₹350. For heavy users: (₹20 × 6) + (₹30 × 6) = ₹300 delivery cost, plus ₹350 discounts = ₹650 cost. Light users: ₹40 + ₹30 = ₹70 delivery cost plus ₹100 discounts = ₹170 total.\nYes, that works out.\nAre there any competitor membership programs we should be aware of, and what do they offer?\nMain competitor charges ₹199/month for free standard delivery only - no express and no discounts.\nThat’s an important point. Our program offers express delivery and discounts, so we’re providing more value. This suggests we could price higher than ₹199 while still being attractive. Do we have a target profit margin for the membership?\nWe’d like at least 25% margin.\nThen for a medium user, with ₹350 cost, we’d need revenue of ₹350 ÷ (1 - 0.25) "
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q033",
+      "feature": "qa",
+      "covered": false,
+      "question": "What is the typical day-in-the-life of a first-year consultant at Bain?",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q034",
+      "feature": "company",
+      "covered": false,
+      "question": "What are the differences between McKinsey, BCG, and Bain interview formats?",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q035",
+      "feature": "qa",
+      "covered": false,
+      "question": "How do you prepare for a stress interview at a consulting firm?",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q036",
+      "feature": "frameworks",
+      "covered": false,
+      "question": "Explain the Jobs-to-be-Done framework and how it applies to product strategy.",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "n/a",
+          "reason": "covered:false - no expected_source to match against."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "The excerpt merely mentions 'customer jobs-to-be-done' in passing without actually explaining what the framework is or how it applies to product strategy."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "v1's citation is only a source filename (\"ISB Consulting Casebook 2025.txt\") - no page number at all. CLAUDE.md requires citations of (school, casebook, page); document_chunks has no page column (confirmed: selecting it throws 'column document_chunks.page_start does not exist'). This is structural and true for every v1 citation, not specific to this question."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "Something was shown for a question that should NOT be covered (source: \"ISB Consulting Casebook 2025.txt\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No image/diagram was retrieved for this question."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No must_include terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "example": {
+          "sourceFile": "ISB Consulting Casebook 2025.txt",
+          "similarity": 0.677466660345336,
+          "excerpt": "riven by probing demand stability, customer jobs-to-be-done, and competitive dynamics through Porter's Diamond.\n- Competitive Positioning (Differentiation Lens): Assess whether the product can occupy a defensible white space on perceptual maps or leverage Blue Ocean opportunities, eliminating me-too strategies that are easy to copy.\n- Financial & Risk Validation (Viability Lens): Challenge assumptions by stress-testing break-even volumes, worst-case downside, and scalability options using real options analysis and risk-impact mapping to discard financially reckless or inflexible strategies."
+        },
+        "image": null
+      }
+    },
+    {
+      "id": "q037",
+      "feature": "guesstimates",
+      "covered": false,
+      "question": "How would you estimate the number of Uber rides in New York City per day?",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "ENABLE_CONSULTING_RAG_V2 is not \"true\" - GET /api/guesstimates/random and /ask both return {available:false, reason:\"feature_disabled\"} unconditionally (routes/guesstimates.js). This feature does not exist for a student on the live site right now, for any question."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q038",
+      "feature": "qa",
+      "covered": false,
+      "question": "What are the key differences between consulting and investment banking as career paths?",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    },
+    {
+      "id": "q039",
+      "feature": "qa",
+      "covered": false,
+      "question": "How do you solve a private equity due diligence case?",
+      "expected_source": null,
+      "expected_pages": [],
+      "must_include": [],
+      "overall": "fail",
+      "checks": {
+        "retrieval_hit": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "citations": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"qa\" feature (checked backend/src/routes/*.js). chat.js is an ungrounded Gemini passthrough with no casebook lookup, no citation, and no coverage check at all. Recorded as a flat absence, not simulated."
+        }
+      },
+      "retrieved": null
+    }
+  ]
+}
