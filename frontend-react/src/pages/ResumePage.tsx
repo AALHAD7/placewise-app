@@ -438,7 +438,7 @@ export default function ResumePage() {
         {resumeFile ? (
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", border: "1px solid #d9f2e5", borderRadius: "var(--r-sm)", background: "var(--green-wash)" }}>
-              <span style={{ flex: "none", width: 34, height: 34, borderRadius: "var(--r-sm)", background: "var(--green)", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.875rem", fontWeight: 700 }}>✓</span>
+              <span style={{ flex: "none", width: 34, height: 34, borderRadius: "var(--r-sm)", background: "var(--green)", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.875rem", fontWeight: 700 }}>✓</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: "0.90625rem", fontWeight: 600, color: "var(--text-900)" }}>{resumeFile}</div>
                 <div style={{ marginTop: 3, color: "var(--text-gray2)", fontSize: "0.8125rem" }}>{fileStatus}</div>
@@ -462,7 +462,7 @@ export default function ResumePage() {
                 <button
                   onClick={() => runResumeGenerate(resumeText)}
                   disabled={generateDisabled}
-                  style={{ border: 0, borderRadius: "var(--r-sm)", padding: "11px 18px", font: "600 0.875rem 'Instrument Sans',sans-serif", background: uploadStatus === "done" && !resumeLoading ? "var(--green)" : "var(--track)", color: uploadStatus === "done" && !resumeLoading ? "var(--surface)" : "var(--text-muted)", cursor: uploadStatus === "done" && !resumeLoading ? "pointer" : "not-allowed" }}
+                  style={{ border: 0, borderRadius: "var(--r-sm)", padding: "11px 18px", font: "600 0.875rem 'Instrument Sans',sans-serif", background: uploadStatus === "done" && !resumeLoading ? "var(--green)" : "var(--track)", color: uploadStatus === "done" && !resumeLoading ? "#ffffff" : "var(--text-muted)", cursor: uploadStatus === "done" && !resumeLoading ? "pointer" : "not-allowed" }}
                 >
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                     <SparkleIcon />
@@ -478,7 +478,7 @@ export default function ResumePage() {
             <div style={{ fontSize: "0.96875rem", fontWeight: 600, color: "var(--text-900)" }}>Add your resume</div>
             <div style={{ color: "var(--text-gray2)", fontSize: "0.84375rem", textAlign: "center" }}>PDF, DOC or DOCX. We parse it and build questions from what is actually on the page.</div>
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-              <button onClick={() => fileRef.current?.click()} className="btn-primary-darken" style={{ border: 0, cursor: "pointer", background: "var(--indigo)", color: "var(--surface)", font: "600 0.875rem 'Instrument Sans',sans-serif", padding: "11px 18px", borderRadius: "var(--r-pill)" }}>Choose from device</button>
+              <button onClick={() => fileRef.current?.click()} className="btn-primary-darken" style={{ border: 0, cursor: "pointer", background: "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)", color: "#ffffff", font: "600 0.875rem 'Instrument Sans',sans-serif", padding: "11px 18px", borderRadius: "var(--r-pill)", boxShadow: "0 4px 18px rgba(255, 107, 53, 0.45)" }}>Choose from device</button>
               <button onClick={uploadFromGoogleDrive} className="btn-outline-indigo" style={{ border: "1px solid var(--card-border)", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)", font: "600 0.875rem 'Instrument Sans',sans-serif", padding: "11px 18px", borderRadius: "var(--r-sm)" }}>Google Drive</button>
             </div>
           </div>

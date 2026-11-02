@@ -5,6 +5,375 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-03 — R7b built: paraphrase layer + faithfulness judge, code only, flag off
+**Phase:** R7b · **Type:** feature
+
+**What changed:** Implemented the paraphrase pipeline decided 2026-11-02, per
+`grounded-answering` skill: `consultingRetrieval.js` gained `paraphraseChunk` (Gemini
+rewrite, flash-lite, forbidden from adding any claim/number/name/step not already in the
+source), `judgeParaphraseFaithful` (a separate 3-vote majority judge from the existing
+relevance judge — "is the rewrite faithful" vs "does this answer the question" are kept as
+different calls on purpose), and `paraphraseAndVerify` (caches the verified result per
+chunk-content hash, 7-day TTL, `singleFlight`-shaped like `companyLogo.js`). Diagram blocks
+(` ```placewise-diagram ` fences) are pulled out before paraphrasing and spliced back
+verbatim afterward (`protectDiagramBlocks`/`restoreDiagramBlocks`) — a missing/duplicated
+placeholder token fails closed to the raw excerpt rather than trusting the model not to
+touch JSON it was told not to touch. `groundedConsultingLookup` takes a new `paraphrase`
+option; on failure (judge rejects, call throws, token lost) it falls back to the verbatim
+excerpt for that chunk, never a distorted rewrite. Gated behind `ENABLE_ANSWER_PARAPHRASE`
+(off by default; documented in `backend/.env.example`) — flag off is byte-identical to
+today's output (`content`/`hasDiagram`/`similarity` only), verified by a network-mocked
+test.
+**Scoped deliberately to Q&A (`qaRetrieval.js`) and Frameworks (`frameworksGrounding.js`'s
+`findGroundingV2`)** — Guesstimates, Company, Role and Skill pages also call
+`groundedConsultingLookup` but don't pass `paraphrase: true`, so the flag can't reach them
+even when turned on, without a further code change. Flag to Aalhad if he wants Guesstimates
+included too — the skill doc mentions it but this build didn't wire it.
+**Why:** Verbatim excerpts satisfied the letter of the grounding policy but not its purpose;
+Aalhad wants the same facts, re-explained, not a PDF dump — with a safety net so a bad
+rewrite never reaches a student silently.
+**Tests:** 20 new (3 files, all pure/mocked — no live Gemini/DB calls): diagram-block
+round-trip + fail-closed cases, faithfulness vote-counting, flag-off no-op proof (asserts
+only the pre-existing relevance-judge calls happen), flag-on end-to-end (faithful rewrite
+used, unfaithful falls back, diagram JSON survives byte-for-byte, dropped token fails
+closed, pure-diagram chunk skips the paraphrase call entirely).
+**`npm test`: 144 pass, 3 fail** — 1 is the pre-existing sandbox env-leak failure (expected,
+noted in earlier entries); the other 2 (`pickTopTextAndImage` in
+`test/frameworksGrounding.test.js`) are **pre-existing uncommitted WIP, not caused by this
+work** — confirmed `pickTopTextAndImage` always returns `topText: null` in the working tree
+right now (v1 text-grounding path effectively disabled) while `git show HEAD` still has the
+real function; this predates R7b and isn't fixed here. Flagged in `.gsd/STATE.md` for
+Aalhad's call.
+**Cost estimate:** ~4 extra Gemini calls (1 paraphrase + 3-vote judge) per chunk, flash-lite
+tier, the first time any given chunk's content is paraphrased; cached 7 days after that, so
+steady-state cost drops well below that ceiling once common chunks (reused across
+questions/frameworks) are warm.
+**Files:** `backend/src/lib/consultingRetrieval.js`, `backend/src/lib/frameworksGrounding.js`,
+`backend/src/lib/qaRetrieval.js`, `backend/.env.example`,
+`backend/test/consultingParaphrase.test.js`, `backend/test/consultingParaphraseFlagOff.test.js`,
+`backend/test/consultingParaphraseFlagOn.test.js` (all three new).
+**Proof:** `npm test` output above; diff reviewed directly against `git show HEAD` for the
+pre-existing-bug claim.
+**Undo:** Revert the files above. `ENABLE_ANSWER_PARAPHRASE` was never set anywhere, so
+production and localhost behavior are unchanged until Aalhad sets it.
+**Open issues:** (1) Run `rag-evaluator` against `backend/eval/questions.jsonl` with the
+flag on before going live — faithfulness-on-the-real-eval-set is R7b's actual "done when"
+bar, not yet checked. (2) The `pickTopTextAndImage` WIP bug above, unrelated to R7b but
+discovered while verifying its test run. (3) Guesstimates not wired, per the scoping note
+above.
+
+---
+
+## 2026-11-02 — Policy decision: add a paraphrase layer, verbatim excerpts were never the goal
+**Phase:** R7b (new) · **Type:** policy
+
+**What changed:** Aalhad, testing localhost, noticed every grounded answer shows casebook
+text exactly as written in the PDF, with no LLM interpretation. Investigated and confirmed:
+by design, `frameworksGrounding.js` and `consultingRetrieval.js` only call Gemini for (1)
+embedding the query and (2) a relevance judge on retrieved chunks — never to rewrite the
+answer. The code says so explicitly ("The excerpt itself, verbatim — not an LLM paraphrase —
+so there's nothing here that could be a fabricated claim"). That was a deliberate
+anti-hallucination choice from earlier in the rebuild, not a bug.
+Aalhad's actual intent was different: the casebook should supply the idea/logic/numbers, but
+the student-facing presentation should be re-explained, not a PDF dump. Decision: add a
+paraphrase layer. Updated `CLAUDE.md`'s grounding policy and the `grounded-answering` skill
+with the new pipeline shape before any code: paraphrase call (chunk → plain-language
+rewrite, same facts only) → faithfulness judge (second Gemini call, same voting pattern as
+the existing relevance judge) → fail closed to the raw verbatim excerpt if the judge rejects
+the paraphrase or the call errors. Gated behind a reversible flag, cached like the rest of
+the backend, re-eval before going live (a paraphrase step is a new place hallucination can
+enter that didn't exist when excerpts were verbatim).
+**Why:** Verbatim excerpts were satisfying the letter of the grounding policy ("casebook
+content only") but not the product's actual purpose — explaining a framework or guesstimate
+clearly, not reproducing the source page.
+**Files:** `CLAUDE.md`, `.claude/skills/grounded-answering/SKILL.md`, `.gsd/ROADMAP.md`
+(inserted R7b, now ▶), `.gsd/STATE.md`.
+**Proof:** Docs updated; no code changed yet — implementation is R7b, handed to
+`rag-engineer` next.
+**Undo:** Revert the four files above; nothing in the database or runtime changed by this
+entry alone.
+**Open issues:** R7b itself (the actual paraphrase + judge code, the reversible flag, and an
+eval run against the test question set) is not yet built.
+
+---
+
+## 2026-11-02 — Frameworks page: fixed the QA-found catalog bug, the stale-cache bug, and the garbled-excerpt bug Aalhad reported directly
+**Phase:** (fix, live feature - not R6-R9 gated work) · **Type:** fix
+
+**What changed:** Aalhad reported the 3Cs Framework card showed "absolute garbage" text
+under "From our casebooks" (screenshot). Investigated the actual architecture (not the gated
+R7 catalog - a different, older code path) and found three separate real bugs, all in
+code that predates this session:
+
+1. **Permanently-stale cache.** `withGroundedExamples` (`frameworksGrounding.js`) used
+   `toCheck = frameworks.filter(f => !f.grounded_checked_at)` - once a framework was ever
+   checked, it was excluded from re-checking *forever*. MECE and 3Cs were both last checked
+   in September, two months before this entire R6-R9 pipeline rebuild - they'd never see any
+   of it. Added a 7-day staleness TTL (`isStale`, now exported and pure-tested) so a pipeline
+   change surfaces within days, not never again.
+2. **The actual garbled text.** 3Cs's cached excerpt came from v1 (`document_chunks`,
+   pre-rebuild quality) querying a casebook ("The Consulting Club, FMS, Casebook 2025-26")
+   that was never even re-ingested this session. Fixed by #1 - once re-checked, this
+   casebook-domain framework routes through the fixed v2 pipeline (relevance gate included)
+   instead of serving a two-month-old v1 result.
+3. **Missing grounding label when a check found nothing.** MECE had `grounded_checked_at`
+   set but both `grounded_example`/`grounded_image` null - the card showed no citation AND
+   no "not from the casebooks" label, violating the grounding policy's "always say one or
+   the other" rule. Added the missing fallback (`GroundingNote`, `isGrounded` check).
+4. **Found while testing the fix, not reported**: `grounded_image` can carry real content
+   with `url: null` (R8's structured-diagram rendering is still pending), and the frontend's
+   `hasGroundedImage` check required a truthy `url` - so a real grounded match would show as
+   neither the image nor any indication it was found, and the new fallback label (#3) would
+   have shown a FALSE "not from the casebooks" for content that actually was grounded. Split
+   into `hasGroundedImageUrl` (gates the `<img>`) vs. `hasGroundedImageCaption` (gates a new
+   properly-rendered text box using the real caption).
+5. **The QA report's catalog finding** (196-item "From the casebooks" tag list includes
+   boilerplate like "Consulting Club Team (Class of 2026)", "GDP Growth Rate", "Do's") was
+   real: `extractDiagramTitles` pulled every diagram's title verbatim, with nothing
+   distinguishing an actual framework name from a chart/table/org-chart title. Added
+   `judgeIsRealFrameworkTitle` (same judge-based approach as `judgeIsWorkedProblem` from
+   today's Guesstimates fix - a regex can't reliably tell "MECE" from "HOUSEHOLD
+   EXPENDITURE"), classified once per unique title (not per occurrence), with a 15-minute
+   in-memory cache so this doesn't cost hundreds of Gemini calls on every page load.
+   **Verified against real data: 196 items -> 31, zero boilerplate remaining** (manually
+   inspected the full list).
+6. **Found while reading the code, not previously reported**: the raw caption/excerpt text
+   can itself contain an unparsed ` ```placewise-diagram ` JSON fence - rendering it as plain
+   text (what the code did before) is the exact "absolute garbage" bug, just waiting to
+   recur for any other framework. Extracted `MarkdownWithDiagrams` (from GuesstimatesPage's
+   existing `ProblemContent`, now a shared component used by both pages) so excerpts/captions
+   render as real structured diagrams instead of raw text, everywhere this pattern appears.
+7. Also removed the per-answer "From our casebooks — {sourceFile}" citation header,
+   consistent with today's earlier site-wide policy decision (GroundingNote) - this page had
+   its own separate, un-updated citation display that nothing else in the app has anymore.
+
+**Verified live in a real browser, not just by reading code** (CLAUDE.md: "start the dev
+server and use the feature... before reporting complete") - gstack `/browse` (Aside
+unavailable, used the `$B` headless fallback), local dev server, guest login, Consulting ->
+Case Structuring:
+- **MECE**: now shows a real, properly-rendered diagram (an issue tree: Top Down/Bottom Up/
+  Pareto/MECE/Unit Economics/Extrapolation, from SRCC's own "FRAMEWORKS" page) - not blank,
+  not raw JSON.
+- **3Cs**: no longer shows the garbled v1 excerpt - correctly shows "General guidance - not
+  from the casebooks" now that v2 found nothing for this specific framework.
+- **Catalog list**: live-confirmed zero boilerplate items, 28 (the "so far" count ticks as
+  classification runs) real framework names only.
+
+**Known remaining rough edge, not fixed (minor, not the reported bug):** MECE's rendered
+diagram content spans a chunk that mixes two source-page topics (a framework-list page and
+a following unrelated guesstimate example about license plates in Maharashtra) and has a
+couple of stray page-footer numbers ("3", "4") leaking in as plain text lines - readable and
+coherent, not garbage, but a chunking-boundary quirk worth polishing separately.
+
+**Tests:** 4 new `isStale` unit tests, all pure/no-network. `npm test`: 125/126 (same
+pre-existing unrelated sandbox failure). `tsc --noEmit` and `vite build` both clean.
+**Files:** `backend/src/lib/frameworkCatalog.js`, `backend/src/lib/frameworksGrounding.js`,
+`backend/test/frameworksGrounding.test.js`, `frontend-react/src/pages/FrameworksPage.tsx`,
+`frontend-react/src/pages/GuesstimatesPage.tsx`, `frontend-react/src/types/api.ts`,
+`frontend-react/src/components/MarkdownWithDiagrams.tsx` (new).
+**Proof:** Live browser screenshots (MECE, 3Cs) taken this session; catalog count verified
+via direct function call against real data; test/build output above.
+**Undo:** Revert the files listed above.
+**Open issues:** The chunking-boundary rough edge noted above. The QA report's other
+findings (dead-click miscall on the catalog pills - actually a working local toggle, not
+dead, confirmed by reading the code - plus Company page's ASCII diagram, duplicate news
+headlines, Skill page's missing label, Community moderation visibility) are not addressed
+in this entry.
+
+---
+
+## 2026-11-02 — Real fix for the random-pick bug: retrieval approach itself was wrong, not just missing a filter
+**Phase:** (fix, same incident) · **Type:** fix
+
+**What changed:** The first fix (structural + judge filter layered on top of the existing
+similarity search) was necessary but not sufficient - testing it locally surfaced a second,
+deeper problem: `getRandomGuesstimateProblem` always returned the exact same one problem,
+never anything else. Traced it: the fixed seed query ("guesstimate practice problem estimate
+market size...") is a generic string whose nearest neighbors by embedding similarity cluster
+around the book's own THEORY/explanation pages (which share vocabulary with a generic query
+about guesstimates), not the 36 specific, varied problems themselves - confirmed only 1 of
+the query's fixed top-10 nearest neighbors was ever a real problem. Separately, the sharpened
+relevance judge (built to check "does this answer a REAL student question") rejected almost
+everything for this path too, since the seed string isn't a real question.
+
+**Real fix: stopped doing a similarity search for this path entirely.** `getRandomGuesstimateProblem`
+now fetches every active chunk for the book directly (`ingest_chunks` joined to
+`ingest_documents`, no embedding call, no RPC), filters to structurally-plausible candidates
+(`looksLikeWorkedProblem`), shuffles them (`shuffle`, new pure Fisher-Yates helper), and tries
+them in that random order against a newly-added, correctly-scoped judge
+(`judgeIsWorkedProblem` - "is this an actual problem," not "does this answer a fake
+question") until one passes, capped at 5 attempts. Cheap in the common case (one judge call
+most of the time), and the earlier false positive (page 6, theory content using the word
+"assumptions" in a sentence) is correctly rejected by this judge even though it passed the
+plain regex.
+
+**Verified against the real data, not assumed:** ran it 10 times in a row - 9 distinct real
+problems (pens, chairs, salon revenue, Airbus paint, books read, biscuit industry, laundry
+service, commute time, animation/VFX market), zero repeats of the theory page, zero index
+pages. One minor cosmetic artifact spotted while checking: a chunk spanning a page boundary
+had a stray page-footer number ("47") prepended before its real title - not a correctness
+bug (the actual problem content shown was complete and legitimate), just a chunking-boundary
+quirk worth knowing about, not fixed here.
+
+**Tests:** 3 new tests for `shuffle` (preserves elements, doesn't mutate input, handles
+empty/single-element arrays). `npm test`: 121/122 pass (same pre-existing unrelated sandbox
+failure).
+
+**Files:** `backend/src/lib/guesstimateRetrieval.js`, `backend/test/guesstimateRetrieval.test.js`.
+**Proof:** 10-run local test output above; test suite output above.
+**Undo:** Revert both files; `groundedGuesstimateLookup` (the `/ask` topic path) is
+unchanged and still uses the full relevance-judge gate, since its questions are real.
+**Open issues:** SRCC is reactivated (`is_active=true`) again but production's
+`ENABLE_CONSULTING_RAG_V2` is still off (Aalhad's explicit instruction: local testing and
+production visibility are now deliberately decoupled until he says otherwise) - so this fix
+is live on localhost only, not for real students yet.
+
+---
+
+## 2026-11-02 — Full-site QA pass (report-only) after the Guesstimates index-page bug
+**Phase:** M4 (frontend fixes) · **Type:** fix
+
+**What changed:** Nothing in the app — this is a `qa-tester` / gstack `/qa-only` report-only
+pass across every route in `frontend-react/src/router.tsx` on production (login, home,
+frameworks, guesstimates, company, role, skill, mock interview, resume drill, tone shifter,
+community, admin), run because the Guesstimates random-pick bug "looked fine in isolated
+testing" and only showed up when actually clicked. Each feature got at least one golden-path
+and one edge-case test, executed live via a headless browser (Aside unavailable on this
+machine; used gstack's own headless browser + direct `curl` against the production API
+instead), with screenshots and network/API responses checked, not just visual review.
+
+**Found:** No repeat of the Guesstimates-class bug anywhere else, and Mock Interview, Resume
+Drill, Role (chip panels + company tailoring), Tone Shifter and Admin access control are all
+solid end-to-end with correct grounding labels and no data leakage to the non-admin Guest
+session. But Frameworks has the *same class* of problem as the original bug: its "From the
+casebooks" tag list (196 items) surfaces non-framework boilerplate (a club team roster,
+"Do's"/"Don'ts", "FORMULAE", raw data-table labels) as if they were real frameworks, and those
+pills are styled clickable but do nothing when clicked. The MECE framework card and the Skill
+page's Core Concepts also skip the grounding citation/label the policy requires, unlike their
+siblings. Also found: the Company page's "Business Model" diagram renders as raw ASCII text
+instead of an actual diagram, duplicate news headlines on Company, an unreviewed Community
+post's text visible pre-moderation, and an unrelated internal casebook-filename list cached in
+a guest's `localStorage` via the Resume Drill feature. Full bug table, repro steps and
+pass/fail per test case: `qa/site_qa_2026-11-02.md`.
+
+**Files:** `qa/site_qa_2026-11-02.md` (new), `qa/screenshots/*.jpg`/`*.png` (new, 34 files).
+**Proof:** Live network captures and API response bodies for every finding (see report); e.g.
+`GET /api/admin/usage` → `404` with empty body for a Guest session; `POST
+/api/mock-interview/start` → `200` referencing real uploaded-resume content; Frameworks tag
+pills click → 0 network requests fired.
+**Undo:** N/A — report-only, no product code or data changed.
+**Open issues:** All 9 findings in the report are unfixed and un-triaged — Aalhad decides what
+gets fixed and in what order, per the task's instructions. Community's "pending review" post
+visibility may be intended design rather than a bug; needs a decision, not necessarily a fix.
+
+---
+
+## 2026-11-02 — Fix for the index-page bug: structural filter + sharpened judge
+**Phase:** (fix, same incident as the entry above) · **Type:** fix
+
+**What changed:** Two-layer fix for the random-pick-showed-the-index-page bug.
+1. `looksLikeWorkedProblem()` (new, `guesstimateRetrieval.js`) - a cheap, deterministic,
+   no-API-call filter: a candidate must contain "assumptions" (case-insensitive) to be
+   eligible for random pick. Every real problem in this book states its assumptions
+   explicitly; front matter never does. `getRandomGuesstimateProblem` now filters candidates
+   through this before `pickRandomCoveringChunk` runs, reusing that function unchanged.
+2. Sharpened the shared relevance judge prompt (`consultingRetrieval.js`,
+   `RELEVANCE_SYSTEM_PROMPT`) to explicitly name this failure mode too (an index/TOC/
+   acknowledgements/theory page naming a topic is not the same as answering it) - defense in
+   depth for the topic-ask path, not just random-pick.
+
+**Verified against the real data, not assumed:** ran `looksLikeWorkedProblem` against all 62
+of SRCC v7's actual `ingest_chunks` rows directly (no need to risk reactivating `is_active`
+just to test). 37/62 pass as eligible problems; the 25 filtered out are exactly the front
+matter that caused the bug - index, acknowledgements, theory, cheatsheet, "THANK YOU!",
+framework-explainer pages (TAM-SAM-SOM, round-off-numbers tips, etc.). None of the 37 passing
+ones look like front matter by inspection.
+
+**Tests:** 4 new unit tests (`guesstimateRetrieval.test.js`) for `looksLikeWorkedProblem` -
+a real problem passes, the actual index page content fails, a theory page fails,
+case-insensitivity and empty/undefined input handled safely. `npm test`: 118/119 pass (same
+pre-existing unrelated sandbox failure).
+
+**Files:** `backend/src/lib/guesstimateRetrieval.js`, `backend/src/lib/consultingRetrieval.js`,
+`backend/test/guesstimateRetrieval.test.js`.
+**Proof:** Test output and the 37/62 real-data verification above.
+**Undo:** Revert the two lib files and the test file.
+**Open issues:** SRCC is still deactivated (`is_active=false`) from the incident rollback -
+reactivating it is a separate, deliberate next step, not done automatically just because the
+fix is in place.
+
+---
+
+## 2026-11-02 — Guesstimates pulled back offline: random-pick showed the book's index page as a "problem"
+**Phase:** (incident, same day as the SRCC go-live) · **Type:** fix, rollback
+
+**What happened:** Aalhad reported (with a screenshot) that `/guesstimates`'s "random
+practice problem" showed SRCC's own table-of-contents/index page (page 2, "180 DEGREES
+CONSULTING, SRCC PRESENTS GUESSTIMATE BOOK VOLUME 1 INDEX...") as if it were a problem to
+solve. Real bug, not a false alarm.
+
+**Immediate action: hidden from students right away**, without waiting on a redeploy -
+deactivated all 62 of SRCC v7's `ingest_chunks` rows again (`is_active=false`). Verified
+against the live production API, not assumed: `GET /api/guesstimates/random` now returns
+`available:false`, same as before today's activation - students see the normal "not
+available" state, nothing broken or confusing shown.
+
+**Root cause:** `getRandomGuesstimateProblem()` (`guesstimateRetrieval.js`) searches
+broadly ("guesstimate practice problem estimate market size number of units volume") and
+`pickRandomCoveringChunk` picks any matching row at random. SRCC's front matter - pages 1
+(title), 2-3 (index), 4 (acknowledgements), 5-9 (theory/approach pages), 10-11 (cheatsheet) -
+is genuinely *about* guesstimates (it literally names many problem titles), so it can clear
+both the similarity threshold and the relevance gate for that broad query. This is a
+**different failure mode than the one the relevance gate was built for** - not "wrong topic,"
+but "right topic, wrong page type" (meta/front-matter content vs. an actual worked problem).
+Nothing currently distinguishes the two. Real problems start at page 14 (confirmed: pages
+1-13 are title/index/acknowledgements/theory/cheatsheet, page 14 is the first real named
+problem, "MARKET SIZE OF HEALTHY BISCUIT INDUSTRY").
+
+**Not fixed yet** - Aalhad said "we'll need to work on it," not an immediate demand; the
+urgent part (get it off the live site) is done. Proposed fix (not yet built, pending
+confirmation): sharpen the relevance judge specifically for the random-pick path to reject
+"a list, index, or theory/methodology page" as not itself being a practice problem - same
+kind of targeted prompt fix as the earlier generic-methodology false-positive class, not a
+hardcoded SRCC-specific page-range exclusion (which wouldn't generalize to the next
+guesstimates casebook).
+
+**Files:** None changed - this entry documents the `is_active` rollback and root cause only.
+**Proof:** Real production API response (`available:false`) shown above.
+**Undo:** N/A (this entry is the undo of today's earlier SRCC activation).
+**Open issues:** The random-pick page-type filtering fix itself, before SRCC goes live again.
+
+---
+
+## 2026-11-02 — Guesstimates confirmed live on production, verified directly against the real API
+**Phase:** (R9-equivalent, scoped to SRCC) · **Type:** verification
+
+**What changed:** Aalhad set `ENABLE_CONSULTING_RAG_V2=true` on Render himself (the one step
+this session deliberately left to him - see the entry above). Verified it actually took
+effect by calling the real production API directly (`https://placement-mastery-hub-api.onrender.com`,
+found in `Mark Down Files/DOCUMENT.md` - the Render dashboard API was blocked by the sandbox's
+credential-use classifier this time, so verified via the public endpoints directly instead,
+which is more conclusive anyway):
+- `GET /api/guesstimates/random`: `available:true`, returns a real SRCC problem with a real
+  citation - was `available:false` before the flag was set.
+- `GET /api/guesstimates/ask?topic=...Swiggy in Delhi...`: `covered:true`, returns the exact
+  page (21) verified earlier today, matching the real content.
+- `GET /api/guesstimates/ask?topic=...tennis balls...` (the known trap question): still
+  correctly `covered:false`, labelled "General guidance — not from the casebooks" - the
+  relevance gate holds on the live production site, not just locally.
+
+**Guesstimates is genuinely live for students now**, grounded in the verified SRCC content
+from today's fixes. Nothing else (Frameworks, Q&A, Role/Company) is active yet - only SRCC's
+62 chunks are `is_active=true`, everything else correctly still returns "not covered."
+
+**Files:** None - verification only, no code/data change.
+**Proof:** Real HTTP responses from the production API, shown above.
+**Open issues:** Same as before - 8 more casebooks' content is independently verified
+(1,191-page fidelity pass) but not yet activated; R5 (admin review UI) still unbuilt;
+Frameworks/Q&A/Role/Company still need their own switch-over decision.
+
+---
+
 ## 2026-11-02 — SRCC Guesstimates live: page 35 fixed, pipeline-wide domain bug found and fixed, first real is_active switch-over
 **Phase:** (R9-equivalent, scoped to one casebook — informal, not the full M1 switch-over)
 **Type:** fix, ingestion, migration

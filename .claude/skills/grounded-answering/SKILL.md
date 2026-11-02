@@ -7,11 +7,46 @@ description: PlaceWise's grounding policy for any student-facing answer built fr
 
 ## The policy
 1. **Retrieve** club-casebook chunks for the question (filtered by domain when known).
-2. **Covered** (at least one chunk above threshold that actually addresses the question) →
-   answer **only** from those chunks. No outside facts, numbers or frameworks.
+2. **Covered** (at least one chunk above threshold that actually addresses the question,
+   confirmed by the relevance judge) → **paraphrase** those chunks (see below). No outside
+   facts, numbers or frameworks — the chunk(s) are the only source of content, verbatim
+   excerpt or not.
 3. **Not covered** → say so plainly ("The casebooks don't cover this"), then give a general
    answer under a visible label such as `General guidance — not from the casebooks`.
 4. **Never blend silently.** If an answer mixes both, each part is labelled.
+
+## The paraphrase layer (added 2026-11-02)
+Showing the retrieved chunk verbatim is **not** the policy — it reads like a dump of the PDF,
+not a tool that teaches. Every covered answer goes through one more step before it reaches
+the frontend:
+
+1. **Paraphrase call.** Prompt Gemini with the relevant chunk(s) (and, for diagrams, the
+   structured `placewise-diagram` block kept intact — never flattened to prose) and instruct
+   it explicitly: re-explain in clearer, more natural language; you may reorder, simplify
+   sentence structure, and add connective/explanatory phrasing, but you must not introduce
+   any claim, number, name, step or example that is not already in the source chunk(s). Cite
+   nothing — citations are metadata, not model output (unchanged).
+2. **Faithfulness judge.** A second Gemini call (same pattern as `judgeRelevance` in
+   `consultingRetrieval.js` — cheap tier, a few deterministic votes) compares the paraphrase
+   against the original chunk(s) and verdicts `faithful` / `unfaithful`: does the paraphrase
+   contain anything the source didn't say, or does it drop/alter a number, name or step. This
+   is a different question than the existing relevance judge (relevance asks "does this
+   chunk answer the question"; this asks "does the rewrite still say only what the chunk
+   said") — keep them as separate calls, don't conflate.
+3. **Fail closed.** If the faithfulness check fails (or the paraphrase call errors), fall
+   back to showing the raw verbatim excerpt for that answer rather than a possibly-distorted
+   rewrite. A verbatim fallback is always safe; a failed paraphrase silently shown is not.
+4. **Reversible.** Gate the whole paraphrase step behind a flag (reuse the existing
+   `ENABLE_CONSULTING_RAG_V2`-style on/off pattern, or a new flag if the feature predates
+   that one for a given surface) so turning it off restores raw-excerpt behavior in one
+   step, per CLAUDE.md's "every switch-over must be reversible" rule.
+5. **Cache the result**, not just the retrieval — same `singleFlight`/`CONTENT_VERSION`
+   pattern as the rest of the backend (`backend-conventions` skill), keyed so a prompt change
+   invalidates old paraphrases rather than serving them forever (see the `isStale`/cache-TTL
+   bug fixed 2026-11-02 for why an unbounded cache is dangerous here).
+6. **Log the prompt.** Any change to the paraphrase prompt is a prompt change — `build-log`
+   skill applies, and `rag-eval` should re-run before it goes live, since a paraphrase is a
+   new place hallucination could sneak in that didn't exist when excerpts were verbatim.
 
 ## Citations
 - Every grounded claim is still backed by its chunk's metadata (school, casebook title,

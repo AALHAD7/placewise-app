@@ -45,7 +45,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent" }}>
       <div style={{ width: 380, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "32px 30px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9, justifyContent: "center" }}>
           <span style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-900)" }}>Placewise</span>
@@ -116,8 +116,9 @@ export default function LoginPage() {
               font: "600 0.84375rem 'Instrument Sans',sans-serif",
               cursor: submitting ? "default" : "pointer",
               opacity: submitting ? 0.6 : 1,
-              background: "var(--indigo)",
-              color: "var(--surface)",
+              background: "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)",
+              color: "#ffffff",
+              boxShadow: "0 4px 18px rgba(255, 107, 53, 0.45)",
               marginTop: 2
             }}
           >

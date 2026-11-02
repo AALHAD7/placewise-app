@@ -1,55 +1,41 @@
-/* Real :hover rules replacing the old app's runtime-generated style-hover="..."
-   attribute (support.js createPseudoSheet(), always !important). None of the
-   ported sites set the same CSS property both inline and on hover, so plain
-   classes (no !important) work - except .nav-item, where the old runtime's
-   !important made hover win over the .active background too; placed after
-   .nav-item.active here so source order preserves that same precedence.
-   Filled in phase-by-phase as each component/page is ported - see the
-   migration plan §0.3 for the full 50-site inventory this works through.
+/* Real :hover rules for Charcoal Black, Royal Blue tint, White Font & Tangerine Orange accent theme */
 
-   Palette remapped to Apple's monochrome/blue system (DESIGN.md): indigo
-   #4F46E5 -> Apple Blue #0066cc, focus tints -> pale blue, and shadows
-   dropped per "no shadows on cards/surfaces". */
+/* --- TopNav --- */
+.brand-left:hover{ opacity:.9; }
+.nav-item:hover{ background:rgba(37, 99, 235, 0.25); color:#ffffff; }
 
-/* --- Phase 0: TopNav --- */
-.brand-left:hover{ opacity:.85; }
-/* Translucent (not the old flat #f5f5f7) so hover reads as a wash on top of
-   the glass capsule (see .glass-capsule/.topnav-links in global.css)
-   instead of a flat gray patch breaking the material. */
-.nav-item:hover{ background:rgba(255,255,255,.55); }
+/* --- Selector dropdown option rows --- */
+.selector-option:hover{ background:rgba(255, 107, 53, 0.22); color:#ffffff; }
 
-/* --- Phase 0.5: Selector dropdown option rows --- */
-.selector-option:hover{ background:#f5f5f7; }
+/* --- Company page --- */
+.company-link:hover{ color:#ff6b35; border-bottom-color:#ff6b35; }
+.value-chain-stage:hover{ border-color:#ff6b35; }
 
-/* --- Phase 3: Company page --- */
-.company-link:hover{ color:#0066cc; border-bottom-color:#99c7ff; }
-.value-chain-stage:hover{ border-color:#86868b; }
+/* --- Role page / ProbeChat --- */
+.probe-trigger:hover{ background:rgba(255, 107, 53, 0.18); border-color:#ff6b35; }
+.probe-trigger-why:hover{ background:rgba(37, 99, 235, 0.22); border-color:#2563eb; }
+.probe-trigger-how:hover{ background:rgba(255, 107, 53, 0.18); border-color:#ff6b35; }
+.probe-close:hover{ color:#ff6b35; }
+.probe-input:focus{ border-color:#ff6b35; background:rgba(255,255,255,0.12); color:#ffffff; }
+.role-skill-link:hover{ opacity:.85; color:#ff6b35; }
+.practise-btn:hover{ background:rgba(255, 107, 53, 0.22); }
 
-/* --- Phase 4: Role page / ProbeChat --- */
-.probe-trigger:hover{ background:#f5f5f7; border-color:#d6d6d6; }
-.probe-trigger-why:hover{ background:#eef6ff; border-color:#99c7ff; }
-.probe-trigger-how:hover{ background:#f5f5f7; border-color:#d6d6d6; }
-.probe-close:hover{ color:#424245; }
-.probe-input:focus{ border-color:#0066cc; background:#fff; }
-.role-skill-link:hover{ opacity:.7; }
-.practise-btn:hover{ background:#eef6ff; }
+/* --- Resume page --- */
+.link-darken:hover{ color:#ff6b35; }
+.link-indigo-dark:hover{ color:#ff7a47; }
+.btn-outline-indigo:hover{ border-color:#ff6b35; color:#ffffff; background:rgba(255, 107, 53, 0.18); }
+.btn-primary-darken:hover{ background:#ea580c; }
+.btn-border-indigo:hover{ border-color:#ff6b35; }
+.btn-border-green:hover{ border-color:#34d399; }
+.result-card:hover{ border-color:#ff6b35; box-shadow:0 0 20px rgba(255, 107, 53, 0.35); }
+.copy-icon:hover{ opacity:1; color:#ff6b35; }
 
-/* --- Phase 7: Resume page --- */
-.link-darken:hover{ color:#1d1d1f; }
-.link-indigo-dark:hover{ color:#0071e3; }
-.btn-outline-indigo:hover{ border-color:#99c7ff; color:#0066cc; }
-.btn-primary-darken:hover{ background:#004c99; }
-.btn-border-indigo:hover{ border-color:#99c7ff; }
-.btn-border-green:hover{ border-color:#a7e3c8; }
-.result-card:hover{ border-color:#86868b; }
-.copy-icon:hover{ opacity:1; }
+/* --- Skill page --- */
+.skill-concept-link:hover{ color:#ff7a47; }
+.code-textarea:focus{ border-color:#ff6b35; background:rgba(255,255,255,0.08); color:#ffffff; }
+.code-textarea-plain:focus{ border-color:#ff6b35; background:rgba(255,255,255,0.08); color:#ffffff; }
 
-/* --- Phase 6: Skill page --- */
-.skill-concept-link:hover{ color:#0071e3; }
-.code-textarea:focus{ border-color:#0066cc; background:#fff; }
-.code-textarea-plain:focus{ border-color:#0066cc; background:#fff; }
-
-/* --- Phase 8: Tone Shifter (real port, not the /api/tone/shift redesign) --- */
-.tone-input:focus{ border-color:#0066cc; background:#fff; }
-.tone-remove-bullet:hover{ background:#f5f5f7; color:#6e6e73; }
-.tone-add-bullet:hover{ background:#eef6ff; border-color:#99c7ff; }
+/* --- Tone Shifter --- */
+.tone-input:focus{ border-color:#ff6b35; background:rgba(255,255,255,0.08); color:#ffffff; }
+.tone-remove-bullet:hover{ background:rgba(244, 63, 94, 0.25); color:#ffffff; }
+.tone-add-bullet:hover{ background:rgba(255, 107, 53, 0.2); border-color:#ff6b35; color:#ffffff; }

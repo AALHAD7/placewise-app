@@ -24,11 +24,22 @@ Spec: `.gsd/SPEC.md`. Session position: `.gsd/STATE.md`.
 ## Product rules (non-negotiable)
 
 **Grounding policy**
-- If the casebooks cover a question, the answer uses **casebook content only**. The site
-  states globally that answers are grounded in the casebooks, so individual answers do
-  **not** repeat a per-answer source line ("This is from the IIMK casebook") — that was
-  removed 2026-11-02 as redundant (Aalhad's call). School/casebook/page is still computed
-  and returned by the API for debugging/admin use; it's just not rendered to students.
+- If the casebooks cover a question, the answer uses **casebook content only** — but it is
+  not shown as a verbatim excerpt. The retrieved chunk(s) are the **sole source of ideas,
+  logic, numbers and structure**, but a Gemini paraphrase layer re-presents them in the
+  student's own plain-language explanation before anything reaches the frontend. Decided
+  2026-11-02 (Aalhad's call): showing raw casebook text read like a dump of the PDF, not a
+  tool that teaches. The paraphrase must not add, drop, or alter any claim, number, name or
+  step from the source — it may reorder, simplify sentence structure, and add connective
+  explanation, but never introduce an idea the source chunk(s) didn't contain. A faithfulness
+  check (a second Gemini judge call, same pattern as the existing relevance gate) compares
+  paraphrase against source chunk before anything is returned; a paraphrase that fails the
+  check is dropped and the raw excerpt is shown instead rather than risking a hallucinated
+  rewrite reaching a student. See `grounded-answering` skill for the pipeline shape.
+  The site states globally that answers are grounded in the casebooks, so individual answers
+  do **not** repeat a per-answer source line ("This is from the IIMK casebook") — removed
+  2026-11-02 as redundant. School/casebook/page is still computed and returned by the API
+  for debugging/admin use; it's just not rendered to students.
 - If they don't, say so plainly, then give a general answer **clearly labelled** as not from
   the casebooks. Never blend the two silently. This disclosure stays per-answer — it's the
   one thing that must never be silently omitted, since hiding it would let general AI

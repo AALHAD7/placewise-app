@@ -79,12 +79,12 @@ function CurvedArrow() {
   );
 }
 
-// TOOLS: 4 cards, tints/routes exactly as specified.
+// TOOLS: 4 cards, tints/routes styled to match charcoal/royal blue/tangerine theme.
 const TOOLS = [
-  { title: "Company Prep", desc: "Insights on top companies, roles and interview process.", to: "/company", tint: "var(--home-tint-blue)", color: "var(--home-primary)", icon: "building" },
-  { title: "Case Practice", desc: "Practise real casebook cases with AI guidance.", to: "/frameworks", tint: "var(--home-tint-purple)", color: "#7C3AED", icon: "layers" },
-  { title: "Resume Drill", desc: "Get the questions your resume invites, with AI feedback.", to: "/resume", tint: "var(--home-tint-green)", color: "var(--home-success)", icon: "file" },
-  { title: "Mock Interview", desc: "A live voice interview tuned to your domain and difficulty.", to: "/mock-interview", tint: "var(--home-tint-orange)", color: "#D97706", icon: "mic" }
+  { title: "Company Prep", desc: "Insights on top companies, roles and interview process.", to: "/company", tint: "rgba(37, 99, 235, 0.25)", color: "#ffffff", icon: "building" },
+  { title: "Case Practice", desc: "Practise real casebook cases with AI guidance.", to: "/frameworks", tint: "rgba(255, 107, 53, 0.25)", color: "#ffffff", icon: "layers" },
+  { title: "Resume Drill", desc: "Get the questions your resume invites, with AI feedback.", to: "/resume", tint: "rgba(37, 99, 235, 0.25)", color: "#ffffff", icon: "file" },
+  { title: "Mock Interview", desc: "A live voice interview tuned to your domain and difficulty.", to: "/mock-interview", tint: "rgba(255, 107, 53, 0.25)", color: "#ffffff", icon: "mic" }
 ];
 
 function ToolIcon({ name }: { name: string }) {

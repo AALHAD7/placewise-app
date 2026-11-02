@@ -354,7 +354,7 @@ export default function ToneShifterPage() {
                       land the bullet inside its length range - "closest
                       version" per spec, flagged rather than hidden. */}
                   {o.badge && (
-                    <span style={{ display: "inline-block", marginTop: 4, padding: "2px 8px", borderRadius: "var(--r-pill)", background: "var(--amber-wash, #fff4e5)", color: "var(--amber)", fontSize: "0.6875rem", fontWeight: 700 }}>
+                    <span style={{ display: "inline-block", marginTop: 4, padding: "2px 8px", borderRadius: "var(--r-pill)", background: "rgba(251, 191, 36, 0.16)", border: "1px solid rgba(251, 191, 36, 0.35)", color: "#fbbf24", fontSize: "0.6875rem", fontWeight: 700 }}>
                       {o.badge}
                     </span>
                   )}

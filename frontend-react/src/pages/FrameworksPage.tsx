@@ -4,7 +4,9 @@ import { ICON_D } from "../lib/constants";
 import { useSelectorOpenState } from "../hooks/useSelector";
 import Selector, { type SelectorOption } from "../components/Selector";
 import PageHeader from "../components/PageHeader";
-import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksCatalogResponse, FrameworksResponse, FrameworksTaxonomyResponse } from "../types/api";
+import AsciiDiagram from "../components/AsciiDiagram";
+import { getAsciiDiagramForFramework } from "../lib/asciiDiagrams";
+import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksResponse, FrameworksTaxonomyResponse } from "../types/api";
 
 // Rebuilt around a real Domain -> Subdomain -> framework browse flow instead
 // of one flat, ungrouped list (see migration_019_frameworks_taxonomy.sql +
@@ -149,8 +151,17 @@ function FunnelDiagram({ data }: { data: FrameworkFunnelDiagram }) {
   );
 }
 
+const DEFAULT_TAXONOMY: FrameworksTaxonomyResponse["domains"] = [
+  { domain: "Consulting", subdomains: ["Case Structuring", "Market Sizing & Entry", "Profitability & Growth"] },
+  { domain: "Finance", subdomains: ["Corporate Finance & M&A", "Valuation"] },
+  { domain: "General Management", subdomains: ["Business Model & Strategy", "Leadership & Behavioural", "Strategy Frameworks"] },
+  { domain: "HR", subdomains: ["Performance Management", "Talent & Org Design"] },
+  { domain: "Marketing:Sales", subdomains: ["Branding & Positioning", "Go-to-Market", "Growth & Scaling", "Market Analysis", "Marketing Mix"] },
+  { domain: "Prodman", subdomains: ["Metrics & Growth", "Prioritization", "Product Design"] }
+];
+
 export default function FrameworksPage() {
-  const [taxonomy, setTaxonomy] = useState<FrameworksTaxonomyResponse["domains"]>([]);
+  const [taxonomy, setTaxonomy] = useState<FrameworksTaxonomyResponse["domains"]>(DEFAULT_TAXONOMY);
   const [taxonomyError, setTaxonomyError] = useState("");
 
   const [domain, setDomain] = useState("");
@@ -163,19 +174,14 @@ export default function FrameworksPage() {
   const [list, setList] = useState<Framework[]>([]);
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
-  // R8: "From the casebooks" catalog (R7's buildConsultingFrameworkCatalog) - every
-  // framework actually named in a transcribed diagram, not this page's seeded list
-  // above. Empty (not an error) while the feature flag is off or outside Consulting.
-  const [catalog, setCatalog] = useState<FrameworksCatalogResponse["frameworks"]>([]);
-  const [catalogExpanded, setCatalogExpanded] = useState<Record<string, boolean>>({});
-
   useEffect(() => {
     apiFetch<FrameworksTaxonomyResponse>("/api/frameworks/taxonomy", {}, "Failed to load framework topics.")
-      .then((data) => setTaxonomy(data.domains || []))
-      .catch((e) => setTaxonomyError(e instanceof Error ? e.message : "Could not reach the backend."));
-    apiFetch<FrameworksCatalogResponse>("/api/frameworks/catalog?domain=Consulting", {}, "Failed to load the casebook catalog.")
-      .then((data) => setCatalog(data.frameworks || []))
-      .catch(() => setCatalog([])); // non-critical - page works fine without it
+      .then((data) => {
+        if (data.domains && data.domains.length) setTaxonomy(data.domains);
+      })
+      .catch((e) => {
+        setTaxonomyError(e instanceof Error ? e.message : "Failed to load domains.");
+      });
   }, []);
 
   useEffect(() => {
@@ -302,46 +308,6 @@ export default function FrameworksPage() {
         </div>
       </div>
 
-      {catalog.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <div className="section-title">From the casebooks</div>
-          <p style={{ margin: "6px 0 14px", fontSize: "0.8125rem", color: "var(--text-gray2)" }}>
-            Every framework actually named in a diagram across the ingested Consulting casebooks - {catalog.length} found so far.
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-start" }}>
-            {catalog.map((f) => {
-              const key = f.title;
-              const isOpen = !!catalogExpanded[key];
-              return (
-                <div key={key} style={{ border: "1px solid var(--border-input)", borderRadius: "var(--r-pill)", background: "var(--surface)" }}>
-                  <button
-                    type="button"
-                    onClick={() => setCatalogExpanded((s) => ({ ...s, [key]: !s[key] }))}
-                    className="unbutton"
-                    style={{ padding: "7px 14px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-900)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}
-                  >
-                    {f.title}
-                    <span style={{ color: "var(--text-lightgray)", fontWeight: 400 }}>({f.occurrences.length})</span>
-                  </button>
-                  {isOpen && (
-                    <div style={{ padding: "0 14px 10px", fontSize: "0.75rem", color: "var(--text-gray2)", maxHeight: 220, overflowY: "auto" }}>
-                      {f.occurrences.slice(0, 20).map((o, i) => (
-                        <div key={i}>
-                          {[o.school, o.club].filter(Boolean).join(" ") || o.sourceFile}{o.year ? `, ${o.year}` : ""} - p.{o.page}
-                        </div>
-                      ))}
-                      {f.occurrences.length > 20 && (
-                        <div style={{ marginTop: 4, color: "var(--text-lightgray)" }}>+{f.occurrences.length - 20} more</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       <div style={{ marginTop: 26, display: "flex", gap: 14, flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 320px", maxWidth: 440 }}>
           <Selector
@@ -389,13 +355,7 @@ export default function FrameworksPage() {
             {items.map((f) => {
               const isOpen = !!open[f.id];
               const hasExample = !!f.example;
-              const hasGroundedExample = !!(f.grounded_example && f.grounded_example.excerpt);
-              const hasGroundedImage = !!(f.grounded_image && f.grounded_image.url);
-              const groundedExcerpt = f.grounded_example
-                ? f.grounded_example.excerpt.length > 420
-                  ? f.grounded_example.excerpt.slice(0, 420).trim() + "…"
-                  : f.grounded_example.excerpt
-                : "";
+              const hasGroundedImageUrl = !!(f.grounded_image && f.grounded_image.url);
               const steps = Array.isArray(f.steps) ? f.steps : [];
               const pitfalls = Array.isArray(f.pitfalls) ? f.pitfalls : [];
 
@@ -416,19 +376,27 @@ export default function FrameworksPage() {
                   </div>
                   {isOpen && (
                     <div className="t-panel-in" style={{ marginTop: 16, borderTop: "1px solid var(--divider)", paddingTop: 14 }}>
-                      {f.diagram_type === "grid" && f.diagram_data && "cols" in f.diagram_data && <GridDiagram data={f.diagram_data} />}
-                      {f.diagram_type === "funnel" && f.diagram_data && "stages" in f.diagram_data && <FunnelDiagram data={f.diagram_data} />}
+                      {(() => {
+                        const asciiDiag = getAsciiDiagramForFramework(f.name);
+                        if (asciiDiag) {
+                          return <AsciiDiagram title={asciiDiag.title} ascii={asciiDiag.ascii} />;
+                        }
+                        if (f.diagram_type === "grid" && f.diagram_data && "cols" in f.diagram_data) {
+                          return <GridDiagram data={f.diagram_data} />;
+                        }
+                        if (f.diagram_type === "funnel" && f.diagram_data && "stages" in f.diagram_data) {
+                          return <FunnelDiagram data={f.diagram_data} />;
+                        }
+                        return null;
+                      })()}
 
-                      {hasGroundedImage && (
-                        <div style={{ marginTop: f.diagram_type ? 16 : 0 }}>
+                      {hasGroundedImageUrl && (
+                        <div style={{ marginTop: 16 }}>
                           <img
                             src={f.grounded_image!.url}
-                            alt={f.grounded_image!.caption}
+                            alt="Diagram from the casebooks"
                             style={{ maxWidth: "100%", borderRadius: "var(--r-sm)", border: "1px solid var(--card-border)", display: "block" }}
                           />
-                          <div style={{ marginTop: 6, fontSize: "0.71875rem", color: "var(--text-lightgray)" }}>
-                            From the ingested casebooks ({f.grounded_image!.sourceFile}): {f.grounded_image!.caption}
-                          </div>
                         </div>
                       )}
 
@@ -441,23 +409,23 @@ export default function FrameworksPage() {
                       </div>
 
                       {f.when_to_use && (
-                        <div style={{ marginTop: 12, background: "var(--green-wash)", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--green)" }}>When to use it</div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)", textWrap: "pretty" as const }}>{f.when_to_use}</p>
+                        <div style={{ marginTop: 12, background: "#eef6f1", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#065f46" }}>When to use it</div>
+                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.when_to_use}</p>
                         </div>
                       )}
                       {f.when_not_to_use && (
                         <div style={{ marginTop: 10, background: "#fdf3e3", border: "1px solid #f5e0ab", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--amber-ink)" }}>When not to use it</div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)", textWrap: "pretty" as const }}>{f.when_not_to_use}</p>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#92400e" }}>When not to use it</div>
+                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.when_not_to_use}</p>
                         </div>
                       )}
                       {pitfalls.length > 0 && (
                         <div style={{ marginTop: 10, background: "#fdeaea", border: "1px solid #f6c8c8", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--red-dark)" }}>Common pitfalls</div>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#991b1b" }}>Common pitfalls</div>
                           <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 5 }}>
                             {pitfalls.map((p, i) => (
-                              <div key={i} style={{ fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>
+                              <div key={i} style={{ fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827" }}>
                                 • {p}
                               </div>
                             ))}
@@ -465,19 +433,9 @@ export default function FrameworksPage() {
                         </div>
                       )}
                       {hasExample && (
-                        <div style={{ marginTop: 12, background: "var(--surface-alt)", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--text-lightgray)" }}>Example</div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)", textWrap: "pretty" as const }}>{f.example}</p>
-                        </div>
-                      )}
-                      {hasGroundedExample && (
-                        <div style={{ marginTop: 12, background: "#eef6f1", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--green)" }}>
-                            From our casebooks — {f.grounded_example?.sourceFile}
-                          </div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)", textWrap: "pretty" as const, whiteSpace: "pre-wrap" }}>
-                            {groundedExcerpt}
-                          </p>
+                        <div style={{ marginTop: 12, background: "#f0f7ff", border: "1px solid #bfdbfe", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#1d4ed8" }}>Example</div>
+                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.example}</p>
                         </div>
                       )}
                     </div>

@@ -62,7 +62,7 @@ export default function ProbeChat({ probe: p, showHow, showQuote = true }: Probe
             <GroundingNote groundedInCasebooks={p.groundedInCasebooks} />
           )}
           {p.contentCheckNotice && !p.loading && (
-            <div role="alert" style={{ marginTop: 10, padding: "8px 10px", borderRadius: "var(--r-sm)", background: "#fdf3e3", color: "var(--amber-ink)", fontSize: "0.78125rem", lineHeight: 1.5 }}>
+            <div role="alert" style={{ marginTop: 10, padding: "8px 10px", borderRadius: "var(--r-sm)", background: "#fdf3e3", border: "1px solid #f5e0ab", color: "#92400e", fontSize: "0.78125rem", lineHeight: 1.5, fontWeight: 500 }}>
               {p.contentCheckNotice}
             </div>
           )}
@@ -84,7 +84,7 @@ export default function ProbeChat({ probe: p, showHow, showQuote = true }: Probe
                 className="probe-input"
                 style={{ flex: 1, minWidth: 0, border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", padding: "9px 11px", font: "400 0.84375rem 'Instrument Sans',sans-serif", color: "var(--text-900)", outline: "none", background: "var(--field-bg-alt)" }}
               />
-              <button onClick={p.send} style={{ flex: "none", border: 0, borderRadius: "var(--r-sm)", background: "var(--indigo-700)", color: "var(--surface)", font: "600 0.8125rem 'Instrument Sans',sans-serif", padding: "0 15px", cursor: "pointer" }}>
+              <button onClick={p.send} style={{ flex: "none", border: 0, borderRadius: "var(--r-sm)", background: "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)", color: "#ffffff", boxShadow: "0 4px 16px rgba(255, 107, 53, 0.45)", font: "600 0.8125rem 'Instrument Sans',sans-serif", padding: "0 15px", cursor: "pointer" }}>
                 Send
               </button>
             </div>

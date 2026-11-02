@@ -480,7 +480,7 @@ export default function TopNav() {
                     onClick={doSignOut}
                     autoFocus
                     className="unbutton"
-                    style={{ flex: 1, textAlign: "center", padding: "8px 10px", borderRadius: "var(--r-sm)", border: "1px solid transparent", background: isGuest ? "var(--red)" : "var(--indigo)", fontSize: "0.78125rem", fontWeight: 700, color: "var(--surface)" }}
+                    style={{ flex: 1, textAlign: "center", padding: "8px 10px", borderRadius: "var(--r-sm)", border: "1px solid transparent", background: isGuest ? "var(--red)" : "var(--indigo)", fontSize: "0.78125rem", fontWeight: 700, color: "#ffffff" }}
                   >
                     Sign out
                   </button>

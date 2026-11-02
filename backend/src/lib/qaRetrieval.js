@@ -39,7 +39,10 @@ export function buildGroundedQaPrompt(question, excerpts) {
  * them to students (2026-11-02 decision - see GroundingNote.tsx).
  */
 export async function groundedQaAnswer(question) {
-  const result = await groundedConsultingLookup(question, { domain: "Consulting", matchCount: 6 });
+  // paraphrase: true opts in to the paraphrase layer (grounded-answering skill) - a
+  // no-op unless ENABLE_ANSWER_PARAPHRASE is also on, in which case each chunk's
+  // `.content` below is the rewrite (verified faithful) rather than the verbatim excerpt.
+  const result = await groundedConsultingLookup(question, { domain: "Consulting", matchCount: 6, paraphrase: true });
 
   if (!result.covered) {
     const answer = await generateText({

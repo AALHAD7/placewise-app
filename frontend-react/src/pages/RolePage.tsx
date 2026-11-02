@@ -67,9 +67,9 @@ function SourceBadge({ sources, fetchedAt }: { sources: { title: string; uri: st
 }
 
 const DIFFICULTY_TAG_STYLE: Record<string, React.CSSProperties> = {
-  Easy: { background: "#e7f6ee", color: "var(--green-dark)" },
-  Medium: { background: "#fdf3e3", color: "var(--amber-ink)" },
-  Hard: { background: "#fdeaea", color: "var(--red-dark)" }
+  Easy: { background: "#e7f6ee", color: "#065f46", border: "1px solid #cdeeda", fontWeight: 600 },
+  Medium: { background: "#fdf3e3", color: "#92400e", border: "1px solid #f5e0ab", fontWeight: 600 },
+  Hard: { background: "#fdeaea", color: "#991b1b", border: "1px solid #f6c8c8", fontWeight: 600 }
 };
 
 export default function RolePage() {
@@ -508,7 +508,7 @@ export default function RolePage() {
                           ))}
                         </div>
                         {current.modelAnswerVerified?.checked && !current.modelAnswerVerified.passed && (
-                          <div role="alert" style={{ marginTop: 10, padding: "8px 10px", borderRadius: "var(--r-sm)", background: "#fdf3e3", color: "var(--amber-ink)", fontSize: "0.78125rem", lineHeight: 1.5 }}>
+                          <div role="alert" style={{ marginTop: 10, padding: "8px 10px", borderRadius: "var(--r-sm)", background: "#fdf3e3", border: "1px solid #f5e0ab", color: "#92400e", fontSize: "0.78125rem", lineHeight: 1.5, fontWeight: 500 }}>
                             {/* Phase 1.7 item 4: an empty issue means the check failed
                                 twice with nothing to target a repair at (a likely false
                                 flag) - shown plainly rather than implying a specific,

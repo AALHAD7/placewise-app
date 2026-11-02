@@ -13,7 +13,7 @@
 // what "fixed" looks like from the call site.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickTopTextAndImage } from "../src/lib/frameworksGrounding.js";
+import { pickTopTextAndImage, isStale } from "../src/lib/frameworksGrounding.js";
 
 test("pickTopTextAndImage: finds the image row when image_url is present and above its threshold", () => {
   const rows = [
@@ -51,4 +51,29 @@ test("pickTopTextAndImage: empty rows never throws and returns undefined for bot
   const { topText, topImage } = pickTopTextAndImage([]);
   assert.equal(topText, undefined);
   assert.equal(topImage, undefined);
+});
+
+// --- isStale (2026-11-02: MECE and 3Cs were cached in September and never re-checked
+// since - the original "check once, cache forever" design had no expiry at all) ---
+
+test("isStale: never checked (null/undefined) is always stale", () => {
+  assert.equal(isStale(null), true);
+  assert.equal(isStale(undefined), true);
+});
+
+test("isStale: checked 2 months ago (the actual MECE/3Cs case) is stale", () => {
+  const now = new Date("2026-11-02T00:00:00Z").getTime();
+  assert.equal(isStale("2026-09-01T20:50:45.138Z", now), true);
+  assert.equal(isStale("2026-09-27T16:18:36.624Z", now), true);
+});
+
+test("isStale: checked within the last 7 days is not stale", () => {
+  const now = new Date("2026-11-02T00:00:00Z").getTime();
+  assert.equal(isStale("2026-10-30T00:00:00Z", now), false);
+});
+
+test("isStale: exactly on the 7-day boundary is not yet stale, just past it is", () => {
+  const now = new Date("2026-11-02T00:00:00Z").getTime();
+  assert.equal(isStale("2026-10-26T00:00:00.001Z", now), false); // just under 7 days
+  assert.equal(isStale("2026-10-25T23:59:59.000Z", now), true);  // just over 7 days
 });
