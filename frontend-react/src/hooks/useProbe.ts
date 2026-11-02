@@ -193,7 +193,7 @@ export function useProbe() {
         who: m.who === "ai" ? "Interviewer" : "You",
         style: {
           borderRadius: "var(--r-sm)", padding: "11px 13px", fontSize: "0.84375rem", lineHeight: 1.6, whiteSpace: "pre-wrap" as const,
-          ...(m.who === "ai" ? { background: "#f6f6fb", color: "var(--text-900)" } : { background: "var(--indigo-700)", color: "var(--surface)", alignSelf: "flex-end" as const, maxWidth: "88%" })
+          ...(m.who === "ai" ? { background: "rgba(22, 27, 36, 0.8)", color: "#ffffff", border: "1px solid rgba(59, 130, 246, 0.28)" } : { background: "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)", color: "#ffffff", alignSelf: "flex-end" as const, maxWidth: "88%", boxShadow: "0 4px 14px rgba(255, 107, 53, 0.4)" })
         }
       })),
       loading: p.loading,

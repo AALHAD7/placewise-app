@@ -243,8 +243,9 @@ export default function CommunityPage() {
               font: "600 0.84375rem 'Instrument Sans',sans-serif",
               cursor: submitDisabled ? "default" : "pointer",
               opacity: submitDisabled ? 0.6 : 1,
-              background: "var(--indigo)",
-              color: "var(--surface)"
+              background: "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)",
+              color: "#ffffff",
+              boxShadow: "0 4px 18px rgba(255, 107, 53, 0.45)"
             }}
           >
             {submitting ? "Submitting…" : "Share with the community"}

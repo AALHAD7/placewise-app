@@ -24,7 +24,13 @@ const CONSULTING_RAG_V2_ENABLED = process.env.ENABLE_CONSULTING_RAG_V2 === "true
 
 async function findGroundingV2(fw) {
   const query = `${fw.name} framework diagram case study real example application ${fw.subdomain || fw.role || ""}`;
-  const result = await groundedConsultingLookup(query, { domain: "Consulting" });
+  // paraphrase: true opts Frameworks in to the paraphrase layer (grounded-answering
+  // skill) - reuses groundedConsultingLookup's own paraphraseChunk/judgeParaphraseFaithful
+  // (consultingRetrieval.js) rather than a second copy of that logic here. A no-op unless
+  // ENABLE_ANSWER_PARAPHRASE is also on; when it is, `excerpt`/`caption` below are already
+  // the verified rewrite (diagram JSON untouched either way - see protectDiagramBlocks),
+  // and `rawExcerpt`/`rawCaption` carry the original verbatim text alongside it.
+  const result = await groundedConsultingLookup(query, { domain: "Consulting", paraphrase: true });
   if (!result.covered) return { example: null, image: null };
 
   const textIdx = result.chunks.findIndex(c => !c.hasDiagram);
@@ -39,6 +45,7 @@ async function findGroundingV2(fw) {
       ? {
           sourceFile: result.citations[textIdx].casebook,
           excerpt: result.chunks[textIdx].content,
+          ...(result.chunks[textIdx].paraphrased ? { rawExcerpt: result.chunks[textIdx].rawContent } : {}),
           similarity: result.chunks[textIdx].similarity,
           citation: result.citations[textIdx]
         }
@@ -54,6 +61,7 @@ async function findGroundingV2(fw) {
       ? {
           url: null,
           caption: result.chunks[diagramIdx].content,
+          ...(result.chunks[diagramIdx].paraphrased ? { rawCaption: result.chunks[diagramIdx].rawContent } : {}),
           sourceFile: result.citations[diagramIdx].casebook,
           similarity: result.chunks[diagramIdx].similarity,
           citation: result.citations[diagramIdx]

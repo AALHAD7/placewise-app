@@ -1,4 +1,13 @@
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+
+if (!process.env.SUPABASE_URL) {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+  dotenv.config();
+}
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
   console.warn(

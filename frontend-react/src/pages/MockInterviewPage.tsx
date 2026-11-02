@@ -375,7 +375,7 @@ export default function MockInterviewPage() {
               </button>
             ))}
           </div>
-          <button onClick={startMockInterview} disabled={loading || !resumeText} title={!resumeText ? "Upload a resume first" : undefined} style={{ marginTop: 16, border: 0, borderRadius: "var(--r-sm)", padding: "11px 18px", font: "600 0.875rem 'Instrument Sans',sans-serif", cursor: loading || !resumeText ? "not-allowed" : "pointer", background: "var(--indigo)", color: "var(--surface)", opacity: loading || !resumeText ? 0.55 : 1 }}>
+          <button onClick={startMockInterview} disabled={loading || !resumeText} title={!resumeText ? "Upload a resume first" : undefined} style={{ marginTop: 16, border: 0, borderRadius: "var(--r-sm)", padding: "11px 18px", font: "600 0.875rem 'Instrument Sans',sans-serif", cursor: loading || !resumeText ? "not-allowed" : "pointer", background: "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)", color: "#ffffff", boxShadow: "0 4px 18px rgba(255, 107, 53, 0.45)", opacity: loading || !resumeText ? 0.55 : 1 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
@@ -413,7 +413,7 @@ export default function MockInterviewPage() {
                 else startRecording(RECKEY, () => answerDraft, (text) => setAnswerDraft(text));
               }}
             />
-            <button onClick={submitMockAnswer} disabled={submitDisabled} style={{ border: 0, borderRadius: "var(--r-sm)", padding: "9px 16px", font: "600 0.84375rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--indigo)", color: "var(--surface)" }}>
+            <button onClick={submitMockAnswer} disabled={submitDisabled} style={{ border: 0, borderRadius: "var(--r-sm)", padding: "9px 16px", font: "600 0.84375rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)", color: "#ffffff", boxShadow: "0 4px 16px rgba(255, 107, 53, 0.45)" }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
@@ -456,7 +456,7 @@ export default function MockInterviewPage() {
                 <p style={{ margin: "8px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-700)" }}>{feedback.sampleBetterAnswer}</p>
               </div>
               {feedback.followUpQuestion && (
-                <button onClick={nextMockQuestion} style={{ marginTop: 16, border: 0, borderRadius: "var(--r-sm)", padding: "11px 18px", font: "600 0.875rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--green)", color: "var(--surface)" }}>
+                <button onClick={nextMockQuestion} style={{ marginTop: 16, border: 0, borderRadius: "var(--r-sm)", padding: "11px 18px", font: "600 0.875rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#ffffff", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                     Next question
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

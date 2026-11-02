@@ -17,65 +17,69 @@
    rather than being re-typed as literal hex at each call site, so a
    palette change is one edit and a light/dark pass stays possible. */
 :root{
-  /* Brand - Apple Blue (links/text controls), Pricing Blue (filled controls) */
-  --indigo:#0066cc;
-  --indigo-700:#0071e3;
-  --indigo-dark:#004c99;
-  --indigo-wash:#f5f5f7;
-  --grad-a:#0066cc;
-  --grad-b:#0071e3;
+  /* Brand - Tangerine accent, Royal Blue secondary / tint */
+  --indigo:#ff6b35;
+  --indigo-700:#ea580c;
+  --indigo-dark:#c2410c;
+  --indigo-wash:rgba(255, 107, 53, 0.16);
+  --grad-a:#ff6b35;
+  --grad-b:#2563eb;
+  --tangerine:#ff6b35;
+  --tangerine-hover:#ff8254;
+  --tangerine-glow:rgba(255, 107, 53, 0.35);
+  --royal-blue:#2563eb;
+  --royal-blue-light:#3b82f6;
 
-  /* Ink - darkest to lightest */
-  --text-darkest:#1d1d1f;
-  --text-ink:#1d1d1f;
-  --text-900:#1d1d1f;
-  --text-800:#1d1d1f;
-  --text-700:#424245;
-  --text-600:#6e6e73;
-  --text-dark2:#1d1d1f;
-  --text-gray2:#6e6e73;
-  --text-lightgray:#86868b;
+  /* Typography - crisp, clean white everywhere */
+  --text-darkest:#ffffff;
+  --text-ink:#ffffff;
+  --text-900:#ffffff;
+  --text-800:#ffffff;
+  --text-700:rgba(255, 255, 255, 0.94);
+  --text-600:rgba(255, 255, 255, 0.85);
+  --text-dark2:#ffffff;
+  --text-gray2:rgba(255, 255, 255, 0.82);
+  --text-lightgray:rgba(255, 255, 255, 0.70);
 
-  /* Surfaces & lines */
-  --bg:#f5f5f7;
-  --surface:#ffffff;
-  --surface-sunken:#f5f5f7;
-  --card-border:#d2d2d7;
-  --border-soft:#d6d6d6;
-  --border-input:#d6d6d6;
-  --border-focus:#0066cc;
+  /* Charcoal black surfaces with subtle royal blue tint */
+  --bg:#101216;
+  --surface:rgba(22, 27, 36, 0.75);
+  --surface-sunken:rgba(16, 20, 28, 0.85);
+  --surface-alt:rgba(37, 99, 235, 0.14);
+  --card-border:rgba(59, 130, 246, 0.22);
+  --border-soft:rgba(255, 255, 255, 0.14);
+  --border-input:rgba(255, 255, 255, 0.18);
+  --border-focus:#ff6b35;
 
   /* Status */
-  --green:#1d7a3d;
-  --green-bright:#1d7a3d;
-  --red:#c0342a;
-  --red-dark:#a42920;
-  --amber:#b64400;
+  --green:#34d399;
+  --green-bright:#10b981;
+  --red:#f43f5e;
+  --red-dark:#e11d48;
+  --amber:#fbbf24;
 
-  /* Recurring surfaces & washes lifted out of the page files - each of
-     these appeared 3+ times as a literal before tokenising. */
-  --field-bg:#fafafc;
-  --field-bg-alt:#fafafc;
-  --surface-alt:#f5f5f7;
-  --track:#e6e6e8;
-  --border-strong:#d6d6d6;
-  --divider:#e6e6e8;
-  --text-muted:#86868b;
-  --text-disabled:#c2c4cc;
-  --green-dark:#166534;
-  --green-ink:#14532d;
-  --green-wash:#f5f5f7;
-  --blue-wash:#f5f5f7;
-  --red-wash:#fafafa;
-  --red-ink:#7f1d1d;
-  --amber-ink:#b64400;
+  /* Form & card elements */
+  --field-bg:rgba(255, 255, 255, 0.06);
+  --field-bg-alt:rgba(255, 255, 255, 0.09);
+  --track:rgba(255, 255, 255, 0.14);
+  --border-strong:rgba(59, 130, 246, 0.35);
+  --divider:rgba(255, 255, 255, 0.12);
+  --text-muted:rgba(255, 255, 255, 0.65);
+  --text-disabled:rgba(255, 255, 255, 0.40);
+  --green-dark:#059669;
+  --green-ink:#34d399;
+  --green-wash:rgba(52, 211, 153, 0.15);
+  --blue-wash:rgba(37, 99, 235, 0.16);
+  --red-wash:rgba(244, 63, 94, 0.15);
+  --red-ink:#fb7185;
+  --amber-wash:rgba(251, 191, 36, 0.16);
+  --amber-ink:#b45309;
 
-  /* Radius scale - Apple's named radii: cards 28px, pills/buttons 9999px,
-     inputs 980px. Nothing in between. */
+  /* Radius scale */
   --r-xs:6px;
   --r-sm:10px;
   --r-md:16px;
-  --r-lg:28px;
+  --r-lg:22px;
   --r-pill:9999px;
 
   /* Motion */
@@ -83,60 +87,60 @@
   --t-press: 110ms;
 }
 
-/* Dark mode: applied via data-theme on <html> (useTheme.ts sets it; the
-   inline script in index.html sets it before first paint to avoid a flash).
-   Reuses the SAME token names as the light :root above rather than a
-   parallel set, so every existing var(--x) call site - this file and every
-   .tsx inline style - darkens automatically with no per-page rework. The
-   Home page's own --home-* tokens (home.css) get their own dark block using
-   the Home rebuild spec's exact hex values; these are the sitewide pass. */
 :root[data-theme="dark"]{
-  --indigo:#5B8CFF;
-  --indigo-700:#6F98FF;
-  --indigo-dark:#3D6FE0;
-  --indigo-wash:#17254A;
-  --grad-a:#5B8CFF;
-  --grad-b:#6F98FF;
+  --indigo:#ff6b35;
+  --indigo-700:#ea580c;
+  --indigo-dark:#c2410c;
+  --indigo-wash:rgba(255, 107, 53, 0.18);
+  --grad-a:#ff6b35;
+  --grad-b:#2563eb;
+  --tangerine:#ff6b35;
+  --tangerine-hover:#ff8254;
+  --tangerine-glow:rgba(255, 107, 53, 0.35);
+  --royal-blue:#2563eb;
+  --royal-blue-light:#3b82f6;
 
-  --text-darkest:#EAF0FF;
-  --text-ink:#EAF0FF;
-  --text-900:#EAF0FF;
-  --text-800:#DCE4F7;
-  --text-700:#A9B4D0;
-  --text-600:#8591B0;
-  --text-dark2:#EAF0FF;
-  --text-gray2:#A9B4D0;
-  --text-lightgray:#8591B0;
+  --text-darkest:#ffffff;
+  --text-ink:#ffffff;
+  --text-900:#ffffff;
+  --text-800:#ffffff;
+  --text-700:rgba(255, 255, 255, 0.94);
+  --text-600:rgba(255, 255, 255, 0.85);
+  --text-dark2:#ffffff;
+  --text-gray2:rgba(255, 255, 255, 0.82);
+  --text-lightgray:rgba(255, 255, 255, 0.70);
 
-  --bg:#0B1220;
-  --surface:#121A2B;
-  --surface-sunken:#172135;
-  --card-border:#22304A;
-  --border-soft:#22304A;
-  --border-input:#22304A;
-  --border-focus:#5B8CFF;
+  --bg:#101216;
+  --surface:rgba(22, 27, 36, 0.75);
+  --surface-sunken:rgba(16, 20, 28, 0.85);
+  --surface-alt:rgba(37, 99, 235, 0.14);
+  --card-border:rgba(59, 130, 246, 0.22);
+  --border-soft:rgba(255, 255, 255, 0.14);
+  --border-input:rgba(255, 255, 255, 0.18);
+  --border-focus:#ff6b35;
 
-  --green:#34C759;
-  --green-bright:#34C759;
-  --red:#FF6B6B;
-  --red-dark:#E04F4F;
-  --amber:#F5A623;
+  --green:#34d399;
+  --green-bright:#10b981;
+  --red:#f43f5e;
+  --red-dark:#e11d48;
+  --amber:#fbbf24;
 
-  --field-bg:#172135;
-  --field-bg-alt:#172135;
-  --surface-alt:#172135;
-  --track:#22304A;
-  --border-strong:#22304A;
-  --divider:#22304A;
-  --text-muted:#8591B0;
-  --text-disabled:#4A5578;
-  --green-dark:#2BAF4D;
-  --green-ink:#34C759;
-  --green-wash:#132A1C;
-  --blue-wash:#17254A;
-  --red-wash:#2A1515;
-  --red-ink:#FF6B6B;
-  --amber-ink:#F5A623;
+  --field-bg:rgba(255, 255, 255, 0.06);
+  --field-bg-alt:rgba(255, 255, 255, 0.09);
+  --surface-alt:rgba(37, 99, 235, 0.14);
+  --track:rgba(255, 255, 255, 0.14);
+  --border-strong:rgba(59, 130, 246, 0.35);
+  --divider:rgba(255, 255, 255, 0.12);
+  --text-muted:rgba(255, 255, 255, 0.65);
+  --text-disabled:rgba(255, 255, 255, 0.40);
+  --green-dark:#059669;
+  --green-ink:#34d399;
+  --green-wash:rgba(52, 211, 153, 0.15);
+  --blue-wash:rgba(37, 99, 235, 0.16);
+  --red-wash:rgba(244, 63, 94, 0.15);
+  --red-ink:#fb7185;
+  --amber-wash:rgba(251, 191, 36, 0.16);
+  --amber-ink:#b45309;
 }
 
 /* Type ramp. Sizes are rem so the layout scales with the reader's own text
@@ -157,10 +161,97 @@
 /* Explicit, not just relying on the browser default matching it - every rem
    value sitewide (this file and home.css) is sized against this. */
 html{font-size:16px;}
-body{margin:0;background:var(--bg);font:100%/1.5 -apple-system,"SF Pro Text",Inter,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;color:var(--text-900)}
-a{color:var(--indigo)}a:hover{color:var(--indigo-700)}
-textarea{font-family:inherit}
+body{
+  margin:0;
+  background-color:#101216;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37, 99, 235, 0.18) 0%, rgba(29, 78, 216, 0.08) 45%, transparent 70%),
+    radial-gradient(circle at 90% 25%, rgba(30, 58, 138, 0.14) 0%, transparent 50%),
+    radial-gradient(circle at 10% 75%, rgba(37, 99, 235, 0.10) 0%, transparent 55%),
+    linear-gradient(180deg, #12151c 0%, #0d0f13 100%);
+  background-attachment:fixed;
+  background-size:cover;
+  font:100%/1.5 -apple-system,"SF Pro Text",Inter,"Plus Jakarta Sans","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  color:#ffffff;
+  min-height:100vh;
+}
+a{color:#ffffff;text-decoration:none;transition:color 0.15s ease}
+a:hover{color:#ff6b35}
+textarea, input, select{font-family:inherit;color:#ffffff}
+textarea::placeholder, input::placeholder{color:rgba(255,255,255,0.50)}
+select option{background:#16181d;color:#ffffff}
 *{box-sizing:border-box}
+
+/* Any element using var(--surface) for background gets frosted glass blur and royal blue/charcoal border */
+[style*="var(--surface)"] {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* --- Site-wide Light / White Callout & Alert Boxes ---
+   Guarantees that any white or light-pastel box/card/callout across the entire
+   site has crisp, readable dark charcoal typography (#111827 / #1f2937),
+   preventing white-on-white text while keeping the light boxes in place. */
+[style*="#fdf3e3"],
+[style*="#fdeaea"],
+[style*="#eef6f1"],
+[style*="#e7f6ee"],
+[style*="#eef6ff"],
+[style*="#eef2ff"],
+[style*="#f0faf5"],
+[style*="#fdf3f3"],
+[style*="#f0f7ff"],
+[style*="#f5f5f7"],
+[style*="#fef2f2"],
+[style*="#f3f4f6"],
+div[style*="background: #fff"],
+div[style*="background:#fff"],
+div[style*="background: #ffffff"],
+div[style*="background:#ffffff"],
+div[style*="background: white"],
+div[style*="background:white"] {
+  color: #111827;
+}
+
+[style*="#fdf3e3"] p,
+[style*="#fdeaea"] p,
+[style*="#eef6f1"] p,
+[style*="#e7f6ee"] p,
+[style*="#eef6ff"] p,
+[style*="#eef2ff"] p,
+[style*="#f0faf5"] p,
+[style*="#fdf3f3"] p,
+[style*="#f0f7ff"] p,
+[style*="#f5f5f7"] p,
+[style*="#fef2f2"] p,
+[style*="#f3f4f6"] p,
+div[style*="background: #fff"] p,
+div[style*="background:#fff"] p,
+div[style*="background: #ffffff"] p,
+div[style*="background:#ffffff"] p,
+div[style*="background: white"] p,
+div[style*="background:white"] p {
+  color: #111827 !important;
+}
+
+[style*="#fdf3e3"] code,
+[style*="#fdeaea"] code,
+[style*="#eef6f1"] code,
+[style*="#e7f6ee"] code,
+[style*="#eef6ff"] code,
+[style*="#f0f7ff"] code {
+  color: #111827 !important;
+}
+
+/* Ensure alerts on light backgrounds have strong accessible color */
+[role="alert"][style*="#fdf3e3"] {
+  color: #92400e !important;
+}
+[role="alert"][style*="#fdeaea"] {
+  color: #991b1b !important;
+}
 
 /* Controls rendered as real <button>s still need to look like the rows and
    cards they replaced - this strips the UA chrome without losing semantics
@@ -192,19 +283,17 @@ button{font:inherit;color:inherit}
 .probe-trigger:active, .probe-trigger-why:active, .probe-trigger-how:active,
 .bell-btn:active, .probe-close:active, .view-stats:active { transform: scale(.94); }
 
-.nav-item:hover:not(.active){ background:var(--surface-sunken); }
-/* Apple's surfaces gain separation through flat color and a 1px hairline
-   rather than shadows or lift - no translateY/box-shadow on hover. */
+.nav-item:hover:not(.active){ background:rgba(255,255,255,.10); color:#ffffff; }
 .nav-item:hover{ position:relative; z-index:1; }
-.nav-item.active:hover{ background:rgba(255,255,255,.92); }
-.selector-option:hover{ background:var(--surface-sunken); }
-.probe-trigger:hover, .probe-trigger-why:hover, .probe-trigger-how:hover{ background:var(--bg); border-color:var(--card-border); }
-.btn-primary:hover{ background:#004c99; }
-.btn-secondary:hover{ background:var(--bg); }
-.user-block:hover{ background:var(--surface-sunken); border-radius:var(--r-md); }
+.nav-item.active:hover{ background:rgba(37, 99, 235, 0.35); }
+.selector-option:hover{ background:rgba(37, 99, 235, 0.25); color:#ffffff; }
+.probe-trigger:hover, .probe-trigger-why:hover, .probe-trigger-how:hover{ background:rgba(37, 99, 235, 0.20); border-color:#2563eb; }
+.btn-primary:hover{ background:linear-gradient(135deg, #ff8254 0%, #f97316 100%); box-shadow:0 6px 24px rgba(255, 107, 53, 0.55); }
+.btn-secondary:hover{ background:rgba(37, 99, 235, 0.20); border-color:rgba(59, 130, 246, 0.6); }
+.user-block:hover{ background:rgba(255,255,255,.10); border-radius:var(--r-md); }
 
-/* Nothing in the app showed keyboard focus before this. */
-:focus-visible{ outline:2px solid var(--indigo); outline-offset:2px; border-radius:var(--r-sm); }
+/* Keyboard focus in tangerine orange */
+:focus-visible{ outline:2px solid #ff6b35; outline-offset:2px; border-radius:var(--r-sm); }
 :focus:not(:focus-visible){ outline:none; }
 
 button[disabled], .btn[disabled]{ cursor:not-allowed; opacity:.55; }
@@ -280,35 +369,27 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 .brand-left{ display:flex; align-items:center; gap:8px; }
 .brand-bars{ display:flex; align-items:flex-end; gap:2px; height:20px; }
 .brand-bars span{ width:4px; border-radius:2px; display:block; }
-.brand-bars span:nth-child(1){ height:8px; background:#86868b; }
-.brand-bars span:nth-child(2){ height:14px; background:#424245; }
-.brand-bars span:nth-child(3){ height:20px; background:#0066cc; }
-.brand-name{ font-weight:800; font-size:1.1875rem; letter-spacing:-.018em; color:var(--text-900); }
+.brand-bars span:nth-child(1){ height:8px; background:rgba(255, 255, 255, 0.5); }
+.brand-bars span:nth-child(2){ height:14px; background:#2563eb; box-shadow:0 0 8px rgba(37, 99, 235, 0.6); }
+.brand-bars span:nth-child(3){ height:20px; background:#ff6b35; box-shadow:0 0 10px rgba(255, 107, 53, 0.7); }
+.brand-name{ font-weight:800; font-size:1.1875rem; letter-spacing:-.018em; color:#ffffff; }
 
-/* --- Materials & depth -------------------------------------------------
-   The nav is a translucent layer the page scrolls underneath, not an opaque
-   strip stacked on top of it. The hard 1px rule is replaced by a soft edge
-   plus a short scroll-edge fade where content meets the floating chrome. */
+/* --- Materials & depth --- */
 .topnav{
   position:sticky; top:0; z-index:20;
-  background:rgba(255,255,255,.7);
-  backdrop-filter:blur(26px) saturate(190%);
-  -webkit-backdrop-filter:blur(26px) saturate(190%);
-  border-bottom:1px solid rgba(210,210,215,.55);
-  box-shadow: inset 0 -1px 0 rgba(255,255,255,.4);
+  background:rgba(16, 18, 22, 0.82);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border-bottom:1px solid rgba(59, 130, 246, 0.20);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
 .topnav::after{ display:none; }
 :root[data-theme="dark"] .topnav{
-  background:rgba(18,26,43,.82);
-  border-bottom:1px solid rgba(34,48,74,.8);
-  box-shadow: inset 0 -1px 0 rgba(255,255,255,.03);
+  background:rgba(16, 18, 22, 0.85);
+  border-bottom:1px solid rgba(59, 130, 246, 0.20);
 }
 
-/* P0 responsive fix: the bar itself stays full-bleed (so the glass
-   background spans edge to edge), but its actual content - and every
-   page's content below it - is capped and centered here, so nothing is
-   ever pinned left with dead space on the right at any width or zoom
-   level. Used by TopNav's own content row and by AppShell's <main>. */
+/* Responsive container */
 .app-container{
   max-width:1240px;
   margin-inline:auto;
@@ -316,230 +397,274 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
   width:100%;
   box-sizing:border-box;
 }
-/* Deliberately NOT .app-container: that caps content at 1240px, which is
-   right for page body copy but was also capping the nav bar, forcing it to
-   wrap even on wide screens that had plenty of room for all 9 items on one
-   line. The nav gets its own full-width row (own padding, no max-width) so
-   it only wraps when the window is genuinely too narrow, not because of an
-   unrelated content-width limit borrowed from below the fold. */
 .topnav-row{
   display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem 0.75rem;
   padding-block:0.625rem; padding-inline:clamp(0.75rem, 2.5vw, 1.25rem);
   width:100%; box-sizing:border-box;
 }
 
-/* Guest-session tooltip on the user block ("Sign in to save your
-   progress") - plain CSS, shown on hover/focus so it's reachable by
-   keyboard too, no JS state needed. */
+/* Guest-session tooltip on the user block */
 .has-tooltip{ position:relative; }
 .has-tooltip[data-tip]:hover::after, .has-tooltip[data-tip]:focus-within::after{
   content:attr(data-tip);
   position:absolute; top:calc(100% + 6px); right:0; z-index:40;
-  background:var(--text-900); color:var(--surface);
+  background:#1a1d24; color:#ffffff;
+  border:1px solid rgba(59, 130, 246, 0.35);
   font-size:0.75rem; font-weight:500; white-space:nowrap;
   padding:0.375rem 0.625rem; border-radius:0.375rem;
+  box-shadow:0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* --- Liquid Glass --------------------------------------------------------
-   Apple's translucent, refractive material (Liquid Glass, WWDC 2025)
-   applied to chrome that visually floats above scrolling content - the nav
-   capsule, dropdown menus, and modal panels. Resting content cards
-   elsewhere keep the existing flat monochrome surfaces (DESIGN.md) - this
-   is a material distinction (floating vs. resting), not a wholesale
-   reskin, so a card never gets glass just because it's nearby. Two
-   strengths: .glass-capsule (lighter blur, for chrome sitting on top of
-   the already-translucent .topnav) and .glass-panel (heavier blur+opacity,
-   for menus/modals that sit directly over page content and need to stay
-   legible without a second glass layer underneath them). */
+/* Charcoal glass capsules and panels */
 .glass-capsule{
-  background: linear-gradient(180deg, rgba(255,255,255,.8), rgba(255,255,255,.58));
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  background: rgba(22, 27, 36, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.25);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.95),
-    inset 0 0 0 1px rgba(255,255,255,.55),
-    0 4px 16px rgba(0,0,0,.07);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 28px rgba(0, 0, 0, 0.4);
 }
 .glass-panel{
-  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.8));
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  background: linear-gradient(145deg, rgba(22, 27, 36, 0.95) 0%, rgba(16, 20, 28, 0.98) 100%);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(59, 130, 246, 0.35);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.95),
-    inset 0 0 0 1px rgba(255,255,255,.55),
-    0 20px 60px rgba(0,0,0,.14);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(37, 99, 235, 0.15);
 }
 :root[data-theme="dark"] .glass-capsule{
-  background: linear-gradient(180deg, rgba(23,33,53,.9), rgba(18,26,43,.75));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.04),
-    inset 0 0 0 1px rgba(255,255,255,.05),
-    0 4px 16px rgba(0,0,0,.3);
+  background: rgba(22, 27, 36, 0.75);
+  border: 1px solid rgba(59, 130, 246, 0.25);
 }
 :root[data-theme="dark"] .glass-panel{
-  background: linear-gradient(180deg, rgba(23,33,53,.97), rgba(18,26,43,.94));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.04),
-    inset 0 0 0 1px rgba(255,255,255,.05),
-    0 20px 60px rgba(0,0,0,.45);
+  background: linear-gradient(145deg, rgba(22, 27, 36, 0.95) 0%, rgba(16, 20, 28, 0.98) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.35);
 }
 
-/* All items stay visible at every width - no hamburger/overflow menu. The
-   bar's intrinsic content (9 items + dividers) is ~1123px wide, which
-   doesn't fit a single row below very wide viewports, so instead of hiding
-   anything it wraps: flex-wrap turns this into a multi-line pill cluster
-   rather than a single-row capsule. border-radius is a modest fixed value
-   (not --r-pill) for the same reason the old nav-sheet moved off a literal
-   stadium shape - a true pill radius looks wrong once the block is tall. */
 .topnav-links{
   display:flex; align-items:center; flex-wrap:wrap; gap:1px; flex:1 1 auto; min-width:0;
   padding:4px; border-radius:20px;
 }
 .topnav-divider{ display:none; }
 
-.nav-item{ display:flex; align-items:center; gap:5px; padding:6px 8px; border-radius:var(--r-pill); font-size:var(--fs-small); font-weight:500; color:var(--text-700); cursor:pointer; text-decoration:none; white-space:nowrap; }
-.nav-item svg{ width:15px; height:15px; flex-shrink:0; color:var(--text-lightgray); }
-.nav-item.active{ background:rgba(255,255,255,.92); color:var(--indigo); font-weight:600; box-shadow: 0 1px 4px rgba(0,0,0,.09), inset 0 0 0 1px rgba(255,255,255,.7); }
-:root[data-theme="dark"] .nav-item.active{ background:rgba(91,140,255,.16); box-shadow: 0 1px 4px rgba(0,0,0,.3), inset 0 0 0 1px rgba(91,140,255,.3); }
-.nav-item.active svg{ color:var(--indigo); }
+.nav-item{
+  display:flex; align-items:center; gap:6px; padding:7px 12px;
+  border-radius:var(--r-pill); font-size:var(--fs-small); font-weight:500;
+  color:rgba(255, 255, 255, 0.90); cursor:pointer; text-decoration:none; white-space:nowrap;
+  transition:all 0.15s ease;
+}
+.nav-item svg{ width:15px; height:15px; flex-shrink:0; color:rgba(255, 255, 255, 0.75); }
+.nav-item:hover:not(.active){ background:rgba(255, 255, 255, 0.10); color:#ffffff; }
+.nav-item.active{
+  background:rgba(37, 99, 235, 0.28);
+  color:#ffffff; font-weight:600;
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+}
+.nav-item.active::before{
+  content:"";
+  display:inline-block;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#ff6b35;
+  box-shadow:0 0 8px #ff6b35;
+  margin-right:2px;
+}
+:root[data-theme="dark"] .nav-item.active{
+  background:rgba(37, 99, 235, 0.28);
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.nav-item.active svg{ color:#ffffff; }
 
-.pill{ display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-pill); padding:7px 14px; font-size:var(--fs-micro); font-weight:700; letter-spacing:0.05em; color:var(--text-700); }
+.pill{
+  display:inline-flex; align-items:center; gap:7px;
+  background:rgba(255, 255, 255, 0.08);
+  border:1px solid rgba(59, 130, 246, 0.35);
+  border-radius:var(--r-pill); padding:7px 14px;
+  font-size:var(--fs-micro); font-weight:700; letter-spacing:0.05em;
+  color:#ffffff;
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+}
 .pill .check-circle{ width:14px; height:14px; border-radius:50%; background:var(--green-bright); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.pill .check-circle svg{ width:9px; height:9px; color:var(--surface); }
+.pill .check-circle svg{ width:9px; height:9px; color:#ffffff; }
 
 .topbar-right{ display:flex; align-items:center; gap:8px; flex:none; }
-/* Below 640px topbar-right's own content is still wider than the whole
-   available row even compacted, so it wraps to its own full-width line
-   under the brand/nav row rather than clipping. */
 @media (max-width:640px){
   .topnav-row{ flex-wrap:wrap; }
   .topbar-right{ flex:1 1 100%; justify-content:space-between; order:3; }
-  /* The nav is meant to be a frosted-glass layer (blurred scroll-under
-     content, see "Liquid Glass" above) - but when backdrop-filter doesn't
-     actually render (seen on a real Android phone, data-saver icon visible
-     in the report screenshot; Chrome's data-saver/lite mode and some GPU
-     contexts drop compositing filters silently, no CSS fallback fires),
-     all that's left is background:rgba(255,255,255,.7) with no blur at
-     all - unblurred page content reads straight through it, which on
-     mobile is exactly where the capsule is tallest (3-line wrapped nav)
-     and most likely to sit over real content underneath. Mobile is also
-     where misreading overlapping text actually costs a tap, so below
-     640px the nav gets the same solid fallback already used for
-     prefers-reduced-transparency, instead of leaving it dependent on
-     backdrop-filter support. */
-  .topnav{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; }
-  :root[data-theme="dark"] .topnav{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; }
-  /* .topnav-links (the glass-capsule pill cluster) sits on top of .topnav
-     itself normally (layered glass-on-glass is the point on desktop), so it
-     needs the same solid fallback once its parent stops being translucent -
-     otherwise the exact same unblurred-text problem reappears one layer in. */
-  .topnav-links.glass-capsule{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:0 0 0 1px var(--card-border); }
+  .topnav{ background:#101216; backdrop-filter:none; -webkit-backdrop-filter:none; }
+  :root[data-theme="dark"] .topnav{ background:#101216; backdrop-filter:none; -webkit-backdrop-filter:none; }
+  .topnav-links.glass-capsule{ background:rgba(22, 27, 36, 0.95); backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:0 0 0 1px var(--card-border); }
 }
-.streak-pill{ display:flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-pill); padding:5px 11px; font-size:var(--fs-small); font-weight:600; color:var(--text-ink); }
-.streak-pill .flame{ width:14px; height:14px; color:var(--amber); }
+.streak-pill{
+  display:flex; align-items:center; gap:7px;
+  background:rgba(255, 255, 255, 0.08);
+  border:1px solid rgba(255, 107, 53, 0.40);
+  border-radius:var(--r-pill); padding:5px 11px;
+  font-size:var(--fs-small); font-weight:600;
+  color:#ffffff;
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+}
+.streak-pill .flame{ width:14px; height:14px; color:#ff6b35; }
 /* "View stats" is a secondary action, not nav - dropped from the header bar
    entirely (divider included) so the primary single-line-nav requirement
    isn't competing with it for width; the stat is still one click away via
    the streak panel on Home. */
 .streak-pill .divider, .streak-pill .view-stats{ display:none; }
 
-.bell-btn{ width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--text-lightgray); position:relative; cursor:pointer; }
+.bell-btn{
+  width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,.9); position:relative; cursor:pointer;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+  transition:all 0.15s ease;
+}
 .bell-btn svg{ width:17px; height:17px; }
-.bell-btn:hover{ background:var(--surface-sunken); }
+.bell-btn:hover{ background:rgba(37, 99, 235, 0.25); border-color:#2563eb; color:#ffffff; }
 
-.user-block{ display:flex; align-items:center; gap:7px; cursor:pointer; padding:3px 4px; }
-.avatar{ width:30px; height:30px; border-radius:50%; background:var(--indigo); color:var(--surface); display:flex; align-items:center; justify-content:center; font-size:var(--fs-caption); font-weight:700; flex-shrink:0; }
+.user-block{ display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 8px; border-radius:var(--r-md); transition:background 0.15s ease; }
+.user-block:hover{ background:rgba(255,255,255,.08); }
+.avatar{
+  width:32px; height:32px; border-radius:50%;
+  background:linear-gradient(135deg, #2563eb, #1d4ed8);
+  color:#ffffff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:var(--fs-caption); font-weight:700; flex-shrink:0;
+  border:1.5px solid rgba(255,255,255,.3);
+  box-shadow:0 0 10px rgba(37, 99, 235, 0.4);
+}
 .user-meta{ line-height:1.2; }
-.user-name{ font-size:var(--fs-small); font-weight:700; color:var(--text-ink); }
-.user-sub{ font-size:var(--fs-micro); color:var(--text-gray2); white-space:nowrap; }
-.chev{ width:15px; height:15px; color:var(--text-lightgray); margin-left:2px; }
+.user-name{ font-size:var(--fs-small); font-weight:700; color:#ffffff; }
+.user-sub{ font-size:var(--fs-micro); color:rgba(255,255,255,.75); white-space:nowrap; }
+.chev{ width:15px; height:15px; color:rgba(255,255,255,.75); margin-left:2px; }
 
-/* Header search: icon button that expands into an anchored panel (see
-   TopNav.tsx for why this isn't a persistent text input - width budget on
-   an already-full single-line nav). */
-.bell-btn.active{ background:var(--surface-sunken); color:var(--indigo); }
+/* Header search */
+.bell-btn.active{ background:rgba(37, 99, 235, 0.35); border-color:#2563eb; color:#ffffff; }
 .search-panel{
   position:absolute; top:calc(100% + 8px); right:0; z-index:30;
   width:320px; max-width:calc(100vw - 2rem);
   border-radius:var(--r-md); padding:10px;
 }
 .search-input{
-  width:100%; box-sizing:border-box; border:1px solid var(--border-input); background:var(--field-bg);
-  border-radius:var(--r-sm); padding:9px 12px; font-size:var(--fs-body); color:var(--text-ink);
+  width:100%; box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08);
+  border-radius:var(--r-sm); padding:9px 12px; font-size:var(--fs-body); color:#ffffff;
   outline:none;
 }
-.search-input:focus{ border-color:var(--border-focus); }
+.search-input:focus{ border-color:#ff6b35; box-shadow:0 0 0 2px rgba(255, 107, 53, 0.25); }
 .search-results{ margin-top:8px; max-height:50vh; overflow:auto; }
-.search-empty{ padding:10px 8px; font-size:var(--fs-small); color:var(--text-gray2); }
+.search-empty{ padding:10px 8px; font-size:var(--fs-small); color:rgba(255,255,255,.7); }
 .search-group + .search-group{ margin-top:6px; }
-.search-group-label{ padding:4px 8px; font-size:var(--fs-micro); font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--text-lightgray); }
+.search-group-label{ padding:4px 8px; font-size:var(--fs-micro); font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:rgba(255,255,255,.65); }
 .search-result{
   display:block; width:100%; text-align:left; padding:8px; border-radius:var(--r-sm);
-  font-size:var(--fs-body); color:var(--text-ink); cursor:pointer;
+  font-size:var(--fs-body); color:#ffffff; cursor:pointer;
 }
-.search-result.active, .search-result:hover{ background:var(--surface-sunken); }
+.search-result.active, .search-result:hover{ background:rgba(37, 99, 235, 0.25); color:#ffffff; }
 
-/* Avatar menu's Theme row: three small pill toggles (Light/Dark/System). */
+/* Avatar menu */
 .theme-pick{
   flex:1; text-align:center; padding:6px 0; border-radius:var(--r-pill);
-  font-size:var(--fs-caption); font-weight:600; color:var(--text-700);
-  border:1px solid var(--card-border); cursor:pointer;
+  font-size:var(--fs-caption); font-weight:600; color:rgba(255,255,255,.85);
+  border:1px solid rgba(255,255,255,.18); cursor:pointer; background:rgba(255,255,255,.06);
 }
-.theme-pick[data-active="true"]{ background:var(--indigo-wash); color:var(--indigo); border-color:transparent; font-weight:700; }
+.theme-pick[data-active="true"]{ background:rgba(37, 99, 235, 0.35); color:#ffffff; border-color:#2563eb; font-weight:700; }
 .menu-row{
   display:block; width:100%; text-align:left; padding:8px; border-radius:var(--r-sm);
-  font-size:var(--fs-body); font-weight:600; color:var(--text-ink); cursor:pointer;
+  font-size:var(--fs-body); font-weight:600; color:#ffffff; cursor:pointer;
 }
-.menu-row:hover{ background:var(--surface-sunken); }
+.menu-row:hover{ background:rgba(37, 99, 235, 0.20); }
 
-/* --- Typography --------------------------------------------------------
-   Tracking tightens as type grows (large text reads too loose at its
-   natural spacing) and leading tightens with it; body copy sits near 0. */
-.btn{ display:inline-flex; align-items:center; gap:9px; font-size:var(--fs-body); font-weight:600; padding:13px 22px; border-radius:var(--r-pill); cursor:pointer; border:1px solid transparent; letter-spacing:-.006em; }
+/* --- Typography & Controls --- */
+.btn{
+  display:inline-flex; align-items:center; gap:9px;
+  font-size:var(--fs-body); font-weight:600; padding:13px 22px;
+  border-radius:var(--r-pill); cursor:pointer; border:1px solid transparent; letter-spacing:-.006em;
+  transition:all 0.15s ease;
+}
 .btn svg{ width:17px; height:17px; }
-.btn-primary{ color:var(--surface); background:var(--indigo-700); }
-.btn-secondary{ background:var(--surface); color:var(--text-ink); border:1px solid var(--card-border); }
+.btn-primary{
+  color:#ffffff;
+  background:linear-gradient(135deg, #ff6b35 0%, #ea580c 100%);
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:0 4px 18px rgba(255, 107, 53, 0.40);
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg, #ff8254 0%, #f97316 100%);
+  box-shadow:0 6px 24px rgba(255, 107, 53, 0.55);
+}
+.btn-secondary{
+  background:rgba(255,255,255,.08);
+  color:#ffffff;
+  border:1px solid rgba(59, 130, 246, 0.30);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+}
+.btn-secondary:hover{
+  background:rgba(37, 99, 235, 0.20);
+  border-color:rgba(59, 130, 246, 0.6);
+  color:#ffffff;
+}
 
-.section-title{ font-size:var(--fs-title); font-weight:600; margin-bottom:18px; color:var(--text-ink); letter-spacing:-.012em; }
+.section-title{ font-size:var(--fs-title); font-weight:700; margin-bottom:18px; color:#ffffff; letter-spacing:-.012em; text-shadow:0 2px 10px rgba(0,0,0,0.5); }
 .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
-/* Below 900px three equal columns get too narrow for a card's icon+title+
-   body (the cause of real horizontal page overflow on every page using
-   .grid-3 - Frameworks, Role, Company, Mock Interview, Tone Shifter,
-   Community, Resume - at phone widths); same two-step collapse pattern as
-   .home-tools-grid. */
 @media (max-width:900px){ .grid-3{ grid-template-columns:repeat(2,1fr); } }
 @media (max-width:560px){ .grid-3{ grid-template-columns:1fr; } }
 .grid-full{ margin-top:18px; }
 
-/* Main-content + fixed-min-width-sidebar layout (Role's info/skills split,
-   Tone Shifter's editor/output split, …). Both tracks were set via inline
-   gridTemplateColumns with no breakpoint, so on any viewport narrower than
-   roughly sidebar-min + gap + any real minimum for the main track (~375-
-   412px phones), the sidebar held its min-width and the main track - whose
-   own minmax(0,1fr) has no floor - got squeezed to a handful of px, wrapping
-   every word in its cards onto its own line. Found on Role (M3 mobile
-   verification, Oct 31) after an earlier mobile-overflow pass missed it
-   because nothing here technically overflows its box - it just collapses.
-   Single column below 760px (wider than .grid-3's 560px since this sidebar
-   itself needs ~320-420px, not a card). */
 .two-col-sidebar{ display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,420px); gap:16px; align-items:start; }
 @media (max-width:760px){ .two-col-sidebar{ grid-template-columns:1fr; } }
-/* Same bug, Tone Shifter's wider editor/output ratio (sidebar min 300px). */
 .two-col-sidebar-wide{ display:grid; grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr); gap:22px; align-items:start; }
 @media (max-width:760px){ .two-col-sidebar-wide{ grid-template-columns:1fr; } }
 
-.feature-card{ width:100%; background:var(--surface); border:1px solid var(--card-border); border-radius:var(--r-lg); padding:22px; cursor:pointer; box-shadow:none; }
-.feature-card:hover{ border-color:var(--text-lightgray); }
-.feature-card:active{ background:var(--surface-sunken); }
+/* Cards with Charcoal Black glass & subtle Royal Blue tint */
+.feature-card{
+  width:100%;
+  background:linear-gradient(145deg, rgba(22, 27, 36, 0.78) 0%, rgba(16, 20, 28, 0.85) 100%);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--card-border);
+  border-radius:var(--r-lg);
+  padding:22px;
+  cursor:pointer;
+  box-shadow:0 8px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition:transform var(--t-press) var(--t-ease), border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.feature-card:hover{
+  border-color:rgba(255, 107, 53, 0.65);
+  box-shadow:0 14px 38px rgba(0, 0, 0, 0.45), 0 0 20px rgba(255, 107, 53, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform:translateY(-2px);
+}
+.feature-card:active{
+  background:linear-gradient(145deg, rgba(28, 35, 46, 0.85) 0%, rgba(20, 25, 35, 0.90) 100%);
+  transform:scale(0.985);
+}
 .feature-card.wide{ display:flex; align-items:flex-start; gap:18px; }
 .feature-card.wide .fc-body{ flex:1; }
-.fc-icon{ width:46px; height:46px; border-radius:var(--r-md); display:flex; align-items:center; justify-content:center; margin-bottom:14px; background:var(--surface-sunken); }
+.fc-icon{
+  width:46px; height:46px; border-radius:var(--r-md);
+  display:flex; align-items:center; justify-content:center; margin-bottom:14px;
+  background:rgba(37, 99, 235, 0.18);
+  border:1px solid rgba(59, 130, 246, 0.35);
+  box-shadow:0 0 14px rgba(37, 99, 235, 0.25);
+  color:#ffffff;
+  transition:all 0.2s ease;
+}
+.feature-card:hover .fc-icon{
+  background:rgba(255, 107, 53, 0.20);
+  border-color:rgba(255, 107, 53, 0.45);
+  box-shadow:0 0 14px rgba(255, 107, 53, 0.30);
+}
+.feature-card:hover .fc-icon svg{ color:#ff6b35; }
 .feature-card.wide .fc-icon{ margin-bottom:0; }
-.fc-icon svg{ width:21px; height:21px; }
-.icon-purple svg, .icon-blue svg, .icon-green svg, .icon-amber svg, .icon-pink svg, .icon-cyan svg{ color:var(--indigo); }
+.fc-icon svg{ width:21px; height:21px; color:#ffffff; }
+.icon-purple svg, .icon-blue svg, .icon-green svg, .icon-amber svg, .icon-pink svg, .icon-cyan svg{ color:#ffffff; }
 
-.feature-title{ font-size:var(--fs-body-lg); font-weight:700; margin-bottom:8px; color:var(--text-ink); letter-spacing:-.006em; }
-.feature-desc{ font-size:var(--fs-small); color:var(--text-gray2); line-height:1.55; margin-bottom:14px; }
+.feature-title{ font-size:var(--fs-body-lg); font-weight:700; margin-bottom:8px; color:#ffffff; letter-spacing:-.006em; }
+.feature-desc{ font-size:var(--fs-small); color:rgba(255,255,255,.84); line-height:1.55; margin-bottom:14px; }
 
 /* Only fires for the NOT-grounded case now (2026-11-02: per-answer source
    attribution removed - see GroundingNote.tsx). Grounded answers render nothing. */

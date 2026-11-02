@@ -397,7 +397,7 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
   const showVerdict = ran && !hasError;
   const verdictColor = passed ? "var(--green-dark)" : "var(--red-dark)";
 
-  const tagStyle: Record<string, string> = { Easy: "background:#e7f6ee;color:#047857", Medium: "background:#fdf3e3;color:#b45309", Hard: "background:#fdeaea;color:var(--red-dark)" };
+  const tagStyle: Record<string, string> = { Easy: "background:#e7f6ee;color:#047857", Medium: "background:#fdf3e3;color:#b45309", Hard: "background:#fdeaea;color:#991b1b" };
   const tagCss = tagStyle[p.difficulty] || "background:#f3f4f6;color:#4b5563";
   const [tagBg, tagColor] = tagCss.split(";").map((s) => s.split(":")[1]);
 
@@ -432,7 +432,7 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
     <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "18px 20px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <span style={{ flex: "none", padding: "3px 9px", borderRadius: "var(--r-pill)", fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", background: tagBg, color: tagColor }}>{p.difficulty}</span>
-        {p.concept && <span style={{ flex: "none", fontSize: "0.6875rem", fontWeight: 700, color: "var(--indigo-700)", background: "#eef0ff", padding: "3px 9px", borderRadius: "var(--r-pill)" }}>Tests: {p.concept}</span>}
+        {p.concept && <span style={{ flex: "none", fontSize: "0.6875rem", fontWeight: 700, color: "#1d4ed8", background: "#eef2ff", border: "1px solid #c7d2fe", padding: "3px 9px", borderRadius: "var(--r-pill)" }}>Tests: {p.concept}</span>}
       </div>
       <p style={{ margin: "10px 0 0", fontSize: "0.90625rem", lineHeight: 1.6, color: "var(--text-900)" }}>
         {promptSegments.map((seg: BoldSegment, i: number) => (
@@ -451,7 +451,7 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
             style={{ marginTop: 14, width: "100%", minHeight: 120, border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", padding: "12px 14px", font: "400 0.8125rem/1.5 'SF Mono',Menlo,Consolas,monospace", color: "var(--text-900)", background: "var(--field-bg-alt)", outline: "none", resize: "vertical", boxSizing: "border-box" }}
           />
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 10 }}>
-            <button onClick={onRun} style={{ border: 0, borderRadius: "var(--r-sm)", background: "var(--indigo-700)", color: "var(--surface)", font: "600 0.8125rem 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}>
+            <button onClick={onRun} style={{ border: 0, borderRadius: "var(--r-sm)", background: "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)", color: "#ffffff", boxShadow: "0 4px 16px rgba(255, 107, 53, 0.45)", font: "600 0.8125rem 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}>
               {run.running ? "Running…" : "Run"}
             </button>
             <button onClick={() => onRunChange({ showAnswer: !showAnswer })} style={{ border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", background: "var(--surface)", color: "var(--text-700)", font: "600 0.8125rem 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}>
@@ -465,7 +465,7 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
             )}
           </div>
 
-          {hasError && <div style={{ marginTop: 10, padding: "10px 12px", background: "#fdeaea", borderRadius: "var(--r-sm)", fontSize: "0.78125rem", color: "var(--red-dark)", whiteSpace: "pre-wrap" }}>{run.error}</div>}
+          {hasError && <div style={{ marginTop: 10, padding: "10px 12px", background: "#fdeaea", border: "1px solid #f6c8c8", borderRadius: "var(--r-sm)", fontSize: "0.78125rem", color: "#991b1b", whiteSpace: "pre-wrap" }}>{run.error}</div>}
 
           {isSql && ran && !hasError && (
             <div style={{ marginTop: 12, overflowX: "auto" }}>
@@ -495,12 +495,12 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
               {testResults.map((t, i) => (
                 <div key={i} style={{ border: "1px solid " + (t.pass ? "#cdeeda" : "#f6d5d5"), background: t.pass ? "#f0faf5" : "#fdf3f3", borderRadius: "var(--r-sm)", padding: "10px 12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.78125rem", fontWeight: 700, color: t.pass ? "var(--green-dark)" : "var(--red-dark)" }}>
-                    <morph-icon icon={t.pass ? ICON_D.CHECK : ICON_D.X} style={{ width: 13, height: 13, color: t.pass ? "var(--green-dark)" : "var(--red-dark)" }}></morph-icon>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.78125rem", fontWeight: 700, color: t.pass ? "#065f46" : "#991b1b" }}>
+                    <morph-icon icon={t.pass ? ICON_D.CHECK : ICON_D.X} style={{ width: 13, height: 13, color: t.pass ? "#065f46" : "#991b1b" }}></morph-icon>
                     <span>{t.label}</span>
                   </div>
-                  <div style={{ marginTop: 6, font: "400 0.75rem/1.5 'SF Mono',Menlo,Consolas,monospace", color: "var(--text-600)", wordBreak: "break-word" }}>got: {JSON.stringify(t.got)}</div>
-                  {!t.pass && <div style={{ marginTop: 3, font: "400 0.75rem/1.5 'SF Mono',Menlo,Consolas,monospace", color: "var(--text-600)", wordBreak: "break-word" }}>expected: {JSON.stringify(t.expected)}</div>}
+                  <div style={{ marginTop: 6, font: "400 0.75rem/1.5 'SF Mono',Menlo,Consolas,monospace", color: "#1f2937", wordBreak: "break-word" }}>got: {JSON.stringify(t.got)}</div>
+                  {!t.pass && <div style={{ marginTop: 3, font: "400 0.75rem/1.5 'SF Mono',Menlo,Consolas,monospace", color: "#1f2937", wordBreak: "break-word" }}>expected: {JSON.stringify(t.expected)}</div>}
                 </div>
               ))}
             </div>
@@ -529,7 +529,7 @@ function ProblemCard({ p, language, run, onRunChange, onRun, onScore, recording,
             <button
               onClick={onScore}
               disabled={!!run.scoring || !(run.answerDraft || "").trim()}
-              style={{ border: 0, borderRadius: "var(--r-sm)", background: "var(--indigo-700)", color: "var(--surface)", font: "600 0.84375rem 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}
+              style={{ border: 0, borderRadius: "var(--r-sm)", background: "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)", color: "#ffffff", boxShadow: "0 4px 16px rgba(255, 107, 53, 0.45)", font: "600 0.84375rem 'Instrument Sans',sans-serif", padding: "9px 16px", cursor: "pointer" }}
             >
               {run.scoring ? "Scoring…" : "Get AI feedback"}
             </button>

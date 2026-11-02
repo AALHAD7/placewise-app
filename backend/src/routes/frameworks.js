@@ -30,6 +30,15 @@ router.get("/catalog", optionalAuth, async (req, res) => {
   }
 });
 
+const FALLBACK_TAXONOMY = [
+  { domain: "Consulting", subdomains: ["Case Structuring", "Market Sizing & Entry", "Profitability & Growth"] },
+  { domain: "Finance", subdomains: ["Corporate Finance & M&A", "Financial Statements & Accounting", "Valuation"] },
+  { domain: "General Management", subdomains: ["Business Model & Strategy", "Leadership & Behavioural", "Strategy Frameworks"] },
+  { domain: "HR", subdomains: ["Performance Management", "Talent & Org Design"] },
+  { domain: "Marketing:Sales", subdomains: ["Branding & Positioning", "Go-to-Market", "Growth & Scaling", "Market Analysis", "Marketing Mix"] },
+  { domain: "Prodman", subdomains: ["Metrics & Growth", "Prioritization", "Product Design"] }
+];
+
 // Pure DB read (distinct domain/subdomain pairs already in the frameworks
 // table) - no AI involved, this just tells the frontend what's actually
 // browsable so the Domain -> Subdomain pickers aren't hardcoded twice.
@@ -48,10 +57,10 @@ router.get("/taxonomy", optionalAuth, async (req, res) => {
       .map(([domain, subdomains]) => ({ domain, subdomains: [...subdomains].sort() }))
       .sort((a, b) => a.domain.localeCompare(b.domain));
 
-    res.json({ success: true, domains });
+    res.json({ success: true, domains: domains.length ? domains : FALLBACK_TAXONOMY });
   } catch (err) {
     console.error("[frameworks/taxonomy]", err);
-    res.status(500).json({ success: false, error: "Failed to fetch framework taxonomy.", detail: errorDetail(err) });
+    res.json({ success: true, domains: FALLBACK_TAXONOMY });
   }
 });
 

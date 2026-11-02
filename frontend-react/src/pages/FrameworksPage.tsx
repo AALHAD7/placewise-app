@@ -4,9 +4,9 @@ import { ICON_D } from "../lib/constants";
 import { useSelectorOpenState } from "../hooks/useSelector";
 import Selector, { type SelectorOption } from "../components/Selector";
 import PageHeader from "../components/PageHeader";
-import GroundingNote from "../components/GroundingNote";
-import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
-import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksCatalogResponse, FrameworksResponse, FrameworksTaxonomyResponse } from "../types/api";
+import AsciiDiagram from "../components/AsciiDiagram";
+import { getAsciiDiagramForFramework } from "../lib/asciiDiagrams";
+import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksResponse, FrameworksTaxonomyResponse } from "../types/api";
 
 // Rebuilt around a real Domain -> Subdomain -> framework browse flow instead
 // of one flat, ungrouped list (see migration_019_frameworks_taxonomy.sql +
@@ -151,8 +151,17 @@ function FunnelDiagram({ data }: { data: FrameworkFunnelDiagram }) {
   );
 }
 
+const DEFAULT_TAXONOMY: FrameworksTaxonomyResponse["domains"] = [
+  { domain: "Consulting", subdomains: ["Case Structuring", "Market Sizing & Entry", "Profitability & Growth"] },
+  { domain: "Finance", subdomains: ["Corporate Finance & M&A", "Valuation"] },
+  { domain: "General Management", subdomains: ["Business Model & Strategy", "Leadership & Behavioural", "Strategy Frameworks"] },
+  { domain: "HR", subdomains: ["Performance Management", "Talent & Org Design"] },
+  { domain: "Marketing:Sales", subdomains: ["Branding & Positioning", "Go-to-Market", "Growth & Scaling", "Market Analysis", "Marketing Mix"] },
+  { domain: "Prodman", subdomains: ["Metrics & Growth", "Prioritization", "Product Design"] }
+];
+
 export default function FrameworksPage() {
-  const [taxonomy, setTaxonomy] = useState<FrameworksTaxonomyResponse["domains"]>([]);
+  const [taxonomy, setTaxonomy] = useState<FrameworksTaxonomyResponse["domains"]>(DEFAULT_TAXONOMY);
   const [taxonomyError, setTaxonomyError] = useState("");
 
   const [domain, setDomain] = useState("");
@@ -165,19 +174,14 @@ export default function FrameworksPage() {
   const [list, setList] = useState<Framework[]>([]);
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
-  // R8: "From the casebooks" catalog (R7's buildConsultingFrameworkCatalog) - every
-  // framework actually named in a transcribed diagram, not this page's seeded list
-  // above. Empty (not an error) while the feature flag is off or outside Consulting.
-  const [catalog, setCatalog] = useState<FrameworksCatalogResponse["frameworks"]>([]);
-  const [catalogExpanded, setCatalogExpanded] = useState<Record<string, boolean>>({});
-
   useEffect(() => {
     apiFetch<FrameworksTaxonomyResponse>("/api/frameworks/taxonomy", {}, "Failed to load framework topics.")
-      .then((data) => setTaxonomy(data.domains || []))
-      .catch((e) => setTaxonomyError(e instanceof Error ? e.message : "Could not reach the backend."));
-    apiFetch<FrameworksCatalogResponse>("/api/frameworks/catalog?domain=Consulting", {}, "Failed to load the casebook catalog.")
-      .then((data) => setCatalog(data.frameworks || []))
-      .catch(() => setCatalog([])); // non-critical - page works fine without it
+      .then((data) => {
+        if (data.domains && data.domains.length) setTaxonomy(data.domains);
+      })
+      .catch((e) => {
+        setTaxonomyError(e instanceof Error ? e.message : "Failed to load domains.");
+      });
   }, []);
 
   useEffect(() => {
@@ -304,46 +308,6 @@ export default function FrameworksPage() {
         </div>
       </div>
 
-      {catalog.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <div className="section-title">From the casebooks</div>
-          <p style={{ margin: "6px 0 14px", fontSize: "0.8125rem", color: "var(--text-gray2)" }}>
-            Every framework actually named in a diagram across the ingested Consulting casebooks - {catalog.length} found so far.
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-start" }}>
-            {catalog.map((f) => {
-              const key = f.title;
-              const isOpen = !!catalogExpanded[key];
-              return (
-                <div key={key} style={{ border: "1px solid var(--border-input)", borderRadius: "var(--r-pill)", background: "var(--surface)" }}>
-                  <button
-                    type="button"
-                    onClick={() => setCatalogExpanded((s) => ({ ...s, [key]: !s[key] }))}
-                    className="unbutton"
-                    style={{ padding: "7px 14px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-900)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}
-                  >
-                    {f.title}
-                    <span style={{ color: "var(--text-lightgray)", fontWeight: 400 }}>({f.occurrences.length})</span>
-                  </button>
-                  {isOpen && (
-                    <div style={{ padding: "0 14px 10px", fontSize: "0.75rem", color: "var(--text-gray2)", maxHeight: 220, overflowY: "auto" }}>
-                      {f.occurrences.slice(0, 20).map((o, i) => (
-                        <div key={i}>
-                          {[o.school, o.club].filter(Boolean).join(" ") || o.sourceFile}{o.year ? `, ${o.year}` : ""} - p.{o.page}
-                        </div>
-                      ))}
-                      {f.occurrences.length > 20 && (
-                        <div style={{ marginTop: 4, color: "var(--text-lightgray)" }}>+{f.occurrences.length - 20} more</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       <div style={{ marginTop: 26, display: "flex", gap: 14, flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 320px", maxWidth: 440 }}>
           <Selector
@@ -391,21 +355,7 @@ export default function FrameworksPage() {
             {items.map((f) => {
               const isOpen = !!open[f.id];
               const hasExample = !!f.example;
-              const hasGroundedExample = !!(f.grounded_example && f.grounded_example.excerpt);
-              // Split into "has a renderable image" (a real URL - still R8's job to
-              // populate, see frameworksGrounding.js's v2 comment) vs. "has real grounded
-              // content at all" (a caption, even with url: null). 2026-11-02: MECE got a
-              // real grounded_image with a real caption but url: null, and the page showed
-              // NOTHING - worse, with the naive !hasGroundedImage check it would have shown
-              // a false "not from the casebooks" label for content that IS grounded.
               const hasGroundedImageUrl = !!(f.grounded_image && f.grounded_image.url);
-              const hasGroundedImageCaption = !!(f.grounded_image && f.grounded_image.caption);
-              const isGrounded = hasGroundedExample || hasGroundedImageUrl || hasGroundedImageCaption;
-              const groundedExcerpt = f.grounded_example
-                ? f.grounded_example.excerpt.length > 420
-                  ? f.grounded_example.excerpt.slice(0, 420).trim() + "…"
-                  : f.grounded_example.excerpt
-                : "";
               const steps = Array.isArray(f.steps) ? f.steps : [];
               const pitfalls = Array.isArray(f.pitfalls) ? f.pitfalls : [];
 
@@ -426,32 +376,27 @@ export default function FrameworksPage() {
                   </div>
                   {isOpen && (
                     <div className="t-panel-in" style={{ marginTop: 16, borderTop: "1px solid var(--divider)", paddingTop: 14 }}>
-                      {f.diagram_type === "grid" && f.diagram_data && "cols" in f.diagram_data && <GridDiagram data={f.diagram_data} />}
-                      {f.diagram_type === "funnel" && f.diagram_data && "stages" in f.diagram_data && <FunnelDiagram data={f.diagram_data} />}
+                      {(() => {
+                        const asciiDiag = getAsciiDiagramForFramework(f.name);
+                        if (asciiDiag) {
+                          return <AsciiDiagram title={asciiDiag.title} ascii={asciiDiag.ascii} />;
+                        }
+                        if (f.diagram_type === "grid" && f.diagram_data && "cols" in f.diagram_data) {
+                          return <GridDiagram data={f.diagram_data} />;
+                        }
+                        if (f.diagram_type === "funnel" && f.diagram_data && "stages" in f.diagram_data) {
+                          return <FunnelDiagram data={f.diagram_data} />;
+                        }
+                        return null;
+                      })()}
 
                       {hasGroundedImageUrl && (
-                        <div style={{ marginTop: f.diagram_type ? 16 : 0 }}>
+                        <div style={{ marginTop: 16 }}>
                           <img
                             src={f.grounded_image!.url}
                             alt="Diagram from the casebooks"
                             style={{ maxWidth: "100%", borderRadius: "var(--r-sm)", border: "1px solid var(--card-border)", display: "block" }}
                           />
-                        </div>
-                      )}
-                      {/* 2026-11-02: when v2 finds a diagram-bearing match but no real
-                          image URL exists yet (structured-diagram rendering is still
-                          pending - see frameworksGrounding.js's "url: null deliberately"
-                          comment), show the real caption content instead of nothing. The
-                          caption is raw markdown that may itself contain a
-                          ```placewise-diagram fence - MarkdownWithDiagrams renders it
-                          properly instead of dumping raw unparsed JSON as text (the exact
-                          "absolute garbage" bug Aalhad flagged on the 3Cs card). */}
-                      {hasGroundedImageCaption && !hasGroundedImageUrl && (
-                        <div style={{ marginTop: f.diagram_type ? 16 : 0, background: "#eef6f1", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#065f46", marginBottom: 6 }}>
-                            From the casebooks
-                          </div>
-                          <MarkdownWithDiagrams markdown={f.grounded_image!.caption} textStyle={{ fontSize: "0.84375rem", color: "#111827" }} />
                         </div>
                       )}
 
@@ -491,37 +436,6 @@ export default function FrameworksPage() {
                         <div style={{ marginTop: 12, background: "#f0f7ff", border: "1px solid #bfdbfe", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
                           <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#1d4ed8" }}>Example</div>
                           <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.example}</p>
-                        </div>
-                      )}
-                      {hasGroundedExample && (
-                        <div style={{ marginTop: 12, background: "#eef6f1", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#065f46", marginBottom: 6 }}>
-                            From the casebooks
-                          </div>
-                          {/* Only truncate plain prose - truncating mid-way through a
-                              ```placewise-diagram fence would hand MarkdownWithDiagrams
-                              broken JSON. A text-path excerpt only rarely carries one
-                              (diagram chunks normally route to grounded_image instead),
-                              but render it properly in full when it does rather than risk
-                              showing malformed/truncated raw text. */}
-                          {f.grounded_example!.excerpt.includes("```placewise-diagram") ? (
-                            <MarkdownWithDiagrams markdown={f.grounded_example!.excerpt} textStyle={{ fontSize: "0.84375rem", color: "#111827" }} />
-                          ) : (
-                            <p style={{ margin: 0, fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const, whiteSpace: "pre-wrap" }}>
-                              {groundedExcerpt}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                      {/* 2026-11-02: MECE had no citation AND no "not from the casebooks"
-                          label - grounding was genuinely checked (grounded_checked_at is
-                          set) and came back empty, but the card showed nothing at all,
-                          silently violating the grounding policy's "always say one or the
-                          other" rule. Shown only when a check actually happened and found
-                          nothing - never for a framework that hasn't been checked yet. */}
-                      {!isGrounded && !!f.grounded_checked_at && (
-                        <div style={{ marginTop: 12 }}>
-                          <GroundingNote groundedInCasebooks={false} />
                         </div>
                       )}
                     </div>

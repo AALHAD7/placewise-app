@@ -5,6 +5,39 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-02 — Policy decision: add a paraphrase layer, verbatim excerpts were never the goal
+**Phase:** R7b (new) · **Type:** policy
+
+**What changed:** Aalhad, testing localhost, noticed every grounded answer shows casebook
+text exactly as written in the PDF, with no LLM interpretation. Investigated and confirmed:
+by design, `frameworksGrounding.js` and `consultingRetrieval.js` only call Gemini for (1)
+embedding the query and (2) a relevance judge on retrieved chunks — never to rewrite the
+answer. The code says so explicitly ("The excerpt itself, verbatim — not an LLM paraphrase —
+so there's nothing here that could be a fabricated claim"). That was a deliberate
+anti-hallucination choice from earlier in the rebuild, not a bug.
+Aalhad's actual intent was different: the casebook should supply the idea/logic/numbers, but
+the student-facing presentation should be re-explained, not a PDF dump. Decision: add a
+paraphrase layer. Updated `CLAUDE.md`'s grounding policy and the `grounded-answering` skill
+with the new pipeline shape before any code: paraphrase call (chunk → plain-language
+rewrite, same facts only) → faithfulness judge (second Gemini call, same voting pattern as
+the existing relevance judge) → fail closed to the raw verbatim excerpt if the judge rejects
+the paraphrase or the call errors. Gated behind a reversible flag, cached like the rest of
+the backend, re-eval before going live (a paraphrase step is a new place hallucination can
+enter that didn't exist when excerpts were verbatim).
+**Why:** Verbatim excerpts were satisfying the letter of the grounding policy ("casebook
+content only") but not the product's actual purpose — explaining a framework or guesstimate
+clearly, not reproducing the source page.
+**Files:** `CLAUDE.md`, `.claude/skills/grounded-answering/SKILL.md`, `.gsd/ROADMAP.md`
+(inserted R7b, now ▶), `.gsd/STATE.md`.
+**Proof:** Docs updated; no code changed yet — implementation is R7b, handed to
+`rag-engineer` next.
+**Undo:** Revert the four files above; nothing in the database or runtime changed by this
+entry alone.
+**Open issues:** R7b itself (the actual paraphrase + judge code, the reversible flag, and an
+eval run against the test question set) is not yet built.
+
+---
+
 ## 2026-11-02 — Frameworks page: fixed the QA-found catalog bug, the stale-cache bug, and the garbled-excerpt bug Aalhad reported directly
 **Phase:** (fix, live feature - not R6-R9 gated work) · **Type:** fix
 

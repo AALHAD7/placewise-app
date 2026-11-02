@@ -1,6 +1,31 @@
 # STATE
 
-**Position:** ▶ R5 (backend-engineer, frontend-engineer: admin review queue). Updated 2026-11-02.
+**Position:** ▶ R7b (rag-engineer: paraphrase layer + faithfulness gate), code done, eval
+pending. Updated 2026-11-03.
+Aalhad's call 2026-11-02: verbatim casebook excerpts are not the right student-facing
+presentation — "the idea or the logic should be the same, but it should be presented in a
+different way." Inserted R7b ahead of R5 (admin queue, still todo) and R8. CLAUDE.md's
+grounding policy and the `grounded-answering` skill were updated first with the pipeline
+shape (paraphrase call → faithfulness judge → fail closed to verbatim).
+R7b code done 2026-11-03: `consultingRetrieval.js` (paraphrase + 3-vote faithfulness judge,
+in-memory cache, diagram-block protection), wired into Q&A (`qaRetrieval.js`) and Frameworks
+(`frameworksGrounding.js`) only — not Guesstimates or Company/Role/Skill pages, deliberately,
+so the flag can't touch those paths without further code. `ENABLE_ANSWER_PARAPHRASE` added,
+off by default. 20 new tests, all mocked/pure (no live Gemini/DB calls). `npm test`:
+144/147 pass. Still needed before flipping the flag on: a `rag-evaluator` run against
+`backend/eval/questions.jsonl` with the flag on, to check the paraphrase doesn't regress
+faithfulness scores. See log.md's 2026-11-03 entry for the full diff and cost estimate
+(~4 extra Gemini calls per chunk, first time only — then cached 7 days).
+
+**Found while building R7b, not caused by it — flag for Aalhad:** `pickTopTextAndImage` in
+`frameworksGrounding.js` is uncommitted WIP (predates this session, part of the 2026-11-02
+garbled-excerpt fix in progress) that now always returns `topText: null` — the v1
+(document_chunks) text-grounding path is currently disabled, only images come through. Two
+tests in `test/frameworksGrounding.test.js` fail because of this (`npm test`: 144 pass/3
+fail — 1 is the pre-existing sandbox env-leak failure, these 2 are new). Confirmed via `git
+show HEAD` that the committed version still returns a real `topText`; this is only in the
+working tree. Not fixed as part of R7b — needs Aalhad's call on whether that WIP change was
+intentional.
 R4 done 2026-11-02: `backend/eval/run_eval.js` built and run against the live (flag-off)
 behavior. Baseline: 0/39 (0%) pass. Two findings beyond the expected "mostly not live yet":
 `document_chunks` actually has active Consulting rows under older `.txt`-named source files

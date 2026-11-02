@@ -1,5 +1,7 @@
 import { Component, type ReactNode } from "react";
 import type { PlacewiseDiagramBlock, PlacewiseTreeNode } from "../../types/api";
+import { diagramBlockToAscii } from "../../lib/asciiDiagrams";
+import AsciiDiagram from "../AsciiDiagram";
 import "../../styles/placewise-diagram.css";
 
 // Draws one ```placewise-diagram block (diagram-transcription skill) without any chart or
@@ -220,6 +222,20 @@ function Other({ b }: { b: Extract<Block, { type: "other" }> }) {
 function Body({ block }: { block: unknown }) {
   need(block && typeof block === "object" && !Array.isArray(block), "block is not a JSON object");
   const b = block as Block;
+
+  // Render in clean, intuitive ASCII format across all pages
+  const asciiRes = diagramBlockToAscii(b);
+  if (asciiRes && asciiRes.ascii) {
+    const notes = Array.isArray(b.notes) && b.notes.length ? b.notes.map(str).join(" · ") : undefined;
+    return (
+      <AsciiDiagram
+        title={b.title || `${b.type.replace("_", " ").toUpperCase()}`}
+        ascii={asciiRes.ascii}
+        subtitle={notes}
+      />
+    );
+  }
+
   let inner: ReactNode;
   switch (b.type) {
     case "issue_tree": inner = <IssueTree b={b} />; break;

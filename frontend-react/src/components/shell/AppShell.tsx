@@ -19,7 +19,7 @@ export default function AppShell() {
   return (
     <DashboardProvider>
       <SmoothScroll />
-      <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      <div style={{ minHeight: "100vh", background: "transparent" }}>
         <div className="app-shell" data-modal="false">
           <TopNav />
           <main style={{ position: "relative" }}>

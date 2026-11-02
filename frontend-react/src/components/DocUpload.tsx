@@ -43,7 +43,7 @@ export default function DocUpload({ name, label, required, fileName, status, per
       />
       {fileName ? (
         <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", border: "1px solid " + (status === "error" ? "#f6dede" : "#d9f2e5"), borderRadius: "var(--r-sm)", background: status === "error" ? "var(--red-wash)" : "var(--green-wash)" }}>
-          <span style={{ flex: "none", width: 24, height: 24, borderRadius: "var(--r-sm)", background: status === "error" ? "var(--red-dark)" : "var(--green)", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.71875rem", fontWeight: 700 }}>
+          <span style={{ flex: "none", width: 24, height: 24, borderRadius: "var(--r-sm)", background: status === "error" ? "var(--red-dark)" : "var(--green)", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.71875rem", fontWeight: 700 }}>
             {status === "error" ? "!" : "✓"}
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
