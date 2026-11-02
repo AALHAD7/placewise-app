@@ -7,6 +7,8 @@ import { getRoleOverview, getRoleOverviewAtCompany } from "../lib/roleOverview.j
 import { getRoleTopics } from "../lib/roleTopics.js";
 import { getRoleCompanyTopicNotes } from "../lib/roleCompanyTopicNotes.js";
 import { getChipPanel } from "../lib/chipPanel.js";
+import { generateJSON } from "../lib/gemini.js";
+import { logActivity } from "../lib/activity.js";
 
 const router = Router();
 
@@ -158,6 +160,65 @@ router.post("/chip-panel", optionalAuth, aiLimiter, async (req, res) => {
   } catch (err) {
     console.error("[roles/chip-panel]", err);
     res.status(500).json({ success: false, error: "Failed to generate panel.", detail: errorDetail(err) });
+  }
+});
+
+// In-page Practice Problem Evaluator - evaluates a candidate's practice
+// answer using Gemini without redirecting away from the Role page.
+router.post("/evaluate-practice", optionalAuth, aiLimiter, async (req, res) => {
+  const { role, company, topic, difficulty, question, userAnswer } = req.body || {};
+
+  if (!question || typeof question !== "string" || !question.trim()) {
+    return res.status(400).json({ success: false, error: "question is required." });
+  }
+  if (!userAnswer || typeof userAnswer !== "string" || userAnswer.trim().length < 5) {
+    return res.status(400).json({ success: false, error: "Please enter an answer with at least 5 characters before evaluating." });
+  }
+
+  const systemPrompt = `You are an elite interview coach and senior hiring bar-raiser evaluating a candidate's practice answer for top MBA, consulting, tech, and corporate roles (e.g. Chief of Staff, PM, Strategy).
+Be insightful, rigorous, structured, and constructive.
+
+Context:
+Role: ${role || "General"}
+${company ? `Target Company: ${company}` : ""}
+${topic ? `Topic / Skill: ${topic}` : ""}
+Difficulty: ${difficulty || "Medium"}
+
+Evaluate the candidate's answer thoroughly and return ONLY a valid JSON object matching this exact schema:
+{
+  "score": <number between 1.0 and 10.0, e.g. 7.5>,
+  "rating": "<Strong | Good | Needs Improvement>",
+  "summary": "<1-2 sentence high-level assessment of the response>",
+  "strengths": ["<specific strength 1>", "<specific strength 2>"],
+  "improvements": ["<specific missed angle, weak point, or gap 1>", "<specific improvement 2>"],
+  "modelAnswer": "<A structured, benchmark answer demonstrating how an exceptional candidate would tackle this problem using structured frameworks, root-cause diagnosis, or strategic levers>",
+  "keyTakeaway": "<One high-impact coaching tip or heuristic for this problem archetype>"
+}`;
+
+  const prompt = `PRACTICE QUESTION:
+${question}
+
+CANDIDATE'S ANSWER:
+${userAnswer}
+
+Provide your structured evaluation in JSON.`;
+
+  try {
+    const evaluation = await generateJSON({
+      system: systemPrompt,
+      prompt,
+      maxTokens: 2500,
+      allowEscalation: true
+    });
+
+    if (req.user && req.user.id) {
+      logActivity(req.user.id, "practice_problem", role || "General");
+    }
+
+    res.json({ success: true, evaluation });
+  } catch (err) {
+    console.error("[roles/evaluate-practice]", err);
+    res.status(500).json({ success: false, error: "Failed to evaluate answer. Please try again.", detail: errorDetail(err) });
   }
 });
 

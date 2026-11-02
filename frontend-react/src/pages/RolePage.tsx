@@ -9,6 +9,7 @@ import { useProbe } from "../hooks/useProbe";
 import { useSimulatedProgress } from "../hooks/useSimulatedProgress";
 import Selector, { type SelectorOption } from "../components/Selector";
 import ProbeChat from "../components/ProbeChat";
+import PracticeModal from "../components/PracticeModal";
 import PageHeader from "../components/PageHeader";
 import GroundingNote from "../components/GroundingNote";
 import type { RoleCompanyNotesResponse, RoleOverview, RoleOverviewResponse, RoleTopic, RoleTopicsResponse } from "../types/api";
@@ -80,6 +81,7 @@ export default function RolePage() {
   const [roleTopic, setRoleTopic] = useState(() => (isPageReload() ? "" : searchParams.get("topic") || ""));
   const [overviewByRole, setOverviewByRole] = useState<Record<string, OverviewState>>({});
   const [topicsByRole, setTopicsByRole] = useState<Record<string, TopicsState>>({});
+  const [activePracticePrompt, setActivePracticePrompt] = useState<{ question: string; difficulty: string; topic: string } | null>(null);
   // "How this shows up by company" (Phase 1 amendment C) - a separate,
   // RAG-gated fetch keyed by (role, company), not part of the topics
   // payload anymore. Keyed in state by "role@@company" so switching role or
@@ -542,9 +544,9 @@ export default function RolePage() {
                               <span style={{ flex: "none", padding: "3px 9px", borderRadius: "var(--r-pill)", fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", ...(DIFFICULTY_TAG_STYLE[q.difficulty] || { background: "var(--surface-sunken)", color: "var(--text-600)" }) }}>{q.difficulty}</span>
                               <span style={{ flex: 1, minWidth: 0, fontSize: "0.875rem", lineHeight: 1.5, color: "var(--text-700)" }}>{q.question}</span>
                               <button
-                                onClick={() => navigate("/mock-interview?prefillQuestion=" + encodeURIComponent(q.question) + "&prefillFrom=" + encodeURIComponent((role || "") + " · " + (roleTopic || "")))}
+                                onClick={() => setActivePracticePrompt({ question: q.question, difficulty: q.difficulty, topic: roleTopic || current.name })}
                                 className="practise-btn"
-                                style={{ flex: "none", border: "1px solid #99c7ff", borderRadius: "var(--r-sm)", background: "var(--surface)", color: "var(--indigo)", font: "600 0.78125rem 'Instrument Sans',sans-serif", padding: "8px 12px", cursor: "pointer" }}
+                                style={{ flex: "none", border: "1px solid #ff8c42", borderRadius: "var(--r-sm)", background: "rgba(255, 107, 53, 0.12)", color: "#ff8c42", font: "600 0.78125rem 'Instrument Sans',sans-serif", padding: "8px 14px", cursor: "pointer", transition: "all 0.15s ease" }}
                               >
                                 Practise
                               </button>
@@ -684,6 +686,16 @@ export default function RolePage() {
           </div>
         </>
       )}
+
+      <PracticeModal
+        isOpen={!!activePracticePrompt}
+        onClose={() => setActivePracticePrompt(null)}
+        question={activePracticePrompt?.question || ""}
+        difficulty={activePracticePrompt?.difficulty || "Medium"}
+        role={role}
+        company={company}
+        topic={activePracticePrompt?.topic || ""}
+      />
     </>
   );
 }
