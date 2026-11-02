@@ -5,6 +5,65 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-03 — R7b built: paraphrase layer + faithfulness judge, code only, flag off
+**Phase:** R7b · **Type:** feature
+
+**What changed:** Implemented the paraphrase pipeline decided 2026-11-02, per
+`grounded-answering` skill: `consultingRetrieval.js` gained `paraphraseChunk` (Gemini
+rewrite, flash-lite, forbidden from adding any claim/number/name/step not already in the
+source), `judgeParaphraseFaithful` (a separate 3-vote majority judge from the existing
+relevance judge — "is the rewrite faithful" vs "does this answer the question" are kept as
+different calls on purpose), and `paraphraseAndVerify` (caches the verified result per
+chunk-content hash, 7-day TTL, `singleFlight`-shaped like `companyLogo.js`). Diagram blocks
+(` ```placewise-diagram ` fences) are pulled out before paraphrasing and spliced back
+verbatim afterward (`protectDiagramBlocks`/`restoreDiagramBlocks`) — a missing/duplicated
+placeholder token fails closed to the raw excerpt rather than trusting the model not to
+touch JSON it was told not to touch. `groundedConsultingLookup` takes a new `paraphrase`
+option; on failure (judge rejects, call throws, token lost) it falls back to the verbatim
+excerpt for that chunk, never a distorted rewrite. Gated behind `ENABLE_ANSWER_PARAPHRASE`
+(off by default; documented in `backend/.env.example`) — flag off is byte-identical to
+today's output (`content`/`hasDiagram`/`similarity` only), verified by a network-mocked
+test.
+**Scoped deliberately to Q&A (`qaRetrieval.js`) and Frameworks (`frameworksGrounding.js`'s
+`findGroundingV2`)** — Guesstimates, Company, Role and Skill pages also call
+`groundedConsultingLookup` but don't pass `paraphrase: true`, so the flag can't reach them
+even when turned on, without a further code change. Flag to Aalhad if he wants Guesstimates
+included too — the skill doc mentions it but this build didn't wire it.
+**Why:** Verbatim excerpts satisfied the letter of the grounding policy but not its purpose;
+Aalhad wants the same facts, re-explained, not a PDF dump — with a safety net so a bad
+rewrite never reaches a student silently.
+**Tests:** 20 new (3 files, all pure/mocked — no live Gemini/DB calls): diagram-block
+round-trip + fail-closed cases, faithfulness vote-counting, flag-off no-op proof (asserts
+only the pre-existing relevance-judge calls happen), flag-on end-to-end (faithful rewrite
+used, unfaithful falls back, diagram JSON survives byte-for-byte, dropped token fails
+closed, pure-diagram chunk skips the paraphrase call entirely).
+**`npm test`: 144 pass, 3 fail** — 1 is the pre-existing sandbox env-leak failure (expected,
+noted in earlier entries); the other 2 (`pickTopTextAndImage` in
+`test/frameworksGrounding.test.js`) are **pre-existing uncommitted WIP, not caused by this
+work** — confirmed `pickTopTextAndImage` always returns `topText: null` in the working tree
+right now (v1 text-grounding path effectively disabled) while `git show HEAD` still has the
+real function; this predates R7b and isn't fixed here. Flagged in `.gsd/STATE.md` for
+Aalhad's call.
+**Cost estimate:** ~4 extra Gemini calls (1 paraphrase + 3-vote judge) per chunk, flash-lite
+tier, the first time any given chunk's content is paraphrased; cached 7 days after that, so
+steady-state cost drops well below that ceiling once common chunks (reused across
+questions/frameworks) are warm.
+**Files:** `backend/src/lib/consultingRetrieval.js`, `backend/src/lib/frameworksGrounding.js`,
+`backend/src/lib/qaRetrieval.js`, `backend/.env.example`,
+`backend/test/consultingParaphrase.test.js`, `backend/test/consultingParaphraseFlagOff.test.js`,
+`backend/test/consultingParaphraseFlagOn.test.js` (all three new).
+**Proof:** `npm test` output above; diff reviewed directly against `git show HEAD` for the
+pre-existing-bug claim.
+**Undo:** Revert the files above. `ENABLE_ANSWER_PARAPHRASE` was never set anywhere, so
+production and localhost behavior are unchanged until Aalhad sets it.
+**Open issues:** (1) Run `rag-evaluator` against `backend/eval/questions.jsonl` with the
+flag on before going live — faithfulness-on-the-real-eval-set is R7b's actual "done when"
+bar, not yet checked. (2) The `pickTopTextAndImage` WIP bug above, unrelated to R7b but
+discovered while verifying its test run. (3) Guesstimates not wired, per the scoping note
+above.
+
+---
+
 ## 2026-11-02 — Policy decision: add a paraphrase layer, verbatim excerpts were never the goal
 **Phase:** R7b (new) · **Type:** policy
 
