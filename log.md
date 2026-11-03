@@ -5,6 +5,53 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-03 — R7b eval: paraphrase layer tested live against the 39-question set, R7b marked done
+**Phase:** R7b · **Type:** eval
+
+**What changed:** Ran a new, separate eval script (`backend/eval/run_eval_paraphrase_preview.js`,
+new file, `run_eval_v2_preview.js` left untouched) that calls the real `paraphraseChunk` and
+`judgeParaphraseFaithful` functions directly (bypassing `ENABLE_ANSWER_PARAPHRASE` — neither
+function reads it) on the top relevant chunk for every question the existing relevance gate
+marks covered, against the same still-inactive R6 chunk pool `run_eval_v2_preview.js` uses.
+Strictly read-only: `is_active` untouched, no table written, flag never set.
+
+**Results** (20 of 39 questions covered):
+- **Paraphrase faithfulness: 10 pass, 1 fail, 9 n/a → 91% of the 11 applicable.** The 1 fail
+  (q039, "How do you solve a private equity due diligence case?") is the fail-closed design
+  working exactly as intended: the paraphrase added an inserted arithmetic-commentary step
+  ("50% × 60% × 70% = 21%, or approximately 20% of the population") not clearly present in
+  the source phrasing — the kind of model-added interpretation the judge exists to catch. A
+  real `groundedConsultingLookup({ paraphrase: true })` call would fall back to the verbatim
+  excerpt for this one question, not show the questionable rewrite.
+- **must_include term survival after paraphrasing: 13 pass, 4 fail → 76% raw.** Manually
+  traced all 4 failures (q013, q021, q025, q026) back to the raw chunk before accepting the
+  automated label. **None were actually caused by paraphrasing**: q013/q025 are pure-diagram
+  chunks where `paraphraseChunk` returns content byte-for-byte unchanged (nothing was
+  rewritten); q021 is a US/UK spelling mismatch ("Analyze" in the chunk vs "Analyse" in
+  `questions.jsonl`); q026's required phrase ("value chain") never appears in that chunk at
+  all. All 4 would fail identically with paraphrasing off — pre-existing test-fixture/
+  retrieval mismatches, not a paraphrasing regression.
+**Why:** R7b's "done when" bar in `.gsd/ROADMAP.md` was "faithfulness judge passes on eval
+set," not just mocked unit tests — this is that run. Clean result: on this question set, the
+paraphrase layer doesn't demonstrably drop real facts, and its one true failure was caught
+and would be handled safely by the existing fail-closed fallback.
+**Cost:** 35 embedding + 504 relevance-judge (inherited coverage gate, not new) + 20
+paraphrase + 33 faithfulness-judge calls = 592 total, flash-lite tier only, well under $0.10
+for the run.
+**Files:** `backend/eval/run_eval_paraphrase_preview.js` (new),
+`backend/eval/results/2026-11-03-paraphrase-preview.{json,md}` (new).
+**Proof:** Result files above; numbers spot-checked directly against the `.md` report.
+**Undo:** Delete the new script/result files. No flag, table, or `is_active` row was changed
+by this run.
+**Open issues:** Sample is small (11 faithfulness judgments, 17 must_include-bearing
+questions) — a useful first signal, not a final verdict, before flipping
+`ENABLE_ANSWER_PARAPHRASE` live. Marked R7b `done (2026-11-03)` in `.gsd/ROADMAP.md`; ▶ moves
+to R8 (frontend rendering for the v2 pipeline). `ENABLE_ANSWER_PARAPHRASE` is still unset
+everywhere — Aalhad decides when to flip it, and production also needs R9's `is_active`
+switch-over first regardless (see `.gsd/STATE.md`).
+
+---
+
 ## 2026-11-03 — R7b built: paraphrase layer + faithfulness judge, code only, flag off
 **Phase:** R7b · **Type:** feature
 

@@ -1,7 +1,7 @@
 # STATE
 
-**Position:** ▶ R7b (rag-engineer: paraphrase layer + faithfulness gate), code done, eval
-pending. Updated 2026-11-03.
+**Position:** ▶ R8 (frontend-engineer: render new diagram types, citations, AI label).
+Updated 2026-11-03. R7b done.
 Aalhad's call 2026-11-02: verbatim casebook excerpts are not the right student-facing
 presentation — "the idea or the logic should be the same, but it should be presented in a
 different way." Inserted R7b ahead of R5 (admin queue, still todo) and R8. CLAUDE.md's
@@ -12,10 +12,20 @@ in-memory cache, diagram-block protection), wired into Q&A (`qaRetrieval.js`) an
 (`frameworksGrounding.js`) only — not Guesstimates or Company/Role/Skill pages, deliberately,
 so the flag can't touch those paths without further code. `ENABLE_ANSWER_PARAPHRASE` added,
 off by default. 20 new tests, all mocked/pure (no live Gemini/DB calls). `npm test`:
-144/147 pass. Still needed before flipping the flag on: a `rag-evaluator` run against
-`backend/eval/questions.jsonl` with the flag on, to check the paraphrase doesn't regress
-faithfulness scores. See log.md's 2026-11-03 entry for the full diff and cost estimate
-(~4 extra Gemini calls per chunk, first time only — then cached 7 days).
+144/147 pass (3 pre-existing failures, not from R7b — 1 sandbox, 2 `pickTopTextAndImage`, see
+below).
+R7b eval done 2026-11-03: live-API probe (`backend/eval/run_eval_paraphrase_preview.js`,
+read-only, `is_active` untouched, flag never set) against the real 39-question set. Of 20
+covered questions: paraphrase faithfulness 10/11 applicable pass (91%) — the 1 failure
+(q039, PE due-diligence math) was the fail-closed design catching the model adding derived-
+number commentary not in the source, exactly as intended (would have fallen back to the raw
+excerpt live). `must_include` term survival after paraphrasing: 13/17 pass; the 4 "losses"
+were manually traced to the raw chunk and confirmed **pre-existing retrieval/wording
+mismatches, not caused by paraphrasing** (2 pure-diagram chunks never paraphrased at all, 1
+US/UK spelling mismatch, 1 term never in the chunk to begin with). Results:
+`backend/eval/results/2026-11-03-paraphrase-preview.{json,md}`. Sample is small (11
+faithfulness judgments) — a first signal, not a final verdict. R7b marked done; roadmap
+moved to R8.
 
 **Found while building R7b, not caused by it — flag for Aalhad:** `pickTopTextAndImage` in
 `frameworksGrounding.js` is uncommitted WIP (predates this session, part of the 2026-11-02
