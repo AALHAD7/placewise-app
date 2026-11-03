@@ -5,6 +5,74 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-03 — Multi-casebook synthesis refinement for discovered frameworks (56 → 57)
+**Phase:** M4 (frontend fixes) · **Type:** content fix
+
+**What changed:** Follow-up to the previous entry. User flagged that casebooks overlap heavily
+- the same framework is explained, differently, across multiple club casebooks - and asked
+that drafting actually synthesize a real understanding across those sources rather than just
+use whatever got retrieved. Checked the already-shipped 14 frameworks: most had already pulled
+from 8-11 distinct source files incidentally (the hybrid vector+text retrieval wasn't domain-
+restricted, and heavy casebook overlap meant diverse sources showed up on their own), but one
+was thin - "Harvard vs Michigan Models of HRM" drew from only 3 files.
+
+Reworked `addDiscoveredFrameworks.js`: added `diversifyBySource` (caps any single source_file
+at 3 excerpts before filling the rest of the pool, over a larger raw pull so there's enough
+material left to diversify from after the cap) and rewrote the draft prompt to tell the model
+explicitly that excerpts come from different casebooks describing the same framework
+differently - read everything first, form one understanding, write from that, not stitch
+fragments or paraphrase whichever single excerpt is most complete.
+
+**Two tuning passes were needed before this actually worked:**
+1. First version of the new prompt over-corrected - telling the model to watch for cross-
+   source "disagreement" made it too willing to call solid material "insufficient" (pass rate
+   dropped from 13/16 to 8/16, rejecting things like ADDIE that had 14 genuinely good
+   excerpts). Recalibrated: differing emphasis/wording across casebooks is normal and expected
+   to synthesize from, not a reason to decline - only a real factual conflict on the same
+   specific detail counts.
+2. A wider raw retrieval pool (needed for diversifyBySource to have material to work with)
+   also pulled in enough marginal, low-similarity vector hits to dilute a couple of otherwise-
+   solid candidates. Tightened `SIMILARITY_FLOOR` (0.42 -> 0.48) and trimmed the raw pool size
+   back down - text matches (the term literally appears) were never filtered by this, so
+   precision wasn't lost, just vector-search noise.
+3. Added a plain retry (`DRAFT_ATTEMPTS = 3`) since the model's own insufficient/sufficient
+   judgment wobbled near the boundary for a couple of candidates across otherwise-identical
+   reruns - a genuinely borderline candidate now gets more than one roll.
+
+**Result:** Re-ran all 16 candidates with the refined pipeline. 13 of the already-shipped 14
+were re-drafted and UPDATED in place with better cross-source synthesis (upsert-by-name, not
+insert, to avoid duplicates - any row about to be overwritten gets backed up first). 1 more
+candidate (Managerial Grid) now passes and was newly inserted (56 -> 57). Black-Scholes Option
+Pricing Model failed on a technical JSON-escaping bug (the formula's LaTeX-style backslash
+notation breaks JSON parsing, confirmed reproducible across 2 isolated retries) - left out as a
+known technical limitation, not a content judgment. AARRR Framework stays correctly excluded
+(the corpus appears to only name-drop it without explaining it distinctly from the existing
+AARM Funnel already on the page).
+
+**Why:** Direct response to user feedback: "there would be many frameworks that overlap with
+many of the casebooks... get a gist of each framework, understand what it says."
+
+**Cost:** ~$0 - flash-lite tier, well under free-tier quota even with the extra tuning runs.
+
+**Files:** `backend/scripts/addDiscoveredFrameworks.js` (reworked retrieval + prompt),
+`frameworks` table (13 rows updated, 1 row inserted), `content/new-frameworks-2026-11-03/`
+(report regenerated, pre-refinement backup added).
+
+**Proof:** `content/new-frameworks-2026-11-03/new-frameworks.html` reflects the final state.
+Verified live on the running site (Frameworks -> HR): "Harvard vs Michigan Models of HRM" now
+reads as an actual synthesis ("a broad stakeholder-oriented lens (Harvard) or a tight
+strategic-fit lens (Michigan)"), not thin single-source content. Console checked post-apply -
+no new errors.
+
+**Undo:** `node backend/scripts/restoreFrameworksBackup.js content/new-frameworks-2026-11-03/pre-refinement-backup.json`
+restores the 14 affected rows to their pre-refinement text in one step (same restore script as
+the jargon-simplification pass - it's a generic by-id upsert-back, not Finance-specific).
+
+**Open issues:** Black-Scholes Option Pricing Model could be added later with a prompt fix for
+LaTeX-notation JSON escaping, if wanted - not attempted further this session.
+
+---
+
 ## 2026-11-03 — 14 new frameworks added, grounded in casebooks the list never covered (42 → 56)
 **Phase:** M4 (frontend fixes) · **Type:** content addition
 

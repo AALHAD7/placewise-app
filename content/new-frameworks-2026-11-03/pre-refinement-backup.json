@@ -1,0 +1,434 @@
+[
+  {
+    "id": "82f28a41-12e0-4faa-95fb-6dcd504835a1",
+    "name": "Value Chain Analysis",
+    "role": "Consulting",
+    "level": "mba",
+    "description": "Value Chain Analysis breaks down a company's business activities into sequential stages—typically split into primary activities like operations and support activities like procurement—to identify cost components, profit drivers, and operational issues.",
+    "example": "A client is facing falling earnings because of rising operating costs. You map out activities from R&D and raw material procurement through processing, storage, and customer service to isolate where costs are spiking and whether the issue stems from personnel, machinery, methods, or measurements.",
+    "steps": [
+      "Identify whether the industry requires a standard Porter's value chain or a sector-specific process flow (such as pre-production, during production, and post-production).",
+      "Examine support activities including firm infrastructure, human resource management, technology development, and procurement.",
+      "Examine primary activities including inbound logistics, operations, outbound logistics, marketing and sales, and after-sales service.",
+      "Evaluate potential issue segments within each stage, such as man (training, motivation), machine (maintenance, condition), method, and measurement (KPIs).",
+      "Relate specific activities and core competencies back to overall costs and profits."
+    ],
+    "created_at": "2026-11-03T18:00:09.790637+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": null,
+    "domain": "Consulting",
+    "subdomain": "Case Structuring",
+    "when_to_use": "Use it during supply-side, cost-reduction, portfolio analysis, investment, or growth strategy cases.",
+    "when_not_to_use": "Do not use it when the problem is strictly driven by external macro factors or top-line marketing issues unrelated to internal operations.",
+    "pitfalls": [
+      "Treating the value chain as a rigid template without adapting it to the specific industry classification.",
+      "Overlooking support activities and focusing entirely on primary manufacturing or operational steps."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "2724137f-4d5e-41b8-8661-eca6929d00fe",
+    "name": "AARRR Framework (Pirate Metrics)",
+    "role": "Prodman",
+    "level": "mba",
+    "description": "A framework to study user behavior using metrics relevant for product-led growth businesses, helping focus on important metrics rather than superficial ones.",
+    "example": "A product manager examining why users are churning might look at user behavior by walking through the steps of the AARRR funnel, combined with cohort analysis and qualitative triangulation (cross-referencing data sources).",
+    "steps": [
+      "Evaluate Acquisition metrics",
+      "Evaluate Activation metrics",
+      "Evaluate Retention metrics",
+      "Evaluate Referral metrics",
+      "Evaluate Revenue metrics"
+    ],
+    "created_at": "2026-11-03T18:00:59.106425+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": null,
+    "domain": "Prodman",
+    "subdomain": "Metrics & Growth",
+    "when_to_use": "To study user behavior using metrics relevant for product-led growth businesses and to understand why users are churning.",
+    "when_not_to_use": "When superficial social metrics are the primary focus or when the business model does not rely on a user growth lifecycle.",
+    "pitfalls": [
+      "Focusing on superficial metrics instead of growth-driving metrics",
+      "Failing to combine quantitative funnel stages with qualitative triangulation when analyzing user churn"
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "dbb7a977-7aee-4d04-bb74-2cb297cc66a0",
+    "name": "Freemium Model",
+    "role": "Prodman",
+    "level": "mba",
+    "description": "The freemium model is a pricing strategy where a company offers a core product or service for free while charging for premium features, working best for high-volume consumer goods or network effect products.",
+    "example": "A fantasy sports app operates on a freemium model where 90% of its 5 crore (50 million) users are on the free model, and profits are increased by growing the overall user base or shifting a higher percentage of users to the paid base.",
+    "steps": [
+      "Identify the core free offering versus the premium features",
+      "Evaluate market size, customer segments, and target user adoption rates",
+      "Assess conversion rates from the free tier to the paid tier",
+      "Analyze revenue growth opportunities through user acquisition and monetization of premium tiers"
+    ],
+    "created_at": "2026-11-03T18:01:05.960265+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": null,
+    "domain": "Prodman",
+    "subdomain": "Metrics & Growth",
+    "when_to_use": "Use this framework when evaluating consumer tech ventures, digital products, or market entry strategies where building a massive initial user base is critical.",
+    "when_not_to_use": "Do not use this framework for B2B infrastructure products or services with high variable usage patterns that rely purely on usage-based or fixed subscription models.",
+    "pitfalls": [
+      "Focusing entirely on user count without tracking relevant monetization KPIs like ARPU (average revenue per user)",
+      "Underestimating ongoing server costs or infrastructure scaling requirements to support the free user base"
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "c1cd966a-b6e4-4abf-8854-b69f217721cc",
+    "name": "MoSCoW Method",
+    "role": "Prodman",
+    "level": "mba",
+    "description": "The MoSCoW Method is a prioritization framework that classifies product features into four distinct buckets based on their importance for a given timeframe or launch. The acronym stands for Must-Have, Should-Have, Could-Have, and Won't-Have (or Will Not Have).",
+    "example": "For a bicycle rental app, you would classify a user login feature as a Must-Have (essential for the product to be functional), a reset password feature as a Should-Have (important but not time-sensitive for launch), a single sign-on option as a Could-Have (nice-to-have with little impact if left out), and future enhancement ideas as Won't-Have.",
+    "steps": [
+      "Identify all potential features, tasks, or requirements for the product backlog.",
+      "Evaluate each feature to determine if it is a mandatory, non-negotiable product need for launch (Must-Have).",
+      "Assess remaining features to categorize them as important but less time-sensitive (Should-Have), nice-to-have bonuses (Could-Have), or out-of-scope for the current timeframe (Won't-Have).",
+      "Review the categorized buckets with stakeholders to finalize scope and plan product execution strategy."
+    ],
+    "created_at": "2026-11-03T18:01:02.951058+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": null,
+    "domain": "Prodman",
+    "subdomain": "Prioritization",
+    "when_to_use": "Use it when you need to group features into priority buckets to determine what matters most to your stakeholders and customers during product planning or design.",
+    "when_not_to_use": "Do not rely on it as a single source of truth if you need a precise numerical scoring model to rank competing backlog items.",
+    "pitfalls": [
+      "Treating too many features as Must-Haves, which defeats the purpose of prioritization.",
+      "Failing to align with stakeholders on what constitutes a true necessity versus a nice-to-have."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "a860498d-cf0c-4b78-bb5d-a33cdc91b9ca",
+    "name": "Kirkpatrick Model",
+    "role": "HR",
+    "level": "mba",
+    "description": "The Kirkpatrick Model is a four-tiered framework used to evaluate the effectiveness and success of training programs. It measures outcomes sequentially across four distinct levels: Reaction, Learning, Behaviour, and Results.",
+    "example": "To evaluate a new leadership training program, an organization first collects immediate feedback surveys on course content and delivery (Reaction), tests participants' knowledge and skill acquisition via simulations (Learning), observes whether managers apply these skills on the job after some time using a pretest-posttest design (Behaviour), and finally measures the broader organizational benefits achieved (Results).",
+    "steps": [
+      "Evaluate Level 1 (Reaction) by gathering immediate feedback on content, facilities, and delivery methods via surveys or questionnaires.",
+      "Evaluate Level 2 (Learning) immediately after training using interviews, surveys, tests, or simulations to assess changes in knowledge, skills, and attitudes.",
+      "Evaluate Level 3 (Behaviour) after some time has passed to measure the transfer of training into on-the-job changes using methods like pretest-posttest designs or retrospective surveys.",
+      "Evaluate Level 4 (Results) to determine what organizational benefits ultimately resulted from the training program."
+    ],
+    "created_at": "2026-11-03T18:00:53.882476+00:00",
+    "grounded_example": {
+      "excerpt": "Kirkpatrick Model\nComprises four level of evaluation:\n1. Reaction - How favourably participants react to the training; important since if people are not happy with training, they would not be able to learn properly\n   a. Feedback about content, facilities, trainer, assignments, delivery methods, etc.\n   b. Done immediately after training\n   c. Through survey, questionnaires, etc.\n2. Learning – To see how much the employees have learnt from the training; we see changes in KSAa and attitudes\n   a. Interviews, surveys, tests, simulations, demo performance, observations, etc. may be used\n   b. Knowledge can be tested by using criterion-referenced tests (achievement tests); Skills can be tested using performance test; attitudes can be measure through questionnaires\n   c. Should be done immediately after the training\n3. Behaviour - Here your goal is to find out if training program participants change their on-the-job-behaviour; Level three evaluation specifically involves measuring the transfer of knowledge, skills, and attitudes from the training context to the workplace\n   a. Done after some time of training having been conducted\n   b. Probably the most common design used for level three evaluation is the one-group pretest-posttest design If you are able to include a control group, you will be able to use the pretest-posttest nonequivalent control group design\n   c. This evaluation can also be done using retrospective survey design. You can survey (using questionnaires or intervi",
+      "similarity": 0.749648060548965,
+      "sourceFile": "T_D.txt"
+    },
+    "grounded_checked_at": "2026-11-03T18:01:52.109+00:00",
+    "domain": "HR",
+    "subdomain": "Learning & Development",
+    "when_to_use": "Use this framework when designing a comprehensive strategy to monitor and evaluate the success of an organization's training programs.",
+    "when_not_to_use": "Do not use this framework if your evaluation requires calculating a specific financial return on investment (ROI) percentage, as that requires an upgraded model.",
+    "pitfalls": [
+      "Failing to collect participant reactions immediately, which can prevent proper learning if participants are unhappy with the training environment.",
+      "Assessing on-the-job behaviour too quickly before employees have had sufficient time to transfer and apply their learned skills to workplace contexts."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "fa483e04-09fa-4551-94be-531850957b07",
+    "name": "Net Promoter Score",
+    "role": "Marketing:Sales",
+    "level": "mba",
+    "description": "Net Promoter Score is a single business metric that measures the likelihood that customers will recommend a product or service, serving as an indicator of overall customer experience and advocacy.",
+    "example": "A food delivery service surveys its customers in Ahmedabad using a scale from 0 to 10. Customers rating 9 or 10 are classified as promoters, those rating 7 or 8 as neutral, and those rating 0 to 6 as detractors. Subtracting the percentage of detractors from the percentage of promoters yields the Net Promoter Score.",
+    "steps": [
+      "Ask customers how likely they are to recommend your product on a scale of 0 to 10 through a survey.",
+      "Classify respondents into promoters (9-10), neutral/lukewarm (7-8), and detractors (0-6).",
+      "Calculate the percentage of total respondents who are promoters and the percentage who are detractors.",
+      "Subtract the percentage of detractors from the percentage of promoters to arrive at the final score."
+    ],
+    "created_at": "2026-11-03T18:01:10.365689+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": null,
+    "domain": "Marketing:Sales",
+    "subdomain": "Customer & Brand",
+    "when_to_use": "Use it to measure high-level trends in customer loyalty, product success, and advocacy over time.",
+    "when_not_to_use": "Do not rely on it alone when you need to uncover granular operational problems without supplementing it with a deeper look at the customer journey.",
+    "pitfalls": [
+      "Treating the score as a complete story without investigating underlying outliers or specific segment grievances.",
+      "Failing to account for external operational changes (such as sustainable packaging shifts or delivery delays) that negatively impact customer experience."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "a8a823fb-75a8-4ce5-afe0-eed079d23f28",
+    "name": "Customer Satisfaction Score (CSAT)",
+    "role": "Marketing:Sales",
+    "level": "mba",
+    "description": "Customer Satisfaction Score (CSAT) is a key performance indicator that measures customer satisfaction levels based on guest or customer ratings from feedback and surveys on a scale, typically 1 to 5.",
+    "example": "A pizza company in Bangalore experiences a recent dip in its delivery segment's CSAT (measured on a 1-5 scale). By breaking down the customer journey into pre-ordering, ordering and delivery, and post-delivery, the analyst traces the decline to increased delivery times, leading to recommendations like restricting the delivery radius or opening new outlets.",
+    "steps": [
+      "Verify how the score is measured, the magnitude and timing of any decline, and if it affects a specific segment.",
+      "Map the customer journey into distinct phases such as pre-ordering, ordering-to-delivery, and post-delivery.",
+      "Investigate specific operational bottlenecks within the journey, such as delivery time, packaging, or UI/UX issues.",
+      "Develop short-term and long-term recommendations to address the root causes and improve customer experience."
+    ],
+    "created_at": "2026-11-03T18:01:14.598899+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": null,
+    "domain": "Marketing:Sales",
+    "subdomain": "Customer & Brand",
+    "when_to_use": "Use when analyzing why a client has faced a decline in customer satisfaction or evaluating post-purchase service effectiveness.",
+    "when_not_to_use": "Do not use when analyzing purely financial metrics that do not involve customer experience feedback or service ratings.",
+    "pitfalls": [
+      "Assuming a general drop applies to all segments without checking for specific channel or geographic outliers.",
+      "Failing to check whether the measurement criteria or method of surveying has changed over time."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "ddd3324c-37a5-4aed-9f8a-28de05adb585",
+    "name": "Harvard vs Michigan Models of HRM",
+    "role": "HR",
+    "level": "mba",
+    "description": "A comparative framework contrasting the Michigan Model (a hard, strategic approach focused on matching HR systems with corporate goals) and the Harvard Model (a soft approach centered on stakeholder interests, situational factors, and human outcomes).",
+    "example": "A company facing a corporate restructuring uses the Michigan Model to align workforce planning and organizational structure directly with business objectives, while simultaneously using the Harvard Model to evaluate how employee groups, unions, and government regulations will impact and be affected by those policy choices.",
+    "steps": [
+      "Identify key corporate goals and external situational factors (such as workforce characteristics and unions).",
+      "Map out the interests of all relevant stakeholders, including shareholders, management, employee groups, and the government.",
+      "Determine HR policies across core functions like recruitment, training, and reward systems.",
+      "Evaluate resulting HRM outcomes such as employee commitment, competence, congruence, and cost-effectiveness.",
+      "Assess long-term consequences for individual employees, the overall business, and society."
+    ],
+    "created_at": "2026-11-03T18:00:50.587579+00:00",
+    "grounded_example": {
+      "excerpt": "Table of Contents\nIntroduction ....................................................................................................... 1\n    Hard Human Resource Management Approach: ....................................... 2\n    Michigan Model ......................................................................................... 3\n    Soft Human Resource Management Approach: ........................................ 4\n    Harvard Model........................................................................................... 6\nScope of HRM ................................................................................................. 7\nThe 12 Key Functions of Human Resources .................................................... 8\n    1. Human Resource Planning .................................................................... 9\n    2. Recruitment and Selection ..................................................................... 9\n    3. Performance Management ..................................................................... 9\n    4. Learning and Development .................................................................... 9\n    5. Career Planning ..................................................................................... 9\n    6. Function Evaluation.............................................................................. 10\n    7. Rewards .............................................................................................. 10\n    8. Industr",
+      "similarity": 0.728094989697751,
+      "sourceFile": "HR Final Compendium 2022.txt"
+    },
+    "grounded_checked_at": "2026-11-03T18:01:52.108+00:00",
+    "domain": "HR",
+    "subdomain": "HR Strategy",
+    "when_to_use": "Use this framework when designing an overarching human resource management strategy and deciding whether to prioritize strict strategic alignment or broader employee and stakeholder interests.",
+    "when_not_to_use": "Do not use this framework when you need to solve tactical, day-to-day operational problems like a single recruitment hire or immediate payroll disputes.",
+    "pitfalls": [
+      "Over-relying on the Michigan Model's uniterism assumption, which ignores potential conflicts or differing views between managers and employees.",
+      "Incurring excessive costs or decision-making delays by taking the Harvard Model's soft approach too far without regard for business efficiency."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "03c2fea9-0010-44c0-92a5-9ab4a66fc40c",
+    "name": "ADDIE Model",
+    "role": "HR",
+    "level": "mba",
+    "description": "The ADDIE Model is a generic five-phase instructional design framework used by training designers and experts to build effective training programs and performance support tools.",
+    "example": "A company wants to train its sales team on a new software tool. Using ADDIE, you first analyze the team's current capabilities, design the learning objectives and delivery format, develop the course materials and prototypes, implement the training by putting tools in place, and finally evaluate the results.",
+    "steps": [
+      "Analysis (identifying learning problems, needs, requirements, and participants' current capabilities)",
+      "Design (planning learning objectives, delivery format, activities, and exercises)",
+      "Develop (creating prototypes, course materials, and conducting pilot sessions)",
+      "Implement (delivering the training with tools in place and observing the process)",
+      "Evaluate (measuring awareness, knowledge, behavior, and results)"
+    ],
+    "created_at": "2026-11-03T18:00:47.316845+00:00",
+    "grounded_example": {
+      "excerpt": "Pedagogical Analysis\n\nA useful model that guides a learning and development strategy is created by van Gelder and colleagues. The model starts with the organizational starting situation and prior knowledge based on which learning goals and objectives are defined. This information is used as input for the subject matter, teaching methods, and learning methods and activities. These lead to a certain result, which is monitored and evaluated. Based on this evaluation, the goals and objectives are updated. It is divided into 4 phases\n\n1. **Analysis of training needs:** This step is to identify the training needs. Organizations want employees to acquire new knowledge, skills, and attitudes that are relevant for their (future) function and not the existing skills they are hone. Identifying the learning goal requires analyzing where the organization wants to go and what skills are missing to get there. This is done via three steps, namely organizational analysis, competency analysis and personal analysis.\n\n[Diagram showing three sequential boxes: Organisational analysis (Short and long-term goals of the organization are analyzed), Competency analysis (Competencies and skills required to be successful in a job), and Personal analysis (Performance evaluation on current competencies knowledge, performance, and skill levels), connected by purple and blue arrows.]\n\n2. **Specification of learning objectives:** The training needs are translated into learning objectives that help in designin",
+      "similarity": 0.703218578948629,
+      "sourceFile": "SEED Preparatory Material - HR-1.txt"
+    },
+    "grounded_checked_at": "2026-11-03T18:01:52.109+00:00",
+    "domain": "HR",
+    "subdomain": "Learning & Development",
+    "when_to_use": "Use when building effective training programs, learning solutions, or performance support tools.",
+    "when_not_to_use": "Do not use in highly dynamic work environments where a strictly linear process is inapplicable or too time-consuming.",
+    "pitfalls": [
+      "Can be time consuming and very expensive",
+      "May stifle the creativity of the designer",
+      "Being very linear, it may not be applicable in dynamic work environments"
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "00dba25d-9ec8-48cd-93e3-3899c97337a4",
+    "name": "Treasury Stock Method",
+    "role": "Finance",
+    "level": "mba",
+    "description": "The Treasury Stock Method is an approach used to calculate the impact of dilutive securities like options and warrants by assuming that any cash proceeds a company receives from their exercise are used to repurchase shares on the open market.",
+    "example": "A company has 10,000 shares outstanding, a share price of $20.00, and 100 options outstanding at an exercise price of $10.00. First, assume the options are exercised, creating 100 new shares and bringing $1,000 in proceeds to the company (100 options * $10.00 exercise price). Next, assume the company uses those $1,000 proceeds to buy back shares at the $20.00 share price, which repurchases 50 shares ($1,000 / $20.00). Finally, subtract the repurchased shares from the newly created shares to find the net dilution: 100 new shares minus 50 repurchased shares equals 50 net additional shares outstanding.",
+    "steps": [
+      "Identify all in-the-money options or warrants where the exercise price is lower than the current market share price.",
+      "Assume all those options are exercised, creating a specific number of new shares.",
+      "Calculate the total cash proceeds the company receives by multiplying the number of options by their exercise price.",
+      "Determine how many shares the company can repurchase by dividing the total cash proceeds by the current market share price.",
+      "Subtract the repurchased shares from the newly created shares to get the net number of additional shares added to the share count."
+    ],
+    "created_at": "2026-11-03T18:00:36.846282+00:00",
+    "grounded_example": {
+      "excerpt": "Calculate Multiples – The Numerator\nTrading Comparables\n\nCalculating Market Capitalization on a Fully-Diluted Basis is More Accurate, but the Impact is Usually Low\n\n◆ Basic market capitalization = share price of common shares x common shares outstanding\n\n◆ Take shares outstanding from latest interim report / 10Q and check news for stock split / capital increases (Bloomberg / Extel / Factset are not always correct but should be used as a cross checks)\n\n◆ Check for multiple classes of shares (A + B / Voting + Non-Voting)\n\n◆ Fully diluted shares outstanding (treasury stock method)\n– Fully diluted market capitalization assumes that all in-the-money options become exercised; thereby increasing the share capital\n  = basic shares outstanding\n  + in-the-money options adjustment",
+      "similarity": 0.687555250848665,
+      "sourceFile": "2. Comparable Company Transaction Analysis.txt"
+    },
+    "grounded_checked_at": "2026-11-03T18:04:30.654+00:00",
+    "domain": "Finance",
+    "subdomain": "Valuation",
+    "when_to_use": "Use this framework when calculating diluted shares or diluted earnings per share for options, warrants, and similar instruments where the company receives cash proceeds upon exercise.",
+    "when_not_to_use": "Do not use this framework with convertible bonds or convertible preferred stock, because investors do not pay cash proceeds to the company upon conversion.",
+    "pitfalls": [
+      "Applying the method to convertible instruments instead of treating them separately without treasury stock adjustments.",
+      "Using the exercise price instead of the current market share price when calculating how many shares the company can buy back with its proceeds.",
+      "Failing to check whether options are in-the-money before factoring them into the dilution calculation."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "777a82bd-8155-4719-93be-b5e18f42a5ea",
+    "name": "Precedent Transaction Analysis",
+    "role": "Finance",
+    "level": "mba",
+    "description": "Precedent Transaction Analysis is a valuation method that uses the implied multiples of past corporate sales, profit, or other parameters from similar deals to assess the price range that vendors have been willing to accept.",
+    "example": "To value a target company, an analyst identifies a deal list of comparable precedent transactions, calculates the deal premiums offered in recent deals along with deal values, and finally derives a valuation range.",
+    "steps": [
+      "Identify Transactions",
+      "Find Information",
+      "Calculate Multiples",
+      "Check and Interpret the Results"
+    ],
+    "created_at": "2026-11-03T18:00:39.278973+00:00",
+    "grounded_example": {
+      "excerpt": "Steps for transaction multiples valuation\n\nA flowchart showing four sequential steps: Determine a Deal List (List of Comparable Precedent Transactions), Calculate the Deal Premiums Offered in Recent Deals, Calculate & Analyze Deal Values, and Derive a Valuation Range.",
+      "similarity": 0.736353181182869,
+      "sourceFile": "PEVC Society_Valuation 101.txt"
+    },
+    "grounded_checked_at": "2026-11-03T18:04:30.842+00:00",
+    "domain": "Finance",
+    "subdomain": "Valuation",
+    "when_to_use": "Use it when assessing the price range vendors accepted in past deals, particularly with high importance in buy-side M&A (mergers and acquisitions) and sell-side M&A.",
+    "when_not_to_use": "Do not use it when analyzing initial public offerings (IPOs) or add-on financings, where its applicability is rated as none.",
+    "pitfalls": [
+      "Picking the wrong set of transactions",
+      "Encountering strange market conditions where precedent transactions result in unusually lower multiples than other valuation methods"
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "198a5d83-8cdb-467e-8554-0b72cbdec917",
+    "name": "DuPont Analysis",
+    "role": "Finance",
+    "level": "mba",
+    "description": "DuPont Analysis is a financial statement analysis tool that breaks down return on equity (ROE) into three distinct components—profitability, operating efficiency, and financial leverage—to evaluate a company's underlying performance drivers.",
+    "example": "A company wants to evaluate why its ROE changed over the year. Using DuPont Analysis, you calculate Net Profit Margin (Net Income / Sales) at 22.92%, Asset Turnover (Sales / Average Assets) at 1.06, and multiply these by the financial leverage ratio (Average Assets / Average Equity) to pinpoint whether profitability, asset usage, or leverage drove the performance.",
+    "steps": [
+      "Calculate the net profit margin by dividing net income by sales to measure overall profitability.",
+      "Calculate the asset turnover ratio by dividing sales by average assets to measure operating efficiency in using assets.",
+      "Calculate the financial leverage ratio (equity multiplier) by dividing average assets by average equity to measure the extent of reliance on debt financing.",
+      "Multiply the net profit margin, asset turnover, and financial leverage together to determine the return on equity."
+    ],
+    "created_at": "2026-11-03T18:00:33.205352+00:00",
+    "grounded_example": {
+      "excerpt": "Table 4.1\n\nRevenue, Cost & Margin Structure\n\n| | A | B | C | D | E | G | H | J | K |\n|---|---|---|---|---|---|---|---|---|---|\n| 1 | **Profit & Loss of XYZ Ltd** | | | | | | | **(% of Sales)** | |\n| 2 | | | | | | Year 1 | Year 2 | Year 1 | Year 2 |\n| 3 | Sales | | | | | 1,000 | 1,500 | | |\n| 4 | | | | | | | | | |\n| 5 | Material Cost | | | | | 500 | 800 | 50.0% | 53.3% |\n| 6 | Labour Cost | | | | | 100 | 125 | 10.0% | 8.3% |\n| 7 | Other Expenses | | | | | 50 | 110 | 5.0% | 7.3% |\n| 8 | | | | | | 650 | 1,035 | 65.0% | 69.0% |\n| 9 | | | | | | | | | |\n| 10 | EBIDTA | | | | | 350 | 465 | 35.0% | 31.0% |\n| 11 | | | | | | | | | |\n| 12 | Interest | | | | | 10 | 16 | 1.0% | 1.1% |\n| 13 | Depreciation | | | | | 40 | 45 | 4.0% | 3.0% |\n| 14 | Amortisation | | | | | 5 | 9 | 0.5% | 0.6% |\n| 15 | | | | | | 55 | 70 | 5.5% | 4.7% |\n| 16 | | | | | | | | | |\n| 17 | Profit before Tax | | | | | 295 | 395 | 29.5% | 26.3% |\n| 18 | Tax | | | | | 150 | 275 | 15.0% | 18.3% |\n| 19 | Profit after Tax | | | | | 145 | 120 | 14.5% | 8.0% |\n| 20 | Dividend | | | | | 100 | 100 | | |\n| 21 | Retained Earnings | | | | | 45 | 20 | | |\n\nTable 4.2\n\nReturn on Capital Employed\n\n| | A | B | C | D | E | F | G | H |\n|---|---|---|---|---|---|---|---|---|\n| 146 | | | | | | | | |\n| 147 | 1 | *Return on Capital Employed* | | | (a) ÷ (e) | 58.1% | 72.1% |\n| 148 | | | | | | | | |\n| 149 | a | EBIT | | | (b)-(c)-(d) | 305 | 411 |\n| 150 | | | | | | | | |\n| 151 | b | EBIDTA | | | | 350 | 465 |\n| 152 | c | Depreciation | | | | 4",
+      "similarity": 0.72517351794778,
+      "sourceFile": "Financial_Markets_(Advanced)_Module.txt"
+    },
+    "grounded_checked_at": "2026-11-03T18:04:29.766+00:00",
+    "domain": "Finance",
+    "subdomain": "Financial Statements & Accounting",
+    "when_to_use": "Use this framework when you need to begin a financial statement analysis, assess the key drivers of return on equity, or identify specific areas of operational strength and weakness.",
+    "when_not_to_use": "Do not use this framework when analyzing non-financial issues, qualitative organizational culture, or when evaluating early-stage companies without meaningful historical financial statements.",
+    "pitfalls": [
+      "Assuming that a higher leverage ratio is always beneficial without accounting for the increased fixed payment risks tied to debt.",
+      "Failing to use average balance sheet items, which can distort asset turnover and leverage calculations due to timing biases."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "d2fef651-a539-4119-96a3-359a1692138c",
+    "name": "Dividend Discount Model (Gordon Growth Model)",
+    "role": "Finance",
+    "level": "mba",
+    "description": "The Dividend Discount Model (Gordon Growth Model) is a financial framework used to determine the value of equity by calculating the present value of a company's expected future dividends, discounted back at the cost of equity.",
+    "example": "Suppose a company has a Dividend per Share (DPS) of Rs. 10 that is expected to grow by 5% each year, and the required rate of return on equity is 12.1%. Using the formula Price = DPS divided by (Required Rate of Return on Equity minus Dividend growth rate), the share value is Rs. 10 divided by (12.1% - 5%), which equals Rs. 140.85.",
+    "steps": [
+      "Project the company's earnings down to Earnings per Share (EPS).",
+      "Assume a Dividend Payout Ratio to calculate future dividends over a given period.",
+      "Determine the cost of equity and the expected dividend growth rate.",
+      "Apply the Gordon Growth Model formula to calculate the present value of expected future dividends and terminal value."
+    ],
+    "created_at": "2026-11-03T18:00:29.523182+00:00",
+    "grounded_example": {
+      "excerpt": "Rs. 10 to be the face value, the number of shares issued is 10. The Rs. 100 dividend payment on 10 shares amounts to Dividend per Share (DPS) of Rs. 10.\n\nIf the same dividend is to be maintained to infinity, then the valuation is similar to that of a perpetual debt security. It can be calculated as DPS $\\div$ Cost of Equity i.e. Rs. 10 $\\div$ 12.1%. This gives a share value of Rs. 82.65.\n\nAs is evident Rs. 82.65 X 12.1% translates into the DPS of Rs. 10 each year.\n\nIn the real world, dividend is unlikely to be the same right upto infinity. Investors expect a growth. Suppose DPS is likely to grow by 5% p.a. This means that dividend in the next year is likely to be Rs. 10 X (1+5%) i.e. Rs. 10.50.\n\nAccording to the Gordon Growth Model, price of the share will be DPS $\\div$ (Required Rate of Return on Equity - Dividend growth rate). Using the same numbers, value of the equity share would be:\n\nRs. $10 \\div (12.1\\% - 5\\%)$\n\ni.e. Rs. 140.85\n\nAs expected, the expected price with the dividend growth assumption is higher than in the case of constant dividend assumption.\n\nOne encounters situations where over an initial period of time, dividend is expected to be unstable, and thereafter reach a stage of stable growth to infinity.\n\nHere, the price of the equity can be computed as the sum of two values:\n\no A value for the dividends during the initial period. This can be computed by discounting the annual dividends at the expected rate of return on equity.\n\no A value for the dividends durin",
+      "similarity": 0.70990162195574,
+      "sourceFile": "Financial_Markets_(Advanced)_Module.txt"
+    },
+    "grounded_checked_at": "2026-11-03T18:04:30.654+00:00",
+    "domain": "Finance",
+    "subdomain": "Valuation",
+    "when_to_use": "Use this framework for matured companies with fairly predictable financials, nominal expansion needs, and a high dividend payout ratio.",
+    "when_not_to_use": "Do not use this framework for start-ups or high growth companies where dividends are unstable, non-existent, or driven by too many unpredictable factors.",
+    "pitfalls": [
+      "Assuming a constant or stable growth rate to infinity when real-world dividends are likely to fluctuate.",
+      "Failing to account for regulatory capital requirements or capital ratios when determining sustainable dividend payouts for financial institutions."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "6531f0c9-3e6e-4c2c-92ae-f09bb4f9a180",
+    "name": "Residual Income Model",
+    "role": "Finance",
+    "level": "mba",
+    "description": "The Residual Income Model is an equity valuation framework that determines a bank's value by taking its current book value (common equity) and adding the present value of future residual income (calculated as Net Income minus Cost of Equity multiplied by Shareholders' Equity).",
+    "example": "To value a bank, start with a Common Equity book value of $60.0. Project future residual income each year (defined as Net Income minus Cost of Equity * Shareholders' Equity), discount those amounts back, and sum them up to $3.2. Add these together to arrive at a Present Value of Equity of $63.2.",
+    "steps": [
+      "Calculate Residual Income each year, defined as Net Income minus Cost of Equity multiplied by Shareholders' Equity (or Common Equity/Tangible Common Equity).",
+      "Discount and sum up the annual Residual Income using the Cost of Equity.",
+      "Start with the bank's current Book Value (Common Equity).",
+      "Add the sum of the present value of Residual Income to the current Book Value.",
+      "Calculate and add the Residual Income Terminal Value if long-term residual income does not drop to zero."
+    ],
+    "created_at": "2026-11-03T18:00:42.686466+00:00",
+    "grounded_example": {
+      "excerpt": "Bank Valuation – Quick Reference\n\nhttp://breakingintowallstreet.com\n\n### Residual Income Model Valuation\n\nThere are 2 flaws with the Dividend Discount Model:\n\n(1) What if the bank doesn't issue dividends, or its dividend issuances are artificially reduced by stock repurchases or other factors?\n(2) Everything depends on future assumptions and what the bank looks like 5+ years into the future.\n\nThe **Residual Income Model** addresses these flaws by basing most of the value on the bank's **current Book Value** and then adding in the present value of “residual income” – defined as (ROE – Cost of Equity) * Shareholders' Equity.\n\n| Residual Income / Excess Returns: | $ 0.8 | $ 0.8 | $ 0.9 | $ 0.9 | 1.0 |\n| :--- | ---: | ---: | ---: | ---: | ---: |\n| Discount Period: | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 |\n| PV of Residual Income: | | $ 0.7 | $ 0.7 | $ 0.6 | $ 0.6 | $ 0.6 |\n\n| Present Value of Equity Calculations: | |\n| :--- | ---: |\n| Common Equity: | $ 60.0 |\n| Sum of PV of Residual Income: | 3.2 |\n| Terminal NI Growth: | 4.5% |\n| Year 6 Net Income: | 9.2 |\n| Res. Inc. Terminal Value: | - |\n| PV of Terminal Value: | - |\n| Present Value of Equity: | $ 63.2 |\n\n| Present Value of Equity Calculations: | |\n| :--- | ---: |\n| Common Equity: | $ 60.0 |\n| Sum of PV of Residual Income: | 3.2 |\n| Terminal NI Growth: | 4.5% |\n| Year 6 Net Income: | 9.2 |\n| Res. Inc. Terminal Value: | =(S21-M15*S15)/(S15-S20) |\n| PV of Terminal Value: | - |\n\n| Present Value of Equity Calculations: | |\n| :--- | -",
+      "similarity": 0.72557021752919,
+      "sourceFile": "8.Valuation for Banks.txt"
+    },
+    "grounded_checked_at": "2026-11-03T18:04:29.852+00:00",
+    "domain": "Finance",
+    "subdomain": "Valuation",
+    "when_to_use": "When valuing financial institutions like banks or insurance firms where traditional DCF models are ineffective.",
+    "when_not_to_use": "When valuing standard operating companies that do not rely on a unique financial institution balance sheet structure.",
+    "pitfalls": [
+      "Failing to use Return on Common Equity rather than other variants of ROE.",
+      "Relying entirely on distant multi-year projections rather than anchoring the valuation in the current balance sheet book value."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  }
+]

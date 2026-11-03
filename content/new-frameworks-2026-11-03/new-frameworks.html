@@ -18,7 +18,8 @@
   }
   .wrap { max-width: 880px; margin: 0 auto; }
   h1 { font-size: 1.75rem; margin-bottom: 4px; }
-  .subtitle { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 28px; }
+  .subtitle { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 14px; }
+  .note { background: var(--amber-bg); border: 1px solid var(--amber-border); border-radius: 10px; padding: 14px 18px; margin-bottom: 28px; font-size: 0.85rem; }
   .toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 32px; }
   .toc h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin: 0 0 10px; }
   .toc a { color: var(--text); text-decoration: none; display: block; padding: 3px 0; font-size: 0.92rem; }
@@ -44,7 +45,8 @@
 <div class="wrap" id="top">
 <h1>New Frameworks Added — Casebook Discovery Pass</h1>
 
-<p class="subtitle">The Frameworks page was a hand-curated list of 42 standard frameworks, never derived from the casebooks themselves. A full-corpus scan found genuinely new, well-covered frameworks missing from the page. 14 were grounded well enough in real casebook excerpts to add; 2 were deliberately left out (grounding too thin to write an accurate entry).</p>
+<p class="subtitle">14 new frameworks added (42 &rarr; 56 total on the page); 2 deliberately left out.</p>
+<div class="note"><strong>Multi-casebook synthesis:</strong> your casebooks overlap heavily — the same framework is often explained, differently, in several different club casebooks. Each entry below was drafted from excerpts pulled across multiple distinct source files (capped per-file so no single book dominates), not just whichever single casebook ranked highest. The excerpt count and source spread are shown per entry below.</p>
 <div class="toc"><h2>New frameworks added</h2>
 <a href="#value-chain-analysis">Value Chain Analysis <span class="domain">(Consulting)</span></a>
 <a href="#dividend-discount-model-gordon-growth-model">Dividend Discount Model (Gordon Growth Model) <span class="domain">(Finance)</span></a>
@@ -55,7 +57,7 @@
 <a href="#addie-model">ADDIE Model <span class="domain">(HR)</span></a>
 <a href="#harvard-vs-michigan-models-of-hrm">Harvard vs Michigan Models of HRM <span class="domain">(HR)</span></a>
 <a href="#kirkpatrick-model">Kirkpatrick Model <span class="domain">(HR)</span></a>
-<a href="#aarrr-framework-pirate-metrics">AARRR Framework (Pirate Metrics) <span class="domain">(Prodman)</span></a>
+<a href="#managerial-grid-blake-mouton">Managerial Grid (Blake-Mouton) <span class="domain">(General Management)</span></a>
 <a href="#moscow-method">MoSCoW Method <span class="domain">(Prodman)</span></a>
 <a href="#freemium-model">Freemium Model <span class="domain">(Prodman)</span></a>
 <a href="#net-promoter-score">Net Promoter Score <span class="domain">(Marketing:Sales)</span></a>
@@ -63,90 +65,92 @@
 </div>
 <div class="framework" id="value-chain-analysis">
 <h3>Value Chain Analysis</h3>
-<div class="meta">Consulting &middot; Case Structuring &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">Value Chain Analysis breaks down a company&#x27;s business activities into sequential stages—typically split into primary activities like operations and support activities like procurement—to identify cost components, profit drivers, and operational issues.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">A client is facing falling earnings because of rising operating costs. You map out activities from R&amp;D and raw material procurement through processing, storage, and customer service to isolate where costs are spiking and whether the issue stems from personnel, machinery, methods, or measurements.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use it during supply-side, cost-reduction, portfolio analysis, investment, or growth strategy cases.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use it when the problem is strictly driven by external macro factors or top-line marketing issues unrelated to internal operations.</div></div>
+<div class="meta">Consulting &middot; Case Structuring &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">Value Chain Analysis is a strategic framework that breaks down a company&#x27;s operations into sequential primary and support activities to identify cost drivers, profit components, and operational inefficiencies.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">A supermarket client is facing declining profits despite stable revenue. Using a value chain analysis, you map out costs across stages like raw material procurement, warehousing, store operations, and distribution. You discover that manual inventory tracking in the warehousing stage is causing high spoilage rates and driving up costs.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework for supply-side, cost-reduction, portfolio analysis, investment, and growth strategy problems.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework when the core problem is clearly on the demand or revenue side, such as pricing, customer churn, or falling market share.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Identify whether the industry requires a standard Porter&#x27;s value chain or a sector-specific process flow (such as pre-production, during production, and post-production).</li>
-<li>Examine support activities including firm infrastructure, human resource management, technology development, and procurement.</li>
-<li>Examine primary activities including inbound logistics, operations, outbound logistics, marketing and sales, and after-sales service.</li>
-<li>Evaluate potential issue segments within each stage, such as man (training, motivation), machine (maintenance, condition), method, and measurement (KPIs).</li>
-<li>Relate specific activities and core competencies back to overall costs and profits.</li>
+<li>Map out the company&#x27;s primary activities (such as inbound logistics, operations, outbound logistics, marketing and sales, and service) and support activities (such as firm infrastructure, human resource management, technology development, and procurement).</li>
+<li>Examine each stage of the value chain sequentially to identify where costs are rising, margins are shrinking, or operational bottlenecks exist.</li>
+<li>Drill down into specific cost drivers within problematic stages, evaluating factors such as manpower, machinery, methods, and measurements.</li>
+<li>Synthesize findings to isolate the root cause of inefficiency and develop targeted recommendations for cost reduction or process improvement.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Treating the value chain as a rigid template without adapting it to the specific industry classification.</li>
-<li>Overlooking support activities and focusing entirely on primary manufacturing or operational steps.</li>
+<li>Getting bogged down in every minor sub-activity instead of quickly identifying the major cost centers.</li>
+<li>Treating the value chain as a rigid template rather than customizing the stages to fit the specific industry.</li>
+<li>Focusing exclusively on costs without considering how operational changes in one link of the chain impact downstream revenue or customer satisfaction.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="dividend-discount-model-gordon-growth-model">
 <h3>Dividend Discount Model (Gordon Growth Model)</h3>
-<div class="meta">Finance &middot; Valuation &middot; grounded in 13 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">The Dividend Discount Model (Gordon Growth Model) is a financial framework used to determine the value of equity by calculating the present value of a company&#x27;s expected future dividends, discounted back at the cost of equity.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">Suppose a company has a Dividend per Share (DPS) of Rs. 10 that is expected to grow by 5% each year, and the required rate of return on equity is 12.1%. Using the formula Price = DPS divided by (Required Rate of Return on Equity minus Dividend growth rate), the share value is Rs. 10 divided by (12.1% - 5%), which equals Rs. 140.85.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework for matured companies with fairly predictable financials, nominal expansion needs, and a high dividend payout ratio.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework for start-ups or high growth companies where dividends are unstable, non-existent, or driven by too many unpredictable factors.</div></div>
+<div class="meta">Finance &middot; Valuation &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">The Dividend Discount Model is a financial valuation method that determines the intrinsic value of a company&#x27;s equity by calculating the present value of its expected future cash dividends.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">Suppose a company has a Dividend per Share (DPS) of Rs. 10, a Cost of Equity (expected return required by investors) of 12.1%, and a constant dividend growth rate of 5%. Using the Gordon Growth Model formula, the share price is calculated as: $P_0 = \frac{\text{DPS}_1}{\text{k}_e - \text{g}_n} = \frac{10 \times (1 + 5\%)}{12.1\% - 5\%} = \frac{10.50}{0.121 - 0.05} = \text{Rs. } 140.85$.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this model for mature companies with predictable financials, nominal expansion needs, and high, stable dividend payout ratios.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this model for start-ups or high-growth companies that pay little to no dividends.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Project the company&#x27;s earnings down to Earnings per Share (EPS).</li>
-<li>Assume a Dividend Payout Ratio to calculate future dividends over a given period.</li>
-<li>Determine the cost of equity and the expected dividend growth rate.</li>
-<li>Apply the Gordon Growth Model formula to calculate the present value of expected future dividends and terminal value.</li>
+<li>Project the company&#x27;s future earnings down to Earnings per Share (EPS).</li>
+<li>Determine the Dividend Payout Ratio (the percentage of EPS paid out as dividends) based on historical data and regulatory requirements.</li>
+<li>Calculate projected future dividends over the investment horizon.</li>
+<li>Determine the Cost of Equity using the Capital Asset Pricing Model (CAPM, a model relating risk and expected return for equities).</li>
+<li>Estimate the long-term constant dividend growth rate.</li>
+<li>Discount the projected dividends and the terminal value back to present value using the Cost of Equity.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Assuming a constant or stable growth rate to infinity when real-world dividends are likely to fluctuate.</li>
-<li>Failing to account for regulatory capital requirements or capital ratios when determining sustainable dividend payouts for financial institutions.</li>
+<li>Relies heavily on projected future numbers rather than hard balance sheet data.</li>
+<li>Inaccurate when applied to firms with unstable or non-existent dividend payments.</li>
+<li>Sensitive to small changes in assumptions like the growth rate or Cost of Equity.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="dupont-analysis">
 <h3>DuPont Analysis</h3>
-<div class="meta">Finance &middot; Financial Statements &amp; Accounting &middot; grounded in 12 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">DuPont Analysis is a financial statement analysis tool that breaks down return on equity (ROE) into three distinct components—profitability, operating efficiency, and financial leverage—to evaluate a company&#x27;s underlying performance drivers.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">A company wants to evaluate why its ROE changed over the year. Using DuPont Analysis, you calculate Net Profit Margin (Net Income / Sales) at 22.92%, Asset Turnover (Sales / Average Assets) at 1.06, and multiply these by the financial leverage ratio (Average Assets / Average Equity) to pinpoint whether profitability, asset usage, or leverage drove the performance.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework when you need to begin a financial statement analysis, assess the key drivers of return on equity, or identify specific areas of operational strength and weakness.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework when analyzing non-financial issues, qualitative organizational culture, or when evaluating early-stage companies without meaningful historical financial statements.</div></div>
+<div class="meta">Finance &middot; Financial Statements &amp; Accounting &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">DuPont Analysis is a financial framework that breaks down return on equity (ROE) into three distinct drivers—profitability, operating efficiency, and financial leverage—to evaluate a company&#x27;s underlying performance and identify areas of strength or weakness.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">A company wants to understand why its return on equity is changing. Using the framework, you break down ROE into three components: Net Profit Margin (Net Income / Sales), Asset Turnover Ratio (Sales / Average Assets), and the Equity Multiplier (Average Assets / Average Equity). If net profit margin is 22.92%, asset turnover is moderate, and leverage is rising, you can pinpoint whether the rate of owner wealth increase is being driven by operational efficiency, asset utilization, or debt.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework when beginning a financial statement analysis to understand the core drivers behind a company&#x27;s return on equity.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework for non-financial strategic problems like market entry, product mix decisions, or operational bottlenecks.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Calculate the net profit margin by dividing net income by sales to measure overall profitability.</li>
-<li>Calculate the asset turnover ratio by dividing sales by average assets to measure operating efficiency in using assets.</li>
-<li>Calculate the financial leverage ratio (equity multiplier) by dividing average assets by average equity to measure the extent of reliance on debt financing.</li>
-<li>Multiply the net profit margin, asset turnover, and financial leverage together to determine the return on equity.</li>
+<li>Calculate the net profit margin by dividing net income by sales to measure operational profitability.</li>
+<li>Calculate the asset turnover ratio by dividing sales by average assets to measure how efficiently assets are used.</li>
+<li>Calculate the equity multiplier (financial leverage) by dividing average assets by average equity.</li>
+<li>Multiply the three components together to find the overall return on equity and analyze which factor drives performance.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Assuming that a higher leverage ratio is always beneficial without accounting for the increased fixed payment risks tied to debt.</li>
-<li>Failing to use average balance sheet items, which can distort asset turnover and leverage calculations due to timing biases.</li>
+<li>Treating the components in isolation without recognizing that high margins often trade off against low asset turnover.</li>
+<li>Relying solely on the equity multiplier without assessing the actual risk associated with the company&#x27;s debt levels.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="treasury-stock-method">
 <h3>Treasury Stock Method</h3>
-<div class="meta">Finance &middot; Valuation &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">The Treasury Stock Method is an approach used to calculate the impact of dilutive securities like options and warrants by assuming that any cash proceeds a company receives from their exercise are used to repurchase shares on the open market.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">A company has 10,000 shares outstanding, a share price of $20.00, and 100 options outstanding at an exercise price of $10.00. First, assume the options are exercised, creating 100 new shares and bringing $1,000 in proceeds to the company (100 options * $10.00 exercise price). Next, assume the company uses those $1,000 proceeds to buy back shares at the $20.00 share price, which repurchases 50 shares ($1,000 / $20.00). Finally, subtract the repurchased shares from the newly created shares to find the net dilution: 100 new shares minus 50 repurchased shares equals 50 net additional shares outstanding.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework when calculating diluted shares or diluted earnings per share for options, warrants, and similar instruments where the company receives cash proceeds upon exercise.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework with convertible bonds or convertible preferred stock, because investors do not pay cash proceeds to the company upon conversion.</div></div>
+<div class="meta">Finance &middot; Valuation &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">The Treasury Stock Method is an approach used to calculate the dilutive impact of options and warrants on a company&#x27;s share count by assuming that any cash proceeds received from their exercise are used by the company to repurchase shares in the open market.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">Assume a company has options to purchase 50,000 shares of common stock at an exercise price of $20 per share, and the average market price of the common stock is $30 per share. Exercising the options generates $1,000,000 in cash ($20 x 50,000). Using these proceeds to buy back shares at the $30 market price repurchases approximately 33,333 shares ($1,000,000 / $30). The net dilution is the difference between the shares created and the shares repurchased: 50,000 - 33,333 = 16,667 new shares added to the diluted share count.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">When calculating diluted shares or diluted earnings per share (EPS, a financial metric representing profit allocated to each share of stock) for a company that has outstanding options, warrants, or similar dilutive securities.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">When evaluating convertible bonds or convertible preferred stock (classes of ownership with preferential rights), because the company does not receive cash proceeds from those conversions.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Identify all in-the-money options or warrants where the exercise price is lower than the current market share price.</li>
-<li>Assume all those options are exercised, creating a specific number of new shares.</li>
-<li>Calculate the total cash proceeds the company receives by multiplying the number of options by their exercise price.</li>
-<li>Determine how many shares the company can repurchase by dividing the total cash proceeds by the current market share price.</li>
-<li>Subtract the repurchased shares from the newly created shares to get the net number of additional shares added to the share count.</li>
+<li>Assume that all in-the-money (options where the strike price is less than the market price) options and warrants are exercised.</li>
+<li>Determine the total cash proceeds the company receives from the exercise by multiplying the number of options by their exercise price.</li>
+<li>Calculate how many shares the company can repurchase in the open market by dividing the total cash proceeds by the average market price of the stock.</li>
+<li>Subtract the number of shares bought back from the number of new shares created upon exercise to find the net incremental shares added to the diluted share count.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Applying the method to convertible instruments instead of treating them separately without treasury stock adjustments.</li>
-<li>Using the exercise price instead of the current market share price when calculating how many shares the company can buy back with its proceeds.</li>
-<li>Failing to check whether options are in-the-money before factoring them into the dilution calculation.</li>
+<li>Using the strike price instead of the average market price when calculating how many shares the company buys back.</li>
+<li>Applying the method to convertible securities (convertible bonds or preferred stock) where no cash is received.</li>
+<li>Using the current spot price instead of the average market price for the period when required for EPS calculations.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="precedent-transaction-analysis">
 <h3>Precedent Transaction Analysis</h3>
-<div class="meta">Finance &middot; Valuation &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">Precedent Transaction Analysis is a valuation method that uses the implied multiples of past corporate sales, profit, or other parameters from similar deals to assess the price range that vendors have been willing to accept.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">To value a target company, an analyst identifies a deal list of comparable precedent transactions, calculates the deal premiums offered in recent deals along with deal values, and finally derives a valuation range.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use it when assessing the price range vendors accepted in past deals, particularly with high importance in buy-side M&amp;A (mergers and acquisitions) and sell-side M&amp;A.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use it when analyzing initial public offerings (IPOs) or add-on financings, where its applicability is rated as none.</div></div>
+<div class="meta">Finance &middot; Valuation &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">Precedent Transaction Analysis is a valuation technique used in M&amp;A (mergers and acquisitions) situations to assess the price range that vendors have historically been willing to accept for a business with similar characteristics, based on implied multiples of past transactions.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">A potential acquiror looking to buy an auto company first identifies a broad set of auto companies, narrows it down to those manufacturing tyres, and finally isolates a tight peer group of tyre-manufacturing auto companies with similar size and business models to establish a relevant valuation benchmark.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">When valuing a company or asset during M&amp;A situations, particularly buy-side or sell-side deals, to gauge historical acquisition prices.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">When performing initial public offerings (IPOs) or add-on financings, where historical transaction multiples are not relevant.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
 <li>Identify Transactions</li>
 <li>Find Information</li>
@@ -154,189 +158,195 @@
 <li>Check and Interpret the Results</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Picking the wrong set of transactions</li>
-<li>Encountering strange market conditions where precedent transactions result in unusually lower multiples than other valuation methods</li>
+<li>Using precedent transactions that lack truly similar characteristics or business models</li>
+<li>Failing to accurately apply and interpret the relevant transaction multiples as benchmarks</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="residual-income-model">
 <h3>Residual Income Model</h3>
-<div class="meta">Finance &middot; Valuation &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">The Residual Income Model is an equity valuation framework that determines a bank&#x27;s value by taking its current book value (common equity) and adding the present value of future residual income (calculated as Net Income minus Cost of Equity multiplied by Shareholders&#x27; Equity).</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">To value a bank, start with a Common Equity book value of $60.0. Project future residual income each year (defined as Net Income minus Cost of Equity * Shareholders&#x27; Equity), discount those amounts back, and sum them up to $3.2. Add these together to arrive at a Present Value of Equity of $63.2.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">When valuing financial institutions like banks or insurance firms where traditional DCF models are ineffective.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">When valuing standard operating companies that do not rely on a unique financial institution balance sheet structure.</div></div>
+<div class="meta">Finance &middot; Valuation &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">The Residual Income Model is a valuation approach that determines a company&#x27;s equity value by starting with its current book value (common equity) and adding the present value of future residual income, defined as excess returns generated above the cost of capital.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">To value a bank currently holding $60 million in common equity with a cost of equity of 10% and a projected return on equity (ROE, profitability metric) of 12% yielding $0.8 million in residual income, you discount that residual income back to present value, sum those values over your projection period, and add them directly to the $60 million starting book value.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this model when valuing financial institutions like banks, or companies that pay little-to-no dividends where traditional dividend-based models fail.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this model when accounting book values are heavily distorted and fail to reflect the true economic value of the underlying assets.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Calculate Residual Income each year, defined as Net Income minus Cost of Equity multiplied by Shareholders&#x27; Equity (or Common Equity/Tangible Common Equity).</li>
-<li>Discount and sum up the annual Residual Income using the Cost of Equity.</li>
-<li>Start with the bank&#x27;s current Book Value (Common Equity).</li>
-<li>Add the sum of the present value of Residual Income to the current Book Value.</li>
-<li>Calculate and add the Residual Income Terminal Value if long-term residual income does not drop to zero.</li>
+<li>Identify the current book value (common equity) from the balance sheet as your valuation starting point.</li>
+<li>Calculate annual residual income for each projection year as (ROE - Cost of Equity) multiplied by shareholders&#x27; equity.</li>
+<li>Discount each year&#x27;s residual income back to present value using the cost of equity (required return for investors).</li>
+<li>Calculate the terminal value to capture all residual income beyond the explicit projection period.</li>
+<li>Sum the current book value, the present value of all projected residual incomes, and the present value of the terminal value to arrive at total equity value.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Failing to use Return on Common Equity rather than other variants of ROE.</li>
-<li>Relying entirely on distant multi-year projections rather than anchoring the valuation in the current balance sheet book value.</li>
+<li>Relying on book values that have been distorted by accounting rules or unrecorded intangible assets.</li>
+<li>Failing to accurately project long-term ROE and cost of equity assumptions for the terminal value calculation.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="addie-model">
 <h3>ADDIE Model</h3>
-<div class="meta">HR &middot; Learning &amp; Development &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">The ADDIE Model is a generic five-phase instructional design framework used by training designers and experts to build effective training programs and performance support tools.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">A company wants to train its sales team on a new software tool. Using ADDIE, you first analyze the team&#x27;s current capabilities, design the learning objectives and delivery format, develop the course materials and prototypes, implement the training by putting tools in place, and finally evaluate the results.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use when building effective training programs, learning solutions, or performance support tools.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use in highly dynamic work environments where a strictly linear process is inapplicable or too time-consuming.</div></div>
+<div class="meta">HR &middot; Learning &amp; Development &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">The ADDIE Model is a standard instructional design framework used by training designers and experts to build effective training and performance support tools through five distinct phases.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">Prompt: Design a new digital tools onboarding program for incoming employees. Walkthrough: 1. Analysis: Assess employee skill gaps and learning goals. 2. Design: Outline the curriculum, learning objectives, and delivery methods. 3. Development: Create the actual slide decks, guides, and training videos. 4. Implementation: Roll out the training sessions to the new hires. 5. Evaluation: Gather participant feedback and measure post-training performance to assess effectiveness.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use when designing and structuring a comprehensive training program or performance support module from scratch.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use in fast-paced or highly dynamic environments where a rigid, linear process is too time-consuming and expensive.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Analysis (identifying learning problems, needs, requirements, and participants&#x27; current capabilities)</li>
-<li>Design (planning learning objectives, delivery format, activities, and exercises)</li>
-<li>Develop (creating prototypes, course materials, and conducting pilot sessions)</li>
-<li>Implement (delivering the training with tools in place and observing the process)</li>
-<li>Evaluate (measuring awareness, knowledge, behavior, and results)</li>
+<li>Analysis</li>
+<li>Design</li>
+<li>Development</li>
+<li>Implementation</li>
+<li>Evaluation</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Can be time consuming and very expensive</li>
+<li>Can be time-consuming and expensive</li>
 <li>May stifle the creativity of the designer</li>
-<li>Being very linear, it may not be applicable in dynamic work environments</li>
+<li>Can be overly linear and inflexible for dynamic work environments</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="harvard-vs-michigan-models-of-hrm">
 <h3>Harvard vs Michigan Models of HRM</h3>
-<div class="meta">HR &middot; HR Strategy &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">A comparative framework contrasting the Michigan Model (a hard, strategic approach focused on matching HR systems with corporate goals) and the Harvard Model (a soft approach centered on stakeholder interests, situational factors, and human outcomes).</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">A company facing a corporate restructuring uses the Michigan Model to align workforce planning and organizational structure directly with business objectives, while simultaneously using the Harvard Model to evaluate how employee groups, unions, and government regulations will impact and be affected by those policy choices.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework when designing an overarching human resource management strategy and deciding whether to prioritize strict strategic alignment or broader employee and stakeholder interests.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework when you need to solve tactical, day-to-day operational problems like a single recruitment hire or immediate payroll disputes.</div></div>
+<div class="meta">HR &middot; HR Strategy &middot; synthesized from 7 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">The Harvard vs Michigan Models of HRM are foundational frameworks used to analyze human resource management through either a broad stakeholder-oriented lens (Harvard) or a tight strategic-fit lens aligned with corporate goals (Michigan).</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">Prompt: A legacy newspaper company acquires a digital media firm and faces redundant roles and shifting market environments. Walkthrough: Apply the Harvard vs Michigan Models of HRM by first evaluating how employee policies impact all stakeholders (Harvard) and then ensuring the post-merger HR strategy tightly integrates with the new digital corporate strategy (Michigan).</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use when designing organizational HR strategies, evaluating workforce structures, or aligning human capital management with broader business transformations.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use when dealing with narrow, day-to-day administrative payroll tasks that require no strategic evaluation.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Identify key corporate goals and external situational factors (such as workforce characteristics and unions).</li>
-<li>Map out the interests of all relevant stakeholders, including shareholders, management, employee groups, and the government.</li>
-<li>Determine HR policies across core functions like recruitment, training, and reward systems.</li>
-<li>Evaluate resulting HRM outcomes such as employee commitment, competence, congruence, and cost-effectiveness.</li>
-<li>Assess long-term consequences for individual employees, the overall business, and society.</li>
+<li>Identify the core corporate strategy and business environment.</li>
+<li>Analyze employee interests and broader stakeholder impacts using the Harvard approach.</li>
+<li>Design a vertically integrated HR strategy that achieves strategic fit with corporate goals using the Michigan approach.</li>
+<li>Align workforce planning activities, such as recruitment and training, to map current resources to future goals.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Over-relying on the Michigan Model&#x27;s uniterism assumption, which ignores potential conflicts or differing views between managers and employees.</li>
-<li>Incurring excessive costs or decision-making delays by taking the Harvard Model&#x27;s soft approach too far without regard for business efficiency.</li>
+<li>Treating individual HR processes in silos without integration.</li>
+<li>Failing to account for changing business environments when designing workforce strategies.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="kirkpatrick-model">
 <h3>Kirkpatrick Model</h3>
-<div class="meta">HR &middot; Learning &amp; Development &middot; grounded in 10 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">The Kirkpatrick Model is a four-tiered framework used to evaluate the effectiveness and success of training programs. It measures outcomes sequentially across four distinct levels: Reaction, Learning, Behaviour, and Results.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">To evaluate a new leadership training program, an organization first collects immediate feedback surveys on course content and delivery (Reaction), tests participants&#x27; knowledge and skill acquisition via simulations (Learning), observes whether managers apply these skills on the job after some time using a pretest-posttest design (Behaviour), and finally measures the broader organizational benefits achieved (Results).</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework when designing a comprehensive strategy to monitor and evaluate the success of an organization&#x27;s training programs.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework if your evaluation requires calculating a specific financial return on investment (ROI) percentage, as that requires an upgraded model.</div></div>
+<div class="meta">HR &middot; Learning &amp; Development &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">The Kirkpatrick Model is a widely used four-level framework for evaluating the effectiveness and impact of training programs.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">A company rolls out a new customer service software. To evaluate it using the Kirkpatrick Model, they would: (1) survey participants immediately to see if they liked the training, (2) test their knowledge of the software via a quiz, (3) observe employees a month later to see if they are actually using the software on the job, and (4) measure whether customer satisfaction scores and resolution times improved across the organization.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework when designing a comprehensive strategy to measure the success, effectiveness, and organizational impact of a training or development program.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework if you need to calculate the explicit financial return on investment (ROI) of a training program, as it stops short of monetary cost-benefit analysis.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Evaluate Level 1 (Reaction) by gathering immediate feedback on content, facilities, and delivery methods via surveys or questionnaires.</li>
-<li>Evaluate Level 2 (Learning) immediately after training using interviews, surveys, tests, or simulations to assess changes in knowledge, skills, and attitudes.</li>
-<li>Evaluate Level 3 (Behaviour) after some time has passed to measure the transfer of training into on-the-job changes using methods like pretest-posttest designs or retrospective surveys.</li>
-<li>Evaluate Level 4 (Results) to determine what organizational benefits ultimately resulted from the training program.</li>
+<li>Level 1: Evaluate Reaction by assessing how favorably participants responded to the training content, facilities, and trainer immediately after completion.</li>
+<li>Level 2: Evaluate Learning by measuring the extent to which participants improved their knowledge, skills, abilities, and attitudes via tests, simulations, or interviews.</li>
+<li>Level 3: Evaluate Behavior by determining whether participants successfully transferred what they learned back into their day-to-day workplace performance after some time has passed.</li>
+<li>Level 4: Evaluate Results by analyzing the broader organizational benefits and outcomes that resulted from the training, such as increased productivity or higher quality.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Failing to collect participant reactions immediately, which can prevent proper learning if participants are unhappy with the training environment.</li>
-<li>Assessing on-the-job behaviour too quickly before employees have had sufficient time to transfer and apply their learned skills to workplace contexts.</li>
+<li>Failing to measure beyond Level 1 (Reaction), which only tells you if employees enjoyed the training rather than if they actually learned anything.</li>
+<li>Waiting too long to measure Level 2 (Learning) or measuring Level 3 (Behavior) too soon before employees have had adequate time to apply their new skills on the job.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
-<div class="framework" id="aarrr-framework-pirate-metrics">
-<h3>AARRR Framework (Pirate Metrics)</h3>
-<div class="meta">Prodman &middot; Metrics &amp; Growth &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">A framework to study user behavior using metrics relevant for product-led growth businesses, helping focus on important metrics rather than superficial ones.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">A product manager examining why users are churning might look at user behavior by walking through the steps of the AARRR funnel, combined with cohort analysis and qualitative triangulation (cross-referencing data sources).</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">To study user behavior using metrics relevant for product-led growth businesses and to understand why users are churning.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">When superficial social metrics are the primary focus or when the business model does not rely on a user growth lifecycle.</div></div>
+<div class="framework" id="managerial-grid-blake-mouton">
+<h3>Managerial Grid (Blake-Mouton)</h3>
+<div class="meta">General Management &middot; Leadership &amp; Behavioural &middot; synthesized from 13 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">The Managerial Grid (Blake-Mouton) is a multi-phase program and leadership model that maps various leadership styles based on two fundamental orientations: concern for people and concern for production.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">A company implementing a multi-year development program needs to evaluate and improve its team leadership styles. Step 1: Assess the organization&#x27;s current leadership styles using the grid&#x27;s combinations of concern for people and concern for production. Step 2: Progress through the structured improvement phases, moving from individual managerial skills to group dynamics, inter-group relations, corporate planning, implementation, and final evaluation.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">When an organization wants to structure a long-term development program to evaluate, train, and improve leadership styles across management.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">When you need a quick, short-term fix for an immediate operational crisis rather than a multi-year phased training program.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Evaluate Acquisition metrics</li>
-<li>Evaluate Activation metrics</li>
-<li>Evaluate Retention metrics</li>
-<li>Evaluate Referral metrics</li>
-<li>Evaluate Revenue metrics</li>
+<li>Upgrade managerial skills through a structured program</li>
+<li>Advance to group improvement</li>
+<li>Improve inter-group relations</li>
+<li>Engage in corporate planning</li>
+<li>Develop implementation methods</li>
+<li>Conclude with an evaluation phase</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Focusing on superficial metrics instead of growth-driving metrics</li>
-<li>Failing to combine quantitative funnel stages with qualitative triangulation when analyzing user churn</li>
+<li>Treating the program as a quick fix instead of a multi-year commitment</li>
+<li>Focusing too heavily on one orientation (people versus production) at the expense of the other</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="moscow-method">
 <h3>MoSCoW Method</h3>
-<div class="meta">Prodman &middot; Prioritization &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">The MoSCoW Method is a prioritization framework that classifies product features into four distinct buckets based on their importance for a given timeframe or launch. The acronym stands for Must-Have, Should-Have, Could-Have, and Won&#x27;t-Have (or Will Not Have).</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">For a bicycle rental app, you would classify a user login feature as a Must-Have (essential for the product to be functional), a reset password feature as a Should-Have (important but not time-sensitive for launch), a single sign-on option as a Could-Have (nice-to-have with little impact if left out), and future enhancement ideas as Won&#x27;t-Have.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use it when you need to group features into priority buckets to determine what matters most to your stakeholders and customers during product planning or design.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not rely on it as a single source of truth if you need a precise numerical scoring model to rank competing backlog items.</div></div>
+<div class="meta">Prodman &middot; Prioritization &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">The MoSCoW method is a prioritization framework used to classify product features or requirements into four distinct buckets based on their importance for a given release.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">For a new mobile application, the team categorizes a user login feature as Must-Have because the product cannot launch without it, a reset password feature as Should-Have because it is important but not strictly vital for day-one launch, single sign-on as Could-Have because it is a nice-to-have addition, and future advanced analytics as Won&#x27;t-Have for the current timeframe.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework when you need to prioritize a list of features or requirements for a specific product release or minimum viable product (MVP, earliest functional version of a product with just enough features to satisfy early customers).</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework when you need quantitative scoring or deep numerical trade-offs between competing initiatives.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Identify all potential features, tasks, or requirements for the product backlog.</li>
-<li>Evaluate each feature to determine if it is a mandatory, non-negotiable product need for launch (Must-Have).</li>
-<li>Assess remaining features to categorize them as important but less time-sensitive (Should-Have), nice-to-have bonuses (Could-Have), or out-of-scope for the current timeframe (Won&#x27;t-Have).</li>
-<li>Review the categorized buckets with stakeholders to finalize scope and plan product execution strategy.</li>
+<li>Gather all proposed features, user stories (end-user focused descriptions of functionality), or requirements.</li>
+<li>Evaluate each item against product goals and user needs.</li>
+<li>Assign each item to one of the four MoSCoW categories: Must-Have, Should-Have, Could-Have, or Won&#x27;t-Have.</li>
+<li>Review the distribution with stakeholders (interested parties with a stake in the product) to align on scope and delivery timelines.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Treating too many features as Must-Haves, which defeats the purpose of prioritization.</li>
-<li>Failing to align with stakeholders on what constitutes a true necessity versus a nice-to-have.</li>
+<li>Overloading the Must-Have bucket with too many features, defeating the purpose of prioritization.</li>
+<li>Treating Should-Have or Could-Have items as non-negotiable commitments for the immediate launch.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="freemium-model">
 <h3>Freemium Model</h3>
-<div class="meta">Prodman &middot; Metrics &amp; Growth &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">The freemium model is a pricing strategy where a company offers a core product or service for free while charging for premium features, working best for high-volume consumer goods or network effect products.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">A fantasy sports app operates on a freemium model where 90% of its 5 crore (50 million) users are on the free model, and profits are increased by growing the overall user base or shifting a higher percentage of users to the paid base.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use this framework when evaluating consumer tech ventures, digital products, or market entry strategies where building a massive initial user base is critical.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use this framework for B2B infrastructure products or services with high variable usage patterns that rely purely on usage-based or fixed subscription models.</div></div>
+<div class="meta">Prodman &middot; Metrics &amp; Growth &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">The freemium model is a pricing strategy where a company offers core product features for free to attract a large user base while charging for advanced or premium features.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">A music streaming app offers basic ad-supported listening for free (core free) but charges a monthly fee for offline downloads and higher audio quality (premium features paid).</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use when evaluating growth strategies for high-volume consumer products or digital services that benefit from network effects.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use when serving niche enterprise clients with extremely high per-user serving costs and no consumer network effects.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Identify the core free offering versus the premium features</li>
-<li>Evaluate market size, customer segments, and target user adoption rates</li>
-<li>Assess conversion rates from the free tier to the paid tier</li>
-<li>Analyze revenue growth opportunities through user acquisition and monetization of premium tiers</li>
+<li>Define the free tier scope</li>
+<li>Identify premium features</li>
+<li>Analyze conversion rates</li>
+<li>Optimize monetization channels</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Focusing entirely on user count without tracking relevant monetization KPIs like ARPU (average revenue per user)</li>
-<li>Underestimating ongoing server costs or infrastructure scaling requirements to support the free user base</li>
+<li>Giving away too much value for free</li>
+<li>Failing to convert free users to paid tiers</li>
+<li>Underestimating the server or support costs of serving free users</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="net-promoter-score">
 <h3>Net Promoter Score</h3>
-<div class="meta">Marketing:Sales &middot; Customer &amp; Brand &middot; grounded in 13 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">Net Promoter Score is a single business metric that measures the likelihood that customers will recommend a product or service, serving as an indicator of overall customer experience and advocacy.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">A food delivery service surveys its customers in Ahmedabad using a scale from 0 to 10. Customers rating 9 or 10 are classified as promoters, those rating 7 or 8 as neutral, and those rating 0 to 6 as detractors. Subtracting the percentage of detractors from the percentage of promoters yields the Net Promoter Score.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use it to measure high-level trends in customer loyalty, product success, and advocacy over time.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not rely on it alone when you need to uncover granular operational problems without supplementing it with a deeper look at the customer journey.</div></div>
+<div class="meta">Marketing:Sales &middot; Customer &amp; Brand &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">Net Promoter Score is a single metric ranging from -100 to 100 that measures customer loyalty and the likelihood that customers will recommend a product or service to others.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">A food delivery service surveys its customers and asks: &#x27;Would you recommend this service to a friend?&#x27; on a scale of 0 to 10. If 60% of respondents give a 9 or 10 (promoters) and 20% give a 0 through 6 (detractors), the Net Promoter Score is calculated as 60% minus 20%, resulting in a score of 40.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use it to track high-level trends in customer sentiment and brand advocacy over time.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use it as a standalone measure to diagnose root causes of operational problems or to compare vastly different products and markets.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Ask customers how likely they are to recommend your product on a scale of 0 to 10 through a survey.</li>
-<li>Classify respondents into promoters (9-10), neutral/lukewarm (7-8), and detractors (0-6).</li>
-<li>Calculate the percentage of total respondents who are promoters and the percentage who are detractors.</li>
-<li>Subtract the percentage of detractors from the percentage of promoters to arrive at the final score.</li>
+<li>Survey customers using a single question asking how likely they are to recommend the product or service on a scale of 0 to 10.</li>
+<li>Categorize respondents giving 9 or 10 as promoters.</li>
+<li>Categorize respondents giving 7 or 8 as neutral or lukewarm.</li>
+<li>Categorize respondents giving 0 through 6 as detractors.</li>
+<li>Calculate the final score by subtracting the percentage of detractors from the percentage of promoters.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Treating the score as a complete story without investigating underlying outliers or specific segment grievances.</li>
-<li>Failing to account for external operational changes (such as sustainable packaging shifts or delivery delays) that negatively impact customer experience.</li>
+<li>Overlooking specific regional or demographic outliers by relying solely on the aggregate score.</li>
+<li>Ignoring the underlying product, delivery, or customer service details that caused low ratings.</li>
+<li>Assuming that the same numerical score holds identical meaning across different cultures, industries, or product types.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
 <div class="framework" id="customer-satisfaction-score-csat">
 <h3>Customer Satisfaction Score (CSAT)</h3>
-<div class="meta">Marketing:Sales &middot; Customer &amp; Brand &middot; grounded in 14 casebook excerpt(s)</div>
-<div class="field"><div class="field-name">description</div><div class="field-body">Customer Satisfaction Score (CSAT) is a key performance indicator that measures customer satisfaction levels based on guest or customer ratings from feedback and surveys on a scale, typically 1 to 5.</div></div>
-<div class="field"><div class="field-name">example</div><div class="field-body">A pizza company in Bangalore experiences a recent dip in its delivery segment&#x27;s CSAT (measured on a 1-5 scale). By breaking down the customer journey into pre-ordering, ordering and delivery, and post-delivery, the analyst traces the decline to increased delivery times, leading to recommendations like restricting the delivery radius or opening new outlets.</div></div>
-<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use when analyzing why a client has faced a decline in customer satisfaction or evaluating post-purchase service effectiveness.</div></div>
-<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use when analyzing purely financial metrics that do not involve customer experience feedback or service ratings.</div></div>
+<div class="meta">Marketing:Sales &middot; Customer &amp; Brand &middot; synthesized from 14 casebook excerpt(s) across multiple source files</div>
+<div class="field"><div class="field-name">description</div><div class="field-body">Customer Satisfaction Score (CSAT) is a metric typically measured on a scale (such as 1 to 5) that quantifies how happy customers are with a company&#x27;s product, service, or specific touchpoints.</div></div>
+<div class="field"><div class="field-name">example</div><div class="field-body">A pizza company notices a recent dip in its delivery CSAT. Breaking the customer journey down into pre-ordering, ordering-to-delivery, and post-ordering reveals that increased delivery distance and slower speed are driving down the score.</div></div>
+<div class="field"><div class="field-name">when_to_use</div><div class="field-body">Use when a client is experiencing a decline in customer satisfaction or retention and needs to diagnose operational bottlenecks across the customer journey.</div></div>
+<div class="field"><div class="field-name">when_not_to_use</div><div class="field-body">Do not use when the primary problem is top-of-funnel brand awareness or broad financial restructuring unrelated to customer experience.</div></div>
 <div class="field"><div class="field-name">steps</div><ul>
-<li>Verify how the score is measured, the magnitude and timing of any decline, and if it affects a specific segment.</li>
-<li>Map the customer journey into distinct phases such as pre-ordering, ordering-to-delivery, and post-delivery.</li>
-<li>Investigate specific operational bottlenecks within the journey, such as delivery time, packaging, or UI/UX issues.</li>
-<li>Develop short-term and long-term recommendations to address the root causes and improve customer experience.</li>
+<li>Identify which segment, product line, or channel (such as delivery vs. dine-in) is experiencing a change in satisfaction scores.</li>
+<li>Map out the end-to-end customer journey (such as pre-ordering, ordering-to-delivery, and post-delivery).</li>
+<li>Isolate specific operational pain points within each phase of the journey (such as packaging issues, wait times, or app UI/UX).</li>
+<li>Analyze internal factors (such as logistics, call center wait times, or staff efficiency) versus external factors (such as geography or competitors).</li>
+<li>Formulate targeted short-term fixes and long-term strategic recommendations to resolve the root causes.</li>
 </ul></div>
 <div class="field"><div class="field-name">pitfalls</div><ul>
-<li>Assuming a general drop applies to all segments without checking for specific channel or geographic outliers.</li>
-<li>Failing to check whether the measurement criteria or method of surveying has changed over time.</li>
+<li>Failing to segment the data to find localized or demographic outlier scores.</li>
+<li>Focusing on the overall score without breaking down the specific steps of the customer journey where the drop actually occurred.</li>
+<li>Neglecting to check whether competitors are facing similar satisfaction dips due to broader industry trends.</li>
 </ul></div>
 <a class="top-link" href="#top">↑ back to top</a>
 </div>
-<div class="skipped-section"><h2>Deliberately NOT added (grounding too thin)</h2>
-<div class="skipped-card"><span class="name">Black-Scholes Option Pricing Model</span> (Finance) — insufficient</div>
-<div class="skipped-card"><span class="name">Managerial Grid (Blake-Mouton)</span> (General Management) — insufficient</div>
+<div class="skipped-section"><h2>Deliberately NOT added</h2>
+<div class="skipped-card"><span class="name">Black-Scholes Option Pricing Model</span> (Finance) — technical failure (not a content judgment) — see note below</div>
+<div class="skipped-card"><span class="name">AARRR Framework (Pirate Metrics)</span> (Prodman) — casebook coverage too thin to write an accurate entry from</div>
+<p style="color:var(--text-dim);font-size:0.85rem;">Black-Scholes Option Pricing Model: the casebook excerpts are substantive, but the model's JSON output broke on the formula's LaTeX-style notation (backslashes) every attempt — a text-escaping bug, not a judgment that the content is thin. Left out rather than risk a malformed/truncated entry; worth a second pass with a fix to the prompt's JSON-escaping instructions if wanted later.</p>
 </div>
 </div></body></html>
