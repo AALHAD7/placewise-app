@@ -12,6 +12,7 @@ import ProbeChat from "../components/ProbeChat";
 import PracticeModal from "../components/PracticeModal";
 import PageHeader from "../components/PageHeader";
 import GroundingNote from "../components/GroundingNote";
+import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import type { RoleCompanyNotesResponse, RoleOverview, RoleOverviewResponse, RoleTopic, RoleTopicsResponse } from "../types/api";
 
 // Ported from frontend/index.html: roleSelector() (3861-3917), roleInfo()
@@ -413,7 +414,12 @@ export default function RolePage() {
 
       {roleInfo && (
         <>
-          {roleInfo.loading && <div style={{ marginTop: 28, color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Loading role info…</div>}
+          {roleInfo.loading && (
+            <div role="status" aria-live="polite" style={{ marginTop: 28, maxWidth: 420 }}>
+              <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Loading role info…</div>
+              <IndeterminateProgressBar />
+            </div>
+          )}
           {roleInfo.revalidating && <div style={{ marginTop: 28, color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>Updating{company ? ` for ${company}` : ""}…</div>}
           {roleInfo.error && <div className="t-shake" style={{ marginTop: 28, color: "var(--red-dark)", fontSize: "0.84375rem" }}>{roleInfo.error}</div>}
 

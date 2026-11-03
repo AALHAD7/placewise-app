@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "../lib/apiClient";
 import PageHeader from "../components/PageHeader";
 import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
+import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import type { GuesstimateResponse } from "../types/api";
 
 // R8: first real UI for Guesstimates (backend-only as of R7 - GET
@@ -31,7 +32,12 @@ export default function GuesstimatesPage() {
       <PageHeader title="Guesstimates" subtitle="Practice problems from the real casebooks, with their source page." />
 
       <div style={{ marginTop: 28, maxWidth: 680 }}>
-        {state.loading && <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Loading a problem…</div>}
+        {state.loading && (
+          <div role="status" aria-live="polite" style={{ maxWidth: 420 }}>
+            <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Loading a problem…</div>
+            <IndeterminateProgressBar />
+          </div>
+        )}
 
         {state.error && !state.loading && (
           <div className="t-shake" style={{ color: "var(--red-dark)", fontSize: "0.84375rem" }}>{state.error}</div>
