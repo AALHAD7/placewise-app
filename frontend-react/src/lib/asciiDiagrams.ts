@@ -578,14 +578,11 @@ Low Production   │ Impoverished Management (1,1) │ Country Club Management (
   "Porter's Five Forces": {
     title: "Porter's Five Forces",
     ascii: `[ Industry Attractiveness ]
-├── [ New Entrants ]
-│   └── [ Threat of New Entrants ]
-├── [ Bargaining Power ]
-│   ├── [ Power of Suppliers ]
-│   └── [ Power of Buyers ]
-└── [ Threats & Rivalry ]
-    ├── [ Threat of Substitutes ]
-    └── [ Competitive Rivalry ]`
+├── [ Threat of New Entrants ]
+├── [ Bargaining Power of Suppliers ]
+├── [ Bargaining Power of Buyers ]
+├── [ Threat of Substitutes ]
+└── [ Competitive Rivalry ]`
   },
 
   "Porter's Generic Strategies": {

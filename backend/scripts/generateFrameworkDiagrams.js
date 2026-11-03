@@ -47,7 +47,11 @@ const SYSTEM_PROMPT =
   "content - never invent a new step, category, or number not already present.\n\n" +
   "For type 'issue_tree': a root label plus nested children (each child: {label, children?}), " +
   "2-4 levels deep, reflecting a real breakdown/hierarchy in the content (e.g. a metric split " +
-  "into its components, two models each with their own sub-points).\n" +
+  "into its components, two models each with their own sub-points). CRITICAL: never invent an " +
+  "intermediate grouping node to pair up items that don't actually share a real category - " +
+  "N co-equal, independent items become N flat direct children of the root, not nested under " +
+  "made-up parent labels. Only add a middle layer when the source content itself names a real " +
+  "grouping.\n" +
   "For type 'flow': a short ordered list of {id, label} nodes (one per step, 3-7 nodes) plus " +
   "{from, to, label?} edges connecting each to the next in sequence - label an edge only if " +
   "the content specifies a real condition/branch, otherwise omit it.\n" +

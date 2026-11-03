@@ -35,7 +35,14 @@ const SYSTEM_PROMPT =
   "types best fits the content, then produce ONLY that structure:\n\n" +
   "'issue_tree' - a root label plus nested children (each child: {label, children?}), 2-4 " +
   "levels deep - use this for a metric/concept that breaks down into components or " +
-  "sub-categories (e.g. a ratio split into its drivers, a strategy with named sub-parts).\n" +
+  "sub-categories (e.g. a ratio split into its drivers, a strategy with named sub-parts). " +
+  "CRITICAL: never invent an intermediate grouping node to pair up items that don't actually " +
+  "share a real category - if the framework's steps are N co-equal, independent items (e.g. " +
+  "Porter's Five Forces: 5 flat forces, none of which groups under another), make them N " +
+  "flat direct children of the root, not nested under 2-3 made-up parent labels. Only add a " +
+  "middle layer when the source content ITSELF names a real grouping (e.g. SWOT's " +
+  "Strengths/Weaknesses really are \"Internal\" and Opportunities/Threats really are " +
+  "\"External\" - that's taught, not invented).\n" +
   "'flow' - an ordered list of {id, label} nodes (3-7 nodes, labels must NOT include their " +
   "own leading number like \"1.\" - the renderer numbers them automatically) plus {from, to, " +
   "label?} edges connecting each to the next in sequence - use this for a step-by-step " +
