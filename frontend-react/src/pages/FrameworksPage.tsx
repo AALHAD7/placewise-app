@@ -409,23 +409,23 @@ export default function FrameworksPage() {
                       </div>
 
                       {f.when_to_use && (
-                        <div style={{ marginTop: 12, background: "#eef6f1", border: "1px solid #cdeeda", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#065f46" }}>When to use it</div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.when_to_use}</p>
+                        <div style={{ marginTop: 12, background: "rgba(52, 211, 153, 0.08)", border: "1px solid rgba(52, 211, 153, 0.30)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#6ee7b7" }}>When to use it</div>
+                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-gray2)", textWrap: "pretty" as const }}>{f.when_to_use}</p>
                         </div>
                       )}
                       {f.when_not_to_use && (
-                        <div style={{ marginTop: 10, background: "#fdf3e3", border: "1px solid #f5e0ab", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#92400e" }}>When not to use it</div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.when_not_to_use}</p>
+                        <div style={{ marginTop: 10, background: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.30)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#fbbf24" }}>When not to use it</div>
+                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-gray2)", textWrap: "pretty" as const }}>{f.when_not_to_use}</p>
                         </div>
                       )}
                       {pitfalls.length > 0 && (
-                        <div style={{ marginTop: 10, background: "#fdeaea", border: "1px solid #f6c8c8", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#991b1b" }}>Common pitfalls</div>
+                        <div style={{ marginTop: 10, background: "rgba(248, 113, 113, 0.08)", border: "1px solid rgba(248, 113, 113, 0.30)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#f87171" }}>Common pitfalls</div>
                           <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 5 }}>
                             {pitfalls.map((p, i) => (
-                              <div key={i} style={{ fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827" }}>
+                              <div key={i} style={{ fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-gray2)" }}>
                                 • {p}
                               </div>
                             ))}
@@ -433,9 +433,9 @@ export default function FrameworksPage() {
                         </div>
                       )}
                       {hasExample && (
-                        <div style={{ marginTop: 12, background: "#f0f7ff", border: "1px solid #bfdbfe", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
-                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#1d4ed8" }}>Example</div>
-                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "#111827", textWrap: "pretty" as const }}>{f.example}</p>
+                        <div style={{ marginTop: 12, background: "rgba(96, 165, 250, 0.08)", border: "1px solid rgba(96, 165, 250, 0.30)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#60a5fa" }}>Example</div>
+                          <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-gray2)", textWrap: "pretty" as const }}>{f.example}</p>
                         </div>
                       )}
                     </div>
