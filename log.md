@@ -5,6 +5,59 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-03 — Design audit + 4 fixes: blue/orange accent conflict, light callouts, loading states
+**Phase:** M4 (frontend fixes) · **Type:** design fix
+
+**What changed:** Ran a visual/color design audit (gstack's design-review methodology, scoped
+to color/design only per Aalhad's request — navigation/IA out of scope) across Home, Frameworks,
+Role, Guesstimates, and Tone Shifter. Report + before/after screenshots in
+`design/design-audit-2026-11-03/`. Fixed 4 of 6 findings, one commit per finding, CSS/component-only:
+- `FINDING-001`: `.fc-icon` badges (the icon circles on every "What you'll find here" block)
+  were hardcoded blue (`#2563eb`) while every other accent on the site is orange (`#ff6b35`) -
+  the `icon-blue/-purple/-green` modifier classes in markup never actually changed the
+  background, so every badge rendered identically blue regardless of its class. Unified to orange.
+- `FINDING-002`: the 4 framework-detail callouts ("When to use it," "When not to use it,"
+  "Common pitfalls," "Example" - `FrameworksPage.tsx`) rendered as light pastel cards with
+  near-black text inside an otherwise all-charcoal page. Converted to tinted-dark variants,
+  keeping each one's semantic hue (green/amber/red/blue).
+- `FINDING-003`: Role page's "Exit opportunities" bullets used `var(--green)` while "Skills
+  required" and "Career progression" (same page, same visual role) both use `var(--indigo)`
+  (actually `#ff6b35` - orange, legacy variable name from a prior theme). Unified to match.
+- `FINDING-004`: Guesstimates ("Loading a problem…") and Role ("Loading role info…") showed
+  plain text with no visual affordance during live Gemini calls. Reused the existing
+  `IndeterminateProgressBar` component (already orange, already `prefers-reduced-motion`-aware)
+  rather than building new loading UI.
+
+**Deferred (not fixed):** a broken `□□□□` glyph and a stray unlabeled "30" in one Guesstimates
+problem's casebook-extracted content - these are ingestion/data issues, not frontend styling,
+and need `ingestion-engineer` to trace, not a CSS fix. Also deferred: a 34-node ASCII diagram
+that reads as dense/overwhelming (content density, not color), the generic stock-illustration
+hero on Home (needs a new asset decision from Aalhad), and borderline (~4.3:1) placeholder-text
+contrast on Tone Shifter's inputs (decorative, not body content; fixing it sitewide is a bigger
+token change than the finding warrants).
+
+**Why:** Aalhad's friends flagged "the UI could be fixed," specifically color choice, after
+seeing the live site. The blue/orange conflict and the light-on-dark callout boxes were the two
+most visually loud, easiest-to-confirm issues in that feedback.
+
+**Cost:** $0 - no API calls, CSS/inline-style and one shared-component reuse only.
+
+**Files:** `frontend-react/src/styles/global.css`, `frontend-react/src/pages/FrameworksPage.tsx`,
+`frontend-react/src/pages/RolePage.tsx`, `frontend-react/src/pages/GuesstimatesPage.tsx`.
+
+**Proof:** Before/after screenshots in `design/design-audit-2026-11-03/screenshots/` and
+`screenshots-after/`. Re-checked console on all 4 touched pages post-fix - no new errors, only
+a pre-existing unrelated font-preload warning.
+
+**Undo:** `git revert` the 4 `style(design): FINDING-00N` commits individually - each is a
+single, isolated change.
+
+**Open issues:** The 2 deferred content/data findings and the hero-illustration/placeholder-
+contrast polish items remain open; see `design/design-audit-2026-11-03/design-audit-placewise.md`
+fix-status table for the full breakdown.
+
+---
+
 ## 2026-11-03 — R7b eval: paraphrase layer tested live against the 39-question set, R7b marked done
 **Phase:** R7b · **Type:** eval
 

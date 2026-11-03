@@ -1,5 +1,20 @@
 # PlaceWise Design Audit — 2026-11-03
 
+## Fix status (2026-11-03, same day)
+
+4 of 6 findings fixed, CSS/component-only, one commit per finding, verified in-browser
+(screenshots in `screenshots-after/`), no new console errors introduced.
+
+| Finding | Status | Commit |
+|---|---|---|
+| HIGH — blue vs orange accent conflict | **Fixed** | `style(design): FINDING-001` |
+| HIGH — white EXAMPLE callout breaks dark theme | **Fixed** (all 4 callout variants, not just Example) | `style(design): FINDING-002` |
+| MEDIUM — inconsistent Role page bullet colors | **Fixed** | `style(design): FINDING-003` |
+| MEDIUM — unstyled loading states | **Fixed** (Guesstimates + Role; SkillPage's progress bar turned out to already be correctly orange/animated — a compressed screenshot made it look gray in the original audit) | `style(design): FINDING-004` |
+| MEDIUM — broken `□□□□` glyph in guesstimate content | **Deferred** — lives in casebook-extracted content (ingestion pipeline), not frontend styling. Needs `ingestion-engineer` to trace, not a CSS fix. |  |
+| LOW — 34-node ASCII diagram density, stray "30", generic hero illustration, placeholder contrast | **Deferred** — diagram density and the stray number are content/data from ingestion, not styling; the hero illustration needs a new asset decision from Aalhad; placeholder contrast (~4.3:1) is borderline but it's decorative text, not body content, and changing it is a sitewide token change out of proportion to the finding. |
+
+
 Scope: visual design and color only, per owner request (friends flagged "the UI could be fixed,"
 specifically color choice). Navigation/IA explicitly out of scope. No fixes applied — findings only.
 
