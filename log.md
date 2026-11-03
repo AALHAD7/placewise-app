@@ -5,6 +5,62 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-04 — ASCII diagrams for the 13 casebook-discovered frameworks
+
+**Phase:** M4 (frontend fixes) · **Type:** feature
+
+**What changed:** User noticed the 14 newly-discovered frameworks had no ASCII diagram on the
+Frameworks page, unlike the original 42. Investigated: diagrams there aren't generated per-
+framework - they're a hand-written lookup table (`FRAMEWORK_ASCII_MAP` +
+`getAsciiDiagramForFramework` in `frontend-react/src/lib/asciiDiagrams.ts`), keyword-matched
+to a framework name, with no entry for anything added after the original set. Value Chain
+Analysis already had a pre-existing entry (lucky coincidence); the other 13 had none.
+
+Built `backend/scripts/generateFrameworkDiagrams.js`: for each of the 13, Gemini drafts a
+*structured* diagram (issue_tree / flow / matrix - not raw ASCII characters) grounded strictly
+in that framework's already-verified `description`/`example`/`steps`/`pitfalls` already in the
+`frameworks` table (no new casebook lookup). The structure is then rendered to ASCII by the
+same deterministic renderer functions (`treeToAscii`/`flowToAscii`/`matrixToAscii`) the site
+already uses elsewhere (e.g. Guesstimates' FLOW diagrams) - guaranteed-aligned box-drawing art
+from code, not an LLM hand-painting characters (the fragile approach that was the actual
+source of past misaligned-ASCII bugs on this project per `Mark Down Files/DOCUMENT.md`).
+
+**Cleanup needed after generation:** two issues caught on review before shipping -
+(1) a couple of flow diagrams double-numbered their steps (model included "1. Step name" in
+the label text on top of the renderer's own `(1)` numbering) - stripped programmatically;
+(2) the Managerial Grid matrix's axis labels came back as arrays instead of strings (the model
+not matching the expected shape) - rendered as a mashed `"Low Concern,High Concern"` string;
+corrected by hand to clean single-string axis labels, re-rendered.
+
+**Result:** 13/13 diagrams generated, reviewed, and wired in - 12 as `flow`/`issue_tree`
+(Dividend Discount Model, DuPont Analysis, Treasury Stock Method, Precedent Transaction
+Analysis, Residual Income Model, ADDIE Model, Harvard vs Michigan Models of HRM, Kirkpatrick
+Model, MoSCoW Method, Freemium Model, Net Promoter Score, Customer Satisfaction Score), 1 as a
+`matrix` (Managerial Grid, a genuine 2x2). Added as new `FRAMEWORK_ASCII_MAP` entries plus a
+matching rule each in `getAsciiDiagramForFramework` - same mechanism, same file, as the
+existing 42.
+
+**Why:** Direct response to user: "for all the new frameworks, I can't see an ASCII format
+diagram... I think if you can add them in the website, it would be really helpful."
+
+**Cost:** ~$0 - flash-lite tier, 13 generation calls.
+
+**Files:** `backend/scripts/generateFrameworkDiagrams.js` (new, read-only - never touches the
+database or frontend source directly), `frontend-react/src/lib/asciiDiagrams.ts` (13 new map
+entries + 13 new matching rules), `content/new-frameworks-2026-11-03/ascii-diagrams.json`
+(generated structures + rendered ASCII, for reference).
+
+**Proof:** `npx tsc --noEmit` clean. Verified live on the running site: DuPont Analysis's
+3-branch ROE tree and Managerial Grid's 2x2 matrix both render with correct box-drawing
+alignment, same visual style as the original 42's diagrams. Console checked - no new errors.
+
+**Undo:** Revert the `frontend-react/src/lib/asciiDiagrams.ts` changes (git) - this touched no
+database rows, so there's nothing to restore there.
+
+**Open issues:** None.
+
+---
+
 ## 2026-11-03 — Multi-casebook synthesis refinement for discovered frameworks (56 → 57)
 **Phase:** M4 (frontend fixes) · **Type:** content fix
 

@@ -1,0 +1,584 @@
+[
+  {
+    "name": "Dividend Discount Model (Gordon Growth Model)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Dividend Discount Model Workflow",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Project Earnings to EPS"
+        },
+        {
+          "id": "step2",
+          "label": "Determine Dividend Payout Ratio"
+        },
+        {
+          "id": "step3",
+          "label": "Calculate Projected Future Dividends"
+        },
+        {
+          "id": "step4",
+          "label": "Determine Cost of Equity"
+        },
+        {
+          "id": "step5",
+          "label": "Estimate Long-Term Growth Rate"
+        },
+        {
+          "id": "step6",
+          "label": "Discount to Present Value"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        },
+        {
+          "from": "step5",
+          "to": "step6"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Project Earnings to EPS\n\u2502   \u2514\u2500\u2500\u25ba Determine Dividend Payout Ratio\n\u250c\u2500\u2500 (2) Determine Dividend Payout Ratio\n\u2502   \u2514\u2500\u2500\u25ba Calculate Projected Future Dividends\n\u250c\u2500\u2500 (3) Calculate Projected Future Dividends\n\u2502   \u2514\u2500\u2500\u25ba Determine Cost of Equity\n\u250c\u2500\u2500 (4) Determine Cost of Equity\n\u2502   \u2514\u2500\u2500\u25ba Estimate Long-Term Growth Rate\n\u250c\u2500\u2500 (5) Estimate Long-Term Growth Rate\n\u2502   \u2514\u2500\u2500\u25ba Discount to Present Value\n\u250c\u2500\u2500 (6) Discount to Present Value"
+  },
+  {
+    "name": "DuPont Analysis",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "DuPont Analysis (ROE Breakdown)",
+    "data": {
+      "label": "Return on Equity (ROE)",
+      "children": [
+        {
+          "label": "Net Profit Margin",
+          "children": [
+            {
+              "label": "Net Income / Sales"
+            },
+            {
+              "label": "Operational Profitability"
+            }
+          ]
+        },
+        {
+          "label": "Asset Turnover Ratio",
+          "children": [
+            {
+              "label": "Sales / Average Assets"
+            },
+            {
+              "label": "Asset Efficiency"
+            }
+          ]
+        },
+        {
+          "label": "Equity Multiplier",
+          "children": [
+            {
+              "label": "Average Assets / Average Equity"
+            },
+            {
+              "label": "Financial Leverage"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Return on Equity (ROE) ]\n\u251c\u2500\u2500 [ Net Profit Margin ]\n\u2502   \u251c\u2500\u2500 [ Net Income / Sales ]\n\u2502   \u2514\u2500\u2500 [ Operational Profitability ]\n\u251c\u2500\u2500 [ Asset Turnover Ratio ]\n\u2502   \u251c\u2500\u2500 [ Sales / Average Assets ]\n\u2502   \u2514\u2500\u2500 [ Asset Efficiency ]\n\u2514\u2500\u2500 [ Equity Multiplier ]\n    \u251c\u2500\u2500 [ Average Assets / Average Equity ]\n    \u2514\u2500\u2500 [ Financial Leverage ]"
+  },
+  {
+    "name": "Treasury Stock Method",
+    "status": "ok",
+    "type": "flow",
+    "title": "Treasury Stock Method",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Assume exercise of in-the-money options"
+        },
+        {
+          "id": "step2",
+          "label": "Determine total cash proceeds"
+        },
+        {
+          "id": "step3",
+          "label": "Calculate repurchased shares"
+        },
+        {
+          "id": "step4",
+          "label": "Find net incremental shares"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Assume exercise of in-the-money options\n\u2502   \u2514\u2500\u2500\u25ba Determine total cash proceeds\n\u250c\u2500\u2500 (2) Determine total cash proceeds\n\u2502   \u2514\u2500\u2500\u25ba Calculate repurchased shares\n\u250c\u2500\u2500 (3) Calculate repurchased shares\n\u2502   \u2514\u2500\u2500\u25ba Find net incremental shares\n\u250c\u2500\u2500 (4) Find net incremental shares"
+  },
+  {
+    "name": "Precedent Transaction Analysis",
+    "status": "ok",
+    "type": "flow",
+    "title": "Precedent Transaction Analysis",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Identify Transactions"
+        },
+        {
+          "id": "step2",
+          "label": "Find Information"
+        },
+        {
+          "id": "step3",
+          "label": "Calculate Multiples"
+        },
+        {
+          "id": "step4",
+          "label": "Check and Interpret Results"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Identify Transactions\n\u2502   \u2514\u2500\u2500\u25ba Find Information\n\u250c\u2500\u2500 (2) Find Information\n\u2502   \u2514\u2500\u2500\u25ba Calculate Multiples\n\u250c\u2500\u2500 (3) Calculate Multiples\n\u2502   \u2514\u2500\u2500\u25ba Check and Interpret Results\n\u250c\u2500\u2500 (4) Check and Interpret Results"
+  },
+  {
+    "name": "Residual Income Model",
+    "status": "ok",
+    "type": "flow",
+    "title": "Residual Income Model",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Identify current book value"
+        },
+        {
+          "id": "step2",
+          "label": "Calculate annual residual income"
+        },
+        {
+          "id": "step3",
+          "label": "Discount residual income to PV"
+        },
+        {
+          "id": "step4",
+          "label": "Calculate terminal value"
+        },
+        {
+          "id": "step5",
+          "label": "Sum book value and PVs"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Identify current book value\n\u2502   \u2514\u2500\u2500\u25ba Calculate annual residual income\n\u250c\u2500\u2500 (2) Calculate annual residual income\n\u2502   \u2514\u2500\u2500\u25ba Discount residual income to PV\n\u250c\u2500\u2500 (3) Discount residual income to PV\n\u2502   \u2514\u2500\u2500\u25ba Calculate terminal value\n\u250c\u2500\u2500 (4) Calculate terminal value\n\u2502   \u2514\u2500\u2500\u25ba Sum book value and PVs\n\u250c\u2500\u2500 (5) Sum book value and PVs"
+  },
+  {
+    "name": "ADDIE Model",
+    "status": "ok",
+    "type": "flow",
+    "title": "ADDIE Model",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Analysis"
+        },
+        {
+          "id": "step2",
+          "label": "Design"
+        },
+        {
+          "id": "step3",
+          "label": "Development"
+        },
+        {
+          "id": "step4",
+          "label": "Implementation"
+        },
+        {
+          "id": "step5",
+          "label": "Evaluation"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Analysis\n\u2502   \u2514\u2500\u2500\u25ba Design\n\u250c\u2500\u2500 (2) Design\n\u2502   \u2514\u2500\u2500\u25ba Development\n\u250c\u2500\u2500 (3) Development\n\u2502   \u2514\u2500\u2500\u25ba Implementation\n\u250c\u2500\u2500 (4) Implementation\n\u2502   \u2514\u2500\u2500\u25ba Evaluation\n\u250c\u2500\u2500 (5) Evaluation"
+  },
+  {
+    "name": "Harvard vs Michigan Models of HRM",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "Harvard vs Michigan Models of HRM",
+    "data": {
+      "label": "HRM Models",
+      "children": [
+        {
+          "label": "Harvard Model",
+          "children": [
+            {
+              "label": "Employee Interests"
+            },
+            {
+              "label": "Stakeholder Impacts"
+            }
+          ]
+        },
+        {
+          "label": "Michigan Model",
+          "children": [
+            {
+              "label": "Strategic Fit"
+            },
+            {
+              "label": "Corporate Goals"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ HRM Models ]\n\u251c\u2500\u2500 [ Harvard Model ]\n\u2502   \u251c\u2500\u2500 [ Employee Interests ]\n\u2502   \u2514\u2500\u2500 [ Stakeholder Impacts ]\n\u2514\u2500\u2500 [ Michigan Model ]\n    \u251c\u2500\u2500 [ Strategic Fit ]\n    \u2514\u2500\u2500 [ Corporate Goals ]"
+  },
+  {
+    "name": "Kirkpatrick Model",
+    "status": "ok",
+    "type": "flow",
+    "title": "Kirkpatrick Model",
+    "data": {
+      "nodes": [
+        {
+          "id": "1",
+          "label": "Level 1: Reaction"
+        },
+        {
+          "id": "2",
+          "label": "Level 2: Learning"
+        },
+        {
+          "id": "3",
+          "label": "Level 3: Behavior"
+        },
+        {
+          "id": "4",
+          "label": "Level 4: Results"
+        }
+      ],
+      "edges": [
+        {
+          "from": "1",
+          "to": "2"
+        },
+        {
+          "from": "2",
+          "to": "3"
+        },
+        {
+          "from": "3",
+          "to": "4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Level 1: Reaction\n\u2502   \u2514\u2500\u2500\u25ba Level 2: Learning\n\u250c\u2500\u2500 (2) Level 2: Learning\n\u2502   \u2514\u2500\u2500\u25ba Level 3: Behavior\n\u250c\u2500\u2500 (3) Level 3: Behavior\n\u2502   \u2514\u2500\u2500\u25ba Level 4: Results\n\u250c\u2500\u2500 (4) Level 4: Results"
+  },
+  {
+    "name": "Managerial Grid (Blake-Mouton)",
+    "status": "ok",
+    "type": "matrix",
+    "title": "Managerial Grid (Blake-Mouton)",
+    "data": {
+      "xAxis": "Concern for People",
+      "yAxis": "Concern for Production",
+      "cols": [
+        "Low People",
+        "High People"
+      ],
+      "rows": [
+        "High Production",
+        "Low Production"
+      ],
+      "cells": [
+        [
+          "Authority-Compliance (9,1)",
+          "Team Management (9,9)"
+        ],
+        [
+          "Impoverished Management (1,1)",
+          "Country Club Management (1,9)"
+        ]
+      ]
+    },
+    "ascii": "                   X-axis: Concern for People\nY-axis: Concern for Production\n                 \u2502 Low People                    \u2502 High People                   \u2502\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\nHigh Production  \u2502 Authority-Compliance (9,1)    \u2502 Team Management (9,9)         \u2502\nLow Production   \u2502 Impoverished Management (1,1) \u2502 Country Club Management (1,9) \u2502"
+  },
+  {
+    "name": "MoSCoW Method",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "MoSCoW Method Prioritization",
+    "data": {
+      "label": "Feature Prioritization",
+      "children": [
+        {
+          "label": "Must-Have",
+          "children": [
+            {
+              "label": "Vital for launch"
+            },
+            {
+              "label": "Non-negotiable"
+            }
+          ]
+        },
+        {
+          "label": "Should-Have",
+          "children": [
+            {
+              "label": "Important"
+            },
+            {
+              "label": "Not vital for day-one"
+            }
+          ]
+        },
+        {
+          "label": "Could-Have",
+          "children": [
+            {
+              "label": "Nice-to-have addition"
+            }
+          ]
+        },
+        {
+          "label": "Won't-Have",
+          "children": [
+            {
+              "label": "Out of scope for now"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Feature Prioritization ]\n\u251c\u2500\u2500 [ Must-Have ]\n\u2502   \u251c\u2500\u2500 [ Vital for launch ]\n\u2502   \u2514\u2500\u2500 [ Non-negotiable ]\n\u251c\u2500\u2500 [ Should-Have ]\n\u2502   \u251c\u2500\u2500 [ Important ]\n\u2502   \u2514\u2500\u2500 [ Not vital for day-one ]\n\u251c\u2500\u2500 [ Could-Have ]\n\u2502   \u2514\u2500\u2500 [ Nice-to-have addition ]\n\u2514\u2500\u2500 [ Won't-Have ]\n    \u2514\u2500\u2500 [ Out of scope for now ]"
+  },
+  {
+    "name": "Freemium Model",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "Freemium Model Breakdown",
+    "data": {
+      "label": "Freemium Strategy",
+      "children": [
+        {
+          "label": "Product Offerings",
+          "children": [
+            {
+              "label": "Free Tier Scope (Core)"
+            },
+            {
+              "label": "Premium Features (Paid)"
+            }
+          ]
+        },
+        {
+          "label": "Business Metrics",
+          "children": [
+            {
+              "label": "Conversion Rates"
+            },
+            {
+              "label": "Monetization Channels"
+            }
+          ]
+        },
+        {
+          "label": "Key Pitfalls",
+          "children": [
+            {
+              "label": "Over-giving Value"
+            },
+            {
+              "label": "Conversion Failure"
+            },
+            {
+              "label": "High Free User Costs"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Freemium Strategy ]\n\u251c\u2500\u2500 [ Product Offerings ]\n\u2502   \u251c\u2500\u2500 [ Free Tier Scope (Core) ]\n\u2502   \u2514\u2500\u2500 [ Premium Features (Paid) ]\n\u251c\u2500\u2500 [ Business Metrics ]\n\u2502   \u251c\u2500\u2500 [ Conversion Rates ]\n\u2502   \u2514\u2500\u2500 [ Monetization Channels ]\n\u2514\u2500\u2500 [ Key Pitfalls ]\n    \u251c\u2500\u2500 [ Over-giving Value ]\n    \u251c\u2500\u2500 [ Conversion Failure ]\n    \u2514\u2500\u2500 [ High Free User Costs ]"
+  },
+  {
+    "name": "Net Promoter Score",
+    "status": "ok",
+    "type": "flow",
+    "title": "Net Promoter Score Calculation Flow",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Survey customers (0-10 scale)"
+        },
+        {
+          "id": "step2",
+          "label": "Categorize promoters (9-10)"
+        },
+        {
+          "id": "step3",
+          "label": "Categorize neutral (7-8)"
+        },
+        {
+          "id": "step4",
+          "label": "Categorize detractors (0-6)"
+        },
+        {
+          "id": "step5",
+          "label": "Calculate score (Promoters - Detractors)"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Survey customers (0-10 scale)\n\u2502   \u2514\u2500\u2500\u25ba Categorize promoters (9-10)\n\u250c\u2500\u2500 (2) Categorize promoters (9-10)\n\u2502   \u2514\u2500\u2500\u25ba Categorize neutral (7-8)\n\u250c\u2500\u2500 (3) Categorize neutral (7-8)\n\u2502   \u2514\u2500\u2500\u25ba Categorize detractors (0-6)\n\u250c\u2500\u2500 (4) Categorize detractors (0-6)\n\u2502   \u2514\u2500\u2500\u25ba Calculate score (Promoters - Detractors)\n\u250c\u2500\u2500 (5) Calculate score (Promoters - Detractors)"
+  },
+  {
+    "name": "Customer Satisfaction Score (CSAT)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Customer Satisfaction Score (CSAT)",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Identify segment or channel"
+        },
+        {
+          "id": "step2",
+          "label": "Map customer journey"
+        },
+        {
+          "id": "step3",
+          "label": "Isolate operational pain points"
+        },
+        {
+          "id": "step4",
+          "label": "Analyze internal vs external factors"
+        },
+        {
+          "id": "step5",
+          "label": "Formulate targeted recommendations"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Identify segment or channel\n\u2502   \u2514\u2500\u2500\u25ba Map customer journey\n\u250c\u2500\u2500 (2) Map customer journey\n\u2502   \u2514\u2500\u2500\u25ba Isolate operational pain points\n\u250c\u2500\u2500 (3) Isolate operational pain points\n\u2502   \u2514\u2500\u2500\u25ba Analyze internal vs external factors\n\u250c\u2500\u2500 (4) Analyze internal vs external factors\n\u2502   \u2514\u2500\u2500\u25ba Formulate targeted recommendations\n\u250c\u2500\u2500 (5) Formulate targeted recommendations"
+  }
+]

@@ -888,6 +888,171 @@ Markets      ├─────────────────────�
  │ Logistics                   Logistics     & Sales                │
  └──────────────────────────────────────────────────────────────────┘
                  ════════════════════════════════════►  MARGIN`
+  },
+
+  ddm: {
+    title: "Dividend Discount Model Workflow",
+    ascii: `┌── (1) Project Earnings to EPS
+│   └──► Determine Dividend Payout Ratio
+┌── (2) Determine Dividend Payout Ratio
+│   └──► Calculate Projected Future Dividends
+┌── (3) Calculate Projected Future Dividends
+│   └──► Determine Cost of Equity
+┌── (4) Determine Cost of Equity
+│   └──► Estimate Long-Term Growth Rate
+┌── (5) Estimate Long-Term Growth Rate
+│   └──► Discount to Present Value
+┌── (6) Discount to Present Value`
+  },
+
+  dupont: {
+    title: "DuPont Analysis (ROE Breakdown)",
+    ascii: `[ Return on Equity (ROE) ]
+├── [ Net Profit Margin ]
+│   ├── [ Net Income / Sales ]
+│   └── [ Operational Profitability ]
+├── [ Asset Turnover Ratio ]
+│   ├── [ Sales / Average Assets ]
+│   └── [ Asset Efficiency ]
+└── [ Equity Multiplier ]
+    ├── [ Average Assets / Average Equity ]
+    └── [ Financial Leverage ]`
+  },
+
+  treasury_stock: {
+    title: "Treasury Stock Method",
+    ascii: `┌── (1) Assume exercise of in-the-money options
+│   └──► Determine total cash proceeds
+┌── (2) Determine total cash proceeds
+│   └──► Calculate repurchased shares
+┌── (3) Calculate repurchased shares
+│   └──► Find net incremental shares
+┌── (4) Find net incremental shares`
+  },
+
+  precedent_transactions: {
+    title: "Precedent Transaction Analysis",
+    ascii: `┌── (1) Identify Transactions
+│   └──► Find Information
+┌── (2) Find Information
+│   └──► Calculate Multiples
+┌── (3) Calculate Multiples
+│   └──► Check and Interpret Results
+┌── (4) Check and Interpret Results`
+  },
+
+  residual_income: {
+    title: "Residual Income Model",
+    ascii: `┌── (1) Identify current book value
+│   └──► Calculate annual residual income
+┌── (2) Calculate annual residual income
+│   └──► Discount residual income to PV
+┌── (3) Discount residual income to PV
+│   └──► Calculate terminal value
+┌── (4) Calculate terminal value
+│   └──► Sum book value and PVs
+┌── (5) Sum book value and PVs`
+  },
+
+  addie: {
+    title: "ADDIE Model",
+    ascii: `┌── (1) Analysis
+│   └──► Design
+┌── (2) Design
+│   └──► Development
+┌── (3) Development
+│   └──► Implementation
+┌── (4) Implementation
+│   └──► Evaluation
+┌── (5) Evaluation`
+  },
+
+  harvard_michigan: {
+    title: "Harvard vs Michigan Models of HRM",
+    ascii: `[ HRM Models ]
+├── [ Harvard Model ]
+│   ├── [ Employee Interests ]
+│   └── [ Stakeholder Impacts ]
+└── [ Michigan Model ]
+    ├── [ Strategic Fit ]
+    └── [ Corporate Goals ]`
+  },
+
+  kirkpatrick: {
+    title: "Kirkpatrick Model",
+    ascii: `┌── (1) Level 1: Reaction
+│   └──► Level 2: Learning
+┌── (2) Level 2: Learning
+│   └──► Level 3: Behavior
+┌── (3) Level 3: Behavior
+│   └──► Level 4: Results
+┌── (4) Level 4: Results`
+  },
+
+  managerial_grid: {
+    title: "Managerial Grid (Blake-Mouton)",
+    ascii: `                   X-axis: Concern for People
+Y-axis: Concern for Production
+                 │ Low People                    │ High People                   │
+─────────────────┼───────────────────────────────┼───────────────────────────────┤
+High Production  │ Authority-Compliance (9,1)    │ Team Management (9,9)         │
+Low Production   │ Impoverished Management (1,1) │ Country Club Management (1,9) │`
+  },
+
+  moscow: {
+    title: "MoSCoW Method Prioritization",
+    ascii: `[ Feature Prioritization ]
+├── [ Must-Have ]
+│   ├── [ Vital for launch ]
+│   └── [ Non-negotiable ]
+├── [ Should-Have ]
+│   ├── [ Important ]
+│   └── [ Not vital for day-one ]
+├── [ Could-Have ]
+│   └── [ Nice-to-have addition ]
+└── [ Won't-Have ]
+    └── [ Out of scope for now ]`
+  },
+
+  freemium: {
+    title: "Freemium Model Breakdown",
+    ascii: `[ Freemium Strategy ]
+├── [ Product Offerings ]
+│   ├── [ Free Tier Scope (Core) ]
+│   └── [ Premium Features (Paid) ]
+├── [ Business Metrics ]
+│   ├── [ Conversion Rates ]
+│   └── [ Monetization Channels ]
+└── [ Key Pitfalls ]
+    ├── [ Over-giving Value ]
+    ├── [ Conversion Failure ]
+    └── [ High Free User Costs ]`
+  },
+
+  nps: {
+    title: "Net Promoter Score Calculation Flow",
+    ascii: `┌── (1) Survey customers (0-10 scale)
+│   └──► Categorize promoters (9-10)
+┌── (2) Categorize promoters (9-10)
+│   └──► Categorize neutral (7-8)
+┌── (3) Categorize neutral (7-8)
+│   └──► Categorize detractors (0-6)
+┌── (4) Categorize detractors (0-6)
+│   └──► Calculate score (Promoters - Detractors)
+┌── (5) Calculate score (Promoters - Detractors)`
+  },
+
+  csat: {
+    title: "Customer Satisfaction Score (CSAT)",
+    ascii: `┌── (1) Identify segment or channel
+│   └──► Map customer journey
+┌── (2) Map customer journey
+│   └──► Isolate operational pain points
+┌── (3) Isolate operational pain points
+│   └──► Analyze internal vs external factors
+┌── (4) Analyze internal vs external factors
+│   └──► Formulate targeted recommendations
+┌── (5) Formulate targeted recommendations`
   }
 };
 
@@ -976,6 +1141,22 @@ export function getAsciiDiagramForFramework(frameworkName: string): { title: str
   if (norm.includes("7s") || norm.includes("mckinsey")) return FRAMEWORK_ASCII_MAP["7s"];
   if (norm.includes("9 box") || norm.includes("nine box")) return FRAMEWORK_ASCII_MAP.nine_box;
   if (norm.includes("okr")) return FRAMEWORK_ASCII_MAP.okr;
+
+  // Added for the 13 frameworks discovered in the casebook-discovery pass (log.md,
+  // 2026-11-03) that didn't match any existing rule above.
+  if (norm.includes("dividend discount") || norm.includes("gordon growth")) return FRAMEWORK_ASCII_MAP.ddm;
+  if (norm.includes("dupont")) return FRAMEWORK_ASCII_MAP.dupont;
+  if (norm.includes("treasury stock")) return FRAMEWORK_ASCII_MAP.treasury_stock;
+  if (norm.includes("precedent transaction")) return FRAMEWORK_ASCII_MAP.precedent_transactions;
+  if (norm.includes("residual income")) return FRAMEWORK_ASCII_MAP.residual_income;
+  if (norm.includes("addie")) return FRAMEWORK_ASCII_MAP.addie;
+  if (norm.includes("harvard") && norm.includes("michigan")) return FRAMEWORK_ASCII_MAP.harvard_michigan;
+  if (norm.includes("kirkpatrick")) return FRAMEWORK_ASCII_MAP.kirkpatrick;
+  if (norm.includes("managerial grid") || norm.includes("blake") || norm.includes("mouton")) return FRAMEWORK_ASCII_MAP.managerial_grid;
+  if (norm.includes("moscow")) return FRAMEWORK_ASCII_MAP.moscow;
+  if (norm.includes("freemium")) return FRAMEWORK_ASCII_MAP.freemium;
+  if (norm.includes("net promoter") || norm.includes(" nps") || norm.startsWith("nps")) return FRAMEWORK_ASCII_MAP.nps;
+  if (norm.includes("csat") || norm.includes("customer satisfaction score")) return FRAMEWORK_ASCII_MAP.csat;
 
   return null;
 }
