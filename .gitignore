@@ -35,3 +35,8 @@ backend/ingestion/*_output.json
 backend/ingestion/old_chunks_*.json
 backend/ingestion/out/
 backend/ingestion/review/
+
+# scripts/backups/ is scratch output for one-off content scripts (e.g.
+# simplifyFrameworkJargon.js) - the backup/diff that matters for a given run is
+# copied into a reviewable repo folder (e.g. content/<run>/) instead of living here.
+backend/scripts/backups/

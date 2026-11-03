@@ -5,6 +5,60 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-03 — Jargon simplification pass: Finance domain (10/10 frameworks), pilot before site-wide
+**Phase:** M4 (frontend fixes) · **Type:** content fix
+
+**What changed:** Built `backend/scripts/simplifyFrameworkJargon.js` (+ `restoreFrameworksBackup.js`
+for one-step revert) and ran it against all 10 Finance frameworks in the `frameworks` table
+(student-facing Frameworks page content). Whole-framework Gemini rewrite + faithfulness/
+precision/restraint judge, same fail-closed shape as R7b's paraphrase pipeline
+(`consultingRetrieval.js`) - a framework that fails the judge (up to 6 attempts, judge's own
+rejection reason fed back into the next attempt) keeps its original text untouched. 10/10
+Finance frameworks updated; full before/after and the pre-change backup live in
+`content/jargon-simplification-2026-11-03/`.
+
+**Why:** User feedback (via friends who saw the live site) that Frameworks content, especially
+Finance, uses jargon too dense for a general MBA reader. Concrete example given: "Equity Value
+= Diluted Share Price × Fully Diluted Shares Outstanding" - their suggested fix ("...total
+outstanding shares") would have been a precision loss (fully diluted shares outstanding is a
+different, larger number than basic shares outstanding - it includes options, warrants, and
+convertibles). Went with "keep the precise term, add a short clarification" instead, enforced
+by the judge prompt explicitly, not just "simplify."
+
+**Prompt iteration (in-session, not re-run):** v1 processed each field/array item
+independently and over-defined everything, including basic vocabulary ("balance sheet" got a
+definition) and re-defined the same term repeatedly - caught in a dry run before any DB write.
+v2 moved to one whole-framework rewrite call with an explicit, exhaustive exempt list (only
+balance sheet/income statement/cash flow statement/assets/liabilities/equity/revenue/profit/
+debt/market/shares are assumed familiar - everything else gets clarified once) and an explicit
+instruction that finance specialists not noticing a difference is the intended outcome, not a
+bug - this content is written for the general-MBA reader, not the specialist who already knows
+the vocabulary.
+
+**Cost:** ~$0 - flash-lite tier only, well inside free-tier quota (10 frameworks × up to 6
+rewrite+judge attempt pairs each, actual average ~1.6 attempts).
+
+**Files:** `backend/scripts/simplifyFrameworkJargon.js` (new),
+`backend/scripts/restoreFrameworksBackup.js` (new), `frameworks` table (10 rows updated),
+`content/jargon-simplification-2026-11-03/` (report, diff, pre-change backup).
+
+**Proof:** `content/jargon-simplification-2026-11-03/finance-diff.json` has every field's
+before/after text. Verified live on the running site post-apply (Frameworks -> Finance ->
+Enterprise Value & Equity Value (The Bridge) -> Review): the exact example from the feedback
+now reads "...Fully Diluted Shares Outstanding (total shares including all potential options,
+warrants, and convertibles)..." in both the step list and the ASCII diagram. Console checked
+post-apply - no new errors.
+
+**Undo:** `node backend/scripts/restoreFrameworksBackup.js content/jargon-simplification-2026-11-03/finance-backup-pre-simplify.json`
+restores all 10 Finance rows to their exact pre-change text in one step.
+
+**Open issues:** Scoped to Finance only as a pilot (Aalhad's choice, so tone/quality could be
+reviewed before running everywhere) - the same script is ready to run on the other 32
+frameworks (Consulting 7, Prodman 8, Marketing:Sales 8, General Management 6, HR 3) pending
+Aalhad's go-ahead on this pilot's output.
+
+---
+
 ## 2026-11-03 — Design audit + 4 fixes: blue/orange accent conflict, light callouts, loading states
 **Phase:** M4 (frontend fixes) · **Type:** design fix
 
