@@ -1,0 +1,2746 @@
+[
+  {
+    "name": "3 Financial Statements Integration",
+    "status": "ok",
+    "type": "flow",
+    "title": "3 Financial Statements Integration",
+    "data": {
+      "nodes": [
+        {
+          "id": "is",
+          "label": "Net Income flows to Balance Sheet and Cash Flow"
+        },
+        {
+          "id": "noncash",
+          "label": "Non-cash expenses added back on Cash Flow"
+        },
+        {
+          "id": "nwc",
+          "label": "Net Working Capital changes adjust Operating Cash"
+        },
+        {
+          "id": "capex",
+          "label": "Capex investments update PP&E on Balance Sheet"
+        },
+        {
+          "id": "cff",
+          "label": "Financing activities adjust Debt and Equity"
+        },
+        {
+          "id": "cash",
+          "label": "Net change in cash links to Ending Cash"
+        }
+      ],
+      "edges": [
+        {
+          "from": "is",
+          "to": "noncash"
+        },
+        {
+          "from": "noncash",
+          "to": "nwc"
+        },
+        {
+          "from": "nwc",
+          "to": "capex"
+        },
+        {
+          "from": "capex",
+          "to": "cff"
+        },
+        {
+          "from": "cff",
+          "to": "cash"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Net Income flows to Balance Sheet and Cash Flow\n\u2502   \u2514\u2500\u2500\u25ba Non-cash expenses added back on Cash Flow\n\u250c\u2500\u2500 (2) Non-cash expenses added back on Cash Flow\n\u2502   \u2514\u2500\u2500\u25ba Net Working Capital changes adjust Operating Cash\n\u250c\u2500\u2500 (3) Net Working Capital changes adjust Operating Cash\n\u2502   \u2514\u2500\u2500\u25ba Capex investments update PP&E on Balance Sheet\n\u250c\u2500\u2500 (4) Capex investments update PP&E on Balance Sheet\n\u2502   \u2514\u2500\u2500\u25ba Financing activities adjust Debt and Equity\n\u250c\u2500\u2500 (5) Financing activities adjust Debt and Equity\n\u2502   \u2514\u2500\u2500\u25ba Net change in cash links to Ending Cash\n\u250c\u2500\u2500 (6) Net change in cash links to Ending Cash"
+  },
+  {
+    "name": "3Cs Framework",
+    "status": "ok",
+    "type": "flow",
+    "title": "3Cs Framework Process",
+    "data": {
+      "nodes": [
+        {
+          "id": "company",
+          "label": "Company: Strengths, constraints, & motives"
+        },
+        {
+          "id": "customer",
+          "label": "Customer: End needs & changing demand"
+        },
+        {
+          "id": "competitor",
+          "label": "Competitor: Rival landscape & relative position"
+        },
+        {
+          "id": "pivot",
+          "label": "Pivot to specific deep-dive structure"
+        }
+      ],
+      "edges": [
+        {
+          "from": "company",
+          "to": "customer"
+        },
+        {
+          "from": "customer",
+          "to": "competitor"
+        },
+        {
+          "from": "competitor",
+          "to": "pivot"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Company: Strengths, constraints, & motives\n\u2502   \u2514\u2500\u2500\u25ba Customer: End needs & changing demand\n\u250c\u2500\u2500 (2) Customer: End needs & changing demand\n\u2502   \u2514\u2500\u2500\u25ba Competitor: Rival landscape & relative position\n\u250c\u2500\u2500 (3) Competitor: Rival landscape & relative position\n\u2502   \u2514\u2500\u2500\u25ba Pivot to specific deep-dive structure\n\u250c\u2500\u2500 (4) Pivot to specific deep-dive structure"
+  },
+  {
+    "name": "4Ps of Marketing (Marketing Mix)",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "4Ps of Marketing (Marketing Mix)",
+    "data": {
+      "label": "Marketing Mix",
+      "children": [
+        {
+          "label": "Product",
+          "children": [
+            {
+              "label": "Core offering & features"
+            },
+            {
+              "label": "Target segment fit"
+            }
+          ]
+        },
+        {
+          "label": "Price",
+          "children": [
+            {
+              "label": "Pricing model"
+            },
+            {
+              "label": "Willingness-to-pay"
+            }
+          ]
+        },
+        {
+          "label": "Place",
+          "children": [
+            {
+              "label": "Distribution channels"
+            },
+            {
+              "label": "Availability locations"
+            }
+          ]
+        },
+        {
+          "label": "Promotion",
+          "children": [
+            {
+              "label": "Launch campaigns"
+            },
+            {
+              "label": "Core messaging"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Marketing Mix ]\n\u251c\u2500\u2500 [ Product ]\n\u2502   \u251c\u2500\u2500 [ Core offering & features ]\n\u2502   \u2514\u2500\u2500 [ Target segment fit ]\n\u251c\u2500\u2500 [ Price ]\n\u2502   \u251c\u2500\u2500 [ Pricing model ]\n\u2502   \u2514\u2500\u2500 [ Willingness-to-pay ]\n\u251c\u2500\u2500 [ Place ]\n\u2502   \u251c\u2500\u2500 [ Distribution channels ]\n\u2502   \u2514\u2500\u2500 [ Availability locations ]\n\u2514\u2500\u2500 [ Promotion ]\n    \u251c\u2500\u2500 [ Launch campaigns ]\n    \u2514\u2500\u2500 [ Core messaging ]"
+  },
+  {
+    "name": "9-Box Grid",
+    "status": "ok",
+    "type": "matrix",
+    "title": "9-Box Talent Grid",
+    "data": {
+      "xAxis": "Performance",
+      "yAxis": "Potential",
+      "cols": [
+        "Low Performance",
+        "Medium Performance",
+        "High Performance"
+      ],
+      "rows": [
+        "High Potential",
+        "Medium Potential",
+        "Low Potential"
+      ],
+      "cells": [
+        [
+          "Coach / Ramp-up",
+          "Develop",
+          "Accelerate / Invest"
+        ],
+        [
+          "Misaligned",
+          "Core Contributor",
+          "Retain as Specialist"
+        ],
+        [
+          "Manage Out (PIP)",
+          "Manage Out",
+          "Manage Out / Exit"
+        ]
+      ]
+    },
+    "ascii": "                    X-axis: Performance\nY-axis: Potential\n                  \u2502 Low Performance      \u2502 Medium Performance   \u2502 High Performance     \u2502\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\nHigh Potential    \u2502 Coach / Ramp-up      \u2502 Develop              \u2502 Accelerate / Invest  \u2502\nMedium Potential  \u2502 Misaligned           \u2502 Core Contributor     \u2502 Retain as Specialist \u2502\nLow Potential     \u2502 Manage Out (PIP)     \u2502 Manage Out           \u2502 Manage Out / Exit    \u2502"
+  },
+  {
+    "name": "AARM Funnel",
+    "status": "ok",
+    "type": "flow",
+    "title": "AARM Funnel Framework",
+    "data": {
+      "nodes": [
+        {
+          "id": "acq",
+          "label": "Acquisition"
+        },
+        {
+          "id": "act",
+          "label": "Activation"
+        },
+        {
+          "id": "ret",
+          "label": "Retention"
+        },
+        {
+          "id": "mon",
+          "label": "Monetization"
+        },
+        {
+          "id": "diag",
+          "label": "Diagnose & Isolate Drop"
+        }
+      ],
+      "edges": [
+        {
+          "from": "acq",
+          "to": "act",
+          "label": "First arrival"
+        },
+        {
+          "from": "act",
+          "to": "ret",
+          "label": "First-value moment"
+        },
+        {
+          "from": "ret",
+          "to": "mon",
+          "label": "Ongoing usage"
+        },
+        {
+          "from": "mon",
+          "to": "diag",
+          "label": "Convert revenue"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Acquisition\n\u2502   \u2514\u2500\u2500\u25ba Activation [First arrival]\n\u250c\u2500\u2500 (2) Activation\n\u2502   \u2514\u2500\u2500\u25ba Retention [First-value moment]\n\u250c\u2500\u2500 (3) Retention\n\u2502   \u2514\u2500\u2500\u25ba Monetization [Ongoing usage]\n\u250c\u2500\u2500 (4) Monetization\n\u2502   \u2514\u2500\u2500\u25ba Diagnose & Isolate Drop [Convert revenue]\n\u250c\u2500\u2500 (5) Diagnose & Isolate Drop"
+  },
+  {
+    "name": "AIDA Funnel",
+    "status": "ok",
+    "type": "flow",
+    "title": "AIDA Funnel",
+    "data": {
+      "nodes": [
+        {
+          "id": "attention",
+          "label": "Attention"
+        },
+        {
+          "id": "interest",
+          "label": "Interest"
+        },
+        {
+          "id": "desire",
+          "label": "Desire"
+        },
+        {
+          "id": "action",
+          "label": "Action"
+        }
+      ],
+      "edges": [
+        {
+          "from": "attention",
+          "to": "interest"
+        },
+        {
+          "from": "interest",
+          "to": "desire"
+        },
+        {
+          "from": "desire",
+          "to": "action"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Attention\n\u2502   \u2514\u2500\u2500\u25ba Interest\n\u250c\u2500\u2500 (2) Interest\n\u2502   \u2514\u2500\u2500\u25ba Desire\n\u250c\u2500\u2500 (3) Desire\n\u2502   \u2514\u2500\u2500\u25ba Action\n\u250c\u2500\u2500 (4) Action"
+  },
+  {
+    "name": "Ansoff Matrix",
+    "status": "ok",
+    "type": "matrix",
+    "title": "Ansoff Matrix Growth Strategies",
+    "data": {
+      "xAxis": "Products",
+      "yAxis": "Markets",
+      "cols": [
+        "Existing Products",
+        "New Products"
+      ],
+      "rows": [
+        "Existing Markets",
+        "New Markets"
+      ],
+      "cells": [
+        [
+          "Market Penetration (Lowest Risk)",
+          "Product Development"
+        ],
+        [
+          "Market Development",
+          "Diversification (Highest Risk)"
+        ]
+      ]
+    },
+    "ascii": "                    X-axis: Products\nY-axis: Markets\n                  \u2502 Existing Products                \u2502 New Products                     \u2502\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\nExisting Markets  \u2502 Market Penetration (Lowest Risk) \u2502 Product Development              \u2502\nNew Markets       \u2502 Market Development               \u2502 Diversification (Highest Risk)   \u2502"
+  },
+  {
+    "name": "BCG Growth-Share Matrix",
+    "status": "ok",
+    "type": "matrix",
+    "title": "BCG Growth-Share Matrix",
+    "data": {
+      "xAxis": "Relative Market Share",
+      "yAxis": "Market Growth Rate",
+      "cols": [
+        "High Share",
+        "Low Share"
+      ],
+      "rows": [
+        "High Growth",
+        "Low Growth"
+      ],
+      "cells": [
+        [
+          "Stars",
+          "Question Marks"
+        ],
+        [
+          "Cash Cows",
+          "Dogs"
+        ]
+      ]
+    },
+    "ascii": "               X-axis: Relative Market Share\nY-axis: Market Growth Rate\n             \u2502 High Share     \u2502 Low Share      \u2502\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\nHigh Growth  \u2502 Stars          \u2502 Question Marks \u2502\nLow Growth   \u2502 Cash Cows      \u2502 Dogs           \u2502"
+  },
+  {
+    "name": "Beta & Capital Asset Pricing Model (CAPM)",
+    "status": "ok",
+    "type": "flow",
+    "title": "CAPM Cost of Equity Calculation Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Select Risk-Free Rate (Rf)"
+        },
+        {
+          "id": "step2",
+          "label": "Estimate Beta (\u03b2) Sensitivity"
+        },
+        {
+          "id": "step3",
+          "label": "Determine Equity Risk Premium (ERP)"
+        },
+        {
+          "id": "step4",
+          "label": "Calculate Cost of Equity (Ke)"
+        },
+        {
+          "id": "step5",
+          "label": "Unlever and Relever Peer Beta"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Select Risk-Free Rate (Rf)\n\u2502   \u2514\u2500\u2500\u25ba Estimate Beta (\u03b2) Sensitivity\n\u250c\u2500\u2500 (2) Estimate Beta (\u03b2) Sensitivity\n\u2502   \u2514\u2500\u2500\u25ba Determine Equity Risk Premium (ERP)\n\u250c\u2500\u2500 (3) Determine Equity Risk Premium (ERP)\n\u2502   \u2514\u2500\u2500\u25ba Calculate Cost of Equity (Ke)\n\u250c\u2500\u2500 (4) Calculate Cost of Equity (Ke)\n\u2502   \u2514\u2500\u2500\u25ba Unlever and Relever Peer Beta\n\u250c\u2500\u2500 (5) Unlever and Relever Peer Beta"
+  },
+  {
+    "name": "Blue Ocean Strategy (Four Actions Framework)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Four Actions Framework",
+    "data": {
+      "nodes": [
+        {
+          "id": "eliminate",
+          "label": "Eliminate taken-for-granted industry factors"
+        },
+        {
+          "id": "reduce",
+          "label": "Reduce factors below industry standard"
+        },
+        {
+          "id": "raise",
+          "label": "Raise factors above industry standard"
+        },
+        {
+          "id": "create",
+          "label": "Create new unoffered industry factors"
+        }
+      ],
+      "edges": [
+        {
+          "from": "eliminate",
+          "to": "reduce"
+        },
+        {
+          "from": "reduce",
+          "to": "raise"
+        },
+        {
+          "from": "raise",
+          "to": "create"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Eliminate taken-for-granted industry factors\n\u2502   \u2514\u2500\u2500\u25ba Reduce factors below industry standard\n\u250c\u2500\u2500 (2) Reduce factors below industry standard\n\u2502   \u2514\u2500\u2500\u25ba Raise factors above industry standard\n\u250c\u2500\u2500 (3) Raise factors above industry standard\n\u2502   \u2514\u2500\u2500\u25ba Create new unoffered industry factors\n\u250c\u2500\u2500 (4) Create new unoffered industry factors"
+  },
+  {
+    "name": "Business Model Canvas",
+    "status": "ok",
+    "type": "flow",
+    "title": "Business Model Canvas Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "1",
+          "label": "Customer Segments"
+        },
+        {
+          "id": "2",
+          "label": "Value Propositions"
+        },
+        {
+          "id": "3",
+          "label": "Channels"
+        },
+        {
+          "id": "4",
+          "label": "Customer Relationships"
+        },
+        {
+          "id": "5",
+          "label": "Revenue Streams"
+        },
+        {
+          "id": "6",
+          "label": "Key Resources"
+        },
+        {
+          "id": "7",
+          "label": "Key Activities"
+        },
+        {
+          "id": "8",
+          "label": "Key Partners"
+        },
+        {
+          "id": "9",
+          "label": "Cost Structure"
+        }
+      ],
+      "edges": [
+        {
+          "from": "1",
+          "to": "2"
+        },
+        {
+          "from": "2",
+          "to": "3"
+        },
+        {
+          "from": "3",
+          "to": "4"
+        },
+        {
+          "from": "4",
+          "to": "5"
+        },
+        {
+          "from": "5",
+          "to": "6"
+        },
+        {
+          "from": "6",
+          "to": "7"
+        },
+        {
+          "from": "7",
+          "to": "8"
+        },
+        {
+          "from": "8",
+          "to": "9"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Customer Segments\n\u2502   \u2514\u2500\u2500\u25ba Value Propositions\n\u250c\u2500\u2500 (2) Value Propositions\n\u2502   \u2514\u2500\u2500\u25ba Channels\n\u250c\u2500\u2500 (3) Channels\n\u2502   \u2514\u2500\u2500\u25ba Customer Relationships\n\u250c\u2500\u2500 (4) Customer Relationships\n\u2502   \u2514\u2500\u2500\u25ba Revenue Streams\n\u250c\u2500\u2500 (5) Revenue Streams\n\u2502   \u2514\u2500\u2500\u25ba Key Resources\n\u250c\u2500\u2500 (6) Key Resources\n\u2502   \u2514\u2500\u2500\u25ba Key Activities\n\u250c\u2500\u2500 (7) Key Activities\n\u2502   \u2514\u2500\u2500\u25ba Key Partners\n\u250c\u2500\u2500 (8) Key Partners\n\u2502   \u2514\u2500\u2500\u25ba Cost Structure\n\u250c\u2500\u2500 (9) Cost Structure"
+  },
+  {
+    "name": "CAC vs LTV Unit Economics",
+    "status": "ok",
+    "type": "flow",
+    "title": "CAC vs LTV Unit Economics Workflow",
+    "data": {
+      "nodes": [
+        {
+          "id": "calc_cac",
+          "label": "Calculate Customer Acquisition Cost"
+        },
+        {
+          "id": "calc_ltv",
+          "label": "Calculate Lifetime Value"
+        },
+        {
+          "id": "eval_ratio",
+          "label": "Evaluate LTV to CAC Ratio"
+        },
+        {
+          "id": "calc_payback",
+          "label": "Calculate CAC Payback Period"
+        },
+        {
+          "id": "strat_levers",
+          "label": "Apply Strategic Levers"
+        }
+      ],
+      "edges": [
+        {
+          "from": "calc_cac",
+          "to": "calc_ltv",
+          "label": "costs"
+        },
+        {
+          "from": "calc_ltv",
+          "to": "eval_ratio",
+          "label": "compare"
+        },
+        {
+          "from": "eval_ratio",
+          "to": "calc_payback",
+          "label": "speed"
+        },
+        {
+          "from": "calc_payback",
+          "to": "strat_levers",
+          "label": "optimize"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Calculate Customer Acquisition Cost\n\u2502   \u2514\u2500\u2500\u25ba Calculate Lifetime Value [costs]\n\u250c\u2500\u2500 (2) Calculate Lifetime Value\n\u2502   \u2514\u2500\u2500\u25ba Evaluate LTV to CAC Ratio [compare]\n\u250c\u2500\u2500 (3) Evaluate LTV to CAC Ratio\n\u2502   \u2514\u2500\u2500\u25ba Calculate CAC Payback Period [speed]\n\u250c\u2500\u2500 (4) Calculate CAC Payback Period\n\u2502   \u2514\u2500\u2500\u25ba Apply Strategic Levers [optimize]\n\u250c\u2500\u2500 (5) Apply Strategic Levers"
+  },
+  {
+    "name": "CIRCLES",
+    "status": "ok",
+    "type": "flow",
+    "title": "CIRCLES Product Design Method",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Comprehend the situation"
+        },
+        {
+          "id": "step2",
+          "label": "Identify the customer"
+        },
+        {
+          "id": "step3",
+          "label": "Report customer needs"
+        },
+        {
+          "id": "step4",
+          "label": "Cut through prioritization"
+        },
+        {
+          "id": "step5",
+          "label": "List solutions"
+        },
+        {
+          "id": "step6",
+          "label": "Evaluate trade-offs"
+        },
+        {
+          "id": "step7",
+          "label": "Summarize recommendation"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        },
+        {
+          "from": "step5",
+          "to": "step6"
+        },
+        {
+          "from": "step6",
+          "to": "step7"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Comprehend the situation\n\u2502   \u2514\u2500\u2500\u25ba Identify the customer\n\u250c\u2500\u2500 (2) Identify the customer\n\u2502   \u2514\u2500\u2500\u25ba Report customer needs\n\u250c\u2500\u2500 (3) Report customer needs\n\u2502   \u2514\u2500\u2500\u25ba Cut through prioritization\n\u250c\u2500\u2500 (4) Cut through prioritization\n\u2502   \u2514\u2500\u2500\u25ba List solutions\n\u250c\u2500\u2500 (5) List solutions\n\u2502   \u2514\u2500\u2500\u25ba Evaluate trade-offs\n\u250c\u2500\u2500 (6) Evaluate trade-offs\n\u2502   \u2514\u2500\u2500\u25ba Summarize recommendation\n\u250c\u2500\u2500 (7) Summarize recommendation"
+  },
+  {
+    "name": "Comparable Company Analysis",
+    "status": "ok",
+    "type": "flow",
+    "title": "Comparable Company Analysis Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Select a peer group of comparable companies"
+        },
+        {
+          "id": "step2",
+          "label": "Choose the right multiple for the situation"
+        },
+        {
+          "id": "step3",
+          "label": "Calculate peer multiples and take median measure"
+        },
+        {
+          "id": "step4",
+          "label": "Apply multiple to target's financial metric"
+        },
+        {
+          "id": "step5",
+          "label": "Adjust for real differences before final valuation"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Select a peer group of comparable companies\n\u2502   \u2514\u2500\u2500\u25ba Choose the right multiple for the situation\n\u250c\u2500\u2500 (2) Choose the right multiple for the situation\n\u2502   \u2514\u2500\u2500\u25ba Calculate peer multiples and take median measure\n\u250c\u2500\u2500 (3) Calculate peer multiples and take median measure\n\u2502   \u2514\u2500\u2500\u25ba Apply multiple to target's financial metric\n\u250c\u2500\u2500 (4) Apply multiple to target's financial metric\n\u2502   \u2514\u2500\u2500\u25ba Adjust for real differences before final valuation\n\u250c\u2500\u2500 (5) Adjust for real differences before final valuation"
+  },
+  {
+    "name": "DCF (Discounted Cash Flow)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Discounted Cash Flow (DCF) Valuation Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Project free cash flows (5-10 years)"
+        },
+        {
+          "id": "step2",
+          "label": "Estimate terminal value"
+        },
+        {
+          "id": "step3",
+          "label": "Choose discount rate (e.g., WACC)"
+        },
+        {
+          "id": "step4",
+          "label": "Discount to present value and sum"
+        },
+        {
+          "id": "step5",
+          "label": "Stress-test against assumption ranges"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Project free cash flows (5-10 years)\n\u2502   \u2514\u2500\u2500\u25ba Estimate terminal value\n\u250c\u2500\u2500 (2) Estimate terminal value\n\u2502   \u2514\u2500\u2500\u25ba Choose discount rate (e.g., WACC)\n\u250c\u2500\u2500 (3) Choose discount rate (e.g., WACC)\n\u2502   \u2514\u2500\u2500\u25ba Discount to present value and sum\n\u250c\u2500\u2500 (4) Discount to present value and sum\n\u2502   \u2514\u2500\u2500\u25ba Stress-test against assumption ranges\n\u250c\u2500\u2500 (5) Stress-test against assumption ranges"
+  },
+  {
+    "name": "Enterprise Value & Equity Value (The Bridge)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Enterprise Value & Equity Value Bridge",
+    "data": {
+      "nodes": [
+        {
+          "id": "equity_val",
+          "label": "Start with Equity Value (Market Cap)"
+        },
+        {
+          "id": "add_debt",
+          "label": "Add Total Debt"
+        },
+        {
+          "id": "add_pref",
+          "label": "Add Preferred Stock & Minority Interest"
+        },
+        {
+          "id": "sub_cash",
+          "label": "Subtract Cash & Cash Equivalents"
+        },
+        {
+          "id": "ev_result",
+          "label": "Arrive at Enterprise Value (EV)"
+        }
+      ],
+      "edges": [
+        {
+          "from": "equity_val",
+          "to": "add_debt",
+          "label": "include liabilities"
+        },
+        {
+          "from": "add_debt",
+          "to": "add_pref",
+          "label": "include non-equity claims"
+        },
+        {
+          "from": "add_pref",
+          "to": "sub_cash",
+          "label": "deduct liquid assets"
+        },
+        {
+          "from": "sub_cash",
+          "to": "ev_result",
+          "label": "debt-free / cash-free"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Start with Equity Value (Market Cap)\n\u2502   \u2514\u2500\u2500\u25ba Add Total Debt [include liabilities]\n\u250c\u2500\u2500 (2) Add Total Debt\n\u2502   \u2514\u2500\u2500\u25ba Add Preferred Stock & Minority Interest [include non-equity claims]\n\u250c\u2500\u2500 (3) Add Preferred Stock & Minority Interest\n\u2502   \u2514\u2500\u2500\u25ba Subtract Cash & Cash Equivalents [deduct liquid assets]\n\u250c\u2500\u2500 (4) Subtract Cash & Cash Equivalents\n\u2502   \u2514\u2500\u2500\u25ba Arrive at Enterprise Value (EV) [debt-free / cash-free]\n\u250c\u2500\u2500 (5) Arrive at Enterprise Value (EV)"
+  },
+  {
+    "name": "GTM Strategy Canvas",
+    "status": "ok",
+    "type": "flow",
+    "title": "GTM Strategy Canvas",
+    "data": {
+      "nodes": [
+        {
+          "id": "target",
+          "label": "Target Segment"
+        },
+        {
+          "id": "value",
+          "label": "Value Proposition"
+        },
+        {
+          "id": "channels",
+          "label": "Channels"
+        },
+        {
+          "id": "pricing",
+          "label": "Pricing & Offer"
+        },
+        {
+          "id": "sequencing",
+          "label": "Sequencing"
+        }
+      ],
+      "edges": [
+        {
+          "from": "target",
+          "to": "value",
+          "label": "define needs"
+        },
+        {
+          "from": "value",
+          "to": "channels",
+          "label": "reach audience"
+        },
+        {
+          "from": "channels",
+          "to": "pricing",
+          "label": "monetize"
+        },
+        {
+          "from": "pricing",
+          "to": "sequencing",
+          "label": "roll out"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Target Segment\n\u2502   \u2514\u2500\u2500\u25ba Value Proposition [define needs]\n\u250c\u2500\u2500 (2) Value Proposition\n\u2502   \u2514\u2500\u2500\u25ba Channels [reach audience]\n\u250c\u2500\u2500 (3) Channels\n\u2502   \u2514\u2500\u2500\u25ba Pricing & Offer [monetize]\n\u250c\u2500\u2500 (4) Pricing & Offer\n\u2502   \u2514\u2500\u2500\u25ba Sequencing [roll out]\n\u250c\u2500\u2500 (5) Sequencing"
+  },
+  {
+    "name": "HEART Framework (Google)",
+    "status": "ok",
+    "type": "flow",
+    "title": "HEART Framework Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "1",
+          "label": "Happiness: NPS and sentiment"
+        },
+        {
+          "id": "2",
+          "label": "Engagement: Frequency and depth"
+        },
+        {
+          "id": "3",
+          "label": "Adoption: New user uptake"
+        },
+        {
+          "id": "4",
+          "label": "Retention: Cohort return rate"
+        },
+        {
+          "id": "5",
+          "label": "Task Success: Efficiency and errors"
+        },
+        {
+          "id": "6",
+          "label": "Define Goals, Signals, Metrics"
+        }
+      ],
+      "edges": [
+        {
+          "from": "1",
+          "to": "2"
+        },
+        {
+          "from": "2",
+          "to": "3"
+        },
+        {
+          "from": "3",
+          "to": "4"
+        },
+        {
+          "from": "4",
+          "to": "5"
+        },
+        {
+          "from": "5",
+          "to": "6"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Happiness: NPS and sentiment\n\u2502   \u2514\u2500\u2500\u25ba Engagement: Frequency and depth\n\u250c\u2500\u2500 (2) Engagement: Frequency and depth\n\u2502   \u2514\u2500\u2500\u25ba Adoption: New user uptake\n\u250c\u2500\u2500 (3) Adoption: New user uptake\n\u2502   \u2514\u2500\u2500\u25ba Retention: Cohort return rate\n\u250c\u2500\u2500 (4) Retention: Cohort return rate\n\u2502   \u2514\u2500\u2500\u25ba Task Success: Efficiency and errors\n\u250c\u2500\u2500 (5) Task Success: Efficiency and errors\n\u2502   \u2514\u2500\u2500\u25ba Define Goals, Signals, Metrics\n\u250c\u2500\u2500 (6) Define Goals, Signals, Metrics"
+  },
+  {
+    "name": "ICE Score",
+    "status": "ok",
+    "type": "flow",
+    "title": "ICE Score Prioritization Process",
+    "data": {
+      "nodes": [
+        {
+          "id": "impact",
+          "label": "Impact: Goal metric movement (1-10)"
+        },
+        {
+          "id": "confidence",
+          "label": "Confidence: Estimate certainty (1-10)"
+        },
+        {
+          "id": "ease",
+          "label": "Ease: Inverse of effort/speed (1-10)"
+        },
+        {
+          "id": "score",
+          "label": "Calculate score and rank by sum/average"
+        },
+        {
+          "id": "sanity",
+          "label": "Sanity check top 2-3 against judgment"
+        }
+      ],
+      "edges": [
+        {
+          "from": "impact",
+          "to": "confidence"
+        },
+        {
+          "from": "confidence",
+          "to": "ease"
+        },
+        {
+          "from": "ease",
+          "to": "score"
+        },
+        {
+          "from": "score",
+          "to": "sanity"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Impact: Goal metric movement (1-10)\n\u2502   \u2514\u2500\u2500\u25ba Confidence: Estimate certainty (1-10)\n\u250c\u2500\u2500 (2) Confidence: Estimate certainty (1-10)\n\u2502   \u2514\u2500\u2500\u25ba Ease: Inverse of effort/speed (1-10)\n\u250c\u2500\u2500 (3) Ease: Inverse of effort/speed (1-10)\n\u2502   \u2514\u2500\u2500\u25ba Calculate score and rank by sum/average\n\u250c\u2500\u2500 (4) Calculate score and rank by sum/average\n\u2502   \u2514\u2500\u2500\u25ba Sanity check top 2-3 against judgment\n\u250c\u2500\u2500 (5) Sanity check top 2-3 against judgment"
+  },
+  {
+    "name": "Income Statement Waterfall & P&L Walk",
+    "status": "ok",
+    "type": "flow",
+    "title": "Income Statement Waterfall & P&L Walk",
+    "data": {
+      "nodes": [
+        {
+          "id": "rev",
+          "label": "Gross & Net Revenue (Top Line)"
+        },
+        {
+          "id": "gp",
+          "label": "Gross Profit (Minus COGS)"
+        },
+        {
+          "id": "ebitda",
+          "label": "EBITDA (Minus Operating Expenses)"
+        },
+        {
+          "id": "ebit",
+          "label": "EBIT / Operating Income (Minus D&A)"
+        },
+        {
+          "id": "ebt",
+          "label": "EBT (Net Interest & Non-Op)"
+        },
+        {
+          "id": "ni",
+          "label": "Net Income (Minus Taxes)"
+        }
+      ],
+      "edges": [
+        {
+          "from": "rev",
+          "to": "gp",
+          "label": "minus COGS"
+        },
+        {
+          "from": "gp",
+          "to": "ebitda",
+          "label": "minus OPEX"
+        },
+        {
+          "from": "ebitda",
+          "to": "ebit",
+          "label": "minus D&A"
+        },
+        {
+          "from": "ebit",
+          "to": "ebt",
+          "label": "+/- interest & non-op"
+        },
+        {
+          "from": "ebt",
+          "to": "ni",
+          "label": "minus tax"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Gross & Net Revenue (Top Line)\n\u2502   \u2514\u2500\u2500\u25ba Gross Profit (Minus COGS) [minus COGS]\n\u250c\u2500\u2500 (2) Gross Profit (Minus COGS)\n\u2502   \u2514\u2500\u2500\u25ba EBITDA (Minus Operating Expenses) [minus OPEX]\n\u250c\u2500\u2500 (3) EBITDA (Minus Operating Expenses)\n\u2502   \u2514\u2500\u2500\u25ba EBIT / Operating Income (Minus D&A) [minus D&A]\n\u250c\u2500\u2500 (4) EBIT / Operating Income (Minus D&A)\n\u2502   \u2514\u2500\u2500\u25ba EBT (Net Interest & Non-Op) [+/- interest & non-op]\n\u250c\u2500\u2500 (5) EBT (Net Interest & Non-Op)\n\u2502   \u2514\u2500\u2500\u25ba Net Income (Minus Taxes) [minus tax]\n\u250c\u2500\u2500 (6) Net Income (Minus Taxes)"
+  },
+  {
+    "name": "Jobs To Be Done",
+    "status": "ok",
+    "type": "flow",
+    "title": "Jobs To Be Done Framework",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "State job: When [situation], I want to [motivation], so I can [outcome]"
+        },
+        {
+          "id": "step2",
+          "label": "Separate functional, emotional, and social jobs"
+        },
+        {
+          "id": "step3",
+          "label": "Identify true competitors getting the job done"
+        },
+        {
+          "id": "step4",
+          "label": "Design solution around making the job easier, faster, or reliable"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) State job: When [situation], I want to [motivation], so I can [outcome]\n\u2502   \u2514\u2500\u2500\u25ba Separate functional, emotional, and social jobs\n\u250c\u2500\u2500 (2) Separate functional, emotional, and social jobs\n\u2502   \u2514\u2500\u2500\u25ba Identify true competitors getting the job done\n\u250c\u2500\u2500 (3) Identify true competitors getting the job done\n\u2502   \u2514\u2500\u2500\u25ba Design solution around making the job easier, faster, or reliable\n\u250c\u2500\u2500 (4) Design solution around making the job easier, faster, or reliable"
+  },
+  {
+    "name": "Kano Model",
+    "status": "ok",
+    "type": "flow",
+    "title": "Kano Model Feature Classification",
+    "data": {
+      "nodes": [
+        {
+          "id": "must_have",
+          "label": "Must-Have / Basic Needs"
+        },
+        {
+          "id": "performance",
+          "label": "Performance / Linear Needs"
+        },
+        {
+          "id": "delighters",
+          "label": "Delighters / Attractive Needs"
+        },
+        {
+          "id": "indifferent",
+          "label": "Indifferent Features"
+        },
+        {
+          "id": "reverse",
+          "label": "Reverse Features"
+        },
+        {
+          "id": "decay",
+          "label": "Natural Decay Over Time"
+        }
+      ],
+      "edges": [
+        {
+          "from": "must_have",
+          "to": "performance"
+        },
+        {
+          "from": "performance",
+          "to": "delighters"
+        },
+        {
+          "from": "delighters",
+          "to": "indifferent"
+        },
+        {
+          "from": "indifferent",
+          "to": "reverse"
+        },
+        {
+          "from": "reverse",
+          "to": "decay"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Must-Have / Basic Needs\n\u2502   \u2514\u2500\u2500\u25ba Performance / Linear Needs\n\u250c\u2500\u2500 (2) Performance / Linear Needs\n\u2502   \u2514\u2500\u2500\u25ba Delighters / Attractive Needs\n\u250c\u2500\u2500 (3) Delighters / Attractive Needs\n\u2502   \u2514\u2500\u2500\u25ba Indifferent Features\n\u250c\u2500\u2500 (4) Indifferent Features\n\u2502   \u2514\u2500\u2500\u25ba Reverse Features\n\u250c\u2500\u2500 (5) Reverse Features\n\u2502   \u2514\u2500\u2500\u25ba Natural Decay Over Time\n\u250c\u2500\u2500 (6) Natural Decay Over Time"
+  },
+  {
+    "name": "LBO Basics (Leveraged Buyout)",
+    "status": "ok",
+    "type": "flow",
+    "title": "LBO Basics Lifecycle",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Buy target using mostly debt and some equity"
+        },
+        {
+          "id": "step2",
+          "label": "Use target cash flows to service and pay down debt"
+        },
+        {
+          "id": "step3",
+          "label": "Drive returns via paydown, operations, and multiples"
+        },
+        {
+          "id": "step4",
+          "label": "Exit via sale or IPO to realize equity return"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Buy target using mostly debt and some equity\n\u2502   \u2514\u2500\u2500\u25ba Use target cash flows to service and pay down debt\n\u250c\u2500\u2500 (2) Use target cash flows to service and pay down debt\n\u2502   \u2514\u2500\u2500\u25ba Drive returns via paydown, operations, and multiples\n\u250c\u2500\u2500 (3) Drive returns via paydown, operations, and multiples\n\u2502   \u2514\u2500\u2500\u25ba Exit via sale or IPO to realize equity return\n\u250c\u2500\u2500 (4) Exit via sale or IPO to realize equity return"
+  },
+  {
+    "name": "M&A Synergy & Integration Tree",
+    "status": "ok",
+    "type": "flow",
+    "title": "M&A Synergy & Integration Flow",
+    "data": {
+      "nodes": [
+        {
+          "id": "cost",
+          "label": "Cost Synergies"
+        },
+        {
+          "id": "revenue",
+          "label": "Revenue Synergies"
+        },
+        {
+          "id": "fin",
+          "label": "Financial & Tax Synergies"
+        },
+        {
+          "id": "costs",
+          "label": "Implementation Costs & Friction"
+        },
+        {
+          "id": "net",
+          "label": "Net Value Creation"
+        }
+      ],
+      "edges": [
+        {
+          "from": "cost",
+          "to": "revenue",
+          "label": "Add"
+        },
+        {
+          "from": "revenue",
+          "to": "fin",
+          "label": "Add"
+        },
+        {
+          "from": "fin",
+          "to": "costs",
+          "label": "Subtract"
+        },
+        {
+          "from": "costs",
+          "to": "net",
+          "label": "Compare NPV"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Cost Synergies\n\u2502   \u2514\u2500\u2500\u25ba Revenue Synergies [Add]\n\u250c\u2500\u2500 (2) Revenue Synergies\n\u2502   \u2514\u2500\u2500\u25ba Financial & Tax Synergies [Add]\n\u250c\u2500\u2500 (3) Financial & Tax Synergies\n\u2502   \u2514\u2500\u2500\u25ba Implementation Costs & Friction [Subtract]\n\u250c\u2500\u2500 (4) Implementation Costs & Friction\n\u2502   \u2514\u2500\u2500\u25ba Net Value Creation [Compare NPV]\n\u250c\u2500\u2500 (5) Net Value Creation"
+  },
+  {
+    "name": "Market Entry Framework",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "Market Entry Framework",
+    "data": {
+      "label": "Market Entry Decision",
+      "children": [
+        {
+          "label": "Market Attractiveness",
+          "children": [
+            {
+              "label": "Size and growth rate"
+            },
+            {
+              "label": "Segments and margins"
+            },
+            {
+              "label": "Regulatory tailwinds"
+            }
+          ]
+        },
+        {
+          "label": "Competitive Dynamics",
+          "children": [
+            {
+              "label": "Market concentration"
+            },
+            {
+              "label": "Competitor shares"
+            },
+            {
+              "label": "Barriers and switching costs"
+            }
+          ]
+        },
+        {
+          "label": "Capabilities & Synergies",
+          "children": [
+            {
+              "label": "Core competencies"
+            },
+            {
+              "label": "Brand transferability"
+            },
+            {
+              "label": "Distribution and operations"
+            }
+          ]
+        },
+        {
+          "label": "Financials & Mode of Entry",
+          "children": [
+            {
+              "label": "Investment and ROI"
+            },
+            {
+              "label": "Risk-reward profile"
+            },
+            {
+              "label": "Build, buy, or partner"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Market Entry Decision ]\n\u251c\u2500\u2500 [ Market Attractiveness ]\n\u2502   \u251c\u2500\u2500 [ Size and growth rate ]\n\u2502   \u251c\u2500\u2500 [ Segments and margins ]\n\u2502   \u2514\u2500\u2500 [ Regulatory tailwinds ]\n\u251c\u2500\u2500 [ Competitive Dynamics ]\n\u2502   \u251c\u2500\u2500 [ Market concentration ]\n\u2502   \u251c\u2500\u2500 [ Competitor shares ]\n\u2502   \u2514\u2500\u2500 [ Barriers and switching costs ]\n\u251c\u2500\u2500 [ Capabilities & Synergies ]\n\u2502   \u251c\u2500\u2500 [ Core competencies ]\n\u2502   \u251c\u2500\u2500 [ Brand transferability ]\n\u2502   \u2514\u2500\u2500 [ Distribution and operations ]\n\u2514\u2500\u2500 [ Financials & Mode of Entry ]\n    \u251c\u2500\u2500 [ Investment and ROI ]\n    \u251c\u2500\u2500 [ Risk-reward profile ]\n    \u2514\u2500\u2500 [ Build, buy, or partner ]"
+  },
+  {
+    "name": "Market Sizing (Top-Down / Bottom-Up)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Market Sizing Process",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "State approach and why out loud"
+        },
+        {
+          "id": "step2",
+          "label": "Top-down: Total population down to percentages"
+        },
+        {
+          "id": "step3",
+          "label": "Bottom-up: One unit up to total count"
+        },
+        {
+          "id": "step4",
+          "label": "Use round numbers and state assumptions"
+        },
+        {
+          "id": "step5",
+          "label": "Sanity-check final number against known facts"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step1",
+          "to": "step3"
+        },
+        {
+          "from": "step2",
+          "to": "step4"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) State approach and why out loud\n\u2502   \u251c\u2500\u2500\u25ba Top-down: Total population down to percentages\n\u2502   \u2514\u2500\u2500\u25ba Bottom-up: One unit up to total count\n\u250c\u2500\u2500 (2) Top-down: Total population down to percentages\n\u2502   \u2514\u2500\u2500\u25ba Use round numbers and state assumptions\n\u250c\u2500\u2500 (3) Bottom-up: One unit up to total count\n\u2502   \u2514\u2500\u2500\u25ba Use round numbers and state assumptions\n\u250c\u2500\u2500 (4) Use round numbers and state assumptions\n\u2502   \u2514\u2500\u2500\u25ba Sanity-check final number against known facts\n\u250c\u2500\u2500 (5) Sanity-check final number against known facts"
+  },
+  {
+    "name": "McKinsey 7S Framework",
+    "status": "ok",
+    "type": "flow",
+    "title": "McKinsey 7S Framework Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "strategy",
+          "label": "Strategy"
+        },
+        {
+          "id": "structure",
+          "label": "Structure"
+        },
+        {
+          "id": "systems",
+          "label": "Systems"
+        },
+        {
+          "id": "shared_values",
+          "label": "Shared Values"
+        },
+        {
+          "id": "skills",
+          "label": "Skills"
+        },
+        {
+          "id": "style",
+          "label": "Style"
+        },
+        {
+          "id": "staff",
+          "label": "Staff"
+        },
+        {
+          "id": "alignment",
+          "label": "Identify Misalignments"
+        }
+      ],
+      "edges": [
+        {
+          "from": "strategy",
+          "to": "structure"
+        },
+        {
+          "from": "structure",
+          "to": "systems"
+        },
+        {
+          "from": "systems",
+          "to": "shared_values"
+        },
+        {
+          "from": "shared_values",
+          "to": "skills"
+        },
+        {
+          "from": "skills",
+          "to": "style"
+        },
+        {
+          "from": "style",
+          "to": "staff"
+        },
+        {
+          "from": "staff",
+          "to": "alignment"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Strategy\n\u2502   \u2514\u2500\u2500\u25ba Structure\n\u250c\u2500\u2500 (2) Structure\n\u2502   \u2514\u2500\u2500\u25ba Systems\n\u250c\u2500\u2500 (3) Systems\n\u2502   \u2514\u2500\u2500\u25ba Shared Values\n\u250c\u2500\u2500 (4) Shared Values\n\u2502   \u2514\u2500\u2500\u25ba Skills\n\u250c\u2500\u2500 (5) Skills\n\u2502   \u2514\u2500\u2500\u25ba Style\n\u250c\u2500\u2500 (6) Style\n\u2502   \u2514\u2500\u2500\u25ba Staff\n\u250c\u2500\u2500 (7) Staff\n\u2502   \u2514\u2500\u2500\u25ba Identify Misalignments\n\u250c\u2500\u2500 (8) Identify Misalignments"
+  },
+  {
+    "name": "MECE",
+    "status": "ok",
+    "type": "flow",
+    "title": "MECE Structuring Principle",
+    "data": {
+      "nodes": [
+        {
+          "id": "node_1",
+          "label": "Mutually Exclusive buckets"
+        },
+        {
+          "id": "node_2",
+          "label": "Collectively Exhaustive coverage"
+        },
+        {
+          "id": "node_3",
+          "label": "Say structure out loud"
+        },
+        {
+          "id": "node_4",
+          "label": "Prefer simple valid splits"
+        }
+      ],
+      "edges": [
+        {
+          "from": "node_1",
+          "to": "node_2",
+          "label": "ensure independence"
+        },
+        {
+          "from": "node_2",
+          "to": "node_3",
+          "label": "verify completeness"
+        },
+        {
+          "from": "node_3",
+          "to": "node_4",
+          "label": "refine approach"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Mutually Exclusive buckets\n\u2502   \u2514\u2500\u2500\u25ba Collectively Exhaustive coverage [ensure independence]\n\u250c\u2500\u2500 (2) Collectively Exhaustive coverage\n\u2502   \u2514\u2500\u2500\u25ba Say structure out loud [verify completeness]\n\u250c\u2500\u2500 (3) Say structure out loud\n\u2502   \u2514\u2500\u2500\u25ba Prefer simple valid splits [refine approach]\n\u250c\u2500\u2500 (4) Prefer simple valid splits"
+  },
+  {
+    "name": "North Star Metric",
+    "status": "ok",
+    "type": "flow",
+    "title": "North Star Metric Process",
+    "data": {
+      "nodes": [
+        {
+          "id": "1",
+          "label": "Identify core value exchange"
+        },
+        {
+          "id": "2",
+          "label": "Pick non-gameable metric"
+        },
+        {
+          "id": "3",
+          "label": "Confirm metric is leading"
+        },
+        {
+          "id": "4",
+          "label": "Break into actionable inputs"
+        }
+      ],
+      "edges": [
+        {
+          "from": "1",
+          "to": "2"
+        },
+        {
+          "from": "2",
+          "to": "3"
+        },
+        {
+          "from": "3",
+          "to": "4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Identify core value exchange\n\u2502   \u2514\u2500\u2500\u25ba Pick non-gameable metric\n\u250c\u2500\u2500 (2) Pick non-gameable metric\n\u2502   \u2514\u2500\u2500\u25ba Confirm metric is leading\n\u250c\u2500\u2500 (3) Confirm metric is leading\n\u2502   \u2514\u2500\u2500\u25ba Break into actionable inputs\n\u250c\u2500\u2500 (4) Break into actionable inputs"
+  },
+  {
+    "name": "OKR Framework (Objectives & Key Results)",
+    "status": "ok",
+    "type": "flow",
+    "title": "OKR Framework Process",
+    "data": {
+      "nodes": [
+        {
+          "id": "define_o",
+          "label": "Define the Qualitative Objective"
+        },
+        {
+          "id": "set_krs",
+          "label": "Set 3 to 5 Quantitative Key Results"
+        },
+        {
+          "id": "focus_outcomes",
+          "label": "Keep KRs Outcome-Based"
+        },
+        {
+          "id": "target_ambition",
+          "label": "Target Ambition with Stretch Goals"
+        },
+        {
+          "id": "cascade_align",
+          "label": "Cascade and Align Bi-Directionally"
+        }
+      ],
+      "edges": [
+        {
+          "from": "define_o",
+          "to": "set_krs"
+        },
+        {
+          "from": "set_krs",
+          "to": "focus_outcomes"
+        },
+        {
+          "from": "focus_outcomes",
+          "to": "target_ambition"
+        },
+        {
+          "from": "target_ambition",
+          "to": "cascade_align"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Define the Qualitative Objective\n\u2502   \u2514\u2500\u2500\u25ba Set 3 to 5 Quantitative Key Results\n\u250c\u2500\u2500 (2) Set 3 to 5 Quantitative Key Results\n\u2502   \u2514\u2500\u2500\u25ba Keep KRs Outcome-Based\n\u250c\u2500\u2500 (3) Keep KRs Outcome-Based\n\u2502   \u2514\u2500\u2500\u25ba Target Ambition with Stretch Goals\n\u250c\u2500\u2500 (4) Target Ambition with Stretch Goals\n\u2502   \u2514\u2500\u2500\u25ba Cascade and Align Bi-Directionally\n\u250c\u2500\u2500 (5) Cascade and Align Bi-Directionally"
+  },
+  {
+    "name": "PESTEL Analysis",
+    "status": "ok",
+    "type": "flow",
+    "title": "PESTEL Analysis Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "political",
+          "label": "Political"
+        },
+        {
+          "id": "economic",
+          "label": "Economic"
+        },
+        {
+          "id": "social",
+          "label": "Social"
+        },
+        {
+          "id": "technological",
+          "label": "Technological"
+        },
+        {
+          "id": "environmental",
+          "label": "Environmental"
+        },
+        {
+          "id": "legal",
+          "label": "Legal"
+        }
+      ],
+      "edges": [
+        {
+          "from": "political",
+          "to": "economic",
+          "label": "next"
+        },
+        {
+          "from": "economic",
+          "to": "social",
+          "label": "next"
+        },
+        {
+          "from": "social",
+          "to": "technological",
+          "label": "next"
+        },
+        {
+          "from": "technological",
+          "to": "environmental",
+          "label": "next"
+        },
+        {
+          "from": "environmental",
+          "to": "legal",
+          "label": "next"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Political\n\u2502   \u2514\u2500\u2500\u25ba Economic [next]\n\u250c\u2500\u2500 (2) Economic\n\u2502   \u2514\u2500\u2500\u25ba Social [next]\n\u250c\u2500\u2500 (3) Social\n\u2502   \u2514\u2500\u2500\u25ba Technological [next]\n\u250c\u2500\u2500 (4) Technological\n\u2502   \u2514\u2500\u2500\u25ba Environmental [next]\n\u250c\u2500\u2500 (5) Environmental\n\u2502   \u2514\u2500\u2500\u25ba Legal [next]\n\u250c\u2500\u2500 (6) Legal"
+  },
+  {
+    "name": "Porter's Five Forces",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "Porter's Five Forces",
+    "data": {
+      "label": "Industry Attractiveness",
+      "children": [
+        {
+          "label": "New Entrants",
+          "children": [
+            {
+              "label": "Threat of New Entrants"
+            }
+          ]
+        },
+        {
+          "label": "Bargaining Power",
+          "children": [
+            {
+              "label": "Power of Suppliers"
+            },
+            {
+              "label": "Power of Buyers"
+            }
+          ]
+        },
+        {
+          "label": "Threats & Rivalry",
+          "children": [
+            {
+              "label": "Threat of Substitutes"
+            },
+            {
+              "label": "Competitive Rivalry"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Industry Attractiveness ]\n\u251c\u2500\u2500 [ New Entrants ]\n\u2502   \u2514\u2500\u2500 [ Threat of New Entrants ]\n\u251c\u2500\u2500 [ Bargaining Power ]\n\u2502   \u251c\u2500\u2500 [ Power of Suppliers ]\n\u2502   \u2514\u2500\u2500 [ Power of Buyers ]\n\u2514\u2500\u2500 [ Threats & Rivalry ]\n    \u251c\u2500\u2500 [ Threat of Substitutes ]\n    \u2514\u2500\u2500 [ Competitive Rivalry ]"
+  },
+  {
+    "name": "Porter's Generic Strategies",
+    "status": "ok",
+    "type": "matrix",
+    "title": "Porter's Generic Strategies",
+    "data": {
+      "xAxis": "Strategic Advantage",
+      "yAxis": "Strategic Scope",
+      "cols": [
+        "Lower Cost",
+        "Differentiation"
+      ],
+      "rows": [
+        "Broad Target",
+        "Narrow Target"
+      ],
+      "cells": [
+        [
+          "Cost Leadership",
+          "Differentiation"
+        ],
+        [
+          "Cost Focus",
+          "Differentiation Focus"
+        ]
+      ]
+    },
+    "ascii": "                 X-axis: Strategic Advantage\nY-axis: Strategic Scope\n               \u2502 Lower Cost            \u2502 Differentiation       \u2502\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\nBroad Target   \u2502 Cost Leadership       \u2502 Differentiation       \u2502\nNarrow Target  \u2502 Cost Focus            \u2502 Differentiation Focus \u2502"
+  },
+  {
+    "name": "Product Life Cycle",
+    "status": "ok",
+    "type": "flow",
+    "title": "Product Life Cycle Stages",
+    "data": {
+      "nodes": [
+        {
+          "id": "step_1",
+          "label": "Introduction"
+        },
+        {
+          "id": "step_2",
+          "label": "Growth"
+        },
+        {
+          "id": "step_3",
+          "label": "Maturity"
+        },
+        {
+          "id": "step_4",
+          "label": "Decline"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step_1",
+          "to": "step_2",
+          "label": "Sales accelerate"
+        },
+        {
+          "from": "step_2",
+          "to": "step_3",
+          "label": "Market saturates"
+        },
+        {
+          "from": "step_3",
+          "to": "step_4",
+          "label": "Sales fall"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Introduction\n\u2502   \u2514\u2500\u2500\u25ba Growth [Sales accelerate]\n\u250c\u2500\u2500 (2) Growth\n\u2502   \u2514\u2500\u2500\u25ba Maturity [Market saturates]\n\u250c\u2500\u2500 (3) Maturity\n\u2502   \u2514\u2500\u2500\u25ba Decline [Sales fall]\n\u250c\u2500\u2500 (4) Decline"
+  },
+  {
+    "name": "Profitability Framework (Revenue - Cost Tree)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Profitability Framework Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Define Profit as Revenue minus Cost"
+        },
+        {
+          "id": "step2",
+          "label": "Break Revenue into Price and Volume"
+        },
+        {
+          "id": "step3",
+          "label": "Break Cost into Fixed and Variable"
+        },
+        {
+          "id": "step4",
+          "label": "Ask for data on likely branches"
+        },
+        {
+          "id": "step5",
+          "label": "Isolate branch and hypothesize causes"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Define Profit as Revenue minus Cost\n\u2502   \u2514\u2500\u2500\u25ba Break Revenue into Price and Volume\n\u250c\u2500\u2500 (2) Break Revenue into Price and Volume\n\u2502   \u2514\u2500\u2500\u25ba Break Cost into Fixed and Variable\n\u250c\u2500\u2500 (3) Break Cost into Fixed and Variable\n\u2502   \u2514\u2500\u2500\u25ba Ask for data on likely branches\n\u250c\u2500\u2500 (4) Ask for data on likely branches\n\u2502   \u2514\u2500\u2500\u25ba Isolate branch and hypothesize causes\n\u250c\u2500\u2500 (5) Isolate branch and hypothesize causes"
+  },
+  {
+    "name": "RICE",
+    "status": "ok",
+    "type": "flow",
+    "title": "RICE Scoring Model",
+    "data": {
+      "nodes": [
+        {
+          "id": "reach",
+          "label": "Reach"
+        },
+        {
+          "id": "impact",
+          "label": "Impact"
+        },
+        {
+          "id": "confidence",
+          "label": "Confidence"
+        },
+        {
+          "id": "effort",
+          "label": "Effort"
+        },
+        {
+          "id": "score",
+          "label": "Score & Rank"
+        }
+      ],
+      "edges": [
+        {
+          "from": "reach",
+          "to": "impact",
+          "label": "users"
+        },
+        {
+          "from": "impact",
+          "to": "confidence",
+          "label": "value"
+        },
+        {
+          "from": "confidence",
+          "to": "effort",
+          "label": "certainty"
+        },
+        {
+          "from": "effort",
+          "to": "score",
+          "label": "(R x I x C) / E"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Reach\n\u2502   \u2514\u2500\u2500\u25ba Impact [users]\n\u250c\u2500\u2500 (2) Impact\n\u2502   \u2514\u2500\u2500\u25ba Confidence [value]\n\u250c\u2500\u2500 (3) Confidence\n\u2502   \u2514\u2500\u2500\u25ba Effort [certainty]\n\u250c\u2500\u2500 (4) Effort\n\u2502   \u2514\u2500\u2500\u25ba Score & Rank [(R x I x C) / E]\n\u250c\u2500\u2500 (5) Score & Rank"
+  },
+  {
+    "name": "STAR+R",
+    "status": "ok",
+    "type": "flow",
+    "title": "STAR+R Framework",
+    "data": {
+      "nodes": [
+        {
+          "id": "sit",
+          "label": "Situation"
+        },
+        {
+          "id": "task",
+          "label": "Task"
+        },
+        {
+          "id": "act",
+          "label": "Action"
+        },
+        {
+          "id": "res",
+          "label": "Result"
+        },
+        {
+          "id": "ref",
+          "label": "Reflection"
+        }
+      ],
+      "edges": [
+        {
+          "from": "sit",
+          "to": "task"
+        },
+        {
+          "from": "task",
+          "to": "act"
+        },
+        {
+          "from": "act",
+          "to": "res"
+        },
+        {
+          "from": "res",
+          "to": "ref",
+          "label": "+R"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Situation\n\u2502   \u2514\u2500\u2500\u25ba Task\n\u250c\u2500\u2500 (2) Task\n\u2502   \u2514\u2500\u2500\u25ba Action\n\u250c\u2500\u2500 (3) Action\n\u2502   \u2514\u2500\u2500\u25ba Result\n\u250c\u2500\u2500 (4) Result\n\u2502   \u2514\u2500\u2500\u25ba Reflection [+R]\n\u250c\u2500\u2500 (5) Reflection"
+  },
+  {
+    "name": "STP (Segmentation, Targeting, Positioning)",
+    "status": "ok",
+    "type": "flow",
+    "title": "STP Framework",
+    "data": {
+      "nodes": [
+        {
+          "id": "segmentation",
+          "label": "Segmentation: Split market by needs"
+        },
+        {
+          "id": "targeting",
+          "label": "Targeting: Pick most viable segment"
+        },
+        {
+          "id": "positioning",
+          "label": "Positioning: Define perception vs alternatives"
+        }
+      ],
+      "edges": [
+        {
+          "from": "segmentation",
+          "to": "targeting"
+        },
+        {
+          "from": "targeting",
+          "to": "positioning"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Segmentation: Split market by needs\n\u2502   \u2514\u2500\u2500\u25ba Targeting: Pick most viable segment\n\u250c\u2500\u2500 (2) Targeting: Pick most viable segment\n\u2502   \u2514\u2500\u2500\u25ba Positioning: Define perception vs alternatives\n\u250c\u2500\u2500 (3) Positioning: Define perception vs alternatives"
+  },
+  {
+    "name": "SWOT Analysis",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "SWOT Analysis Framework",
+    "data": {
+      "label": "Strategic Position Scan",
+      "children": [
+        {
+          "label": "Internal Factors",
+          "children": [
+            {
+              "label": "Strengths"
+            },
+            {
+              "label": "Weaknesses"
+            }
+          ]
+        },
+        {
+          "label": "External Factors",
+          "children": [
+            {
+              "label": "Opportunities"
+            },
+            {
+              "label": "Threats"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Strategic Position Scan ]\n\u251c\u2500\u2500 [ Internal Factors ]\n\u2502   \u251c\u2500\u2500 [ Strengths ]\n\u2502   \u2514\u2500\u2500 [ Weaknesses ]\n\u2514\u2500\u2500 [ External Factors ]\n    \u251c\u2500\u2500 [ Opportunities ]\n    \u2514\u2500\u2500 [ Threats ]"
+  },
+  {
+    "name": "Terminal Value (Perpetuity vs Exit Multiple)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Terminal Value Calculation Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Project discrete cash flows to steady-state"
+        },
+        {
+          "id": "step2",
+          "label": "Apply Gordon Growth or Exit Multiple method"
+        },
+        {
+          "id": "step3",
+          "label": "Discount Terminal Value back to Present Value"
+        },
+        {
+          "id": "step4",
+          "label": "Cross-check implied multiples and growth rates"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Project discrete cash flows to steady-state\n\u2502   \u2514\u2500\u2500\u25ba Apply Gordon Growth or Exit Multiple method\n\u250c\u2500\u2500 (2) Apply Gordon Growth or Exit Multiple method\n\u2502   \u2514\u2500\u2500\u25ba Discount Terminal Value back to Present Value\n\u250c\u2500\u2500 (3) Discount Terminal Value back to Present Value\n\u2502   \u2514\u2500\u2500\u25ba Cross-check implied multiples and growth rates\n\u250c\u2500\u2500 (4) Cross-check implied multiples and growth rates"
+  },
+  {
+    "name": "WACC (Weighted Average Cost of Capital)",
+    "status": "ok",
+    "type": "flow",
+    "title": "WACC Calculation Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "weights",
+          "label": "Determine capital structure weights (E/V and D/V)"
+        },
+        {
+          "id": "equity",
+          "label": "Calculate Cost of Equity using CAPM"
+        },
+        {
+          "id": "debt",
+          "label": "Determine Pre-tax Cost of Debt"
+        },
+        {
+          "id": "tax_shield",
+          "label": "Apply corporate tax shield to Cost of Debt"
+        },
+        {
+          "id": "compute",
+          "label": "Compute WACC blended formula"
+        },
+        {
+          "id": "discount",
+          "label": "Use WACC as DCF discount rate"
+        }
+      ],
+      "edges": [
+        {
+          "from": "weights",
+          "to": "equity"
+        },
+        {
+          "from": "equity",
+          "to": "debt"
+        },
+        {
+          "from": "debt",
+          "to": "tax_shield"
+        },
+        {
+          "from": "tax_shield",
+          "to": "compute"
+        },
+        {
+          "from": "compute",
+          "to": "discount"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Determine capital structure weights (E/V and D/V)\n\u2502   \u2514\u2500\u2500\u25ba Calculate Cost of Equity using CAPM\n\u250c\u2500\u2500 (2) Calculate Cost of Equity using CAPM\n\u2502   \u2514\u2500\u2500\u25ba Determine Pre-tax Cost of Debt\n\u250c\u2500\u2500 (3) Determine Pre-tax Cost of Debt\n\u2502   \u2514\u2500\u2500\u25ba Apply corporate tax shield to Cost of Debt\n\u250c\u2500\u2500 (4) Apply corporate tax shield to Cost of Debt\n\u2502   \u2514\u2500\u2500\u25ba Compute WACC blended formula\n\u250c\u2500\u2500 (5) Compute WACC blended formula\n\u2502   \u2514\u2500\u2500\u25ba Use WACC as DCF discount rate\n\u250c\u2500\u2500 (6) Use WACC as DCF discount rate"
+  },
+  {
+    "name": "Working Capital & Cash Conversion Cycle",
+    "status": "ok",
+    "type": "flow",
+    "title": "Cash Conversion Cycle Steps",
+    "data": {
+      "nodes": [
+        {
+          "id": "dio",
+          "label": "Calculate Days Inventory Outstanding (DIO)"
+        },
+        {
+          "id": "dso",
+          "label": "Calculate Days Sales Outstanding (DSO)"
+        },
+        {
+          "id": "dpo",
+          "label": "Calculate Days Payable Outstanding (DPO)"
+        },
+        {
+          "id": "ccc",
+          "label": "Calculate Cash Conversion Cycle (CCC)"
+        },
+        {
+          "id": "nwc",
+          "label": "Calculate Net Working Capital (NWC)"
+        }
+      ],
+      "edges": [
+        {
+          "from": "dio",
+          "to": "dso",
+          "label": "Next"
+        },
+        {
+          "from": "dso",
+          "to": "dpo",
+          "label": "Next"
+        },
+        {
+          "from": "dpo",
+          "to": "ccc",
+          "label": "DIO + DSO - DPO"
+        },
+        {
+          "from": "ccc",
+          "to": "nwc",
+          "label": "Assess Liquidity"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Calculate Days Inventory Outstanding (DIO)\n\u2502   \u2514\u2500\u2500\u25ba Calculate Days Sales Outstanding (DSO) [Next]\n\u250c\u2500\u2500 (2) Calculate Days Sales Outstanding (DSO)\n\u2502   \u2514\u2500\u2500\u25ba Calculate Days Payable Outstanding (DPO) [Next]\n\u250c\u2500\u2500 (3) Calculate Days Payable Outstanding (DPO)\n\u2502   \u2514\u2500\u2500\u25ba Calculate Cash Conversion Cycle (CCC) [DIO + DSO - DPO]\n\u250c\u2500\u2500 (4) Calculate Cash Conversion Cycle (CCC)\n\u2502   \u2514\u2500\u2500\u25ba Calculate Net Working Capital (NWC) [Assess Liquidity]\n\u250c\u2500\u2500 (5) Calculate Net Working Capital (NWC)"
+  },
+  {
+    "name": "Dividend Discount Model (Gordon Growth Model)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Dividend Discount Model Workflow",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Project Earnings to EPS"
+        },
+        {
+          "id": "step2",
+          "label": "Determine Dividend Payout Ratio"
+        },
+        {
+          "id": "step3",
+          "label": "Calculate Projected Future Dividends"
+        },
+        {
+          "id": "step4",
+          "label": "Determine Cost of Equity"
+        },
+        {
+          "id": "step5",
+          "label": "Estimate Long-Term Growth Rate"
+        },
+        {
+          "id": "step6",
+          "label": "Discount to Present Value"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        },
+        {
+          "from": "step5",
+          "to": "step6"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Project Earnings to EPS\n\u2502   \u2514\u2500\u2500\u25ba Determine Dividend Payout Ratio\n\u250c\u2500\u2500 (2) Determine Dividend Payout Ratio\n\u2502   \u2514\u2500\u2500\u25ba Calculate Projected Future Dividends\n\u250c\u2500\u2500 (3) Calculate Projected Future Dividends\n\u2502   \u2514\u2500\u2500\u25ba Determine Cost of Equity\n\u250c\u2500\u2500 (4) Determine Cost of Equity\n\u2502   \u2514\u2500\u2500\u25ba Estimate Long-Term Growth Rate\n\u250c\u2500\u2500 (5) Estimate Long-Term Growth Rate\n\u2502   \u2514\u2500\u2500\u25ba Discount to Present Value\n\u250c\u2500\u2500 (6) Discount to Present Value"
+  },
+  {
+    "name": "DuPont Analysis",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "DuPont Analysis (ROE Breakdown)",
+    "data": {
+      "label": "Return on Equity (ROE)",
+      "children": [
+        {
+          "label": "Net Profit Margin",
+          "children": [
+            {
+              "label": "Net Income / Sales"
+            },
+            {
+              "label": "Operational Profitability"
+            }
+          ]
+        },
+        {
+          "label": "Asset Turnover Ratio",
+          "children": [
+            {
+              "label": "Sales / Average Assets"
+            },
+            {
+              "label": "Asset Efficiency"
+            }
+          ]
+        },
+        {
+          "label": "Equity Multiplier",
+          "children": [
+            {
+              "label": "Average Assets / Average Equity"
+            },
+            {
+              "label": "Financial Leverage"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Return on Equity (ROE) ]\n\u251c\u2500\u2500 [ Net Profit Margin ]\n\u2502   \u251c\u2500\u2500 [ Net Income / Sales ]\n\u2502   \u2514\u2500\u2500 [ Operational Profitability ]\n\u251c\u2500\u2500 [ Asset Turnover Ratio ]\n\u2502   \u251c\u2500\u2500 [ Sales / Average Assets ]\n\u2502   \u2514\u2500\u2500 [ Asset Efficiency ]\n\u2514\u2500\u2500 [ Equity Multiplier ]\n    \u251c\u2500\u2500 [ Average Assets / Average Equity ]\n    \u2514\u2500\u2500 [ Financial Leverage ]"
+  },
+  {
+    "name": "Treasury Stock Method",
+    "status": "ok",
+    "type": "flow",
+    "title": "Treasury Stock Method",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Assume exercise of in-the-money options"
+        },
+        {
+          "id": "step2",
+          "label": "Determine total cash proceeds"
+        },
+        {
+          "id": "step3",
+          "label": "Calculate repurchased shares"
+        },
+        {
+          "id": "step4",
+          "label": "Find net incremental shares"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Assume exercise of in-the-money options\n\u2502   \u2514\u2500\u2500\u25ba Determine total cash proceeds\n\u250c\u2500\u2500 (2) Determine total cash proceeds\n\u2502   \u2514\u2500\u2500\u25ba Calculate repurchased shares\n\u250c\u2500\u2500 (3) Calculate repurchased shares\n\u2502   \u2514\u2500\u2500\u25ba Find net incremental shares\n\u250c\u2500\u2500 (4) Find net incremental shares"
+  },
+  {
+    "name": "Precedent Transaction Analysis",
+    "status": "ok",
+    "type": "flow",
+    "title": "Precedent Transaction Analysis",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Identify Transactions"
+        },
+        {
+          "id": "step2",
+          "label": "Find Information"
+        },
+        {
+          "id": "step3",
+          "label": "Calculate Multiples"
+        },
+        {
+          "id": "step4",
+          "label": "Check and Interpret Results"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Identify Transactions\n\u2502   \u2514\u2500\u2500\u25ba Find Information\n\u250c\u2500\u2500 (2) Find Information\n\u2502   \u2514\u2500\u2500\u25ba Calculate Multiples\n\u250c\u2500\u2500 (3) Calculate Multiples\n\u2502   \u2514\u2500\u2500\u25ba Check and Interpret Results\n\u250c\u2500\u2500 (4) Check and Interpret Results"
+  },
+  {
+    "name": "Residual Income Model",
+    "status": "ok",
+    "type": "flow",
+    "title": "Residual Income Model",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Identify current book value"
+        },
+        {
+          "id": "step2",
+          "label": "Calculate annual residual income"
+        },
+        {
+          "id": "step3",
+          "label": "Discount residual income to PV"
+        },
+        {
+          "id": "step4",
+          "label": "Calculate terminal value"
+        },
+        {
+          "id": "step5",
+          "label": "Sum book value and PVs"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Identify current book value\n\u2502   \u2514\u2500\u2500\u25ba Calculate annual residual income\n\u250c\u2500\u2500 (2) Calculate annual residual income\n\u2502   \u2514\u2500\u2500\u25ba Discount residual income to PV\n\u250c\u2500\u2500 (3) Discount residual income to PV\n\u2502   \u2514\u2500\u2500\u25ba Calculate terminal value\n\u250c\u2500\u2500 (4) Calculate terminal value\n\u2502   \u2514\u2500\u2500\u25ba Sum book value and PVs\n\u250c\u2500\u2500 (5) Sum book value and PVs"
+  },
+  {
+    "name": "ADDIE Model",
+    "status": "ok",
+    "type": "flow",
+    "title": "ADDIE Model",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Analysis"
+        },
+        {
+          "id": "step2",
+          "label": "Design"
+        },
+        {
+          "id": "step3",
+          "label": "Development"
+        },
+        {
+          "id": "step4",
+          "label": "Implementation"
+        },
+        {
+          "id": "step5",
+          "label": "Evaluation"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Analysis\n\u2502   \u2514\u2500\u2500\u25ba Design\n\u250c\u2500\u2500 (2) Design\n\u2502   \u2514\u2500\u2500\u25ba Development\n\u250c\u2500\u2500 (3) Development\n\u2502   \u2514\u2500\u2500\u25ba Implementation\n\u250c\u2500\u2500 (4) Implementation\n\u2502   \u2514\u2500\u2500\u25ba Evaluation\n\u250c\u2500\u2500 (5) Evaluation"
+  },
+  {
+    "name": "Harvard vs Michigan Models of HRM",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "Harvard vs Michigan Models of HRM",
+    "data": {
+      "label": "HRM Models",
+      "children": [
+        {
+          "label": "Harvard Model",
+          "children": [
+            {
+              "label": "Employee Interests"
+            },
+            {
+              "label": "Stakeholder Impacts"
+            }
+          ]
+        },
+        {
+          "label": "Michigan Model",
+          "children": [
+            {
+              "label": "Strategic Fit"
+            },
+            {
+              "label": "Corporate Goals"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ HRM Models ]\n\u251c\u2500\u2500 [ Harvard Model ]\n\u2502   \u251c\u2500\u2500 [ Employee Interests ]\n\u2502   \u2514\u2500\u2500 [ Stakeholder Impacts ]\n\u2514\u2500\u2500 [ Michigan Model ]\n    \u251c\u2500\u2500 [ Strategic Fit ]\n    \u2514\u2500\u2500 [ Corporate Goals ]"
+  },
+  {
+    "name": "Kirkpatrick Model",
+    "status": "ok",
+    "type": "flow",
+    "title": "Kirkpatrick Model",
+    "data": {
+      "nodes": [
+        {
+          "id": "1",
+          "label": "Level 1: Reaction"
+        },
+        {
+          "id": "2",
+          "label": "Level 2: Learning"
+        },
+        {
+          "id": "3",
+          "label": "Level 3: Behavior"
+        },
+        {
+          "id": "4",
+          "label": "Level 4: Results"
+        }
+      ],
+      "edges": [
+        {
+          "from": "1",
+          "to": "2"
+        },
+        {
+          "from": "2",
+          "to": "3"
+        },
+        {
+          "from": "3",
+          "to": "4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Level 1: Reaction\n\u2502   \u2514\u2500\u2500\u25ba Level 2: Learning\n\u250c\u2500\u2500 (2) Level 2: Learning\n\u2502   \u2514\u2500\u2500\u25ba Level 3: Behavior\n\u250c\u2500\u2500 (3) Level 3: Behavior\n\u2502   \u2514\u2500\u2500\u25ba Level 4: Results\n\u250c\u2500\u2500 (4) Level 4: Results"
+  },
+  {
+    "name": "Managerial Grid (Blake-Mouton)",
+    "status": "ok",
+    "type": "matrix",
+    "title": "Managerial Grid (Blake-Mouton)",
+    "data": {
+      "xAxis": "Concern for People",
+      "yAxis": "Concern for Production",
+      "cols": [
+        "Low People",
+        "High People"
+      ],
+      "rows": [
+        "High Production",
+        "Low Production"
+      ],
+      "cells": [
+        [
+          "Authority-Compliance (9,1)",
+          "Team Management (9,9)"
+        ],
+        [
+          "Impoverished Management (1,1)",
+          "Country Club Management (1,9)"
+        ]
+      ]
+    },
+    "ascii": "                   X-axis: Concern for People\nY-axis: Concern for Production\n                 \u2502 Low People                    \u2502 High People                   \u2502\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\nHigh Production  \u2502 Authority-Compliance (9,1)    \u2502 Team Management (9,9)         \u2502\nLow Production   \u2502 Impoverished Management (1,1) \u2502 Country Club Management (1,9) \u2502"
+  },
+  {
+    "name": "MoSCoW Method",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "MoSCoW Method Prioritization",
+    "data": {
+      "label": "Feature Prioritization",
+      "children": [
+        {
+          "label": "Must-Have",
+          "children": [
+            {
+              "label": "Vital for launch"
+            },
+            {
+              "label": "Non-negotiable"
+            }
+          ]
+        },
+        {
+          "label": "Should-Have",
+          "children": [
+            {
+              "label": "Important"
+            },
+            {
+              "label": "Not vital for day-one"
+            }
+          ]
+        },
+        {
+          "label": "Could-Have",
+          "children": [
+            {
+              "label": "Nice-to-have addition"
+            }
+          ]
+        },
+        {
+          "label": "Won't-Have",
+          "children": [
+            {
+              "label": "Out of scope for now"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Feature Prioritization ]\n\u251c\u2500\u2500 [ Must-Have ]\n\u2502   \u251c\u2500\u2500 [ Vital for launch ]\n\u2502   \u2514\u2500\u2500 [ Non-negotiable ]\n\u251c\u2500\u2500 [ Should-Have ]\n\u2502   \u251c\u2500\u2500 [ Important ]\n\u2502   \u2514\u2500\u2500 [ Not vital for day-one ]\n\u251c\u2500\u2500 [ Could-Have ]\n\u2502   \u2514\u2500\u2500 [ Nice-to-have addition ]\n\u2514\u2500\u2500 [ Won't-Have ]\n    \u2514\u2500\u2500 [ Out of scope for now ]"
+  },
+  {
+    "name": "Freemium Model",
+    "status": "ok",
+    "type": "issue_tree",
+    "title": "Freemium Model Breakdown",
+    "data": {
+      "label": "Freemium Strategy",
+      "children": [
+        {
+          "label": "Product Offerings",
+          "children": [
+            {
+              "label": "Free Tier Scope (Core)"
+            },
+            {
+              "label": "Premium Features (Paid)"
+            }
+          ]
+        },
+        {
+          "label": "Business Metrics",
+          "children": [
+            {
+              "label": "Conversion Rates"
+            },
+            {
+              "label": "Monetization Channels"
+            }
+          ]
+        },
+        {
+          "label": "Key Pitfalls",
+          "children": [
+            {
+              "label": "Over-giving Value"
+            },
+            {
+              "label": "Conversion Failure"
+            },
+            {
+              "label": "High Free User Costs"
+            }
+          ]
+        }
+      ]
+    },
+    "ascii": "[ Freemium Strategy ]\n\u251c\u2500\u2500 [ Product Offerings ]\n\u2502   \u251c\u2500\u2500 [ Free Tier Scope (Core) ]\n\u2502   \u2514\u2500\u2500 [ Premium Features (Paid) ]\n\u251c\u2500\u2500 [ Business Metrics ]\n\u2502   \u251c\u2500\u2500 [ Conversion Rates ]\n\u2502   \u2514\u2500\u2500 [ Monetization Channels ]\n\u2514\u2500\u2500 [ Key Pitfalls ]\n    \u251c\u2500\u2500 [ Over-giving Value ]\n    \u251c\u2500\u2500 [ Conversion Failure ]\n    \u2514\u2500\u2500 [ High Free User Costs ]"
+  },
+  {
+    "name": "Net Promoter Score",
+    "status": "ok",
+    "type": "flow",
+    "title": "Net Promoter Score Calculation Flow",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Survey customers (0-10 scale)"
+        },
+        {
+          "id": "step2",
+          "label": "Categorize promoters (9-10)"
+        },
+        {
+          "id": "step3",
+          "label": "Categorize neutral (7-8)"
+        },
+        {
+          "id": "step4",
+          "label": "Categorize detractors (0-6)"
+        },
+        {
+          "id": "step5",
+          "label": "Calculate score (Promoters - Detractors)"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Survey customers (0-10 scale)\n\u2502   \u2514\u2500\u2500\u25ba Categorize promoters (9-10)\n\u250c\u2500\u2500 (2) Categorize promoters (9-10)\n\u2502   \u2514\u2500\u2500\u25ba Categorize neutral (7-8)\n\u250c\u2500\u2500 (3) Categorize neutral (7-8)\n\u2502   \u2514\u2500\u2500\u25ba Categorize detractors (0-6)\n\u250c\u2500\u2500 (4) Categorize detractors (0-6)\n\u2502   \u2514\u2500\u2500\u25ba Calculate score (Promoters - Detractors)\n\u250c\u2500\u2500 (5) Calculate score (Promoters - Detractors)"
+  },
+  {
+    "name": "Customer Satisfaction Score (CSAT)",
+    "status": "ok",
+    "type": "flow",
+    "title": "Customer Satisfaction Score (CSAT)",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Identify segment or channel"
+        },
+        {
+          "id": "step2",
+          "label": "Map customer journey"
+        },
+        {
+          "id": "step3",
+          "label": "Isolate operational pain points"
+        },
+        {
+          "id": "step4",
+          "label": "Analyze internal vs external factors"
+        },
+        {
+          "id": "step5",
+          "label": "Formulate targeted recommendations"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Identify segment or channel\n\u2502   \u2514\u2500\u2500\u25ba Map customer journey\n\u250c\u2500\u2500 (2) Map customer journey\n\u2502   \u2514\u2500\u2500\u25ba Isolate operational pain points\n\u250c\u2500\u2500 (3) Isolate operational pain points\n\u2502   \u2514\u2500\u2500\u25ba Analyze internal vs external factors\n\u250c\u2500\u2500 (4) Analyze internal vs external factors\n\u2502   \u2514\u2500\u2500\u25ba Formulate targeted recommendations\n\u250c\u2500\u2500 (5) Formulate targeted recommendations"
+  },
+  {
+    "name": "AARRR Framework (Pirate Metrics)",
+    "status": "ok",
+    "type": "flow",
+    "title": "AARRR Framework",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Acquisition metrics"
+        },
+        {
+          "id": "step2",
+          "label": "Activation metrics"
+        },
+        {
+          "id": "step3",
+          "label": "Retention metrics"
+        },
+        {
+          "id": "step4",
+          "label": "Referral metrics"
+        },
+        {
+          "id": "step5",
+          "label": "Revenue metrics"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        },
+        {
+          "from": "step4",
+          "to": "step5"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Acquisition metrics\n\u2502   \u2514\u2500\u2500\u25ba Activation metrics\n\u250c\u2500\u2500 (2) Activation metrics\n\u2502   \u2514\u2500\u2500\u25ba Retention metrics\n\u250c\u2500\u2500 (3) Retention metrics\n\u2502   \u2514\u2500\u2500\u25ba Referral metrics\n\u250c\u2500\u2500 (4) Referral metrics\n\u2502   \u2514\u2500\u2500\u25ba Revenue metrics\n\u250c\u2500\u2500 (5) Revenue metrics"
+  },
+  {
+    "name": "Value Chain Analysis",
+    "status": "ok",
+    "type": "flow",
+    "title": "Value Chain Analysis",
+    "data": {
+      "nodes": [
+        {
+          "id": "step1",
+          "label": "Map primary and support activities"
+        },
+        {
+          "id": "step2",
+          "label": "Examine stages to identify costs and bottlenecks"
+        },
+        {
+          "id": "step3",
+          "label": "Drill down into specific cost drivers"
+        },
+        {
+          "id": "step4",
+          "label": "Synthesize findings and develop recommendations"
+        }
+      ],
+      "edges": [
+        {
+          "from": "step1",
+          "to": "step2"
+        },
+        {
+          "from": "step2",
+          "to": "step3"
+        },
+        {
+          "from": "step3",
+          "to": "step4"
+        }
+      ]
+    },
+    "ascii": "\u250c\u2500\u2500 (1) Map primary and support activities\n\u2502   \u2514\u2500\u2500\u25ba Examine stages to identify costs and bottlenecks\n\u250c\u2500\u2500 (2) Examine stages to identify costs and bottlenecks\n\u2502   \u2514\u2500\u2500\u25ba Drill down into specific cost drivers\n\u250c\u2500\u2500 (3) Drill down into specific cost drivers\n\u2502   \u2514\u2500\u2500\u25ba Synthesize findings and develop recommendations\n\u250c\u2500\u2500 (4) Synthesize findings and develop recommendations"
+  }
+]

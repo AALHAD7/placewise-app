@@ -5,6 +5,71 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-04 — All 57 frameworks now use one AI-generated diagram pipeline (no more mixed hand-crafted/generated)
+
+**Phase:** M4 (frontend fixes) · **Type:** feature / refactor
+
+**What changed:** User asked for every framework to show an AI-generated diagram with no
+discrepancy between types. Until this point only the 15 newly-discovered frameworks did -
+the original 42 still had their pre-existing hand-typed custom ASCII art, looked up via a
+fragile keyword-matching function (`getAsciiDiagramForFramework`). That lookup had a real bug:
+"AIDA Funnel" and "AARM Funnel" both matched the same loose `norm.includes("funnel")` rule and
+silently rendered the IDENTICAL diagram - two different frameworks sharing one, wrongly.
+
+Built `backend/scripts/regenerateAllFrameworkDiagrams.js` and ran it against all 42 original
+frameworks: same pipeline as the 15 new ones (Gemini drafts a structured diagram - issue_tree/
+flow/matrix - grounded strictly in that framework's own already-verified description/example/
+steps/pitfalls, then the same deterministic renderer functions turn it into ASCII), except
+this version lets the model choose the diagram type itself rather than being given a hint, since
+hand-picking a type for 42 frameworks wasn't worth doing when the content makes it obvious.
+Also regenerated "Value Chain Analysis" (one of the 15 new frameworks that had happened to
+reuse a pre-existing hand-crafted entry, so it was the one straggler not yet AI-generated).
+
+**Replaced the lookup mechanism, not just the content:** `FRAMEWORK_ASCII_MAP` is now keyed by
+each framework's *exact* name (not a slug matched by keyword heuristics), and
+`getAsciiDiagramForFramework` is a one-line direct lookup. This is what actually guarantees no
+discrepancy going forward - a fuzzy keyword system has no way to promise every framework gets
+its own distinct diagram; a 1:1 name-keyed map does, by construction. File shrank from 1131 to
+913 lines despite having 15 more entries.
+
+**Diagram type generation needed two small retries:** 3/42 frameworks (9-Box Grid, North Star
+Metric, Porter's Generic Strategies) failed the auto-detection prompt on the first pass - a
+JSON shape mismatch specific to the 'matrix' type when the model picked it under the longer
+auto-detection prompt. North Star Metric passed on a plain retry; the two matrix cases were
+regenerated with a shorter, matrix-specific prompt (same one proven for Managerial Grid
+earlier) and passed cleanly.
+
+**Result:** All 57 live frameworks (42 regenerated + 14 from the prior discovery-pass diagrams
++ 1 regenerated Value Chain Analysis) now have a diagram produced by the identical AI-
+generation + deterministic-render pipeline. Zero shared/duplicate diagrams (verified: every DB
+framework name has an exact, unique entry in the new map - 0 missing, checked programmatically).
+
+**Why:** Direct response to user: "Make sure that all the frameworks show AI-generated
+diagrams... there should be coherence among all the diagrams."
+
+**Cost:** ~$0 - flash-lite tier, 43 generation calls (42 + Value Chain Analysis) plus a
+handful of retries.
+
+**Files:** `backend/scripts/regenerateAllFrameworkDiagrams.js` (new, read-only),
+`frontend-react/src/lib/asciiDiagrams.ts` (rewritten: name-keyed map, simplified lookup,
+renderer functions below it untouched - `treeToAscii`/`flowToAscii`/`matrixToAscii`/
+`tableToAscii`/`diagramBlockToAscii` are still used elsewhere, e.g. Guesstimates),
+`content/all-frameworks-diagrams-2026-11-04/all-57-diagrams.json` (full generated dataset).
+
+**Proof:** `npx tsc --noEmit` clean. Verified live: MECE and Profitability Framework (both
+previously elaborate hand-crafted multi-box diagrams) now render in the same visual style as
+the newly-discovered frameworks' diagrams - genuinely coherent, not just side-by-side similar.
+Programmatic check confirms all 57 DB framework names have an exact map entry, 0 missing.
+Console checked - no new errors.
+
+**Undo:** Revert this commit (git) - no database rows touched, this is frontend-only.
+
+**Open issues:** None. Any future framework added to the `frameworks` table needs a
+corresponding `FRAMEWORK_ASCII_MAP` entry added by name (same script pattern) or it will
+correctly show no diagram rather than a wrong one.
+
+---
+
 ## 2026-11-04 — Fixed: AARRR Framework was missing from the diagram pass (now 15/15 covered)
 
 **Phase:** M4 (frontend fixes) · **Type:** bug fix

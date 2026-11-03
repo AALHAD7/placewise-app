@@ -1,896 +1,254 @@
 import type { PlacewiseTreeNode, PlacewiseDiagramBlock } from "../types/api";
 
-// High-fidelity handcrafted ASCII diagrams for core consulting, finance, product, marketing, HR, and strategy frameworks.
+// Every diagram here is generated the same way: a Gemini call drafts a structured diagram
+// (issue_tree | flow | matrix) grounded strictly in that framework's own already-verified
+// description/example/steps/pitfalls (see backend/scripts/regenerateAllFrameworkDiagrams.js
+// and generateFrameworkDiagrams.js), then the SAME deterministic renderer functions below
+// (treeToAscii/flowToAscii/matrixToAscii) turn it into this ASCII text - never hand-typed,
+// never an LLM painting box-drawing characters freehand. Keyed by the framework's exact name
+// (not a fuzzy keyword match) so every framework gets its own diagram with zero collision
+// risk - a prior keyword-matching version of this file made "AIDA Funnel" and "AARM Funnel"
+// silently share one diagram because both matched a loose "funnel" rule.
 export const FRAMEWORK_ASCII_MAP: Record<string, { title: string; ascii: string }> = {
-  // Profitability Framework / Profit Tree
-  profitability: {
-    title: "Profit Tree (Revenue & Cost Breakdown)",
-    ascii: `                          ┌───────────────────────────┐
-                          │          PROFIT           │
-                          │     (Revenue - Costs)     │
-                          └─────────────┬─────────────┘
-                                        │
-                 ┌──────────────────────┴──────────────────────┐
-                 ▼                                             ▼
-  ┌─────────────────────────────┐               ┌─────────────────────────────┐
-  │           REVENUE           │               │            COSTS            │
-  │      (Price × Volume)       │               │      (Fixed + Variable)     │
-  └──────────────┬──────────────┘               └──────────────┬──────────────┘
-                 │                                             │
-        ┌────────┴────────┐                           ┌────────┴────────┐
-        ▼                 ▼                           ▼                 ▼
- ┌─────────────┐   ┌─────────────┐             ┌─────────────┐   ┌─────────────┐
- │    PRICE    │   │   VOLUME    │             │ FIXED COSTS │   │VAR. COSTS   │
- │ (per unit)  │   │(units sold) │             │ (overhead)  │   │ (per unit)  │
- ├─────────────┤   ├─────────────┤             ├─────────────┤   ├─────────────┤
- │• Product mix│   │• Market size│             │• Rent/Leases│   │• Materials  │
- │• Discounts  │   │• Mkt share  │             │• SG&A/Salary│   │• Direct lab.│
- │• Elasticity │   │• Retention  │             │• IT & equip.│   │• Packaging  │
- │• Bundling   │   │• Distribut. │             │• Deprec.    │   │• Shipping   │
- └─────────────┘   └─────────────┘             └─────────────┘   └─────────────┘`
+  "3 Financial Statements Integration": {
+    title: "3 Financial Statements Integration",
+    ascii: `┌── (1) Net Income flows to Balance Sheet and Cash Flow
+│   └──► Non-cash expenses added back on Cash Flow
+┌── (2) Non-cash expenses added back on Cash Flow
+│   └──► Net Working Capital changes adjust Operating Cash
+┌── (3) Net Working Capital changes adjust Operating Cash
+│   └──► Capex investments update PP&E on Balance Sheet
+┌── (4) Capex investments update PP&E on Balance Sheet
+│   └──► Financing activities adjust Debt and Equity
+┌── (5) Financing activities adjust Debt and Equity
+│   └──► Net change in cash links to Ending Cash
+┌── (6) Net change in cash links to Ending Cash`
   },
 
-  // MECE
-  mece: {
-    title: "MECE Principle (Mutually Exclusive, Collectively Exhaustive)",
-    ascii: `                           ┌───────────────────────────┐
-                           │     PROBLEM STATEMENT     │
-                           └─────────────┬─────────────┘
-                                         │
-                 ┌───────────────────────┴───────────────────────┐
-                 ▼                                               ▼
-   ┌───────────────────────────┐                   ┌───────────────────────────┐
-   │        CATEGORY A         │                   │        CATEGORY B         │
-   │  (No Overlap with B)      │                   │  (Together Covers 100%)   │
-   └─────────────┬─────────────┘                   └─────────────┬─────────────┘
-                 │                                               │
-        ┌────────┴────────┐                             ┌────────┴────────┐
-        ▼                 ▼                             ▼                 ▼
-   ┌───────────┐     ┌───────────┐                 ┌───────────┐     ┌───────────┐
-   │ Sub-cat 1 │     │ Sub-cat 2 │                 │ Sub-cat 3 │     │ Sub-cat 4 │
-   └───────────┘     └───────────┘                 └───────────┘     └───────────┘
-
-   • Mutually Exclusive (ME): Zero overlap. No element falls into more than one bucket.
-   • Collectively Exhaustive (CE): Zero gaps. Together all buckets cover 100% of the space.`
+  "3Cs Framework": {
+    title: "3Cs Framework Process",
+    ascii: `┌── (1) Company: Strengths, constraints, & motives
+│   └──► Customer: End needs & changing demand
+┌── (2) Customer: End needs & changing demand
+│   └──► Competitor: Rival landscape & relative position
+┌── (3) Competitor: Rival landscape & relative position
+│   └──► Pivot to specific deep-dive structure
+┌── (4) Pivot to specific deep-dive structure`
   },
 
-  // 3Cs Framework
-  "3cs": {
-    title: "3Cs Strategic Alignment Lens",
-    ascii: `                      ┌──────────────────────────────────────┐
-                      │            3Cs STRATEGY LENS         │
-                      └──────────────────┬───────────────────┘
-                                         │
-        ┌────────────────────────────────┼────────────────────────────────┐
-        ▼                                ▼                                ▼
- ┌──────────────┐                 ┌──────────────┐                 ┌──────────────┐
- │   COMPANY    │                 │  CUSTOMERS   │                 │ COMPETITORS  │
- ├──────────────┤                 ├──────────────┤                 ├──────────────┤
- │• Core assets │                 │• Segments    │                 │• Market share│
- │• Cost basis  │                 │• Needs & pain│                 │• Value prop  │
- │• Product mix │                 │• Price sens. │                 │• Cost curve  │
- │• Culture/DNA │                 │• Journey/CLV │                 │• Moats/IP    │
- └──────────────┘                 └──────────────┘                 └──────────────┘`
-  },
-
-  // Market Sizing
-  "market sizing": {
-    title: "Market Sizing: Top-Down vs Bottom-Up",
-    ascii: `   TOP-DOWN APPROACH                           BOTTOM-UP APPROACH
-   ┌───────────────────────────────────┐       ┌───────────────────────────────────┐
-   │ Entire Population / Macro Base    │       │ Customer / Unit Base Level        │
-   │ (e.g. 1.4B total population)      │       │ (e.g. Number of households/shops) │
-   └─────────────────┬─────────────────┘       └─────────────────┬─────────────────┘
-                     ▼ Filter: Demographics                      ▼ Multiplied by:
-   ┌───────────────────────────────────┐       ┌───────────────────────────────────┐
-   │ Target Demographic & Income Slice │       │ Units / Purchases per Period      │
-   │ (e.g. Urban, Tier 1/2, Age 20-40) │       │ (e.g. 2 devices per household)    │
-   └─────────────────┬─────────────────┘       └─────────────────┬─────────────────┘
-                     ▼ Filter: Accessibility                     ▼ Multiplied by:
-   ┌───────────────────────────────────┐       ┌───────────────────────────────────┐
-   │ Serviceable Addressable Market    │       │ Average Order Value / Price (ASP) │
-   │ (Internet penetration, awareness) │       │ (e.g. $250 avg ticket size)       │
-   └─────────────────┬─────────────────┘       └─────────────────┬─────────────────┘
-                     ▼ Multiply: Usage × ASP                     ▼ Equals:
-   ┌───────────────────────────────────┐       ┌───────────────────────────────────┐
-   │ TOTAL ADDRESSABLE MARKET (TAM)    │       │ TOTAL MARKET SIZE                 │
-   └───────────────────────────────────┘       └───────────────────────────────────┘`
-  },
-
-  // Porter's Five Forces
-  porter: {
-    title: "Porter's Five Forces (Traditional Industry Structure Model)",
-    ascii: `                                 ┌─────────────────────────────┬─────────────────────────────┐
-                                 │                 THREAT OF NEW ENTRANTS                    │
-                                 ├───────────────────────────────────────────────────────────┤
-                                 │ • Economies of scale         • Capital requirements       │
-                                 │ • Brand loyalty & identity   • Customer switching costs   │
-                                 │ • Access to distribution     • Government policy & IP/pat │
-                                 └─────────────────────────────┬─────────────────────────────┘
-                                                               │
-                                                               ▼
-┌───────────────────────────────────┐        ┌─────────────────┬─────────────────┐        ┌───────────────────────────────────┐
-│   BARGAINING POWER OF SUPPLIERS   │        │    RIVALRY AMONG COMPETITORS    │        │    BARGAINING POWER OF BUYERS     │
-├───────────────────────────────────┤        ├─────────────────────────────────┤        ├───────────────────────────────────┤
-│ • Supplier concentration vs firms │        │ • Competitor balance & count    │        │ • Buyer concentration & volume    │
-│ • Input differentiation & quality │ ─────► │ • Industry growth rate (slow)   │ ◄───── │ • Buyer switching costs (low)     │
-│ • Switching costs of suppliers    │        │ • High fixed costs & storage    │        │ • Price sensitivity & low margins │
-│ • Availability of substitute input│        │ • Low switching costs & diff.   │        │ • Undifferentiated / commodities  │
-│ • Threat of forward integration   │        │ • Capacity added in large jumps │        │ • Threat of backward integration  │
-│ • Importance of volume to supplier│        │ • High exit barriers (contracts)│        │ • Full information available      │
-└───────────────────────────────────┘        └─────────────────┴─────────────────┘        └───────────────────────────────────┘
-                                                               ▲
-                                                               │
-                                 ┌─────────────────────────────┴─────────────────────────────┐
-                                 │               THREAT OF SUBSTITUTE PRODUCTS               │
-                                 ├───────────────────────────────────────────────────────────┤
-                                 │ • Relative price & performance of substitute products     │
-                                 │ • Buyer switching costs to alternative categories         │
-                                 │ • Buyer propensity to substitute & changing preferences   │
-                                 └───────────────────────────────────────────────────────────┘
-
-STRATEGIC SYNTHESIS:
-• Intense / Strong Forces ──► High competitive pressure ──► Low industry margins (e.g., Commercial Airlines, Commodity Retail)
-• Mild / Weak Forces     ──► Low competitive pressure  ──► High industry margins (e.g., Enterprise Software, Medical Devices)`
-  },
-
-  // --- FINANCE: Valuation & Corporate Finance ---
-  lbo: {
-    title: "LBO Mechanics & Returns Waterfall (Leveraged Buyout)",
-    ascii: `   ENTRY (Day 0)                 HOLDING PERIOD (3-7 Yrs)                 EXIT (Day N)
-   ┌─────────────────────────┐   ┌───────────────────────────────┐   ┌─────────────────────────┐
-   │ ACQUISITION FINANCING   │   │ OPERATIONAL VALUE CREATION    │   │ TOTAL EXIT PROCEEDS     │
-   │ (Sources & Uses)        │   │ (Free Cash Flow Generation)   │   │ (Enterprise Value)      │
-   ├─────────────────────────┤   ├───────────────────────────────┤   ├─────────────────────────┤
-   │ Senior Debt     (40-50%)│──►│ • Free Cash Flow Generation   │──►│ Senior Debt (Repaid!)   │
-   │ Subordinated    (15-25%)│   │ • Pay down senior debt        │   │ Mezzanine   (Repaid!)   │
-   │ Sponsor Equity  (25-40%)│   │ • Operational margin expansion│   ├─────────────────────────┤
-   │ Management Roll  (2-5%) │   │ • Organic / M&A EBITDA growth │   │ SPONSOR EQUITY RETURN   │
-   │ Total Purchase: 100%    │   │ • Working capital turnaround  │   │ (Multiple of Money MoIC)│
-   └─────────────────────────┘   └───────────────────────────────┘   └─────────────────────────┘
-
-   THE 3 ENGINES OF LBO RETURNS (Target IRR: 20-25%):
-   1. DEBT PAYDOWN: Target's own cash flows pay off borrowing (deleveraging equity).
-   2. EBITDA GROWTH: Revenue expansion and margin enhancement increase operating profit.
-   3. MULTIPLE EXPANSION: Selling the company at a higher EV/EBITDA multiple than entry.`
-  },
-
-  ev_bridge: {
-    title: "Enterprise Value to Equity Value Valuation Bridge",
-    ascii: `   EQUITY VALUE (Market Capitalization)
-   ┌────────────────────────────────────────────────────────┐
-   │ Diluted Share Price × Fully Diluted Shares Outstanding │
-   └───────────────────────────┬────────────────────────────┘
-                               │
-                               ▼  (+) Add Net Debt & Non-Common Claims
-   ┌────────────────────────────────────────────────────────┐
-   │ (+) Total Debt (Short-term & Long-term Debt)           │
-   │ (+) Preferred Stock (Liquidation value)                │
-   │ (+) Non-Controlling / Minority Interest                │
-   │ (-) Cash and Cash Equivalents (and liquid investments) │
-   └───────────────────────────┬────────────────────────────┘
-                               │
-                               ▼  (=) Core Operating Value
-   ┌────────────────────────────────────────────────────────┐
-   │ ENTERPRISE VALUE (EV / Firm Value)                     │
-   │ Represents true takeover value of operating business   │
-   └────────────────────────────────────────────────────────┘
-
-   VALUATION MULTIPLE ALIGNMENT:
-   • Enterprise Value Multiples (Unlevered): EV / EBITDA  ·  EV / EBIT  ·  EV / Sales
-   • Equity Value Multiples     (Levered):   P / E  ·  Price / Book  ·  Price / FCFE`
-  },
-
-  capm: {
-    title: "CAPM & The Systematic Risk Spectrum (Beta)",
-    ascii: `   CAPITAL ASSET PRICING MODEL (Cost of Equity):
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │           Expected Return (Ke) = Rf + β × [ Rm - Rf ]                   │
-   │                                                                         │
-   │  • Rf:  Risk-Free Rate (e.g. 10-Yr US Treasury Yield: ~4.0%)            │
-   │  • β:   Beta (Sensitivity to systematic macroeconomic movements)         │
-   │  • ERP: Equity Risk Premium [Rm - Rf] (Historical equity spread: ~5.5%) │
-   └─────────────────────────────────────────────────────────────────────────┘
-
-   BETA RISK SPECTRUM:
-      β < 0         β = 0             0 < β < 1             β = 1             β > 1
-   [ Inverted ]  [ Risk-Free ]      [ Defensive ]        [ Market ]      [ Aggressive ]
-   Gold/Shorts    Treasuries    Utilities, Staples, Med    S&P 500       Tech, Luxury, PE
-   Moves against  Zero equity    Low volatility, stable    Benchmark      Amplified market
-   market cycle   correlation    recession-resistant       movement       swings/cyclical
-
-   UNLEVERED BETA (Asset Beta)  = Levered Beta / [ 1 + (1 - Tax Rate) × (Debt / Equity) ]
-   RELEVERED BETA (Equity Beta) = Unlevered Beta × [ 1 + (1 - Tax Rate) × (Target D/E) ]`
-  },
-
-  wacc: {
-    title: "WACC (Weighted Average Cost of Capital) Architecture",
-    ascii: `   ┌────────────────────────────────────────────────────────────────────────┐
-   │  WACC = [ (E / V) × Ke ]  +  [ (D / V) × Kd × (1 - Tax Rate) ]          │
-   └───────────────────────────────────┬────────────────────────────────────┘
-                                       │
-                    ┌──────────────────┴──────────────────┐
-                    ▼                                     ▼
-     ┌─────────────────────────────┐       ┌─────────────────────────────┐
-     │   EQUITY COMPONENT          │       │    DEBT COMPONENT           │
-     ├─────────────────────────────┤       ├─────────────────────────────┤
-     │ • Weight: E / V             │       │ • Weight: D / V             │
-     │ • Cost: Ke (via CAPM)       │       │ • Cost: Kd (Yield/Spread)   │
-     │ • Riskier than debt         │       │ • Tax Shield: × (1 - Tax)   │
-     │ • No contractual repayment  │       │ • Cheaper due to tax deduct │
-     └─────────────────────────────┘       └─────────────────────────────┘
-
-   CAPITAL STRUCTURE SENSITIVITY:
-   • Low Debt: Safe, but WACC is suboptimal (missing out on cheap debt tax shields).
-   • Optimal Debt: Minimizes WACC and maximizes Enterprise Value.
-   • Excessive Debt: Increases financial distress risk; both Kd and Ke spike sharply.`
-  },
-
-  terminal_value: {
-    title: "Terminal Value (Perpetual Growth vs. Exit Multiple)",
-    ascii: `   DISCRETE PROJECTIONS (Years 1 to N)          TERMINAL VALUE (Year N+1 to ∞)
-   ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐   ┌─────────────────────────────┐
-   │ Yr 1 │─│ Yr 2 │─│ Yr 3 │─│ Yr 4 │─│ Yr 5 │──►│   TERMINAL VALUE HORIZON    │
-   │ FCF1 │ │ FCF2 │ │ FCF3 │ │ FCF4 │ │ FCF5 │   │   (65% - 85% of Total DCF)  │
-   └──────┘ └──────┘ └──────┘ └──────┘ └──────┘   └──────────────┬──────────────┘
-                                                                 │
-                                     ┌───────────────────────────┴───────────────────────────┐
-                                     ▼                                                       ▼
-                      ┌─────────────────────────────┐                         ┌─────────────────────────────┐
-                      │   GORDON GROWTH PERPETUITY  │                         │    EXIT MULTIPLE METHOD     │
-                      ├─────────────────────────────┤                         ├─────────────────────────────┤
-                      │ TV = [ FCF_N × (1 + g) ]    │                         │ TV = EBITDA_N × Exit Mult   │
-                      │      ───────────────────    │                         │ (Benchmark mature peers)    │
-                      │          (WACC - g)         │                         ├─────────────────────────────┤
-                      ├─────────────────────────────┤                         │ Cross-Check:                │
-                      │ • g ≤ Long-term GDP (2-3%)  │                         │ Implied g =                 │
-                      │ • Prevents absurd growth    │                         │ WACC - (FCF_N+1 / TV)       │
-                      └─────────────────────────────┘                         └─────────────────────────────┘
-                                     │                                                       │
-                                     └───────────────────────────┬───────────────────────────┘
-                                                                 ▼
-                                                  Discount to Present Value:
-                                                  PV(TV) = TV / (1 + WACC)^N`
-  },
-
-  income_statement: {
-    title: "Income Statement Waterfall & P&L Walk",
-    ascii: `   ┌───────────────────────────────────────────────────────────────┐
-   │ GROSS REVENUES (Gross Sales / Top Line)                       │
-   │ (-) Returns, Discounts & Allowances                           │
-   └───────────────────────────────┬───────────────────────────────┘
-                                   ▼
-   ┌───────────────────────────────────────────────────────────────┐
-   │ NET REVENUE                                                   │
-   │ (-) Cost of Goods Sold (COGS: Raw materials, Direct labor)    │
-   └───────────────────────────────┬───────────────────────────────┘
-                                   ▼
-   ┌───────────────────────────────────────────────────────────────┐
-   │ GROSS PROFIT  (Gross Margin % = Gross Profit / Net Revenue)   │
-   │ (-) Operating Expenses (SG&A, R&D, Sales & Marketing Overhead)│
-   └───────────────────────────────┬───────────────────────────────┘
-                                   ▼
-   ┌───────────────────────────────────────────────────────────────┐
-   │ EBITDA  (Earnings Before Interest, Taxes, Deprec. & Amort.)   │
-   │ (-) Depreciation (Tangible PP&E) & Amortization (Intangibles) │
-   └───────────────────────────────┬───────────────────────────────┘
-                                   ▼
-   ┌───────────────────────────────────────────────────────────────┐
-   │ EBIT / OPERATING INCOME                                       │
-   │ (-) Net Interest Expense (Debt interest - Cash interest)      │
-   │ (+/-) Non-Operating Gains / Losses                            │
-   └───────────────────────────────┬───────────────────────────────┘
-                                   ▼
-   ┌───────────────────────────────────────────────────────────────┐
-   │ EBT (Earnings Before Taxes / Pre-Tax Income)                  │
-   │ (-) Corporate Income Taxes (Cash Taxes + Deferred Taxes)      │
-   └───────────────────────────────┬───────────────────────────────┘
-                                   ▼
-   ┌───────────────────────────────────────────────────────────────┐
-   │ NET INCOME  (Bottom Line / Earnings Available to Equity)      │
-   │ Divided by Diluted Share Count = Earnings Per Share (EPS)     │
-   └───────────────────────────────────────────────────────────────┘`
-  },
-
-  three_statements: {
-    title: "3 Financial Statements Dynamic Linkage",
-    ascii: `             INCOME STATEMENT
-   ┌───────────────────────────────────┐
-   │ Revenue                           │
-   │ (-) Expenses & Taxes              │
-   │ ═════════════════════════════════ │
-   │ NET INCOME                        │────────┐
-   └───────────────────────────────────┘        │
-                     │                          │
-                     ▼                          ▼
-           CASH FLOW STATEMENT            BALANCE SHEET
-   ┌───────────────────────────────────┐  ┌───────────────────────────────────┐
-   │ CASH FROM OPERATIONS (CFO)        │  │ ASSETS                            │
-   │ • Starts with Net Income ◄────────┼──┤ • Cash (Ending cash from CFS)◄────┤──┐
-   │ • (+) Add back Non-Cash (D&A) ────┼──┤ • Accounts Receivable             │  │
-   │ • (+/-) Net Working Capital swings│  │ • Inventory                       │  │
-   ├───────────────────────────────────┤  │ • PP&E (Net of Depreciation) ◄───┼──┤
-   │ CASH FROM INVESTING (CFI)         │  ├───────────────────────────────────┤  │
-   │ • (-) Capital Expenditures (Capex)├──┤ LIABILITIES                       │  │
-   ├───────────────────────────────────┤  │ • Accounts Payable & Accrued      │  │
-   │ CASH FROM FINANCING (CFF)         │  │ • Debt (Borrowings / Paydowns) ◄──┼──┤
-   │ • (+/-) Debt issued / repaid ─────┼──┤ SHAREHOLDERS' EQUITY              │  │
-   │ • (-) Dividends paid              │  │ • Common Stock                    │  │
-   ├───────────────────────────────────┤  │ • Retained Earnings               │  │
-   │ NET CHANGE IN CASH                │  │   (Prior RE + Net Income - Divs) ◄┼──┘
-   │ + Beginning Cash = Ending Cash ───┼──┘                                   │
-   └───────────────────────────────────┘  └───────────────────────────────────┘`
-  },
-
-  working_capital: {
-    title: "Working Capital & Cash Conversion Cycle (CCC)",
-    ascii: `   TIMELINE OF CASH INFLOWS & OUTFLOWS:
-    
-   Day 0: Buy Inventory              Day 35: Sell Goods             Day 50: Collect Cash
-   ┌─────────────────────────────────┬──────────────────────────────┬───────────────────┐
-   │       INVENTORY HELD            │      ACCOUNTS RECEIVABLE     │                   │
-   │   Days Inventory Out (DIO) = 35 │  Days Sales Out (DSO) = 15   │                   │
-   └─────────────────────────────────┴──────────────────────────────┴───────────────────┘
-   │◄─────────────────── OPERATING CYCLE = 50 DAYS ────────────────►│
-   
-   ┌──────────────────────────────────────────────┐
-   │           ACCOUNTS PAYABLE                   │
-   │       Days Payable Out (DPO) = 60            │
-   └──────────────────────────────────────────────┘
-   Day 0: Receive Invoice                         Day 60: Pay Supplier
-   
-   ──────────────────────────────────────────────────────────────────────────────────────
-   CASH CONVERSION CYCLE (CCC) = DIO + DSO - DPO
-   CCC = 35 + 15 - 60 = -10 DAYS
-   
-   • POSITIVE CCC: Company must fund trapped working capital (receivables + inventory).
-   • NEGATIVE CCC: Company collects customer cash before paying suppliers (free float).`
-  },
-
-  comps: {
-    title: "Comparable Company Analysis (Trading Comps)",
-    ascii: `   PEER UNIVERSE SELECTION        FINANCIAL METRICS           VALUATION MULTIPLES
-   ┌───────────────────────────┐  ┌─────────────────────────┐ ┌─────────────────────────┐
-   │ • Same Industry & Sector  │  │ • Revenue & Growth rate │ │ • EV / EBITDA  (Core)   │
-   │ • Similar Size / MarketCap│──► • Gross & EBITDA Margin │─► • EV / EBIT    (Capex)  │
-   │ • Comparable Geography    │  │ • Net Income & Margins  │ │ • EV / Sales   (Growth) │
-   │ • Customer Type (B2B/B2C) │  │ • Balance Sheet Health  │ │ • P / E        (Equity) │
-   └───────────────────────────┘  └─────────────────────────┘ └────────────┬────────────┘
-                                                                           │
-                                  BENCHMARK BENCH & VALUATION              ▼
-   ┌────────────────────────────────────────────────────────────────────────────────────┐
-   │ Multiples Spread:      25th Percentile       Median         75th Percentile        │
-   │ Target EV/EBITDA:           8.5x              10.2x              12.0x             │
-   │ Implied Enterprise Value:  $85.0M            $102.0M            $120.0M            │
-   │ (-) Net Debt:              -$20.0M           -$20.0M            -$20.0M            │
-   │ Implied Equity Value:      $65.0M            $82.0M             $100.0M            │
-   └────────────────────────────────────────────────────────────────────────────────────┘`
-  },
-
-  dcf: {
-    title: "Discounted Cash Flow (DCF) Valuation Bridge",
-    ascii: `   Year 1      Year 2      Year 3      Year 4      Year 5      Terminal Value
-   ┌─────┐     ┌─────┐     ┌─────┐     ┌─────┐     ┌─────┐     ┌────────────┐
-   │FCF 1│     │FCF 2│     │FCF 3│     │FCF 4│     │FCF 5│     │ Perpetuity │
-   └──┬──┘     └──┬──┘     └──┬──┘     └──┬──┘     └──┬──┘     └─────┬──────┘
-      │           │           │           │           │              │
-      ▼           ▼           ▼           ▼           ▼              ▼
-   Discount each future cash flow back to Present Value using WACC:
-              PV = FCF_t / (1 + WACC)^t
-   ──────────────────────────────────────────────────────────────────────────
-   Enterprise Value = Sum of PV(FCF_1..5) + PV(Terminal Value)
-   Equity Value     = Enterprise Value - Net Debt`
-  },
-
-  // --- GENERAL MANAGEMENT & STRATEGY ---
-  bmc: {
-    title: "Business Model Canvas (9 Building Blocks)",
-    ascii: ` ┌──────────────────┬──────────────────┬──────────────────┬──────────────────┬──────────────────┐
- │ KEY PARTNERS     │ KEY ACTIVITIES   │ VALUE            │ CUSTOMER         │ CUSTOMER         │
- │                  │                  │ PROPOSITIONS     │ RELATIONSHIPS    │ SEGMENTS         │
- │ • Suppliers      │ • Production     │                  │                  │                  │
- │ • Alliances      │ • Problem solving│ • Core solution  │ • Personal assist│ • Target niches  │
- │ • Joint ventures │ • Platform/mkt   │ • Pain relievers │ • Self-service   │ • Mass market    │
- │                  ├──────────────────┤ • Gain creators  ├──────────────────┤ • Multi-sided    │
- │                  │ KEY RESOURCES    │ • Cost / Quality │ CHANNELS         │                  │
- │                  │                  │                  │                  │                  │
- │                  │ • Physical / IP  │                  │ • Direct / Web   │                  │
- │                  │ • Human / Talent │                  │ • Sales force    │                  │
- ├──────────────────┴──────────────────┴──────────────────┴──────────────────┴──────────────────┤
- │ COST STRUCTURE                                         │ REVENUE STREAMS                     │
- │ • Fixed costs vs Variable costs                        │ • Asset sales / Subscription fees   │
- │ • Cost-driven vs Value-driven economies of scale       │ • Dynamic vs Fixed list pricing     │
- └────────────────────────────────────────────────────────┴─────────────────────────────────────┘`
-  },
-
-  blue_ocean: {
-    title: "Blue Ocean Strategy: Four Actions Framework (ERRC)",
-    ascii: `                            ┌───────────────────────────┐
-                            │    FOUR ACTIONS (ERRC)    │
-                            │  Create Uncontested Space │
-                            └─────────────┬─────────────┘
-                                          │
-                  ┌───────────────────────┴───────────────────────┐
-                  ▼                                               ▼
-   ┌─────────────────────────────┐                 ┌─────────────────────────────┐
-   │         ELIMINATE           │                 │           RAISE             │
-   ├─────────────────────────────┤                 ├─────────────────────────────┤
-   │ Which factors that industry │                 │ Which factors should be     │
-   │ has long competed on should │                 │ raised well above the       │
-   │ be completely eliminated?   │                 │ industry standard?          │
-   └─────────────────────────────┘                 └─────────────────────────────┘
-                  │                                               │
-                  ▼                                               ▼
-   ┌─────────────────────────────┐                 ┌─────────────────────────────┐
-   │          REDUCE             │                 │          CREATE             │
-   ├─────────────────────────────┤                 ├─────────────────────────────┤
-   │ Which factors should be     │                 │ Which factors should be     │
-   │ reduced well below the      │                 │ created that the industry   │
-   │ industry standard?          │                 │ has never offered?          │
-   └─────────────────────────────┘                 └─────────────────────────────┘`
-  },
-
-  star: {
-    title: "STAR+R Behavioral Response Framework",
-    ascii: ` ┌─────┬─────────────────────────────────────────────────────────┬──────────────┐
- │ S   │ Situation (Set the context, company, timeline & stakes) │ ~15% of time │
- ├─────┼─────────────────────────────────────────────────────────┼──────────────┤
- │ T   │ Task (The specific problem, goal, or mandate assigned)   │ ~15% of time │
- ├─────┼─────────────────────────────────────────────────────────┼──────────────┤
- │ A   │ Action (Your personal leadership, decisions & execution)│ ~50% of time │
- ├─────┼─────────────────────────────────────────────────────────┼──────────────┤
- │ R   │ Result (Measurable outcome, quantifiable ROI, metrics)  │ ~15% of time │
- ├─────┼─────────────────────────────────────────────────────────┼──────────────┤
- │ +R  │ Reflection (Retrospective learnings, what you'd adapt)  │ ~5% of time  │
- └─────┴─────────────────────────────────────────────────────────┴──────────────┘`
-  },
-
-  swot: {
-    title: "SWOT Strategic Analysis Matrix",
-    ascii: `                    INTERNAL (Capabilities)
-             HELPFUL                       HARMFUL
-   ┌─────────────────────────────┬─────────────────────────────┐
-   │        STRENGTHS            │        WEAKNESSES           │
-   │ • Proprietary tech / IP     │ • High fixed cost base      │
-   │ • Strong brand & loyalty    │ • Gaps in talent/supply     │
-   │ • Robust balance sheet      │ • Weak digital presence     │
-   ├─────────────────────────────┼─────────────────────────────┤
-   │      OPPORTUNITIES          │         THREATS             │
-   │ • Emerging market expansion │ • Aggressive new entrants   │
-   │ • Unmet consumer pain points│ • Changing regulations      │
-   │ • Synergistic M&A targets   │ • Shifting consumer taste   │
-   └─────────────────────────────┴─────────────────────────────┘
-                    EXTERNAL (Environment)`
-  },
-
-  pestel: {
-    title: "PESTEL Macro-Environmental Strategic Radar",
-    ascii: ` ┌───────────────────────────┬───────────────────────────┬───────────────────────────┐
- │ POLITICAL                 │ ECONOMIC                  │ SOCIAL                    │
- │ • Government stability    │ • Inflation & interest    │ • Demographics & aging    │
- │ • Trade tariffs & policy  │ • Currency exchange rates │ • Consumer lifestyles     │
- │ • Taxation frameworks     │ • GDP growth trajectories │ • Cultural preferences    │
- ├───────────────────────────┼───────────────────────────┼───────────────────────────┤
- │ TECHNOLOGICAL             │ ENVIRONMENTAL             │ LEGAL                     │
- │ • AI & automation shifts  │ • Climate & carbon goals  │ • Antitrust & competition │
- │ • R&D innovation pace     │ • Raw material scarcity   │ • Labor & employment laws │
- │ • Infrastructure & cloud  │ • ESG compliance rules    │ • Data privacy (GDPR/etc) │
- └───────────────────────────┴───────────────────────────┴───────────────────────────┘`
-  },
-
-  generic_strategies: {
-    title: "Porter's Generic Competitive Strategies",
-    ascii: `                                    COMPETITIVE ADVANTAGE
-                              LOWER COST                DIFFERENTIATION
-                     ┌───────────────────────────┬───────────────────────────┐
-               BROAD │     COST LEADERSHIP       │      DIFFERENTIATION      │
-                     │  Lowest cost of operation │  Unique value commanding  │
-                     │  in industry (e.g. Walmart│  premium price (e.g. Apple│
-   STRATEGIC   SCOPE │  or Southwest Airlines)   │  or Singapore Airlines)   │
-                     ├───────────────────────────┼───────────────────────────┤
-              NARROW │       COST FOCUS          │   DIFFERENTIATION FOCUS   │
-                     │  Cost advantage in tightly│  Elite customized product │
-                     │  targeted niche segment   │  for luxury / specialist  │
-                     │  (e.g. regional discounter│  niche (e.g. Ferrari)     │
-                     └───────────────────────────┴───────────────────────────┘
-                     WARNING: Avoid "Stuck in the Middle" (no clear advantage).`
-  },
-
-  // --- PRODMAN: Product Strategy & Prioritization ---
-  circles: {
-    title: "CIRCLES Method (Product Design)",
-    ascii: `   ┌───┬─────────────────────────────────────────────────────────┐
-   │ C │ Comprehend Situation (Context, business goal, bounds)   │
-   ├───┼─────────────────────────────────────────────────────────┤
-   │ I │ Identify Customer (User personas, needs, demographics)  │
-   ├───┼─────────────────────────────────────────────────────────┤
-   │ R │ Report Needs (Customer journeys & key friction points)  │
-   ├───┼─────────────────────────────────────────────────────────┤
-   │ C │ Cut & Prioritize (Select #1 highest ROI user pain)      │
-   ├───┼─────────────────────────────────────────────────────────┤
-   │ L │ List Solutions (Brainstorm at least 3 distinct options) │
-   ├───┼─────────────────────────────────────────────────────────┤
-   │ E │ Evaluate Tradeoffs (Pros, cons, feasibility, impact)    │
-   ├───┼─────────────────────────────────────────────────────────┤
-   │ S │ Summarize (Final recommendation, metrics, risks)        │
-   └───┴─────────────────────────────────────────────────────────┘`
-  },
-
-  jtbd: {
-    title: "Jobs To Be Done (JTBD) — The Four Forces of Progress",
-    ascii: `            FORCES PROMOTING CHANGE           │          FORCES BLOCKING CHANGE
-                                              │
-                     PUSH                     │                    HABIT
-      ┌────────────────────────────────┐      │      ┌────────────────────────────────┐
-      │ Problems & frustrations with   │      │      │ Comfort with current workflow  │
-      │ current existing solution      │      │      │ and allegiance to old behavior │
-      └──────────────┬─────────────────┘      │      └────────────────┬───────────────┘
-                     │                        │                       │
-                     ▼                        │                       ▼
-   ═══════════════════════════════════════════╪═══════════════════════════════════════════
-                     ▲                        │                       ▲
-                     │                        │                       │
-      ┌──────────────┴─────────────────┐      │      ┌────────────────┴───────────────┐
-      │ Attractiveness & appeal of the │      │      │ Fear of the unknown, switching │
-      │ new product / imagined future  │      │      │ costs & onboarding friction    │
-      └────────────────────────────────┘      │      └────────────────────────────────┘
-                     PULL                     │                   ANXIETY
-                                              │
-   DECISION THRESHOLD: [ Push + Pull ]  >  [ Habit + Anxiety ]  ──►  User Adopts New Product`
-  },
-
-  north_star: {
-    title: "North Star Metric & Input Driver Tree",
-    ascii: `                           ┌───────────────────────────┐
-                           │     NORTH STAR METRIC     │
-                           │   (Core Value Delivery)   │
-                           └─────────────┬─────────────┘
-                                         │
-                 ┌───────────────────────┼───────────────────────┐
-                 ▼                       ▼                       ▼
-          ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
-          │   BREADTH   │         │    DEPTH    │         │  FREQUENCY  │
-          │(Active Users│         │(Engagement/ │         │(Days Active │
-          │  per Month) │         │ Time Spent) │         │  per Week)  │
-          └──────┬──────┘         └──────┬──────┘         └──────┬──────┘
-                 │                       │                       │
-        ┌────────┴────────┐     ┌────────┴────────┐     ┌────────┴────────┐
-        ▼                 ▼     ▼                 ▼     ▼                 ▼
-   Acquisition       Onboarding Features used   Session Retargeting   Workflow
-   Velocity          Success    per session     Length  Notifications triggers`
-  },
-
-  rice: {
-    title: "RICE Prioritization Framework",
-    ascii: `   ┌─────────────────────────────────────────────────────────────┐
-   │              Reach × Impact × Confidence                    │
-   │   RICE = ──────────────────────────────────                 │
-   │                         Effort                              │
-   └─────────────────────────────────────────────────────────────┘
-     • Reach:      Users affected per time period (e.g. 10,000 users/month)
-     • Impact:     Massive (3x), High (2x), Medium (1x), Low (0.5x), Minimal (0.25x)
-     • Confidence: High (100%), Medium (80%), Low (50%)
-     • Effort:     Person-months or sprints required (e.g. 2 months)`
-  },
-
-  ice: {
-    title: "ICE Prioritization Scoring Matrix",
-    ascii: `   ┌─────────────────────────────────────────────────────────────┐
-   │            Impact  ×  Confidence  ×  Ease                   │
-   │   ICE  =  ────────────────────────────────                   │
-   │                          1                                  │
-   └─────────────────────────────────────────────────────────────┘
-     • Impact:     How much will this move the key metric? (Score 1-10)
-     • Confidence: How sure are we of this impact?        (Score 1-10)
-     • Ease:       How fast/cheap is this to implement?   (Score 1-10)
-     ─────────────────────────────────────────────────────────────
-     Total Score range: 1 to 1,000  (Sort descending to prioritize)`
-  },
-
-  kano: {
-    title: "Kano Customer Satisfaction Feature Model",
-    ascii: `   Customer
-   Satisfaction
-        ▲
-        │                                 DELIGHTERS (Attractive)
-   HIGH │                              ┌─────────────────────────►
-        │                       ┌──────┘
-        │                ┌──────┘         PERFORMANCE (Linear)
-        │         ┌──────┘             ┌─────────────────────────►
-        │  ┌──────┘             ┌──────┘
-   NEUT ┼──┴────────────────────┴────────────────────────────────► Feature Execution
-        │               ┌──────┘
-        │        ┌──────┘                 MUST-HAVES (Basic Threshold)
-        │ ┌──────┘                     ┌─────────────────────────►
-    LOW │─┘
-        ▼
-   RULE OF THUMB: Must-haves cause dissatisfaction if broken; Delighters create loyalty!`
-  },
-
-  heart: {
-    title: "Google HEART UX Metrics Framework",
-    ascii: ` ┌────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐
- │ CATEGORY       │ GOAL                 │ SIGNAL               │ METRIC               │
- ├────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤
- │ HAPPINESS      │ Users love product   │ High satisfaction    │ NPS, CSAT, ratings   │
- ├────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤
- │ ENGAGEMENT     │ Regular interaction  │ Active daily usage   │ Sessions/wk, visits  │
- ├────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤
- │ ADOPTION       │ New user acquisition │ Signups & first use  │ Activation rate, d0  │
- ├────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤
- │ RETENTION      │ Users stick around   │ Repeat active return │ D7/D30 cohort retain │
- ├────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤
- │ TASK SUCCESS   │ Fast & error-free    │ Completing workflows │ Completion %, errors │
- └────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘`
-  },
-
-  // --- MARKETING:SALES ---
-  "4ps": {
+  "4Ps of Marketing (Marketing Mix)": {
     title: "4Ps of Marketing (Marketing Mix)",
-    ascii: `   PRODUCT                              PRICE
-   ┌───────────────────────────────┐    ┌───────────────────────────────┐
-   │ • Features, quality, branding │    │ • Cost-plus vs value pricing  │
-   │ • Packaging & product line    │    │ • Discounts, bundles, credit  │
-   │ • Core value proposition      │    │ • Price elasticity & margins  │
-   └───────────────────────────────┘    └───────────────────────────────┘
-   PLACE                                PROMOTION
-   ┌───────────────────────────────┐    ┌───────────────────────────────┐
-   │ • Direct vs retail vs online  │    │ • Paid ads, PR, word-of-mouth │
-   │ • Supply chain & distribution │    │ • Sales incentives & promos   │
-   │ • Geographic availability     │    │ • Social, content, influencer │
-   └───────────────────────────────┘    └───────────────────────────────┘`
+    ascii: `[ Marketing Mix ]
+├── [ Product ]
+│   ├── [ Core offering & features ]
+│   └── [ Target segment fit ]
+├── [ Price ]
+│   ├── [ Pricing model ]
+│   └── [ Willingness-to-pay ]
+├── [ Place ]
+│   ├── [ Distribution channels ]
+│   └── [ Availability locations ]
+└── [ Promotion ]
+    ├── [ Launch campaigns ]
+    └── [ Core messaging ]`
   },
 
-  stp: {
-    title: "STP Framework (Segmentation, Targeting, Positioning)",
-    ascii: `   1. SEGMENTATION                2. TARGETING                   3. POSITIONING
-   ┌───────────────────────────┐  ┌───────────────────────────┐  ┌───────────────────────────┐
-   │ Divide market into groups:│  │ Select attractive segment:│  │ Craft perception in mind: │
-   │ • Demographics (Age/Inc)  │─►│ • Segment size & growth   │─►│ • Value proposition matrix│
-   │ • Psychographics (Values) │  │ • Competitor saturation   │  │ • Perceptual positioning  │
-   │ • Behavioral (Usage/LTV)  │  │ • Margin & willingness    │  │ • Differentiating moats   │
-   │ • Geographic clusters     │  │ • Company capability fit  │  │ • Messaging & brand image │
-   └───────────────────────────┘  └───────────────────────────┘  └───────────────────────────┘`
+  "9-Box Grid": {
+    title: "9-Box Talent Grid",
+    ascii: `                    X-axis: Performance
+Y-axis: Potential
+                  │ Low Performance      │ Medium Performance   │ High Performance     │
+──────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤
+High Potential    │ Coach / Ramp-up      │ Develop              │ Accelerate / Invest  │
+Medium Potential  │ Misaligned           │ Core Contributor     │ Retain as Specialist │
+Low Potential     │ Manage Out (PIP)     │ Manage Out           │ Manage Out / Exit    │`
   },
 
-  gtm: {
-    title: "Go-to-Market (GTM) Strategic Engine",
-    ascii: ` ┌───────────────────────────┬───────────────────────────┬───────────────────────────┐
- │ IDEAL CUSTOMER PROFILE    │ VALUE PROPOSITION         │ DISTRIBUTION & SALES      │
- │ • Target persona & buyer  │ • Primary pain points     │ • Product-Led (PLG) vs    │
- │ • Company size / vertical │ • Quantifiable ROI        │   Sales-Led (SLG) motion  │
- │ • Tech stack requirements │ • Messaging & positioning │ • Inbound vs Direct Outbd │
- ├───────────────────────────┴───────────────────────────┴───────────────────────────┤
- │ PRICING, PACKAGING & UNIT ECONOMICS                                               │
- │ • Freemium vs Tiered SaaS vs Usage-based  ·  Target LTV:CAC > 3x  ·  Payback < 12m│
- └───────────────────────────────────────────────────────────────────────────────────┘`
+  "AARM Funnel": {
+    title: "AARM Funnel Framework",
+    ascii: `┌── (1) Acquisition
+│   └──► Activation [First arrival]
+┌── (2) Activation
+│   └──► Retention [First-value moment]
+┌── (3) Retention
+│   └──► Monetization [Ongoing usage]
+┌── (4) Monetization
+│   └──► Diagnose & Isolate Drop [Convert revenue]
+┌── (5) Diagnose & Isolate Drop`
   },
 
-  bcg: {
-    title: "BCG Growth-Share Matrix (Portfolio Strategy)",
-    ascii: `                 Relative Market Share
-                    HIGH                  LOW
-             ┌─────────────────────┬─────────────────────┐
-             │       STARS         │   QUESTION MARKS    │
-        HIGH │ • High Growth       │ • High Growth       │
-             │ • High Investment   │ • Low Share         │
-Market       │ • Future Cash Cows  │ • Invest or Discard │
-Growth       ├─────────────────────┼─────────────────────┤
-             │     CASH COWS       │        DOGS         │
-         LOW │ • Low Growth        │ • Low Growth        │
-             │ • High Cash Flow    │ • Low Cash Flow     │
-             │ • Fund other units  │ • Divest/Liquidate  │
-             └─────────────────────┴─────────────────────┘`
+  "AARRR Framework (Pirate Metrics)": {
+    title: "AARRR Framework",
+    ascii: `┌── (1) Acquisition metrics
+│   └──► Activation metrics
+┌── (2) Activation metrics
+│   └──► Retention metrics
+┌── (3) Retention metrics
+│   └──► Referral metrics
+┌── (4) Referral metrics
+│   └──► Revenue metrics
+┌── (5) Revenue metrics`
   },
 
-  ansoff: {
-    title: "Ansoff Growth Matrix",
-    ascii: `                     Products / Services
-                     EXISTING                   NEW
-             ┌──────────────────────┬──────────────────────┐
-    EXISTING │  MARKET PENETRATION  │ PRODUCT DEVELOPMENT  │
-             │ • Increase share     │ • New products       │
-             │ • Existing customers │ • Existing market    │
-Markets      ├──────────────────────┼──────────────────────┤
-             │  MARKET DEVELOPMENT  │   DIVERSIFICATION    │
-         NEW │ • New geographies    │ • New products       │
-             │ • New demographics   │ • New markets        │
-             │ • Existing products  │ • Highest risk       │
-             └──────────────────────┴──────────────────────┘`
+  "ADDIE Model": {
+    title: "ADDIE Model",
+    ascii: `┌── (1) Analysis
+│   └──► Design
+┌── (2) Design
+│   └──► Development
+┌── (3) Development
+│   └──► Implementation
+┌── (4) Implementation
+│   └──► Evaluation
+┌── (5) Evaluation`
   },
 
-  plc: {
-    title: "Product Life Cycle (PLC) Strategic Curve",
-    ascii: `   Sales /
-   Profits
-     ▲                                   ┌──────────────┐
-     │                                   │   MATURITY   │
-     │                      ┌────────────┘              └────────────┐
-     │                      │ (Peak Sales / Cash Cow)                │  DECLINE
-     │                 ┌────┘                                        └──────────►
-     │                 │   GROWTH
-     │            ┌────┘ (Rapid Adoption)
-     │   INTRO    │
-     │ (R&D Burn) │
-   ──┼────────────┴─────────────────────────────────────────────────────────────► Time
-     │
-     STRATEGY BY STAGE:
-     • Introduction: Heavy awareness marketing, education, negative cash flow.
-     • Growth: Scale distribution, defend brand share, optimize unit economics.
-     • Maturity: Defend market share, maximize cash flow margins, bundle offerings.
-     • Decline: Harvest profits, cut unprofitable SKUs, or sunset/divest.`
+  "AIDA Funnel": {
+    title: "AIDA Funnel",
+    ascii: `┌── (1) Attention
+│   └──► Interest
+┌── (2) Interest
+│   └──► Desire
+┌── (3) Desire
+│   └──► Action
+┌── (4) Action`
   },
 
-  aida: {
-    title: "AIDA Conversion Funnel",
-    ascii: `   ┌──────────────────────────────────────────────┐
-   │ A │ Attention (Reach, impressions, awareness) │
-   └───┴──────────────────────┬───────────────────┘
-                              ▼
-         ┌──────────────────────────────────────┐
-         │ I │ Interest (Engagement, clicks)    │
-         └───┴────────────────┬─────────────────┘
-                              ▼
-                   ┌──────────────────────────┐
-                   │ D │ Desire (Intent, demo)│
-                   └───┴──────────┬───────────┘
-                                  ▼
-                             ┌──────────┐
-                             │ A│ Action│ (Purchase)
-                             └──┴───────┘`
+  "Ansoff Matrix": {
+    title: "Ansoff Matrix Growth Strategies",
+    ascii: `                    X-axis: Products
+Y-axis: Markets
+                  │ Existing Products                │ New Products                     │
+──────────────────┼──────────────────────────────────┼──────────────────────────────────┤
+Existing Markets  │ Market Penetration (Lowest Risk) │ Product Development              │
+New Markets       │ Market Development               │ Diversification (Highest Risk)   │`
   },
 
-  unit_economics: {
-    title: "CAC vs. LTV Sustainable Unit Economics Engine",
-    ascii: `   CUSTOMER ACQUISITION COST (CAC)             CUSTOMER LIFETIME VALUE (LTV)
-   ┌─────────────────────────────────┐         ┌─────────────────────────────────┐
-   │ Total Sales & Marketing Spend   │         │  (Monthly ARPU × Gross Margin)  │
-   │ ─────────────────────────────── │         │  ─────────────────────────────  │
-   │   New Customers Acquired        │         │           Churn Rate            │
-   └────────────────┬────────────────┘         └────────────────┬────────────────┘
-                    │                                           │
-                    └─────────────────────┬─────────────────────┘
-                                          ▼
-   THE GOLDEN UNIT ECONOMICS RATIO:
-   ┌─────────────────────────────────────────────────────────────────────────────┐
-   │  LTV : CAC  ≥  3.0x   (Sustained profitable growth)                         │
-   │  CAC PAYBACK PERIOD    < 12 Months (Capital-efficient runway recovery)      │
-   └─────────────────────────────────────────────────────────────────────────────┘`
+  "BCG Growth-Share Matrix": {
+    title: "BCG Growth-Share Matrix",
+    ascii: `               X-axis: Relative Market Share
+Y-axis: Market Growth Rate
+             │ High Share     │ Low Share      │
+─────────────┼────────────────┼────────────────┤
+High Growth  │ Stars          │ Question Marks │
+Low Growth   │ Cash Cows      │ Dogs           │`
   },
 
-  // --- HR & ORGANIZATION ---
-  "7s": {
-    title: "McKinsey 7S Framework (Organizational Alignment)",
-    ascii: `                         ┌───────────────┐
-                         │   STRATEGY    │
-                         └───────┬───────┘
-                                 │
-                 ┌───────────────┼───────────────┐
-                 ▼               ▼               ▼
-         ┌───────────────┐┌───────────────┐┌───────────────┐
-         │   STRUCTURE   ││ SHARED VALUES││    SYSTEMS    │
-         │  (Hierarchy)  ││ (Culture/DNA)││  (Workflows)  │
-         └───────┬───────┘└───────┬───────┘└───────┬───────┘
-                 │                │                │
-                 ├────────────────┴────────────────┤
-                 ▼               ▼                 ▼
-         ┌───────────────┐┌───────────────┐┌───────────────┐
-         │     STYLE     ││     STAFF     ││    SKILLS     │
-         │ (Leadership)  ││ (People/HR)   ││(Capabilities) │
-         └───────────────┘└───────────────┘└───────────────┘`
+  "Beta & Capital Asset Pricing Model (CAPM)": {
+    title: "CAPM Cost of Equity Calculation Steps",
+    ascii: `┌── (1) Select Risk-Free Rate (Rf)
+│   └──► Estimate Beta (β) Sensitivity
+┌── (2) Estimate Beta (β) Sensitivity
+│   └──► Determine Equity Risk Premium (ERP)
+┌── (3) Determine Equity Risk Premium (ERP)
+│   └──► Calculate Cost of Equity (Ke)
+┌── (4) Calculate Cost of Equity (Ke)
+│   └──► Unlever and Relever Peer Beta
+┌── (5) Unlever and Relever Peer Beta`
   },
 
-  nine_box: {
-    title: "9-Box Talent Review & Succession Matrix",
-    ascii: `                  POTENTIAL ──►
-                   LOW                    MEDIUM                 HIGH
-            ┌──────────────────────┬──────────────────────┬──────────────────────┐
-       HIGH │      WORKHORSE       │     HIGH IMPACT      │     FUTURE STAR      │
-            │ Solid performer,     │ Strong execution,    │ Prime for promotion, │
-            │ low ceiling for promo│ expand leadership    │ top succession pick  │
-   P        ├──────────────────────┼──────────────────────┼──────────────────────┤
-   E    MED │      EFFECTIVE       │     CORE PLAYER      │    GROWTH TALENT     │
-   R        │ Meets expectations,  │ Reliable contributor,│ High upside, needs   │
-   F        │ steady performer     │ coach for depth      │ stretch assignments  │
-   O        ├──────────────────────┼──────────────────────┼──────────────────────┤
-   R    LOW │     UNDERPERFORMER   │      DILEMMA         │     ENIGMA / RISK    │
-   M        │ Action plan required │ Inconsistent output, │ Brilliant but misfit │
-            │ or transition out    │ needs performance PIP│ or wrong role fit    │
-            └──────────────────────┴──────────────────────┴──────────────────────┘`
+  "Blue Ocean Strategy (Four Actions Framework)": {
+    title: "Four Actions Framework",
+    ascii: `┌── (1) Eliminate taken-for-granted industry factors
+│   └──► Reduce factors below industry standard
+┌── (2) Reduce factors below industry standard
+│   └──► Raise factors above industry standard
+┌── (3) Raise factors above industry standard
+│   └──► Create new unoffered industry factors
+┌── (4) Create new unoffered industry factors`
   },
 
-  okr: {
-    title: "OKR (Objectives & Key Results) Cascade Engine",
-    ascii: `                         ┌─────────────────────────────────────────┐
-                         │           COMPANY OBJECTIVE             │
-                         │   (Inspiring, qualitative milestone)    │
-                         └────────────────────┬────────────────────┘
-                                              │
-                      ┌───────────────────────┼───────────────────────┐
-                      ▼                       ▼                       ▼
-               ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
-               │KEY RESULT 1 │         │KEY RESULT 2 │         │KEY RESULT 3 │
-               │(Measurable) │         │(Measurable) │         │(Measurable) │
-               └──────┬──────┘         └──────┬──────┘         └──────┬──────┘
-                      │                       │                       │
-                      ▼                       ▼                       ▼
-               Department OKRs         Department OKRs         Department OKRs
-               & Team Cascades         & Team Cascades         & Team Cascades
-
-   CRITICAL OKR RULES:
-   • 3 to 5 Key Results per Objective — strictly quantitative and outcome-oriented.
-   • Target 70% achievement rate (stretch goals: 100% means bar was set too low).`
+  "Business Model Canvas": {
+    title: "Business Model Canvas Steps",
+    ascii: `┌── (1) Customer Segments
+│   └──► Value Propositions
+┌── (2) Value Propositions
+│   └──► Channels
+┌── (3) Channels
+│   └──► Customer Relationships
+┌── (4) Customer Relationships
+│   └──► Revenue Streams
+┌── (5) Revenue Streams
+│   └──► Key Resources
+┌── (6) Key Resources
+│   └──► Key Activities
+┌── (7) Key Activities
+│   └──► Key Partners
+┌── (8) Key Partners
+│   └──► Cost Structure
+┌── (9) Cost Structure`
   },
 
-  // --- CONSULTING EXTENSIONS ---
-  market_entry: {
-    title: "Market Entry Decision & Execution Architecture",
-    ascii: `                         ┌─────────────────────────────────────────┐
-                         │          MARKET ENTRY DECISION          │
-                         │    "Should our client enter Market X?"  │
-                         └────────────────────┬────────────────────┘
-                                              │
-         ┌───────────────────┬────────────────┴───────────────────┬───────────────────┐
-         ▼                   ▼                                    ▼                   ▼
-  ┌──────────────┐    ┌──────────────┐                     ┌──────────────┐    ┌──────────────┐
-  │ 1. MARKET    │    │2. COMPETITION│                     │3. CAPABILITY │    │4. FINANCIALS │
-  │ATTRACTIVENESS│    │  LANDSCAPE   │                     │  & SYNERGIES │    │  & EXECUTION │
-  ├──────────────┤    ├──────────────┤                     ├──────────────┤    ├──────────────┤
-  │• Market size │    │• Fragmentation│                    │• Brand fit   │    │• Capital req.│
-  │• Growth CAGR │    │• Incumbent MS│                     │• Dist. power │    │• Payback ROI │
-  │• Margins %   │    │• Barriers    │                     │• Supply chain│    │• Breakeven   │
-  └──────────────┘    └──────────────┘                     └──────────────┘    └──────┬───────┘
-                                                                                      │
-                                                           ┌──────────────────────────┴────────┐
-                                                           ▼                                   ▼
-                                                    MODE OF ENTRY:                     Timing & Phasing:
-                                                    • Build (Organic R&D)              • Wave 1: Pilot
-                                                    • Buy (M&A / Acquisition)          • Wave 2: Scale
-                                                    • Partner (Joint Venture/License)  • Wave 3: Dominate`
+  "CAC vs LTV Unit Economics": {
+    title: "CAC vs LTV Unit Economics Workflow",
+    ascii: `┌── (1) Calculate Customer Acquisition Cost
+│   └──► Calculate Lifetime Value [costs]
+┌── (2) Calculate Lifetime Value
+│   └──► Evaluate LTV to CAC Ratio [compare]
+┌── (3) Evaluate LTV to CAC Ratio
+│   └──► Calculate CAC Payback Period [speed]
+┌── (4) Calculate CAC Payback Period
+│   └──► Apply Strategic Levers [optimize]
+┌── (5) Apply Strategic Levers`
   },
 
-  synergy: {
-    title: "M&A Value Creation & Synergy Waterfall",
-    ascii: `                            ┌───────────────────────────┐
-                            │    TOTAL M&A SYNERGIES    │
-                            └─────────────┬─────────────┘
-                                          │
-                  ┌───────────────────────┴───────────────────────┐
-                  ▼                                               ▼
-   ┌─────────────────────────────┐                 ┌─────────────────────────────┐
-   │       COST SYNERGIES        │                 │      REVENUE SYNERGIES      │
-   │       ("Hard" - ~80% Real)  │                 │     ("Soft" - High Risk)    │
-   ├─────────────────────────────┤                 ├─────────────────────────────┤
-   │ • Eliminate duplicate SG&A  │                 │ • Cross-selling products to │
-   │ • Consolidate headquarters  │                 │   combined customer bases   │
-   │ • Bulk procurement scale    │                 │ • Expand into target's geos │
-   │ • Manufacturing plant merge │                 │ • Product bundling & upsell │
-   │ • Supply chain optimization │                 │ • Pricing power enhancements│
-   └─────────────────────────────┘                 └─────────────────────────────┘
-                  │                                               │
-                  └───────────────────────┬───────────────────────┘
-                                          ▼
-                         NET VALUE CREATED BY TRANSACTION:
-         [ PV(Cost Synergies) + PV(Revenue Synergies) ]  -  [ Acquisition Premium Paid ]`
+  "CIRCLES": {
+    title: "CIRCLES Product Design Method",
+    ascii: `┌── (1) Comprehend the situation
+│   └──► Identify the customer
+┌── (2) Identify the customer
+│   └──► Report customer needs
+┌── (3) Report customer needs
+│   └──► Cut through prioritization
+┌── (4) Cut through prioritization
+│   └──► List solutions
+┌── (5) List solutions
+│   └──► Evaluate trade-offs
+┌── (6) Evaluate trade-offs
+│   └──► Summarize recommendation
+┌── (7) Summarize recommendation`
   },
 
-  "value chain": {
-    title: "Porter's Value Chain Model",
-    ascii: ` ┌──────────────────────────────────────────────────────────────────┐
- │ SUPPORT ACTIVITIES                                               │
- │ • Firm Infrastructure (Finance, Planning, Legal)                 │
- │ • Human Resource Management (Recruiting, Training, Comp)         │
- │ • Technology Development (R&D, Product/Process Design, IT)       │
- │ • Procurement (Vendor selection, Supply contracts)               │
- ├──────────────────────────────────────────────────────────────────┤
- │ PRIMARY ACTIVITIES                                               │
- │ Inbound  ──► Operations ──► Outbound ──► Marketing ──► Service   │
- │ Logistics                   Logistics     & Sales                │
- └──────────────────────────────────────────────────────────────────┘
-                 ════════════════════════════════════►  MARGIN`
+  "Comparable Company Analysis": {
+    title: "Comparable Company Analysis Steps",
+    ascii: `┌── (1) Select a peer group of comparable companies
+│   └──► Choose the right multiple for the situation
+┌── (2) Choose the right multiple for the situation
+│   └──► Calculate peer multiples and take median measure
+┌── (3) Calculate peer multiples and take median measure
+│   └──► Apply multiple to target's financial metric
+┌── (4) Apply multiple to target's financial metric
+│   └──► Adjust for real differences before final valuation
+┌── (5) Adjust for real differences before final valuation`
   },
 
-  ddm: {
+  "Customer Satisfaction Score (CSAT)": {
+    title: "Customer Satisfaction Score (CSAT)",
+    ascii: `┌── (1) Identify segment or channel
+│   └──► Map customer journey
+┌── (2) Map customer journey
+│   └──► Isolate operational pain points
+┌── (3) Isolate operational pain points
+│   └──► Analyze internal vs external factors
+┌── (4) Analyze internal vs external factors
+│   └──► Formulate targeted recommendations
+┌── (5) Formulate targeted recommendations`
+  },
+
+  "DCF (Discounted Cash Flow)": {
+    title: "Discounted Cash Flow (DCF) Valuation Steps",
+    ascii: `┌── (1) Project free cash flows (5-10 years)
+│   └──► Estimate terminal value
+┌── (2) Estimate terminal value
+│   └──► Choose discount rate (e.g., WACC)
+┌── (3) Choose discount rate (e.g., WACC)
+│   └──► Discount to present value and sum
+┌── (4) Discount to present value and sum
+│   └──► Stress-test against assumption ranges
+┌── (5) Stress-test against assumption ranges`
+  },
+
+  "Dividend Discount Model (Gordon Growth Model)": {
     title: "Dividend Discount Model Workflow",
     ascii: `┌── (1) Project Earnings to EPS
 │   └──► Determine Dividend Payout Ratio
@@ -905,7 +263,7 @@ Markets      ├─────────────────────�
 ┌── (6) Discount to Present Value`
   },
 
-  dupont: {
+  "DuPont Analysis": {
     title: "DuPont Analysis (ROE Breakdown)",
     ascii: `[ Return on Equity (ROE) ]
 ├── [ Net Profit Margin ]
@@ -919,102 +277,20 @@ Markets      ├─────────────────────�
     └── [ Financial Leverage ]`
   },
 
-  treasury_stock: {
-    title: "Treasury Stock Method",
-    ascii: `┌── (1) Assume exercise of in-the-money options
-│   └──► Determine total cash proceeds
-┌── (2) Determine total cash proceeds
-│   └──► Calculate repurchased shares
-┌── (3) Calculate repurchased shares
-│   └──► Find net incremental shares
-┌── (4) Find net incremental shares`
+  "Enterprise Value & Equity Value (The Bridge)": {
+    title: "Enterprise Value & Equity Value Bridge",
+    ascii: `┌── (1) Start with Equity Value (Market Cap)
+│   └──► Add Total Debt [include liabilities]
+┌── (2) Add Total Debt
+│   └──► Add Preferred Stock & Minority Interest [include non-equity claims]
+┌── (3) Add Preferred Stock & Minority Interest
+│   └──► Subtract Cash & Cash Equivalents [deduct liquid assets]
+┌── (4) Subtract Cash & Cash Equivalents
+│   └──► Arrive at Enterprise Value (EV) [debt-free / cash-free]
+┌── (5) Arrive at Enterprise Value (EV)`
   },
 
-  precedent_transactions: {
-    title: "Precedent Transaction Analysis",
-    ascii: `┌── (1) Identify Transactions
-│   └──► Find Information
-┌── (2) Find Information
-│   └──► Calculate Multiples
-┌── (3) Calculate Multiples
-│   └──► Check and Interpret Results
-┌── (4) Check and Interpret Results`
-  },
-
-  residual_income: {
-    title: "Residual Income Model",
-    ascii: `┌── (1) Identify current book value
-│   └──► Calculate annual residual income
-┌── (2) Calculate annual residual income
-│   └──► Discount residual income to PV
-┌── (3) Discount residual income to PV
-│   └──► Calculate terminal value
-┌── (4) Calculate terminal value
-│   └──► Sum book value and PVs
-┌── (5) Sum book value and PVs`
-  },
-
-  addie: {
-    title: "ADDIE Model",
-    ascii: `┌── (1) Analysis
-│   └──► Design
-┌── (2) Design
-│   └──► Development
-┌── (3) Development
-│   └──► Implementation
-┌── (4) Implementation
-│   └──► Evaluation
-┌── (5) Evaluation`
-  },
-
-  harvard_michigan: {
-    title: "Harvard vs Michigan Models of HRM",
-    ascii: `[ HRM Models ]
-├── [ Harvard Model ]
-│   ├── [ Employee Interests ]
-│   └── [ Stakeholder Impacts ]
-└── [ Michigan Model ]
-    ├── [ Strategic Fit ]
-    └── [ Corporate Goals ]`
-  },
-
-  kirkpatrick: {
-    title: "Kirkpatrick Model",
-    ascii: `┌── (1) Level 1: Reaction
-│   └──► Level 2: Learning
-┌── (2) Level 2: Learning
-│   └──► Level 3: Behavior
-┌── (3) Level 3: Behavior
-│   └──► Level 4: Results
-┌── (4) Level 4: Results`
-  },
-
-  managerial_grid: {
-    title: "Managerial Grid (Blake-Mouton)",
-    ascii: `                   X-axis: Concern for People
-Y-axis: Concern for Production
-                 │ Low People                    │ High People                   │
-─────────────────┼───────────────────────────────┼───────────────────────────────┤
-High Production  │ Authority-Compliance (9,1)    │ Team Management (9,9)         │
-Low Production   │ Impoverished Management (1,1) │ Country Club Management (1,9) │`
-  },
-
-  moscow: {
-    title: "MoSCoW Method Prioritization",
-    ascii: `[ Feature Prioritization ]
-├── [ Must-Have ]
-│   ├── [ Vital for launch ]
-│   └── [ Non-negotiable ]
-├── [ Should-Have ]
-│   ├── [ Important ]
-│   └── [ Not vital for day-one ]
-├── [ Could-Have ]
-│   └── [ Nice-to-have addition ]
-└── [ Won't-Have ]
-    └── [ Out of scope for now ]`
-  },
-
-  freemium: {
+  "Freemium Model": {
     title: "Freemium Model Breakdown",
     ascii: `[ Freemium Strategy ]
 ├── [ Product Offerings ]
@@ -1029,7 +305,225 @@ Low Production   │ Impoverished Management (1,1) │ Country Club Management (
     └── [ High Free User Costs ]`
   },
 
-  nps: {
+  "GTM Strategy Canvas": {
+    title: "GTM Strategy Canvas",
+    ascii: `┌── (1) Target Segment
+│   └──► Value Proposition [define needs]
+┌── (2) Value Proposition
+│   └──► Channels [reach audience]
+┌── (3) Channels
+│   └──► Pricing & Offer [monetize]
+┌── (4) Pricing & Offer
+│   └──► Sequencing [roll out]
+┌── (5) Sequencing`
+  },
+
+  "HEART Framework (Google)": {
+    title: "HEART Framework Steps",
+    ascii: `┌── (1) Happiness: NPS and sentiment
+│   └──► Engagement: Frequency and depth
+┌── (2) Engagement: Frequency and depth
+│   └──► Adoption: New user uptake
+┌── (3) Adoption: New user uptake
+│   └──► Retention: Cohort return rate
+┌── (4) Retention: Cohort return rate
+│   └──► Task Success: Efficiency and errors
+┌── (5) Task Success: Efficiency and errors
+│   └──► Define Goals, Signals, Metrics
+┌── (6) Define Goals, Signals, Metrics`
+  },
+
+  "Harvard vs Michigan Models of HRM": {
+    title: "Harvard vs Michigan Models of HRM",
+    ascii: `[ HRM Models ]
+├── [ Harvard Model ]
+│   ├── [ Employee Interests ]
+│   └── [ Stakeholder Impacts ]
+└── [ Michigan Model ]
+    ├── [ Strategic Fit ]
+    └── [ Corporate Goals ]`
+  },
+
+  "ICE Score": {
+    title: "ICE Score Prioritization Process",
+    ascii: `┌── (1) Impact: Goal metric movement (1-10)
+│   └──► Confidence: Estimate certainty (1-10)
+┌── (2) Confidence: Estimate certainty (1-10)
+│   └──► Ease: Inverse of effort/speed (1-10)
+┌── (3) Ease: Inverse of effort/speed (1-10)
+│   └──► Calculate score and rank by sum/average
+┌── (4) Calculate score and rank by sum/average
+│   └──► Sanity check top 2-3 against judgment
+┌── (5) Sanity check top 2-3 against judgment`
+  },
+
+  "Income Statement Waterfall & P&L Walk": {
+    title: "Income Statement Waterfall & P&L Walk",
+    ascii: `┌── (1) Gross & Net Revenue (Top Line)
+│   └──► Gross Profit (Minus COGS) [minus COGS]
+┌── (2) Gross Profit (Minus COGS)
+│   └──► EBITDA (Minus Operating Expenses) [minus OPEX]
+┌── (3) EBITDA (Minus Operating Expenses)
+│   └──► EBIT / Operating Income (Minus D&A) [minus D&A]
+┌── (4) EBIT / Operating Income (Minus D&A)
+│   └──► EBT (Net Interest & Non-Op) [+/- interest & non-op]
+┌── (5) EBT (Net Interest & Non-Op)
+│   └──► Net Income (Minus Taxes) [minus tax]
+┌── (6) Net Income (Minus Taxes)`
+  },
+
+  "Jobs To Be Done": {
+    title: "Jobs To Be Done Framework",
+    ascii: `┌── (1) State job: When [situation], I want to [motivation], so I can [outcome]
+│   └──► Separate functional, emotional, and social jobs
+┌── (2) Separate functional, emotional, and social jobs
+│   └──► Identify true competitors getting the job done
+┌── (3) Identify true competitors getting the job done
+│   └──► Design solution around making the job easier, faster, or reliable
+┌── (4) Design solution around making the job easier, faster, or reliable`
+  },
+
+  "Kano Model": {
+    title: "Kano Model Feature Classification",
+    ascii: `┌── (1) Must-Have / Basic Needs
+│   └──► Performance / Linear Needs
+┌── (2) Performance / Linear Needs
+│   └──► Delighters / Attractive Needs
+┌── (3) Delighters / Attractive Needs
+│   └──► Indifferent Features
+┌── (4) Indifferent Features
+│   └──► Reverse Features
+┌── (5) Reverse Features
+│   └──► Natural Decay Over Time
+┌── (6) Natural Decay Over Time`
+  },
+
+  "Kirkpatrick Model": {
+    title: "Kirkpatrick Model",
+    ascii: `┌── (1) Level 1: Reaction
+│   └──► Level 2: Learning
+┌── (2) Level 2: Learning
+│   └──► Level 3: Behavior
+┌── (3) Level 3: Behavior
+│   └──► Level 4: Results
+┌── (4) Level 4: Results`
+  },
+
+  "LBO Basics (Leveraged Buyout)": {
+    title: "LBO Basics Lifecycle",
+    ascii: `┌── (1) Buy target using mostly debt and some equity
+│   └──► Use target cash flows to service and pay down debt
+┌── (2) Use target cash flows to service and pay down debt
+│   └──► Drive returns via paydown, operations, and multiples
+┌── (3) Drive returns via paydown, operations, and multiples
+│   └──► Exit via sale or IPO to realize equity return
+┌── (4) Exit via sale or IPO to realize equity return`
+  },
+
+  "M&A Synergy & Integration Tree": {
+    title: "M&A Synergy & Integration Flow",
+    ascii: `┌── (1) Cost Synergies
+│   └──► Revenue Synergies [Add]
+┌── (2) Revenue Synergies
+│   └──► Financial & Tax Synergies [Add]
+┌── (3) Financial & Tax Synergies
+│   └──► Implementation Costs & Friction [Subtract]
+┌── (4) Implementation Costs & Friction
+│   └──► Net Value Creation [Compare NPV]
+┌── (5) Net Value Creation`
+  },
+
+  "MECE": {
+    title: "MECE Structuring Principle",
+    ascii: `┌── (1) Mutually Exclusive buckets
+│   └──► Collectively Exhaustive coverage [ensure independence]
+┌── (2) Collectively Exhaustive coverage
+│   └──► Say structure out loud [verify completeness]
+┌── (3) Say structure out loud
+│   └──► Prefer simple valid splits [refine approach]
+┌── (4) Prefer simple valid splits`
+  },
+
+  "Managerial Grid (Blake-Mouton)": {
+    title: "Managerial Grid (Blake-Mouton)",
+    ascii: `                   X-axis: Concern for People
+Y-axis: Concern for Production
+                 │ Low People                    │ High People                   │
+─────────────────┼───────────────────────────────┼───────────────────────────────┤
+High Production  │ Authority-Compliance (9,1)    │ Team Management (9,9)         │
+Low Production   │ Impoverished Management (1,1) │ Country Club Management (1,9) │`
+  },
+
+  "Market Entry Framework": {
+    title: "Market Entry Framework",
+    ascii: `[ Market Entry Decision ]
+├── [ Market Attractiveness ]
+│   ├── [ Size and growth rate ]
+│   ├── [ Segments and margins ]
+│   └── [ Regulatory tailwinds ]
+├── [ Competitive Dynamics ]
+│   ├── [ Market concentration ]
+│   ├── [ Competitor shares ]
+│   └── [ Barriers and switching costs ]
+├── [ Capabilities & Synergies ]
+│   ├── [ Core competencies ]
+│   ├── [ Brand transferability ]
+│   └── [ Distribution and operations ]
+└── [ Financials & Mode of Entry ]
+    ├── [ Investment and ROI ]
+    ├── [ Risk-reward profile ]
+    └── [ Build, buy, or partner ]`
+  },
+
+  "Market Sizing (Top-Down / Bottom-Up)": {
+    title: "Market Sizing Process",
+    ascii: `┌── (1) State approach and why out loud
+│   ├──► Top-down: Total population down to percentages
+│   └──► Bottom-up: One unit up to total count
+┌── (2) Top-down: Total population down to percentages
+│   └──► Use round numbers and state assumptions
+┌── (3) Bottom-up: One unit up to total count
+│   └──► Use round numbers and state assumptions
+┌── (4) Use round numbers and state assumptions
+│   └──► Sanity-check final number against known facts
+┌── (5) Sanity-check final number against known facts`
+  },
+
+  "McKinsey 7S Framework": {
+    title: "McKinsey 7S Framework Steps",
+    ascii: `┌── (1) Strategy
+│   └──► Structure
+┌── (2) Structure
+│   └──► Systems
+┌── (3) Systems
+│   └──► Shared Values
+┌── (4) Shared Values
+│   └──► Skills
+┌── (5) Skills
+│   └──► Style
+┌── (6) Style
+│   └──► Staff
+┌── (7) Staff
+│   └──► Identify Misalignments
+┌── (8) Identify Misalignments`
+  },
+
+  "MoSCoW Method": {
+    title: "MoSCoW Method Prioritization",
+    ascii: `[ Feature Prioritization ]
+├── [ Must-Have ]
+│   ├── [ Vital for launch ]
+│   └── [ Non-negotiable ]
+├── [ Should-Have ]
+│   ├── [ Important ]
+│   └── [ Not vital for day-one ]
+├── [ Could-Have ]
+│   └── [ Nice-to-have addition ]
+└── [ Won't-Have ]
+    └── [ Out of scope for now ]`
+  },
+
+  "Net Promoter Score": {
     title: "Net Promoter Score Calculation Flow",
     ascii: `┌── (1) Survey customers (0-10 scale)
 │   └──► Categorize promoters (9-10)
@@ -1042,137 +536,230 @@ Low Production   │ Impoverished Management (1,1) │ Country Club Management (
 ┌── (5) Calculate score (Promoters - Detractors)`
   },
 
-  csat: {
-    title: "Customer Satisfaction Score (CSAT)",
-    ascii: `┌── (1) Identify segment or channel
-│   └──► Map customer journey
-┌── (2) Map customer journey
-│   └──► Isolate operational pain points
-┌── (3) Isolate operational pain points
-│   └──► Analyze internal vs external factors
-┌── (4) Analyze internal vs external factors
-│   └──► Formulate targeted recommendations
-┌── (5) Formulate targeted recommendations`
+  "North Star Metric": {
+    title: "North Star Metric Process",
+    ascii: `┌── (1) Identify core value exchange
+│   └──► Pick non-gameable metric
+┌── (2) Pick non-gameable metric
+│   └──► Confirm metric is leading
+┌── (3) Confirm metric is leading
+│   └──► Break into actionable inputs
+┌── (4) Break into actionable inputs`
   },
 
-  aarrr: {
-    title: "AARRR Framework",
-    ascii: `┌── (1) Acquisition metrics
-│   └──► Activation metrics
-┌── (2) Activation metrics
-│   └──► Retention metrics
-┌── (3) Retention metrics
-│   └──► Referral metrics
-┌── (4) Referral metrics
-│   └──► Revenue metrics
-┌── (5) Revenue metrics`
+  "OKR Framework (Objectives & Key Results)": {
+    title: "OKR Framework Process",
+    ascii: `┌── (1) Define the Qualitative Objective
+│   └──► Set 3 to 5 Quantitative Key Results
+┌── (2) Set 3 to 5 Quantitative Key Results
+│   └──► Keep KRs Outcome-Based
+┌── (3) Keep KRs Outcome-Based
+│   └──► Target Ambition with Stretch Goals
+┌── (4) Target Ambition with Stretch Goals
+│   └──► Cascade and Align Bi-Directionally
+┌── (5) Cascade and Align Bi-Directionally`
+  },
+
+  "PESTEL Analysis": {
+    title: "PESTEL Analysis Steps",
+    ascii: `┌── (1) Political
+│   └──► Economic [next]
+┌── (2) Economic
+│   └──► Social [next]
+┌── (3) Social
+│   └──► Technological [next]
+┌── (4) Technological
+│   └──► Environmental [next]
+┌── (5) Environmental
+│   └──► Legal [next]
+┌── (6) Legal`
+  },
+
+  "Porter's Five Forces": {
+    title: "Porter's Five Forces",
+    ascii: `[ Industry Attractiveness ]
+├── [ New Entrants ]
+│   └── [ Threat of New Entrants ]
+├── [ Bargaining Power ]
+│   ├── [ Power of Suppliers ]
+│   └── [ Power of Buyers ]
+└── [ Threats & Rivalry ]
+    ├── [ Threat of Substitutes ]
+    └── [ Competitive Rivalry ]`
+  },
+
+  "Porter's Generic Strategies": {
+    title: "Porter's Generic Strategies",
+    ascii: `                 X-axis: Strategic Advantage
+Y-axis: Strategic Scope
+               │ Lower Cost            │ Differentiation       │
+───────────────┼───────────────────────┼───────────────────────┤
+Broad Target   │ Cost Leadership       │ Differentiation       │
+Narrow Target  │ Cost Focus            │ Differentiation Focus │`
+  },
+
+  "Precedent Transaction Analysis": {
+    title: "Precedent Transaction Analysis",
+    ascii: `┌── (1) Identify Transactions
+│   └──► Find Information
+┌── (2) Find Information
+│   └──► Calculate Multiples
+┌── (3) Calculate Multiples
+│   └──► Check and Interpret Results
+┌── (4) Check and Interpret Results`
+  },
+
+  "Product Life Cycle": {
+    title: "Product Life Cycle Stages",
+    ascii: `┌── (1) Introduction
+│   └──► Growth [Sales accelerate]
+┌── (2) Growth
+│   └──► Maturity [Market saturates]
+┌── (3) Maturity
+│   └──► Decline [Sales fall]
+┌── (4) Decline`
+  },
+
+  "Profitability Framework (Revenue - Cost Tree)": {
+    title: "Profitability Framework Steps",
+    ascii: `┌── (1) Define Profit as Revenue minus Cost
+│   └──► Break Revenue into Price and Volume
+┌── (2) Break Revenue into Price and Volume
+│   └──► Break Cost into Fixed and Variable
+┌── (3) Break Cost into Fixed and Variable
+│   └──► Ask for data on likely branches
+┌── (4) Ask for data on likely branches
+│   └──► Isolate branch and hypothesize causes
+┌── (5) Isolate branch and hypothesize causes`
+  },
+
+  "RICE": {
+    title: "RICE Scoring Model",
+    ascii: `┌── (1) Reach
+│   └──► Impact [users]
+┌── (2) Impact
+│   └──► Confidence [value]
+┌── (3) Confidence
+│   └──► Effort [certainty]
+┌── (4) Effort
+│   └──► Score & Rank [(R x I x C) / E]
+┌── (5) Score & Rank`
+  },
+
+  "Residual Income Model": {
+    title: "Residual Income Model",
+    ascii: `┌── (1) Identify current book value
+│   └──► Calculate annual residual income
+┌── (2) Calculate annual residual income
+│   └──► Discount residual income to PV
+┌── (3) Discount residual income to PV
+│   └──► Calculate terminal value
+┌── (4) Calculate terminal value
+│   └──► Sum book value and PVs
+┌── (5) Sum book value and PVs`
+  },
+
+  "STAR+R": {
+    title: "STAR+R Framework",
+    ascii: `┌── (1) Situation
+│   └──► Task
+┌── (2) Task
+│   └──► Action
+┌── (3) Action
+│   └──► Result
+┌── (4) Result
+│   └──► Reflection [+R]
+┌── (5) Reflection`
+  },
+
+  "STP (Segmentation, Targeting, Positioning)": {
+    title: "STP Framework",
+    ascii: `┌── (1) Segmentation: Split market by needs
+│   └──► Targeting: Pick most viable segment
+┌── (2) Targeting: Pick most viable segment
+│   └──► Positioning: Define perception vs alternatives
+┌── (3) Positioning: Define perception vs alternatives`
+  },
+
+  "SWOT Analysis": {
+    title: "SWOT Analysis Framework",
+    ascii: `[ Strategic Position Scan ]
+├── [ Internal Factors ]
+│   ├── [ Strengths ]
+│   └── [ Weaknesses ]
+└── [ External Factors ]
+    ├── [ Opportunities ]
+    └── [ Threats ]`
+  },
+
+  "Terminal Value (Perpetuity vs Exit Multiple)": {
+    title: "Terminal Value Calculation Steps",
+    ascii: `┌── (1) Project discrete cash flows to steady-state
+│   └──► Apply Gordon Growth or Exit Multiple method
+┌── (2) Apply Gordon Growth or Exit Multiple method
+│   └──► Discount Terminal Value back to Present Value
+┌── (3) Discount Terminal Value back to Present Value
+│   └──► Cross-check implied multiples and growth rates
+┌── (4) Cross-check implied multiples and growth rates`
+  },
+
+  "Treasury Stock Method": {
+    title: "Treasury Stock Method",
+    ascii: `┌── (1) Assume exercise of in-the-money options
+│   └──► Determine total cash proceeds
+┌── (2) Determine total cash proceeds
+│   └──► Calculate repurchased shares
+┌── (3) Calculate repurchased shares
+│   └──► Find net incremental shares
+┌── (4) Find net incremental shares`
+  },
+
+  "Value Chain Analysis": {
+    title: "Value Chain Analysis",
+    ascii: `┌── (1) Map primary and support activities
+│   └──► Examine stages to identify costs and bottlenecks
+┌── (2) Examine stages to identify costs and bottlenecks
+│   └──► Drill down into specific cost drivers
+┌── (3) Drill down into specific cost drivers
+│   └──► Synthesize findings and develop recommendations
+┌── (4) Synthesize findings and develop recommendations`
+  },
+
+  "WACC (Weighted Average Cost of Capital)": {
+    title: "WACC Calculation Steps",
+    ascii: `┌── (1) Determine capital structure weights (E/V and D/V)
+│   └──► Calculate Cost of Equity using CAPM
+┌── (2) Calculate Cost of Equity using CAPM
+│   └──► Determine Pre-tax Cost of Debt
+┌── (3) Determine Pre-tax Cost of Debt
+│   └──► Apply corporate tax shield to Cost of Debt
+┌── (4) Apply corporate tax shield to Cost of Debt
+│   └──► Compute WACC blended formula
+┌── (5) Compute WACC blended formula
+│   └──► Use WACC as DCF discount rate
+┌── (6) Use WACC as DCF discount rate`
+  },
+
+  "Working Capital & Cash Conversion Cycle": {
+    title: "Cash Conversion Cycle Steps",
+    ascii: `┌── (1) Calculate Days Inventory Outstanding (DIO)
+│   └──► Calculate Days Sales Outstanding (DSO) [Next]
+┌── (2) Calculate Days Sales Outstanding (DSO)
+│   └──► Calculate Days Payable Outstanding (DPO) [Next]
+┌── (3) Calculate Days Payable Outstanding (DPO)
+│   └──► Calculate Cash Conversion Cycle (CCC) [DIO + DSO - DPO]
+┌── (4) Calculate Cash Conversion Cycle (CCC)
+│   └──► Calculate Net Working Capital (NWC) [Assess Liquidity]
+┌── (5) Calculate Net Working Capital (NWC)`
   }
 };
 
 /**
- * Finds an ASCII diagram by framework name or keyword match.
+ * Looks up a framework's diagram by its exact name - see FRAMEWORK_ASCII_MAP above for why
+ * this is a direct lookup rather than keyword matching.
  */
 export function getAsciiDiagramForFramework(frameworkName: string): { title: string; ascii: string } | null {
-  const norm = frameworkName.toLowerCase().replace(/[^a-z0-9]/g, " ");
-
-  // Consulting & Case Structuring
-  if (norm.includes("profit") || (norm.includes("revenue") && norm.includes("cost"))) {
-    return FRAMEWORK_ASCII_MAP.profitability;
-  }
-  if (norm.includes("mece")) return FRAMEWORK_ASCII_MAP.mece;
-  if (norm.includes("3c")) return FRAMEWORK_ASCII_MAP["3cs"];
-  if (norm.includes("sizing") || norm.includes("top down") || norm.includes("bottom up")) {
-    return FRAMEWORK_ASCII_MAP["market sizing"];
-  }
-  if (norm.includes("porter") && (norm.includes("5") || norm.includes("five"))) {
-    return FRAMEWORK_ASCII_MAP.porter;
-  }
-  if (norm.includes("market entry")) return FRAMEWORK_ASCII_MAP.market_entry;
-  if (norm.includes("synergy")) return FRAMEWORK_ASCII_MAP.synergy;
-  if (norm.includes("value chain")) return FRAMEWORK_ASCII_MAP["value chain"];
-
-  // Finance & Accounting
-  if (norm.includes("lbo") || norm.includes("leveraged buyout")) return FRAMEWORK_ASCII_MAP.lbo;
-  if (norm.includes("enterprise value") || norm.includes("equity value") || (norm.includes("ev") && norm.includes("bridge"))) {
-    return FRAMEWORK_ASCII_MAP.ev_bridge;
-  }
-  if (norm.includes("beta") || norm.includes("capm")) return FRAMEWORK_ASCII_MAP.capm;
-  if (norm.includes("wacc") || norm.includes("cost of capital")) return FRAMEWORK_ASCII_MAP.wacc;
-  if (norm.includes("terminal value") || norm.includes("gordon growth") || norm.includes("perpetuity")) {
-    return FRAMEWORK_ASCII_MAP.terminal_value;
-  }
-  if (norm.includes("income statement") || norm.includes("waterfall") || norm.includes("p l") || norm.includes("profit and loss")) {
-    return FRAMEWORK_ASCII_MAP.income_statement;
-  }
-  if (norm.includes("3 statement") || norm.includes("three statement") || norm.includes("financial statement")) {
-    return FRAMEWORK_ASCII_MAP.three_statements;
-  }
-  if (norm.includes("working capital") || norm.includes("cash conversion") || norm.includes("ccc")) {
-    return FRAMEWORK_ASCII_MAP.working_capital;
-  }
-  if (norm.includes("comparable") || norm.includes("comp") || norm.includes("multiple")) {
-    return FRAMEWORK_ASCII_MAP.comps;
-  }
-  if (norm.includes("dcf") || norm.includes("discounted cash flow") || norm.includes("valuation")) {
-    return FRAMEWORK_ASCII_MAP.dcf;
-  }
-
-  // Prodman
-  if (norm.includes("circle")) return FRAMEWORK_ASCII_MAP.circles;
-  if (norm.includes("jtbd") || norm.includes("jobs to be done")) return FRAMEWORK_ASCII_MAP.jtbd;
-  if (norm.includes("north star")) return FRAMEWORK_ASCII_MAP.north_star;
-  if (norm.includes("rice")) return FRAMEWORK_ASCII_MAP.rice;
-  if (norm.includes("ice score") || (norm.includes("ice") && !norm.includes("rice") && !norm.includes("price"))) {
-    return FRAMEWORK_ASCII_MAP.ice;
-  }
-  if (norm.includes("kano")) return FRAMEWORK_ASCII_MAP.kano;
-  if (norm.includes("heart")) return FRAMEWORK_ASCII_MAP.heart;
-
-  // Marketing & Sales
-  if (norm.includes("4p") || norm.includes("marketing mix")) return FRAMEWORK_ASCII_MAP["4ps"];
-  if (norm.includes("stp") || norm.includes("segmentation")) return FRAMEWORK_ASCII_MAP.stp;
-  if (norm.includes("gtm") || norm.includes("go to market")) return FRAMEWORK_ASCII_MAP.gtm;
-  if (norm.includes("bcg") || norm.includes("growth share")) return FRAMEWORK_ASCII_MAP.bcg;
-  if (norm.includes("ansoff")) return FRAMEWORK_ASCII_MAP.ansoff;
-  if (norm.includes("product life cycle") || norm.includes("plc")) return FRAMEWORK_ASCII_MAP.plc;
-  if (norm.includes("aida") || norm.includes("funnel") || norm.includes("aarm")) return FRAMEWORK_ASCII_MAP.aida;
-  if (norm.includes("cac") || norm.includes("ltv") || norm.includes("unit economics")) {
-    return FRAMEWORK_ASCII_MAP.unit_economics;
-  }
-
-  // General Management & HR
-  if (norm.includes("business model") || norm.includes("canvas") || norm.includes("bmc")) {
-    return FRAMEWORK_ASCII_MAP.bmc;
-  }
-  if (norm.includes("blue ocean") || norm.includes("four action") || norm.includes("errc")) {
-    return FRAMEWORK_ASCII_MAP.blue_ocean;
-  }
-  if (norm.includes("star") && !norm.includes("north star")) return FRAMEWORK_ASCII_MAP.star;
-  if (norm.includes("swot")) return FRAMEWORK_ASCII_MAP.swot;
-  if (norm.includes("pestel") || norm.includes("pest")) return FRAMEWORK_ASCII_MAP.pestel;
-  if (norm.includes("generic strateg")) return FRAMEWORK_ASCII_MAP.generic_strategies;
-  if (norm.includes("7s") || norm.includes("mckinsey")) return FRAMEWORK_ASCII_MAP["7s"];
-  if (norm.includes("9 box") || norm.includes("nine box")) return FRAMEWORK_ASCII_MAP.nine_box;
-  if (norm.includes("okr")) return FRAMEWORK_ASCII_MAP.okr;
-
-  // Added for the 13 frameworks discovered in the casebook-discovery pass (log.md,
-  // 2026-11-03) that didn't match any existing rule above.
-  if (norm.includes("dividend discount") || norm.includes("gordon growth")) return FRAMEWORK_ASCII_MAP.ddm;
-  if (norm.includes("dupont")) return FRAMEWORK_ASCII_MAP.dupont;
-  if (norm.includes("treasury stock")) return FRAMEWORK_ASCII_MAP.treasury_stock;
-  if (norm.includes("precedent transaction")) return FRAMEWORK_ASCII_MAP.precedent_transactions;
-  if (norm.includes("residual income")) return FRAMEWORK_ASCII_MAP.residual_income;
-  if (norm.includes("addie")) return FRAMEWORK_ASCII_MAP.addie;
-  if (norm.includes("harvard") && norm.includes("michigan")) return FRAMEWORK_ASCII_MAP.harvard_michigan;
-  if (norm.includes("kirkpatrick")) return FRAMEWORK_ASCII_MAP.kirkpatrick;
-  if (norm.includes("managerial grid") || norm.includes("blake") || norm.includes("mouton")) return FRAMEWORK_ASCII_MAP.managerial_grid;
-  if (norm.includes("moscow")) return FRAMEWORK_ASCII_MAP.moscow;
-  if (norm.includes("freemium")) return FRAMEWORK_ASCII_MAP.freemium;
-  if (norm.includes("net promoter") || norm.includes(" nps") || norm.startsWith("nps")) return FRAMEWORK_ASCII_MAP.nps;
-  if (norm.includes("csat") || norm.includes("customer satisfaction score")) return FRAMEWORK_ASCII_MAP.csat;
-  if (norm.includes("aarrr") || norm.includes("pirate metric")) return FRAMEWORK_ASCII_MAP.aarrr;
-
-  return null;
+  return FRAMEWORK_ASCII_MAP[frameworkName] || null;
 }
 
 /**
