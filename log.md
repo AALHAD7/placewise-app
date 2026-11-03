@@ -5,6 +5,71 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-03 — 14 new frameworks added, grounded in casebooks the list never covered (42 → 56)
+**Phase:** M4 (frontend fixes) · **Type:** content addition
+
+**What changed:** User noticed the Frameworks page (42 entries) was missing frameworks clearly
+present in the casebooks. Investigated: the page has never been derived from the casebooks -
+it's a hand-authored list from `migration_006_seed_frameworks.sql` ("the same well-known
+frameworks every prep guide covers"), expanded once in `migration_019`. `frameworksGrounding.js`
+only grounds a framework already on the list; it never discovers new ones from the corpus.
+
+Scanned the full `document_chunks` corpus (22,457 chunks) for framework/model/method-style
+name mentions - 646 distinct candidate phrases. Filtered out generic process nouns ("Financial
+Analysis", "Risk Analysis" - an activity, not a named methodology), OCR artifacts, and
+anything already on the page, down to 16 genuinely standard, well-represented, and missing
+frameworks (user reviewed and approved the shortlist before building).
+
+Built `backend/scripts/addDiscoveredFrameworks.js`: for each candidate, hybrid retrieval
+(vector search via `match_document_chunks`, unfiltered by domain, merged with a direct text
+match on the term as printed in the casebooks) pulls real excerpts, then one Gemini call
+drafts description/example/steps/when_to_use/when_not_to_use/pitfalls strictly from those
+excerpts (told explicitly not to use outside knowledge) in the same accessible-language style
+as the jargon-simplification pass. A candidate whose excerpts don't actually substantiate it
+is skipped, not drafted from general knowledge - fail-closed.
+
+**Mid-build correction:** first version domain-filtered retrieval to the framework's target
+page domain and silently missed real content (Net Promoter Score's actual formula lives in an
+HR compendium, not a marketing-tagged file; "General Management" was never an ingested domain
+tag at all, so it always returned zero rows) - caught in a dry run (5/16 drafted), fixed by
+searching the whole corpus unfiltered (6/16). Vector search alone was then found to still miss
+exact-term chunks that genuinely exist (verified ADDIE/Kirkpatrick/Treasury Stock Method by
+hand via direct text search) - added a merged direct-text-match pass alongside the vector
+search, which brought it to 13-14/16 drafted across runs.
+
+**Result:** 14/16 added (56 frameworks total, up from 42): Value Chain Analysis, Dividend
+Discount Model (Gordon Growth Model), DuPont Analysis, Treasury Stock Method, Precedent
+Transaction Analysis, Residual Income Model, ADDIE Model, Harvard vs Michigan Models of HRM,
+Kirkpatrick Model, AARRR Framework (Pirate Metrics), MoSCoW Method, Freemium Model, Net
+Promoter Score, Customer Satisfaction Score (CSAT). 2 deliberately not added (Black-Scholes
+Option Pricing Model, Managerial Grid) - judged insufficiently grounded rather than drafted
+from general knowledge.
+
+**Why:** Direct response to user question "why only 40-45 frameworks when the casebooks have
+way more" - confirmed the cause, then (user: casebook corpus is final, no more uploads coming)
+did a one-time curated batch addition rather than building reusable discovery tooling with no
+future use.
+
+**Cost:** ~$0 - flash-lite tier + one embedding call per candidate, well under free-tier quota.
+
+**Files:** `backend/scripts/addDiscoveredFrameworks.js` (new), `frameworks` table (14 rows
+inserted), `content/new-frameworks-2026-11-03/` (report + readable HTML).
+
+**Proof:** `content/new-frameworks-2026-11-03/new-frameworks.html` - every new entry with its
+full drafted content and excerpt count, plus the 2 deliberately-skipped candidates. Verified
+live on the running site (Frameworks -> HR): ADDIE Model, Kirkpatrick Model, and Harvard vs
+Michigan Models of HRM render correctly under their subdomains, same styling as every existing
+entry. Console checked post-apply - no new errors.
+
+**Undo:** These are new rows, not edits - `delete from frameworks where name in (...)` with the
+14 names above, or by `id` from `content/new-frameworks-2026-11-03/discovered-frameworks.json`.
+
+**Open issues:** None for this task. The underlying gap (~600 more candidate mentions never
+filtered/reviewed) is real but out of scope - user confirmed a one-time curated batch was the
+right call, not building out full corpus coverage.
+
+---
+
 ## 2026-11-03 — Jargon simplification: remaining 5 domains (32 frameworks), site-wide rollout complete
 **Phase:** M4 (frontend fixes) · **Type:** content fix
 

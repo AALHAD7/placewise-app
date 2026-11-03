@@ -1,0 +1,432 @@
+[
+  {
+    "name": "Value Chain Analysis",
+    "domain": "Consulting",
+    "subdomain": "Case Structuring",
+    "searchTerm": "Value Chain Analysis",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "Value Chain Analysis",
+      "role": "Consulting",
+      "level": "mba",
+      "domain": "Consulting",
+      "subdomain": "Case Structuring",
+      "description": "Value Chain Analysis breaks down a company's business activities into sequential stages—typically split into primary activities like operations and support activities like procurement—to identify cost components, profit drivers, and operational issues.",
+      "example": "A client is facing falling earnings because of rising operating costs. You map out activities from R&D and raw material procurement through processing, storage, and customer service to isolate where costs are spiking and whether the issue stems from personnel, machinery, methods, or measurements.",
+      "when_to_use": "Use it during supply-side, cost-reduction, portfolio analysis, investment, or growth strategy cases.",
+      "when_not_to_use": "Do not use it when the problem is strictly driven by external macro factors or top-line marketing issues unrelated to internal operations.",
+      "steps": [
+        "Identify whether the industry requires a standard Porter's value chain or a sector-specific process flow (such as pre-production, during production, and post-production).",
+        "Examine support activities including firm infrastructure, human resource management, technology development, and procurement.",
+        "Examine primary activities including inbound logistics, operations, outbound logistics, marketing and sales, and after-sales service.",
+        "Evaluate potential issue segments within each stage, such as man (training, motivation), machine (maintenance, condition), method, and measurement (KPIs).",
+        "Relate specific activities and core competencies back to overall costs and profits."
+      ],
+      "pitfalls": [
+        "Treating the value chain as a rigid template without adapting it to the specific industry classification.",
+        "Overlooking support activities and focusing entirely on primary manufacturing or operational steps."
+      ]
+    }
+  },
+  {
+    "name": "Dividend Discount Model (Gordon Growth Model)",
+    "domain": "Finance",
+    "subdomain": "Valuation",
+    "searchTerm": "Dividend Discount Model",
+    "status": "drafted",
+    "excerptCount": 13,
+    "draft": {
+      "name": "Dividend Discount Model (Gordon Growth Model)",
+      "role": "Finance",
+      "level": "mba",
+      "domain": "Finance",
+      "subdomain": "Valuation",
+      "description": "The Dividend Discount Model (Gordon Growth Model) is a financial framework used to determine the value of equity by calculating the present value of a company's expected future dividends, discounted back at the cost of equity.",
+      "example": "Suppose a company has a Dividend per Share (DPS) of Rs. 10 that is expected to grow by 5% each year, and the required rate of return on equity is 12.1%. Using the formula Price = DPS divided by (Required Rate of Return on Equity minus Dividend growth rate), the share value is Rs. 10 divided by (12.1% - 5%), which equals Rs. 140.85.",
+      "when_to_use": "Use this framework for matured companies with fairly predictable financials, nominal expansion needs, and a high dividend payout ratio.",
+      "when_not_to_use": "Do not use this framework for start-ups or high growth companies where dividends are unstable, non-existent, or driven by too many unpredictable factors.",
+      "steps": [
+        "Project the company's earnings down to Earnings per Share (EPS).",
+        "Assume a Dividend Payout Ratio to calculate future dividends over a given period.",
+        "Determine the cost of equity and the expected dividend growth rate.",
+        "Apply the Gordon Growth Model formula to calculate the present value of expected future dividends and terminal value."
+      ],
+      "pitfalls": [
+        "Assuming a constant or stable growth rate to infinity when real-world dividends are likely to fluctuate.",
+        "Failing to account for regulatory capital requirements or capital ratios when determining sustainable dividend payouts for financial institutions."
+      ]
+    }
+  },
+  {
+    "name": "DuPont Analysis",
+    "domain": "Finance",
+    "subdomain": "Financial Statements & Accounting",
+    "searchTerm": "DuPont",
+    "status": "drafted",
+    "excerptCount": 12,
+    "draft": {
+      "name": "DuPont Analysis",
+      "role": "Finance",
+      "level": "mba",
+      "domain": "Finance",
+      "subdomain": "Financial Statements & Accounting",
+      "description": "DuPont Analysis is a financial statement analysis tool that breaks down return on equity (ROE) into three distinct components—profitability, operating efficiency, and financial leverage—to evaluate a company's underlying performance drivers.",
+      "example": "A company wants to evaluate why its ROE changed over the year. Using DuPont Analysis, you calculate Net Profit Margin (Net Income / Sales) at 22.92%, Asset Turnover (Sales / Average Assets) at 1.06, and multiply these by the financial leverage ratio (Average Assets / Average Equity) to pinpoint whether profitability, asset usage, or leverage drove the performance.",
+      "when_to_use": "Use this framework when you need to begin a financial statement analysis, assess the key drivers of return on equity, or identify specific areas of operational strength and weakness.",
+      "when_not_to_use": "Do not use this framework when analyzing non-financial issues, qualitative organizational culture, or when evaluating early-stage companies without meaningful historical financial statements.",
+      "steps": [
+        "Calculate the net profit margin by dividing net income by sales to measure overall profitability.",
+        "Calculate the asset turnover ratio by dividing sales by average assets to measure operating efficiency in using assets.",
+        "Calculate the financial leverage ratio (equity multiplier) by dividing average assets by average equity to measure the extent of reliance on debt financing.",
+        "Multiply the net profit margin, asset turnover, and financial leverage together to determine the return on equity."
+      ],
+      "pitfalls": [
+        "Assuming that a higher leverage ratio is always beneficial without accounting for the increased fixed payment risks tied to debt.",
+        "Failing to use average balance sheet items, which can distort asset turnover and leverage calculations due to timing biases."
+      ]
+    }
+  },
+  {
+    "name": "Treasury Stock Method",
+    "domain": "Finance",
+    "subdomain": "Valuation",
+    "searchTerm": "Treasury Stock Method",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "Treasury Stock Method",
+      "role": "Finance",
+      "level": "mba",
+      "domain": "Finance",
+      "subdomain": "Valuation",
+      "description": "The Treasury Stock Method is an approach used to calculate the impact of dilutive securities like options and warrants by assuming that any cash proceeds a company receives from their exercise are used to repurchase shares on the open market.",
+      "example": "A company has 10,000 shares outstanding, a share price of $20.00, and 100 options outstanding at an exercise price of $10.00. First, assume the options are exercised, creating 100 new shares and bringing $1,000 in proceeds to the company (100 options * $10.00 exercise price). Next, assume the company uses those $1,000 proceeds to buy back shares at the $20.00 share price, which repurchases 50 shares ($1,000 / $20.00). Finally, subtract the repurchased shares from the newly created shares to find the net dilution: 100 new shares minus 50 repurchased shares equals 50 net additional shares outstanding.",
+      "when_to_use": "Use this framework when calculating diluted shares or diluted earnings per share for options, warrants, and similar instruments where the company receives cash proceeds upon exercise.",
+      "when_not_to_use": "Do not use this framework with convertible bonds or convertible preferred stock, because investors do not pay cash proceeds to the company upon conversion.",
+      "steps": [
+        "Identify all in-the-money options or warrants where the exercise price is lower than the current market share price.",
+        "Assume all those options are exercised, creating a specific number of new shares.",
+        "Calculate the total cash proceeds the company receives by multiplying the number of options by their exercise price.",
+        "Determine how many shares the company can repurchase by dividing the total cash proceeds by the current market share price.",
+        "Subtract the repurchased shares from the newly created shares to get the net number of additional shares added to the share count."
+      ],
+      "pitfalls": [
+        "Applying the method to convertible instruments instead of treating them separately without treasury stock adjustments.",
+        "Using the exercise price instead of the current market share price when calculating how many shares the company can buy back with its proceeds.",
+        "Failing to check whether options are in-the-money before factoring them into the dilution calculation."
+      ]
+    }
+  },
+  {
+    "name": "Precedent Transaction Analysis",
+    "domain": "Finance",
+    "subdomain": "Valuation",
+    "searchTerm": "Precedent Transaction",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "Precedent Transaction Analysis",
+      "role": "Finance",
+      "level": "mba",
+      "domain": "Finance",
+      "subdomain": "Valuation",
+      "description": "Precedent Transaction Analysis is a valuation method that uses the implied multiples of past corporate sales, profit, or other parameters from similar deals to assess the price range that vendors have been willing to accept.",
+      "example": "To value a target company, an analyst identifies a deal list of comparable precedent transactions, calculates the deal premiums offered in recent deals along with deal values, and finally derives a valuation range.",
+      "when_to_use": "Use it when assessing the price range vendors accepted in past deals, particularly with high importance in buy-side M&A (mergers and acquisitions) and sell-side M&A.",
+      "when_not_to_use": "Do not use it when analyzing initial public offerings (IPOs) or add-on financings, where its applicability is rated as none.",
+      "steps": [
+        "Identify Transactions",
+        "Find Information",
+        "Calculate Multiples",
+        "Check and Interpret the Results"
+      ],
+      "pitfalls": [
+        "Picking the wrong set of transactions",
+        "Encountering strange market conditions where precedent transactions result in unusually lower multiples than other valuation methods"
+      ]
+    }
+  },
+  {
+    "name": "Residual Income Model",
+    "domain": "Finance",
+    "subdomain": "Valuation",
+    "searchTerm": "Residual Income",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "Residual Income Model",
+      "role": "Finance",
+      "level": "mba",
+      "domain": "Finance",
+      "subdomain": "Valuation",
+      "description": "The Residual Income Model is an equity valuation framework that determines a bank's value by taking its current book value (common equity) and adding the present value of future residual income (calculated as Net Income minus Cost of Equity multiplied by Shareholders' Equity).",
+      "example": "To value a bank, start with a Common Equity book value of $60.0. Project future residual income each year (defined as Net Income minus Cost of Equity * Shareholders' Equity), discount those amounts back, and sum them up to $3.2. Add these together to arrive at a Present Value of Equity of $63.2.",
+      "when_to_use": "When valuing financial institutions like banks or insurance firms where traditional DCF models are ineffective.",
+      "when_not_to_use": "When valuing standard operating companies that do not rely on a unique financial institution balance sheet structure.",
+      "steps": [
+        "Calculate Residual Income each year, defined as Net Income minus Cost of Equity multiplied by Shareholders' Equity (or Common Equity/Tangible Common Equity).",
+        "Discount and sum up the annual Residual Income using the Cost of Equity.",
+        "Start with the bank's current Book Value (Common Equity).",
+        "Add the sum of the present value of Residual Income to the current Book Value.",
+        "Calculate and add the Residual Income Terminal Value if long-term residual income does not drop to zero."
+      ],
+      "pitfalls": [
+        "Failing to use Return on Common Equity rather than other variants of ROE.",
+        "Relying entirely on distant multi-year projections rather than anchoring the valuation in the current balance sheet book value."
+      ]
+    }
+  },
+  {
+    "name": "Black-Scholes Option Pricing Model",
+    "domain": "Finance",
+    "subdomain": "Valuation",
+    "searchTerm": "Black-Scholes",
+    "status": "skipped-insufficient",
+    "excerptCount": 14
+  },
+  {
+    "name": "ADDIE Model",
+    "domain": "HR",
+    "subdomain": "Learning & Development",
+    "searchTerm": "ADDIE",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "ADDIE Model",
+      "role": "HR",
+      "level": "mba",
+      "domain": "HR",
+      "subdomain": "Learning & Development",
+      "description": "The ADDIE Model is a generic five-phase instructional design framework used by training designers and experts to build effective training programs and performance support tools.",
+      "example": "A company wants to train its sales team on a new software tool. Using ADDIE, you first analyze the team's current capabilities, design the learning objectives and delivery format, develop the course materials and prototypes, implement the training by putting tools in place, and finally evaluate the results.",
+      "when_to_use": "Use when building effective training programs, learning solutions, or performance support tools.",
+      "when_not_to_use": "Do not use in highly dynamic work environments where a strictly linear process is inapplicable or too time-consuming.",
+      "steps": [
+        "Analysis (identifying learning problems, needs, requirements, and participants' current capabilities)",
+        "Design (planning learning objectives, delivery format, activities, and exercises)",
+        "Develop (creating prototypes, course materials, and conducting pilot sessions)",
+        "Implement (delivering the training with tools in place and observing the process)",
+        "Evaluate (measuring awareness, knowledge, behavior, and results)"
+      ],
+      "pitfalls": [
+        "Can be time consuming and very expensive",
+        "May stifle the creativity of the designer",
+        "Being very linear, it may not be applicable in dynamic work environments"
+      ]
+    }
+  },
+  {
+    "name": "Harvard vs Michigan Models of HRM",
+    "domain": "HR",
+    "subdomain": "HR Strategy",
+    "searchTerm": "Michigan Model",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "Harvard vs Michigan Models of HRM",
+      "role": "HR",
+      "level": "mba",
+      "domain": "HR",
+      "subdomain": "HR Strategy",
+      "description": "A comparative framework contrasting the Michigan Model (a hard, strategic approach focused on matching HR systems with corporate goals) and the Harvard Model (a soft approach centered on stakeholder interests, situational factors, and human outcomes).",
+      "example": "A company facing a corporate restructuring uses the Michigan Model to align workforce planning and organizational structure directly with business objectives, while simultaneously using the Harvard Model to evaluate how employee groups, unions, and government regulations will impact and be affected by those policy choices.",
+      "when_to_use": "Use this framework when designing an overarching human resource management strategy and deciding whether to prioritize strict strategic alignment or broader employee and stakeholder interests.",
+      "when_not_to_use": "Do not use this framework when you need to solve tactical, day-to-day operational problems like a single recruitment hire or immediate payroll disputes.",
+      "steps": [
+        "Identify key corporate goals and external situational factors (such as workforce characteristics and unions).",
+        "Map out the interests of all relevant stakeholders, including shareholders, management, employee groups, and the government.",
+        "Determine HR policies across core functions like recruitment, training, and reward systems.",
+        "Evaluate resulting HRM outcomes such as employee commitment, competence, congruence, and cost-effectiveness.",
+        "Assess long-term consequences for individual employees, the overall business, and society."
+      ],
+      "pitfalls": [
+        "Over-relying on the Michigan Model's uniterism assumption, which ignores potential conflicts or differing views between managers and employees.",
+        "Incurring excessive costs or decision-making delays by taking the Harvard Model's soft approach too far without regard for business efficiency."
+      ]
+    }
+  },
+  {
+    "name": "Kirkpatrick Model",
+    "domain": "HR",
+    "subdomain": "Learning & Development",
+    "searchTerm": "Kirkpatrick",
+    "status": "drafted",
+    "excerptCount": 10,
+    "draft": {
+      "name": "Kirkpatrick Model",
+      "role": "HR",
+      "level": "mba",
+      "domain": "HR",
+      "subdomain": "Learning & Development",
+      "description": "The Kirkpatrick Model is a four-tiered framework used to evaluate the effectiveness and success of training programs. It measures outcomes sequentially across four distinct levels: Reaction, Learning, Behaviour, and Results.",
+      "example": "To evaluate a new leadership training program, an organization first collects immediate feedback surveys on course content and delivery (Reaction), tests participants' knowledge and skill acquisition via simulations (Learning), observes whether managers apply these skills on the job after some time using a pretest-posttest design (Behaviour), and finally measures the broader organizational benefits achieved (Results).",
+      "when_to_use": "Use this framework when designing a comprehensive strategy to monitor and evaluate the success of an organization's training programs.",
+      "when_not_to_use": "Do not use this framework if your evaluation requires calculating a specific financial return on investment (ROI) percentage, as that requires an upgraded model.",
+      "steps": [
+        "Evaluate Level 1 (Reaction) by gathering immediate feedback on content, facilities, and delivery methods via surveys or questionnaires.",
+        "Evaluate Level 2 (Learning) immediately after training using interviews, surveys, tests, or simulations to assess changes in knowledge, skills, and attitudes.",
+        "Evaluate Level 3 (Behaviour) after some time has passed to measure the transfer of training into on-the-job changes using methods like pretest-posttest designs or retrospective surveys.",
+        "Evaluate Level 4 (Results) to determine what organizational benefits ultimately resulted from the training program."
+      ],
+      "pitfalls": [
+        "Failing to collect participant reactions immediately, which can prevent proper learning if participants are unhappy with the training environment.",
+        "Assessing on-the-job behaviour too quickly before employees have had sufficient time to transfer and apply their learned skills to workplace contexts."
+      ]
+    }
+  },
+  {
+    "name": "Managerial Grid (Blake-Mouton)",
+    "domain": "General Management",
+    "subdomain": "Leadership & Behavioural",
+    "searchTerm": "Managerial Grid",
+    "status": "skipped-insufficient",
+    "excerptCount": 9
+  },
+  {
+    "name": "AARRR Framework (Pirate Metrics)",
+    "domain": "Prodman",
+    "subdomain": "Metrics & Growth",
+    "searchTerm": "AARRR",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "AARRR Framework (Pirate Metrics)",
+      "role": "Prodman",
+      "level": "mba",
+      "domain": "Prodman",
+      "subdomain": "Metrics & Growth",
+      "description": "A framework to study user behavior using metrics relevant for product-led growth businesses, helping focus on important metrics rather than superficial ones.",
+      "example": "A product manager examining why users are churning might look at user behavior by walking through the steps of the AARRR funnel, combined with cohort analysis and qualitative triangulation (cross-referencing data sources).",
+      "when_to_use": "To study user behavior using metrics relevant for product-led growth businesses and to understand why users are churning.",
+      "when_not_to_use": "When superficial social metrics are the primary focus or when the business model does not rely on a user growth lifecycle.",
+      "steps": [
+        "Evaluate Acquisition metrics",
+        "Evaluate Activation metrics",
+        "Evaluate Retention metrics",
+        "Evaluate Referral metrics",
+        "Evaluate Revenue metrics"
+      ],
+      "pitfalls": [
+        "Focusing on superficial metrics instead of growth-driving metrics",
+        "Failing to combine quantitative funnel stages with qualitative triangulation when analyzing user churn"
+      ]
+    }
+  },
+  {
+    "name": "MoSCoW Method",
+    "domain": "Prodman",
+    "subdomain": "Prioritization",
+    "searchTerm": "MoSCoW",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "MoSCoW Method",
+      "role": "Prodman",
+      "level": "mba",
+      "domain": "Prodman",
+      "subdomain": "Prioritization",
+      "description": "The MoSCoW Method is a prioritization framework that classifies product features into four distinct buckets based on their importance for a given timeframe or launch. The acronym stands for Must-Have, Should-Have, Could-Have, and Won't-Have (or Will Not Have).",
+      "example": "For a bicycle rental app, you would classify a user login feature as a Must-Have (essential for the product to be functional), a reset password feature as a Should-Have (important but not time-sensitive for launch), a single sign-on option as a Could-Have (nice-to-have with little impact if left out), and future enhancement ideas as Won't-Have.",
+      "when_to_use": "Use it when you need to group features into priority buckets to determine what matters most to your stakeholders and customers during product planning or design.",
+      "when_not_to_use": "Do not rely on it as a single source of truth if you need a precise numerical scoring model to rank competing backlog items.",
+      "steps": [
+        "Identify all potential features, tasks, or requirements for the product backlog.",
+        "Evaluate each feature to determine if it is a mandatory, non-negotiable product need for launch (Must-Have).",
+        "Assess remaining features to categorize them as important but less time-sensitive (Should-Have), nice-to-have bonuses (Could-Have), or out-of-scope for the current timeframe (Won't-Have).",
+        "Review the categorized buckets with stakeholders to finalize scope and plan product execution strategy."
+      ],
+      "pitfalls": [
+        "Treating too many features as Must-Haves, which defeats the purpose of prioritization.",
+        "Failing to align with stakeholders on what constitutes a true necessity versus a nice-to-have."
+      ]
+    }
+  },
+  {
+    "name": "Freemium Model",
+    "domain": "Prodman",
+    "subdomain": "Metrics & Growth",
+    "searchTerm": "Freemium",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "Freemium Model",
+      "role": "Prodman",
+      "level": "mba",
+      "domain": "Prodman",
+      "subdomain": "Metrics & Growth",
+      "description": "The freemium model is a pricing strategy where a company offers a core product or service for free while charging for premium features, working best for high-volume consumer goods or network effect products.",
+      "example": "A fantasy sports app operates on a freemium model where 90% of its 5 crore (50 million) users are on the free model, and profits are increased by growing the overall user base or shifting a higher percentage of users to the paid base.",
+      "when_to_use": "Use this framework when evaluating consumer tech ventures, digital products, or market entry strategies where building a massive initial user base is critical.",
+      "when_not_to_use": "Do not use this framework for B2B infrastructure products or services with high variable usage patterns that rely purely on usage-based or fixed subscription models.",
+      "steps": [
+        "Identify the core free offering versus the premium features",
+        "Evaluate market size, customer segments, and target user adoption rates",
+        "Assess conversion rates from the free tier to the paid tier",
+        "Analyze revenue growth opportunities through user acquisition and monetization of premium tiers"
+      ],
+      "pitfalls": [
+        "Focusing entirely on user count without tracking relevant monetization KPIs like ARPU (average revenue per user)",
+        "Underestimating ongoing server costs or infrastructure scaling requirements to support the free user base"
+      ]
+    }
+  },
+  {
+    "name": "Net Promoter Score",
+    "domain": "Marketing:Sales",
+    "subdomain": "Customer & Brand",
+    "searchTerm": "Net Promoter Score",
+    "status": "drafted",
+    "excerptCount": 13,
+    "draft": {
+      "name": "Net Promoter Score",
+      "role": "Marketing:Sales",
+      "level": "mba",
+      "domain": "Marketing:Sales",
+      "subdomain": "Customer & Brand",
+      "description": "Net Promoter Score is a single business metric that measures the likelihood that customers will recommend a product or service, serving as an indicator of overall customer experience and advocacy.",
+      "example": "A food delivery service surveys its customers in Ahmedabad using a scale from 0 to 10. Customers rating 9 or 10 are classified as promoters, those rating 7 or 8 as neutral, and those rating 0 to 6 as detractors. Subtracting the percentage of detractors from the percentage of promoters yields the Net Promoter Score.",
+      "when_to_use": "Use it to measure high-level trends in customer loyalty, product success, and advocacy over time.",
+      "when_not_to_use": "Do not rely on it alone when you need to uncover granular operational problems without supplementing it with a deeper look at the customer journey.",
+      "steps": [
+        "Ask customers how likely they are to recommend your product on a scale of 0 to 10 through a survey.",
+        "Classify respondents into promoters (9-10), neutral/lukewarm (7-8), and detractors (0-6).",
+        "Calculate the percentage of total respondents who are promoters and the percentage who are detractors.",
+        "Subtract the percentage of detractors from the percentage of promoters to arrive at the final score."
+      ],
+      "pitfalls": [
+        "Treating the score as a complete story without investigating underlying outliers or specific segment grievances.",
+        "Failing to account for external operational changes (such as sustainable packaging shifts or delivery delays) that negatively impact customer experience."
+      ]
+    }
+  },
+  {
+    "name": "Customer Satisfaction Score (CSAT)",
+    "domain": "Marketing:Sales",
+    "subdomain": "Customer & Brand",
+    "searchTerm": "Customer Satisfaction Score",
+    "status": "drafted",
+    "excerptCount": 14,
+    "draft": {
+      "name": "Customer Satisfaction Score (CSAT)",
+      "role": "Marketing:Sales",
+      "level": "mba",
+      "domain": "Marketing:Sales",
+      "subdomain": "Customer & Brand",
+      "description": "Customer Satisfaction Score (CSAT) is a key performance indicator that measures customer satisfaction levels based on guest or customer ratings from feedback and surveys on a scale, typically 1 to 5.",
+      "example": "A pizza company in Bangalore experiences a recent dip in its delivery segment's CSAT (measured on a 1-5 scale). By breaking down the customer journey into pre-ordering, ordering and delivery, and post-delivery, the analyst traces the decline to increased delivery times, leading to recommendations like restricting the delivery radius or opening new outlets.",
+      "when_to_use": "Use when analyzing why a client has faced a decline in customer satisfaction or evaluating post-purchase service effectiveness.",
+      "when_not_to_use": "Do not use when analyzing purely financial metrics that do not involve customer experience feedback or service ratings.",
+      "steps": [
+        "Verify how the score is measured, the magnitude and timing of any decline, and if it affects a specific segment.",
+        "Map the customer journey into distinct phases such as pre-ordering, ordering-to-delivery, and post-delivery.",
+        "Investigate specific operational bottlenecks within the journey, such as delivery time, packaging, or UI/UX issues.",
+        "Develop short-term and long-term recommendations to address the root causes and improve customer experience."
+      ],
+      "pitfalls": [
+        "Assuming a general drop applies to all segments without checking for specific channel or geographic outliers.",
+        "Failing to check whether the measurement criteria or method of surveying has changed over time."
+      ]
+    }
+  }
+]
