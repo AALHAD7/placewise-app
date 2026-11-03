@@ -1,0 +1,90 @@
+[
+  {
+    "id": "ffad7798-0125-4c0f-938d-3ffa131c6c1a",
+    "name": "3Cs Framework",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is an exact, word-for-word copy of the original JSON with no changes to text, array lengths, or structure.",
+    "attempts": 2,
+    "fields": {}
+  },
+  {
+    "id": "ebc19b27-a250-4964-afeb-1688b642951e",
+    "name": "M&A Synergy & Integration Tree",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite correctly adds a permitted one-time clarification for NPV (a valuation concept) while maintaining complete faithfulness, precision, and array structure relative to the original.",
+    "attempts": 2,
+    "fields": {
+      "steps": {
+        "before": [
+          "Cost Synergies (Hard Synergies): Eliminate duplicate corporate overhead (SG&A, HR, Legal, IT), consolidate manufacturing facilities, realize bulk procurement discounts, optimize supply chain logistics.",
+          "Revenue Synergies (Soft Synergies): Cross-sell complementary products to existing customer bases, expand target products into acquirer's international distribution channels, bundle solutions.",
+          "Financial & Tax Synergies: Lower cost of capital through larger borrowing capacity, utilization of accumulated Net Operating Losses (NOLs), tax inversion/optimization.",
+          "Implementation Costs & Friction: Subtract one-off integration costs, severance, IT re-platforming, and cultural retention bonuses.",
+          "Net Value Creation: Compare Net Present Value of Synergies against Acquisition Premium paid to target shareholders."
+        ],
+        "after": [
+          "Cost Synergies (Hard Synergies): Eliminate duplicate corporate overhead (SG&A, HR, Legal, IT), consolidate manufacturing facilities, realize bulk procurement discounts, optimize supply chain logistics.",
+          "Revenue Synergies (Soft Synergies): Cross-sell complementary products to existing customer bases, expand target products into acquirer's international distribution channels, bundle solutions.",
+          "Financial & Tax Synergies: Lower cost of capital through larger borrowing capacity, utilization of accumulated Net Operating Losses (NOLs), tax inversion/optimization.",
+          "Implementation Costs & Friction: Subtract one-off integration costs, severance, IT re-platforming, and cultural retention bonuses.",
+          "Net Value Creation: Compare Net Present Value (NPV, a calculation estimating the value of future cash flows in today's money) of Synergies against Acquisition Premium paid to target shareholders."
+        ]
+      }
+    }
+  },
+  {
+    "id": "b92348b7-96ba-4412-9da5-fa6e6ab4c9eb",
+    "name": "Market Entry Framework",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite maintains faithfulness to the original text while appropriately clarifying financial/business terms (ROI, M&A) for an MBA audience without violating the restraint rules.",
+    "attempts": 1,
+    "fields": {
+      "steps": {
+        "before": [
+          "Pillar 1 — Market Attractiveness: Size, growth rate, customer segments, profitability, and macro regulatory tailwinds.",
+          "Pillar 2 — Competitive Dynamics: Market concentration (monopoly vs fragmented), competitors' market shares, barriers to entry, customer switching costs.",
+          "Pillar 3 — Company Capabilities & Synergies: Core competencies, brand transferable equity, distribution leverage, operational fit.",
+          "Pillar 4 — Financials & Mode of Entry: Investment cost, expected ROI/payback period, risk-reward profile, and choice of entry vehicle: Build (organic), Buy (M&A), or Partner (JV/licensing)."
+        ],
+        "after": [
+          "Pillar 1 — Market Attractiveness: Size, growth rate, customer segments, profitability, and macro regulatory tailwinds.",
+          "Pillar 2 — Competitive Dynamics: Market concentration (monopoly vs fragmented), competitors' market shares, barriers to entry, customer switching costs.",
+          "Pillar 3 — Company Capabilities & Synergies (efficiencies gained by combining businesses), core competencies, brand transferable equity, distribution leverage, operational fit.",
+          "Pillar 4 — Financials & Mode of Entry: Investment cost, expected ROI (Return on Investment, a measure of the profitability of an investment relative to its cost)/payback period, risk-reward profile, and choice of entry vehicle: Build (organic), Buy (M&A [Mergers and Acquisitions, the buying, selling, and combining of companies]), or Partner (JV/licensing)."
+        ]
+      }
+    }
+  },
+  {
+    "id": "5416df17-9307-4de2-8627-b9f8741ffac1",
+    "name": "Market Sizing (Top-Down / Bottom-Up)",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original and fully faithful.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "7ea4e44b-88b7-420f-bc11-950e49469ca0",
+    "name": "MECE",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original and preserves all content, structure, and details faithfully.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "7ebc1c46-5cc5-4653-b355-4465012fb33d",
+    "name": "Porter's Five Forces",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original and faithfully preserves all content, structure, and wording.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "daa5fb76-2f1b-494e-b3ed-bdf771e6e6cf",
+    "name": "Profitability Framework (Revenue - Cost Tree)",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original text, perfectly maintaining faithfulness, precision, and restraint.",
+    "attempts": 2,
+    "fields": {}
+  }
+]

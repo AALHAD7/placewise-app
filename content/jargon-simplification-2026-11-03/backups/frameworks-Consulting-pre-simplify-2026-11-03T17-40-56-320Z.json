@@ -1,0 +1,245 @@
+[
+  {
+    "id": "ffad7798-0125-4c0f-938d-3ffa131c6c1a",
+    "name": "3Cs Framework",
+    "role": "Consulting",
+    "level": "mba",
+    "description": "A quick situational lens (Company, Customer, Competitor) for opening a case before diving into a more specific structure - not a full answer on its own.",
+    "example": "Prompt: \"Our client, a mid-size airline, wants to enter the cargo business - where do we start?\" Use 3Cs to quickly frame the airline's current position, its target cargo customers, and who already competes there, then pivot into a market-entry structure.",
+    "steps": [
+      "Company — what does the client do today, what are its strengths/constraints, why is it asking this question now?",
+      "Customer — who is the end customer, what do they actually value, how is demand changing?",
+      "Competitor — who else serves this space, how intense is the competition, what is the client's relative position?",
+      "Use the 3Cs to generate 2-3 sharp clarifying questions, then move into a structure built for the specific question (market sizing, profitability, M&A, etc.)."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:35.881+00:00",
+    "domain": "Consulting",
+    "subdomain": "Case Structuring",
+    "when_to_use": "Use it in the first 30-60 seconds of a case to organize your clarifying questions, especially for market-entry or strategy cases.",
+    "when_not_to_use": "Do not use it as your final structure for the whole case - it is too generic to carry a full profitability or M&A answer; move to a sharper, question-specific structure once you understand the situation.",
+    "pitfalls": [
+      "Treating it as the answer instead of a warm-up - interviewers notice when a candidate never moves past 3Cs.",
+      "Listing generic facts under each C instead of ones specific to this client's actual situation."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "ebc19b27-a250-4964-afeb-1688b642951e",
+    "name": "M&A Synergy & Integration Tree",
+    "role": "Consulting",
+    "level": "mba",
+    "description": "Systematically breaks down value creation in mergers and acquisitions across Cost Synergies, Revenue Synergies, and Financial/Tax Synergies.",
+    "example": "Acquirer pays $200M premium for competitor with $100M EBITDA. Cost synergies = $30M/year in duplicate overhead. Valued at 8x, synergies yield $240M in value, covering the $200M premium with $40M net value created.",
+    "steps": [
+      "Cost Synergies (Hard Synergies): Eliminate duplicate corporate overhead (SG&A, HR, Legal, IT), consolidate manufacturing facilities, realize bulk procurement discounts, optimize supply chain logistics.",
+      "Revenue Synergies (Soft Synergies): Cross-sell complementary products to existing customer bases, expand target products into acquirer's international distribution channels, bundle solutions.",
+      "Financial & Tax Synergies: Lower cost of capital through larger borrowing capacity, utilization of accumulated Net Operating Losses (NOLs), tax inversion/optimization.",
+      "Implementation Costs & Friction: Subtract one-off integration costs, severance, IT re-platforming, and cultural retention bonuses.",
+      "Net Value Creation: Compare Net Present Value of Synergies against Acquisition Premium paid to target shareholders."
+    ],
+    "created_at": "2026-11-02T17:38:59.383766+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-02T18:25:30.911+00:00",
+    "domain": "Consulting",
+    "subdomain": "Profitability & Growth",
+    "when_to_use": "Use when evaluating corporate acquisitions, post-merger integration, or assessing if an acquisition premium is justified.",
+    "when_not_to_use": "Do not rely on revenue synergies to justify a deal price — investment committees heavily discount revenue synergies due to high execution failure.",
+    "pitfalls": [
+      "Overestimating revenue synergies (assumed cross-selling rarely hits modeled targets).",
+      "Ignoring cultural integration friction and customer churn during merged operations.",
+      "Neglecting one-off integration restructuring costs."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "b92348b7-96ba-4412-9da5-fa6e6ab4c9eb",
+    "name": "Market Entry Framework",
+    "role": "Consulting",
+    "level": "mba",
+    "description": "A 4-pillar structured decision tree for assessing whether a company should enter a new market, geography, or product category, and how to execute.",
+    "example": "US coffee chain considering entering Japan. (1) Market: High growth, premium pricing. (2) Competition: Strong local convenience stores and specialty shops. (3) Capabilities: Needs local real estate expertise. (4) Entry: Form a 50/50 Joint Venture with a Japanese trading house to access prime urban real estate rapidly.",
+    "steps": [
+      "Pillar 1 — Market Attractiveness: Size, growth rate, customer segments, profitability, and macro regulatory tailwinds.",
+      "Pillar 2 — Competitive Dynamics: Market concentration (monopoly vs fragmented), competitors' market shares, barriers to entry, customer switching costs.",
+      "Pillar 3 — Company Capabilities & Synergies: Core competencies, brand transferable equity, distribution leverage, operational fit.",
+      "Pillar 4 — Financials & Mode of Entry: Investment cost, expected ROI/payback period, risk-reward profile, and choice of entry vehicle: Build (organic), Buy (M&A), or Partner (JV/licensing)."
+    ],
+    "created_at": "2026-11-02T17:38:59.085391+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-02T18:25:30.645+00:00",
+    "domain": "Consulting",
+    "subdomain": "Market Sizing & Entry",
+    "when_to_use": "Use when an interviewer asks 'Should our client enter market X?' or 'How should we launch in geography Y?'",
+    "when_not_to_use": "Do not use for turnaround or purely operational cost-reduction cases where the market is already known.",
+    "pitfalls": [
+      "Analyzing only market size without evaluating competitors or the client's actual ability to win.",
+      "Forgetting to recommend a specific mode of entry (organic greenfield, M&A, or joint venture) with timing and trade-offs."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": {
+      "url": null,
+      "caption": "## STRUCTURE & APPROACH\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": null, \"source_page\": 6, \"notes\": [], \"nodes\": [{\"id\": \"a\", \"label\": \"CLARIFICATION\"}, {\"id\": \"b\", \"label\": \"APPROACH\"}, {\"id\": \"c\", \"label\": \"SEGMENTATION\"}, {\"id\": \"d\", \"label\": \"ESTIMATION\"}, {\"id\": \"e\", \"label\": \"VALIDATION\"}], \"edges\": [{\"from\": \"a\", \"to\": \"b\", \"label\": null}, {\"from\": \"b\", \"to\": \"c\", \"label\": null}, {\"from\": \"c\", \"to\": \"d\", \"label\": null}, {\"from\": \"d\", \"to\": \"e\", \"label\": null}]}\n```\nDiagram summary: A sequence of five steps: Clarification, Approach, Segmentation, Estimation, and Validation.\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": null, \"source_page\": 6, \"notes\": [], \"nodes\": [{\"id\": \"a\", \"label\": \"CLARIFICATION The first step in the guesstimate solving process is to ensure that you understand the question in its true essence. Hence it is quintessential to clarify any ambiguous terms in the question.\"}, {\"id\": \"b\", \"label\": \"DECIDING THE RIGHT APPROACH Although there are a multitude of approaches to solve such problems, they can broadly be classified into 2 types: Demand side approach & Supply side approach\"}, {\"id\": \"c\", \"label\": \"SEGMENTATION Having decided to embark upon a demand-side approach, the next step is to build an issue tree and divide the problem into MECE (Mutually Exclusive and Collectively Exhaustive) segments.\"}, {\"id\": \"d\", \"label\": \"ESTIMATION After deciding on the approach and identifying filters, the next step is to assume appropriate values using key demographic factors like age, gender, and income distribution.\"}, {\"id\": \"e\", \"label\": \"VALIDATION The penultimate step is to compile the estimates into a final figure, followed by validation using another approach or a ballpark benchmark.\"}], \"edges\": [{\"from\": \"a\", \"to\": \"b\", \"label\": null}, {\"from\": \"b\", \"to\": \"c\", \"label\": null}, {\"from\": \"c\", \"to\": \"d\", \"label\": null}, {\"from\": \"d\", \"to\": \"e\", \"label\": null}]}\n```\nDiagram summary: A vertical flow detailing the five structured steps for solving a guesstimate from clarification to validation.\n\n2",
+      "citation": {
+        "club": null,
+        "year": null,
+        "pages": [
+          6
+        ],
+        "school": "SRCC",
+        "casebook": "SRCC Guesstimates-Book-Volume-1-6.pdf"
+      },
+      "similarity": 0.68160228419662,
+      "sourceFile": "SRCC Guesstimates-Book-Volume-1-6.pdf"
+    }
+  },
+  {
+    "id": "5416df17-9307-4de2-8627-b9f8741ffac1",
+    "name": "Market Sizing (Top-Down / Bottom-Up)",
+    "role": "Consulting",
+    "level": "mba",
+    "description": "A structured way to estimate a market's size under time pressure, from either the total population down or from a single unit up.",
+    "example": "Prompt: \"How many golf balls are sold in India each year?\" Top-down: population -> % who golf -> balls per golfer per year. Bottom-up: number of golf courses -> rounds played per course per day -> balls lost/bought per round.",
+    "steps": [
+      "State which approach you will use and why, out loud.",
+      "Top-down: start from a known total (population, market size) and multiply down by relevant percentages.",
+      "Bottom-up: start from one unit (one store, one customer, one course) and multiply up by the count of units.",
+      "Use round, defensible numbers and state each assumption as you use it.",
+      "Sanity-check the final number against something you already know, and flag if it seems off before presenting it as final."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:35.911+00:00",
+    "domain": "Consulting",
+    "subdomain": "Market Sizing & Entry",
+    "when_to_use": "Use it for any \"how many/how much\" estimation question - market size, revenue potential, units sold per year.",
+    "when_not_to_use": "Do not use it when the interviewer is really testing structure/strategy, not arithmetic - if the numbers are secondary to the recommendation, spend less time here.",
+    "pitfalls": [
+      "Picking numbers that sound precise but are not sanity-checked (e.g. \"43.7% of households\") - round numbers with a stated rationale are stronger.",
+      "Not stating assumptions out loud before calculating - the interviewer is grading the logic, not just the final number."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": {
+      "url": null,
+      "caption": "## FRAMEWORKS\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 7,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"FRAMEWORKS\",\n    \"children\": [\n      {\n        \"label\": \"TOP DOWN APPROACH\",\n        \"children\": [\n          {\n            \"label\": \"Start with a high-level estimate and break it down into smaller components. Example: Estimating the total revenue of the coffee industry by starting with global coffee consumption and working down to per-cup pricing.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"BOTTOM UP APPROACH\",\n        \"children\": [\n          {\n            \"label\": \"Start with small, measurable components and aggregate them to form a larger estimate. Example: Estimating the total number of cars in a city by calculating the number of cars per household and multiplying by the number of households.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"PARETO PRINCIPLE\",\n        \"children\": [\n          {\n            \"label\": \"The 80/20 rule states that 20% of activities drive 80% of results, enabling efficient estimation with accuracy. Example: In a city's restaurant revenue, 80% likely comes from the top 20% of restaurants, as suggested by the Pareto Principle.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"MECE\",\n        \"children\": [\n          {\n            \"label\": \"A method for breaking down problems into mutually exclusive, collectively exhaustive categories to ensure completeness and prevent overlap. Example: Estimating the effectiveness of marketing campaigns as total impressions × conversion rate.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"UNIT ECONOMICS\",\n        \"children\": [\n          {\n            \"label\": \"Break down the problem into individual units (e.g., per customer, per product) and scale up. Example: Estimating the total cost of running a delivery service by calculating the cost per delivery and multiplying by the number of deliveries.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"EXTRAPOLATION\",\n        \"children\": [\n          {\n            \"label\": \"Use existing data trends to project future estimates, when variable grow at a percentage rate. Formula: Y = Y’ × (1 + r)^t Y = Estimated future value, Y’ = Current known value, r = Growth rate, t = time period\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: Frameworks for estimation and problem solving, categorized into top down approach, bottom up approach, pareto principle, MECE, unit economics, and extrapolation.\n\n3\n\nDEMAND SIDE APPROACH\n\nAPPROACH\nBreak down demand by identifying the target population, usage frequency, and average consumption.\n\nWHEN TO USE?\nWhen estimating market size, revenue, or consumption patterns.\n\nEXAMPLES\n- Market Size for Sanitary Pads in India\n- Estimate daily metro passengers in Delhi.\n\nPARAMETERS TO CONSIDER\n\nAGE | INCOME | LOCATION\n--- | --- | ---\nGENDER | OCCUPATION | COUNTRY\nLITERACY RATE | MOBILE PENETRATION | INTERNET PENETRATION\n\nEXAMPLE: GUESSTIMATE THE NUMBER OF LICENSE PLATES IN THE STATE OF MAHARASHTRA\n\nASSUMPTIONS: Average people per household - 4 | # of license plates per vehicle - 2\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 8, \"notes\": [], \"root\": {\"label\": \"POPULATION OF MAHARASHTRA 120 MILLION\", \"children\": [{\"label\": \"/4 = 30 MILLION\", \"children\": [{\"label\": \"HIGH INCOME HOUSEHOLDS (10%) 3 MILLION\", \"children\": [{\"label\": \"% VEHICLE OWNERSHIP (90%) 2.7 MILLION\", \"children\": [{\"label\": \"x2\", \"children\": [{\"label\": \"NUMBER OF VEHICLES (5.4 MILLION)\", \"children\": []}]}]}]}, {\"label\": \"MIDDLE INCOME HOUSEHOLDS (60%) 18 MILLION\", \"children\": [{\"label\": \"% VEHICLE OWNERSHIP (50%) 9 MILLION\", \"children\": [{\"label\": \"x1.5\", \"children\": [{\"label\": \"NUMBER OF VEHICLES (13.5 MILLION)\", \"children\": []}]}]}]}, {\"label\": \"LOW INCOME HOUSEHOLDS (30%) 9 MILLION\", \"children\": [{\"label\": \"% VEHICLE OWNERSHIP (30%) 2.7 MILLION\", \"children\": [{\"label\": \"x1\", \"children\": [{\"label\": \"NUMBER OF VEHICLES (2.7 MILLION)\", \"children\": []}]}]}]}]}]}}\n```\nDiagram summary: Population of Maharashtra divides by 4 into households by income level, leading to vehicle ownership percentages, vehicle counts, and ultimately total vehicles and license plates.\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": null, \"source_page\": 8, \"notes\": [], \"nodes\": [{\"id\": \"a\", \"label\": \"TOTAL VEHICLES 21.6 MILLION\"}, {\"id\": \"b\", \"label\": \"x 2\"}, {\"id\": \"c\", \"label\": \"TOTAL NUMBER OF LICENSE PLATES\"}], \"edges\": [{\"from\": \"a\", \"to\": \"c\", \"label\": null}, {\"from\": \"b\", \"to\": \"c\", \"label\": null}]}\n```\nDiagram summary: Total vehicles multiplied by 2 gives the total number of license plates.\n\nTHE NUMBER OF LICENSE PLATES IN MAHARASHTRA IS 43.2 MILLION\n\n4",
+      "citation": {
+        "club": null,
+        "year": null,
+        "pages": [
+          7,
+          8
+        ],
+        "school": "SRCC",
+        "casebook": "SRCC Guesstimates-Book-Volume-1-6.pdf"
+      },
+      "similarity": 0.77035771109529,
+      "sourceFile": "SRCC Guesstimates-Book-Volume-1-6.pdf"
+    }
+  },
+  {
+    "id": "7ea4e44b-88b7-420f-bc11-950e49469ca0",
+    "name": "MECE",
+    "role": "Consulting",
+    "level": "mba",
+    "description": "Not a step-by-step framework but a structuring principle — used to organize any answer (market sizing, case structuring, root-cause analysis) into non-overlapping, fully-covering buckets.",
+    "example": "Prompt: \"Why has this retailer's profit declined?\" A MECE structure might split into Revenue vs. Cost, then break each further, rather than listing overlapping ad-hoc reasons.",
+    "steps": [
+      "Mutually Exclusive — each bucket in your structure should not overlap with another (e.g. splitting by \"online vs. offline revenue\", not \"online revenue vs. total revenue\").",
+      "Collectively Exhaustive — the buckets together should cover the whole problem, with nothing left out.",
+      "Say your structure out loud before diving into any one branch — panels are often evaluating the structure itself, not just the final answer.",
+      "When in doubt, a simple valid split is often stronger than a clever but overlapping one."
+    ],
+    "created_at": "2026-08-13T22:20:18.297177+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:34.836+00:00",
+    "domain": "Consulting",
+    "subdomain": "Case Structuring",
+    "when_to_use": null,
+    "when_not_to_use": null,
+    "pitfalls": null,
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": {
+      "url": null,
+      "caption": "## FRAMEWORKS\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 7,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"FRAMEWORKS\",\n    \"children\": [\n      {\n        \"label\": \"TOP DOWN APPROACH\",\n        \"children\": [\n          {\n            \"label\": \"Start with a high-level estimate and break it down into smaller components. Example: Estimating the total revenue of the coffee industry by starting with global coffee consumption and working down to per-cup pricing.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"BOTTOM UP APPROACH\",\n        \"children\": [\n          {\n            \"label\": \"Start with small, measurable components and aggregate them to form a larger estimate. Example: Estimating the total number of cars in a city by calculating the number of cars per household and multiplying by the number of households.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"PARETO PRINCIPLE\",\n        \"children\": [\n          {\n            \"label\": \"The 80/20 rule states that 20% of activities drive 80% of results, enabling efficient estimation with accuracy. Example: In a city's restaurant revenue, 80% likely comes from the top 20% of restaurants, as suggested by the Pareto Principle.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"MECE\",\n        \"children\": [\n          {\n            \"label\": \"A method for breaking down problems into mutually exclusive, collectively exhaustive categories to ensure completeness and prevent overlap. Example: Estimating the effectiveness of marketing campaigns as total impressions × conversion rate.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"UNIT ECONOMICS\",\n        \"children\": [\n          {\n            \"label\": \"Break down the problem into individual units (e.g., per customer, per product) and scale up. Example: Estimating the total cost of running a delivery service by calculating the cost per delivery and multiplying by the number of deliveries.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"EXTRAPOLATION\",\n        \"children\": [\n          {\n            \"label\": \"Use existing data trends to project future estimates, when variable grow at a percentage rate. Formula: Y = Y’ × (1 + r)^t Y = Estimated future value, Y’ = Current known value, r = Growth rate, t = time period\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: Frameworks for estimation and problem solving, categorized into top down approach, bottom up approach, pareto principle, MECE, unit economics, and extrapolation.\n\n3\n\nDEMAND SIDE APPROACH\n\nAPPROACH\nBreak down demand by identifying the target population, usage frequency, and average consumption.\n\nWHEN TO USE?\nWhen estimating market size, revenue, or consumption patterns.\n\nEXAMPLES\n- Market Size for Sanitary Pads in India\n- Estimate daily metro passengers in Delhi.\n\nPARAMETERS TO CONSIDER\n\nAGE | INCOME | LOCATION\n--- | --- | ---\nGENDER | OCCUPATION | COUNTRY\nLITERACY RATE | MOBILE PENETRATION | INTERNET PENETRATION\n\nEXAMPLE: GUESSTIMATE THE NUMBER OF LICENSE PLATES IN THE STATE OF MAHARASHTRA\n\nASSUMPTIONS: Average people per household - 4 | # of license plates per vehicle - 2\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 8, \"notes\": [], \"root\": {\"label\": \"POPULATION OF MAHARASHTRA 120 MILLION\", \"children\": [{\"label\": \"/4 = 30 MILLION\", \"children\": [{\"label\": \"HIGH INCOME HOUSEHOLDS (10%) 3 MILLION\", \"children\": [{\"label\": \"% VEHICLE OWNERSHIP (90%) 2.7 MILLION\", \"children\": [{\"label\": \"x2\", \"children\": [{\"label\": \"NUMBER OF VEHICLES (5.4 MILLION)\", \"children\": []}]}]}]}, {\"label\": \"MIDDLE INCOME HOUSEHOLDS (60%) 18 MILLION\", \"children\": [{\"label\": \"% VEHICLE OWNERSHIP (50%) 9 MILLION\", \"children\": [{\"label\": \"x1.5\", \"children\": [{\"label\": \"NUMBER OF VEHICLES (13.5 MILLION)\", \"children\": []}]}]}]}, {\"label\": \"LOW INCOME HOUSEHOLDS (30%) 9 MILLION\", \"children\": [{\"label\": \"% VEHICLE OWNERSHIP (30%) 2.7 MILLION\", \"children\": [{\"label\": \"x1\", \"children\": [{\"label\": \"NUMBER OF VEHICLES (2.7 MILLION)\", \"children\": []}]}]}]}]}]}}\n```\nDiagram summary: Population of Maharashtra divides by 4 into households by income level, leading to vehicle ownership percentages, vehicle counts, and ultimately total vehicles and license plates.\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": null, \"source_page\": 8, \"notes\": [], \"nodes\": [{\"id\": \"a\", \"label\": \"TOTAL VEHICLES 21.6 MILLION\"}, {\"id\": \"b\", \"label\": \"x 2\"}, {\"id\": \"c\", \"label\": \"TOTAL NUMBER OF LICENSE PLATES\"}], \"edges\": [{\"from\": \"a\", \"to\": \"c\", \"label\": null}, {\"from\": \"b\", \"to\": \"c\", \"label\": null}]}\n```\nDiagram summary: Total vehicles multiplied by 2 gives the total number of license plates.\n\nTHE NUMBER OF LICENSE PLATES IN MAHARASHTRA IS 43.2 MILLION\n\n4",
+      "citation": {
+        "club": null,
+        "year": null,
+        "pages": [
+          7,
+          8
+        ],
+        "school": "SRCC",
+        "casebook": "SRCC Guesstimates-Book-Volume-1-6.pdf"
+      },
+      "similarity": 0.71364528300138,
+      "sourceFile": "SRCC Guesstimates-Book-Volume-1-6.pdf"
+    }
+  },
+  {
+    "id": "7ebc1c46-5cc5-4653-b355-4465012fb33d",
+    "name": "Porter's Five Forces",
+    "role": "Consulting",
+    "level": "mba",
+    "description": "Analyzes how attractive an industry is by looking at five sources of competitive pressure - used heavily in market-entry and industry-attractiveness cases.",
+    "example": "Prompt: \"Should our client, a regional grocery chain, enter meal-kit delivery?\" Five Forces surfaces that low entry barriers and high buyer power (easy to switch kits) are likely the forces that matter most here.",
+    "steps": [
+      "Threat of new entrants — how easy is it for someone new to start competing?",
+      "Bargaining power of suppliers — can suppliers squeeze margins?",
+      "Bargaining power of buyers — can customers demand lower prices or better terms?",
+      "Threat of substitutes — are there other ways customers could get this job done?",
+      "Competitive rivalry — how intense is competition among existing players?",
+      "Identify which 1-2 forces are strongest for this specific industry and build your recommendation around those."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:36.001+00:00",
+    "domain": "Consulting",
+    "subdomain": "Market Sizing & Entry",
+    "when_to_use": "Use it when a prompt asks \"should our client enter this industry\" or \"how attractive is this market\", especially when there is time to go deep on one structure.",
+    "when_not_to_use": "Skip it for a pure market-sizing arithmetic question, or a case that is really about internal operations/cost - Five Forces answers \"is this a good industry\", not \"how big is it\" or \"why are costs high\".",
+    "pitfalls": [
+      "Listing all five forces at equal length regardless of which actually matter for this industry - a strong answer identifies the 1-2 forces that dominate and spends most of the time there.",
+      "Confusing \"competitive rivalry\" with \"threat of new entrants\" - rivalry is about existing players, entrants is about barriers to joining."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "daa5fb76-2f1b-494e-b3ed-bdf771e6e6cf",
+    "name": "Profitability Framework (Revenue - Cost Tree)",
+    "role": "Consulting",
+    "level": "mba",
+    "description": "Breaks \"why did profit change\" into a revenue tree and a cost tree so you can isolate which branch actually moved, instead of guessing at causes.",
+    "example": "Prompt: \"Our client's profit fell 20% year over year - why?\" Build Revenue (Price x Volume, by segment) and Cost (Fixed + Variable, by category) trees, ask for data on each branch, and isolate which one moved before hypothesizing why.",
+    "steps": [
+      "Profit = Revenue - Cost. Draw both sides before asking any data questions.",
+      "Revenue = Price x Volume - break Volume further by segment/channel/product line if useful.",
+      "Cost = Fixed + Variable - break Variable further by category (COGS, labor, marketing, etc.).",
+      "Ask for data on the branches most likely to explain a 20%+ move, not every branch equally.",
+      "Once you isolate the branch that moved, hypothesize causes specific to that branch, not the business generally."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:35.658+00:00",
+    "domain": "Consulting",
+    "subdomain": "Profitability & Growth",
+    "when_to_use": "Use it for any \"profit declined/what should we do about profit\" case - the most common consulting case archetype.",
+    "when_not_to_use": "Do not use it for a pure market-entry or M&A-synergy question where profit is not the object of the case.",
+    "pitfalls": [
+      "Jumping straight to a hypothesis (\"it must be competition\") before breaking down the tree - the tree is what tells you where to look.",
+      "Building an unbalanced tree - a common mistake is spending 90% of the time on cost and never seriously checking revenue, or vice versa."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  }
+]

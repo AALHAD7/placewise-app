@@ -1,0 +1,71 @@
+[
+  {
+    "id": "40e79401-8cd2-4db3-8d06-097f22bfdd37",
+    "name": "AARM Funnel",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite clarifies 'DAU', which is a named metric/acronym, falling within the permitted clarification rule, while keeping all arrays, steps, and structures identical to the original.",
+    "attempts": 2,
+    "fields": {
+      "example": {
+        "before": "Prompt: \"DAU for our app dropped 15% last month — how do you investigate?\" Use the funnel to isolate which stage regressed before hypothesizing why.",
+        "after": "Prompt: \"DAU (daily active users, a count of unique users who engage with a product each day) for our app dropped 15% last month — how do you investigate?\" Use the funnel to isolate which stage regressed before hypothesizing why."
+      }
+    }
+  },
+  {
+    "id": "1e20d257-a97f-438c-9d23-b4e1c17655a2",
+    "name": "CIRCLES",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original framework in every way, perfectly maintaining faithfulness, precision, and restraint.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "6f55e9cf-184e-48cd-9787-a6b22106275f",
+    "name": "HEART Framework (Google)",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original framework with no changes in content, structure, or wording.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "5a17acf3-2223-4921-91d9-8b50d60196c5",
+    "name": "ICE Score",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original text across all fields and arrays, maintaining complete faithfulness and precision.",
+    "attempts": 2,
+    "fields": {}
+  },
+  {
+    "id": "adf6eab1-be18-487b-84ce-7a8701a9a5d6",
+    "name": "Jobs To Be Done",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is an exact, identical copy of the original JSON.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "a50550db-816f-4964-a81b-f2dbd8aea42d",
+    "name": "Kano Model",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original text across all fields and arrays, maintaining complete faithfulness and precision.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "5fe97d9e-7f5f-452a-834a-1b21e26f04e4",
+    "name": "North Star Metric",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original framework in every field, maintaining exact faithfulness, precision, and restraint.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "dd4002b4-7ad4-483a-bc2f-ae9599459312",
+    "name": "RICE",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original framework, perfectly preserving all fields, steps, and content.",
+    "attempts": 1,
+    "fields": {}
+  }
+]

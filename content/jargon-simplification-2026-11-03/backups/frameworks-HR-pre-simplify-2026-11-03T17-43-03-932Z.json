@@ -1,0 +1,114 @@
+[
+  {
+    "id": "bf935092-c8ac-4858-99d3-d359574e799e",
+    "name": "9-Box Grid",
+    "role": "HR",
+    "level": "mba",
+    "description": "Plots employees on Performance vs. Potential to inform talent decisions - who to promote, develop, or manage out.",
+    "example": "An org uses the grid each year to identify its \"high performance, high potential\" box for accelerated leadership development, and its \"low performance, low potential\" box for a structured improvement plan or exit.",
+    "steps": [
+      "X-axis: Performance (Low to High) — how well they are doing in their current role.",
+      "Y-axis: Potential (Low to High) — how much larger a role they could realistically grow into.",
+      "High performance + high potential: invest in accelerated development.",
+      "High performance + low potential: recognize and retain as strong specialists, not future leaders.",
+      "Low performance + high potential: coach - often a fit or ramp-up issue, not a capability ceiling.",
+      "Low performance + low potential: manage through a structured improvement plan."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:52.229+00:00",
+    "domain": "HR",
+    "subdomain": "Performance Management",
+    "when_to_use": "Use it for \"how would you design a talent review process\" or \"how should this manager think about their team\" questions.",
+    "when_not_to_use": "Do not use it as the sole input for an individual promotion/termination decision in a real organization - it is a talent-planning lens, not a complete performance review.",
+    "pitfalls": [
+      "Conflating current Performance with future Potential - a strong current performer is not automatically high-potential for a very different future role.",
+      "Using it as a forced-ranking tool that pits team members against each other rather than a planning input."
+    ],
+    "diagram_type": "grid",
+    "diagram_data": {
+      "cols": [
+        "Low",
+        "High"
+      ],
+      "rows": [
+        "High",
+        "Low"
+      ],
+      "cells": [
+        [
+          "Coach",
+          "Accelerate"
+        ],
+        [
+          "Manage Out",
+          "Retain as Specialist"
+        ]
+      ],
+      "xAxis": "Performance",
+      "yAxis": "Potential"
+    },
+    "grounded_image": null
+  },
+  {
+    "id": "0b1b89f2-98fc-47a6-8954-5042894903e3",
+    "name": "McKinsey 7S Framework",
+    "role": "HR",
+    "level": "mba",
+    "description": "A model of seven interdependent elements (Strategy, Structure, Systems, Shared Values, Skills, Style, Staff) that all need to align for an organization to work well.",
+    "example": "A company adopts a new customer-centric Strategy but keeps its old hierarchical Structure and command-and-control Style - the misalignment between Strategy and the other Ss is why the transformation stalls.",
+    "steps": [
+      "Strategy — the plan for building and sustaining an advantage.",
+      "Structure — how the organization is divided and coordinated.",
+      "Systems — the processes and procedures that get work done.",
+      "Shared Values — the core beliefs that shape culture (the framework's center).",
+      "Skills — the capabilities the organization and its people actually have.",
+      "Style — how leadership actually behaves, not just what they say.",
+      "Staff — the people, their roles, and how they are developed.",
+      "Identify which elements are misaligned with the intended Strategy, and which should change first to unblock the rest."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:57.119+00:00",
+    "domain": "HR",
+    "subdomain": "Talent & Org Design",
+    "when_to_use": "Use it for \"why is this reorg/transformation struggling\" or \"assess organizational alignment\" questions.",
+    "when_not_to_use": "Do not use it for a narrow individual-performance question - it is an organization-level diagnostic, not an individual one.",
+    "pitfalls": [
+      "Treating the \"hard\" elements (Strategy, Structure, Systems) as the whole story - misalignment often actually lives in the \"soft\" elements (Shared Values, Style, Skills, Staff), which are easy to skip over.",
+      "Diagnosing misalignment without proposing which element should change first - not all seven can move at once."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "9887a86a-e18a-4c3f-a6e3-089c458059aa",
+    "name": "OKR Framework (Objectives & Key Results)",
+    "role": "HR",
+    "level": "mba",
+    "description": "A goal-setting methodology popularized by Intel and Google connecting ambitious qualitative Objectives to 3-5 quantitative, measurable Key Results.",
+    "example": "Objective: Transform customer support into a competitive retention advantage. KR 1: Reduce average first-response time from 4 hours to under 15 minutes. KR 2: Achieve CSAT rating > 92%. KR 3: Automate 40% of tier-1 repetitive inquiries via AI agent.",
+    "steps": [
+      "Define the Objective (O): Qualitative, inspirational, time-bound statement of what is to be accomplished (e.g. 'Build the most reliable checkout engine in Southeast Asia').",
+      "Set Key Results (KRs): 3 to 5 quantitative metrics that prove the objective was met (e.g. 'Reduce payment gateway failure rate from 4.2% to < 0.5%').",
+      "Keep KRs Outcome-Based: Measure business and user outcomes, not task activities or to-do lists.",
+      "Target Ambition (Stretch Goals): Target a 70% achievement rate (a score of 0.7 is successful; 1.0 means the goal was too easy).",
+      "Cascade and Align: Bi-directional goal alignment where 50% of OKRs are set top-down and 50% bottom-up across teams."
+    ],
+    "created_at": "2026-11-02T17:39:01.758742+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-02T18:25:33.17+00:00",
+    "domain": "HR",
+    "subdomain": "Performance Management",
+    "when_to_use": "Use for company-wide, department, and team quarterly alignment, performance management, and strategy execution.",
+    "when_not_to_use": "Do not use OKRs as a rigid 1:1 formula for compensation and bonuses (that encourages sandbagging and low ambition).",
+    "pitfalls": [
+      "Writing Key Results as tasks (e.g. 'Launch feature X') instead of metric outcomes (e.g. 'Increase conversion rate by 15%').",
+      "Setting too many OKRs (more than 3-5 per team causes loss of focus)."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  }
+]

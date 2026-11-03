@@ -1,0 +1,228 @@
+[
+  {
+    "id": "a421c735-06ae-402a-8d6e-b3e987885395",
+    "name": "Blue Ocean Strategy (Four Actions Framework)",
+    "role": "General",
+    "level": "mba",
+    "description": "A tool for finding uncontested market space by asking which industry factors to Eliminate, Reduce, Raise, and Create - instead of competing head-on within existing industry norms.",
+    "example": "Cirque du Soleil eliminated star performers and animal acts (standard in traditional circus), reduced the fun/humor focus, raised the artistic/theatrical quality, and created a refined theatre-going experience - competing outside the traditional circus industry entirely.",
+    "steps": [
+      "Eliminate — which factors the industry takes for granted should be removed entirely?",
+      "Reduce — which factors should be cut well below the industry standard?",
+      "Raise — which factors should be pushed well above the industry standard?",
+      "Create — which factors should be introduced that the industry has never offered?"
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:56.861+00:00",
+    "domain": "General Management",
+    "subdomain": "Strategy Frameworks",
+    "when_to_use": "Use it for \"how can this company escape a price war\" or \"design a differentiated strategy\" questions where competing on existing terms looks like a losing game.",
+    "when_not_to_use": "Do not use it when the real issue is execution, not strategy - Blue Ocean answers \"what game should we play\", not \"why are we losing the game we are already playing\".",
+    "pitfalls": [
+      "Proposing to \"Create\" only, without also being willing to genuinely \"Eliminate\" something the industry assumes is necessary - the framework's power is in doing both.",
+      "Confusing it with simple differentiation - Blue Ocean is specifically about redefining the basis of competition, not just adding one more feature."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "5108be68-f44a-48b6-8914-8c8db554adbb",
+    "name": "Business Model Canvas",
+    "role": "General",
+    "level": "mba",
+    "description": "A one-page map of the nine building blocks of how a business creates, delivers, and captures value - used to describe or design an entire business model at a glance.",
+    "example": "Airbnb's canvas: Key Resources = the platform + trust/review system, not physical property; Customer Segments = both hosts and guests (two-sided); Revenue Streams = service fees from both sides of each booking.",
+    "steps": [
+      "Customer Segments — who are you creating value for?",
+      "Value Propositions — what problem are you solving, for which segment?",
+      "Channels — how do you reach and deliver to customers?",
+      "Customer Relationships — how do you acquire, retain, and grow each segment?",
+      "Revenue Streams — how and from whom does the business actually get paid?",
+      "Key Resources — what assets does the value proposition require?",
+      "Key Activities — what must the business do well operationally?",
+      "Key Partners — who do you rely on externally to make this work?",
+      "Cost Structure — what are the biggest costs this model drives?"
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:50.721+00:00",
+    "domain": "General Management",
+    "subdomain": "Business Model & Strategy",
+    "when_to_use": "Use it for \"explain this company's business model\" or \"design a business model for X\" questions - broader than a single strategy framework, covering the whole operating logic.",
+    "when_not_to_use": "Do not use it for a narrow tactical question (a single pricing decision, a single channel choice) - it is meant for whole-business, not single-decision, analysis.",
+    "pitfalls": [
+      "Filling in blocks generically (\"customers: everyone\") instead of specifically for this business.",
+      "Treating Cost Structure and Revenue Streams as an afterthought - they are what makes the other seven blocks a real business, not just a product idea."
+    ],
+    "diagram_type": "grid",
+    "diagram_data": {
+      "cols": [
+        "",
+        "",
+        ""
+      ],
+      "rows": [
+        "",
+        "",
+        ""
+      ],
+      "cells": [
+        [
+          "Key Partners",
+          "Key Activities",
+          "Value Propositions"
+        ],
+        [
+          "Key Resources",
+          "Customer Relationships",
+          "Customer Segments"
+        ],
+        [
+          "Cost Structure",
+          "Channels",
+          "Revenue Streams"
+        ]
+      ],
+      "xAxis": null,
+      "yAxis": null
+    },
+    "grounded_image": null
+  },
+  {
+    "id": "d0239af2-3f83-4bfc-b8f8-a2eb4fb8663c",
+    "name": "PESTEL Analysis",
+    "role": "General",
+    "level": "mba",
+    "description": "A macro-environmental scanning tool assessing the external Political, Economic, Social, Technological, Environmental, and Legal forces shaping an industry.",
+    "example": "Electric Vehicle automaker expanding into Europe: Political = EU ban on ICE vehicles by 2035; Economic = High electricity costs vs gas; Social = Eco-conscious urban demographic; Tech = Battery range; Environmental = Lithium supply chain; Legal = Strict EU crash and battery recycling mandates.",
+    "steps": [
+      "Political: Government stability, tax policy, trade tariffs, geopolitical tensions, trade agreements.",
+      "Economic: Inflation rates, interest rates, currency exchange fluctuations, GDP growth, consumer disposable income.",
+      "Social: Demographic shifts, population aging, cultural attitudes toward health/work, lifestyle trends.",
+      "Technological: AI disruption, automation, R&D incentives, digital infrastructure, intellectual property protections.",
+      "Environmental: Climate change impact, carbon emission targets, ESG compliance, raw material scarcity.",
+      "Legal: Employment laws, antitrust regulation, consumer protection laws, health and safety standards."
+    ],
+    "created_at": "2026-11-02T17:39:00.945066+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-02T18:25:29.426+00:00",
+    "domain": "General Management",
+    "subdomain": "Business Model & Strategy",
+    "when_to_use": "Use at the beginning of corporate strategy formulation, market entry into new countries, or long-range scenario planning.",
+    "when_not_to_use": "Do not use for micro-level product feature decisions or internal operational improvements.",
+    "pitfalls": [
+      "Treating PESTEL as a laundry list of facts without linking forces to actionable strategic implications.",
+      "Confusing external macro trends (PESTEL) with industry-level competitive forces (Porter's Five Forces)."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "d2c6ba50-1b7e-49ba-9019-1662cbbfa563",
+    "name": "Porter's Generic Strategies",
+    "role": "General",
+    "level": "mba",
+    "description": "Michael Porter's strategic choice matrix demonstrating that sustainable competitive advantage stems from either Low Cost or Differentiation across Broad or Narrow scope.",
+    "example": "Airline industry: Southwest operates Cost Leadership (single aircraft type, no assigned seats, point-to-point); Singapore Airlines operates Differentiation (world-class service, luxury cabins); Allegiant operates Cost Focus (budget leisure travel to underserved secondary airports).",
+    "steps": [
+      "Cost Leadership (Broad Scope, Low Cost): Drive lowest cost of operation in the industry through economies of scale, proprietary process tech, and tight cost control (e.g., Walmart, Southwest Airlines).",
+      "Differentiation (Broad Scope, Premium): Deliver unique value perceived as industry-wide benchmark, commanding premium pricing (e.g., Apple, Nike).",
+      "Cost Focus (Narrow Scope, Low Cost): Target a specific niche segment with ultra-low cost operations tailored strictly to that niche (e.g., local discount grocer).",
+      "Differentiation Focus (Narrow Scope, Premium): Target an elite or specialized niche with tailor-made luxury or specialized features (e.g., Ferrari, specialized medical robotics).",
+      "Avoid Getting 'Stuck in the Middle': A firm that tries to be everything to everyone achieves neither low cost nor distinctive differentiation and suffers below-average profitability."
+    ],
+    "created_at": "2026-11-02T17:39:01.397183+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-02T18:25:33.86+00:00",
+    "domain": "General Management",
+    "subdomain": "Strategy Frameworks",
+    "when_to_use": "Use when defining corporate strategic positioning, defining competitive advantage, or analyzing why a firm is underperforming.",
+    "when_not_to_use": "Do not assume low price equals cost leadership; cost leadership is about the underlying cost structure, not just discounting prices.",
+    "pitfalls": [
+      "Trying to pursue both cost leadership and broad differentiation simultaneously without dual operating models.",
+      "Underestimating competitors' ability to copy differentiation features."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "b8c26e60-9962-48c3-b6fb-879577bd7473",
+    "name": "STAR+R",
+    "role": "General",
+    "level": "mba",
+    "description": "An extension of the standard STAR behavioural framework that adds a reflection step — panels increasingly probe for self-awareness, not just outcomes.",
+    "example": "Prompt: \"Tell me about a time you failed.\" Most candidates stop at Result; the +R step is what separates a strong answer from an average one.",
+    "steps": [
+      "Situation — one to two sentences of context, no more.",
+      "Task — what you specifically were responsible for.",
+      "Action — what you actually did, in your own words, with enough specificity to sound real.",
+      "Result — the outcome, ideally with a number or a concrete change.",
+      "Reflection — what you would do differently, or what it changed about how you work now. This is the step candidates skip and panels specifically listen for."
+    ],
+    "created_at": "2026-08-13T22:20:18.297177+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:57.375+00:00",
+    "domain": "General Management",
+    "subdomain": "Leadership & Behavioural",
+    "when_to_use": null,
+    "when_not_to_use": null,
+    "pitfalls": null,
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "c3969d38-c7dd-4f52-a9e9-678d8405603f",
+    "name": "SWOT Analysis",
+    "role": "General",
+    "level": "mba",
+    "description": "A quick internal/external scan - Strengths, Weaknesses, Opportunities, Threats - used to frame a company's current strategic position before recommending a direction.",
+    "example": "For a legacy retailer: Strength = trusted brand and store network; Weakness = weak e-commerce; Opportunity = growing online grocery demand; Threat = pure-play online competitors. The \"so what\": use the trusted brand + stores as a click-and-collect advantage online competitors cannot easily copy.",
+    "steps": [
+      "Strengths — internal advantages this company has today.",
+      "Weaknesses — internal gaps or disadvantages today.",
+      "Opportunities — external trends or gaps this company could exploit.",
+      "Threats — external risks that could hurt this company.",
+      "Pair quadrants together (Strength + Opportunity, Weakness + Threat) to generate a specific, actionable recommendation - do not leave the four lists unconnected."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:50.063+00:00",
+    "domain": "General Management",
+    "subdomain": "Business Model & Strategy",
+    "when_to_use": "Use it as a fast opening frame for \"assess this company's strategic position\" questions, especially early in a case before going deeper.",
+    "when_not_to_use": "Do not stop at SWOT as your final answer - interviewers see it as a starting lens, not a recommendation; always follow it with a specific \"so what\" move.",
+    "pitfalls": [
+      "Listing generic strengths/weaknesses that could apply to any company in the industry, rather than ones specific to this company.",
+      "Never connecting the four quadrants - a strong SWOT pairs a Strength with an Opportunity (or a Weakness with a Threat) to generate an actual recommendation."
+    ],
+    "diagram_type": "grid",
+    "diagram_data": {
+      "cols": [
+        "",
+        ""
+      ],
+      "rows": [
+        "",
+        ""
+      ],
+      "cells": [
+        [
+          "Strengths",
+          "Weaknesses"
+        ],
+        [
+          "Opportunities",
+          "Threats"
+        ]
+      ],
+      "xAxis": null,
+      "yAxis": null
+    },
+    "grounded_image": null
+  }
+]

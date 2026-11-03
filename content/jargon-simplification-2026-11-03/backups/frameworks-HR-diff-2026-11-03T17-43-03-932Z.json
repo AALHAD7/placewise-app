@@ -1,0 +1,26 @@
+[
+  {
+    "id": "bf935092-c8ac-4858-99d3-d359574e799e",
+    "name": "9-Box Grid",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "0b1b89f2-98fc-47a6-8954-5042894903e3",
+    "name": "McKinsey 7S Framework",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original framework in every way, faithfully preserving all text, order, and structure without any changes.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "9887a86a-e18a-4c3f-a6e3-089c458059aa",
+    "name": "OKR Framework (Objectives & Key Results)",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original framework, perfectly preserving all fields, arrays, steps, and examples without any modifications.",
+    "attempts": 1,
+    "fields": {}
+  }
+]

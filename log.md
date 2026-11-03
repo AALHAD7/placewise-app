@@ -5,6 +5,45 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-03 — Jargon simplification: remaining 5 domains (32 frameworks), site-wide rollout complete
+**Phase:** M4 (frontend fixes) · **Type:** content fix
+
+**What changed:** Ran `backend/scripts/simplifyFrameworkJargon.js --apply` (unchanged since the
+Finance pilot) against the other 5 domains: Consulting (7), Prodman (8), Marketing:Sales (8),
+General Management (6), HR (3) = 32 frameworks. Combined with Finance, all 42 frameworks in the
+`frameworks` table have now been through the pass.
+
+**Result:** 5/32 frameworks changed (Consulting 2/7, Prodman 1/8, Marketing:Sales 2/8, General
+Management 0/6, HR 0/3), 7 fields total. Far fewer changes than Finance's 10/10 - expected and
+correct: Consulting/GM/HR frameworks (SWOT, Porter's, MECE, 3Cs, 9-Box Grid, McKinsey 7S) are
+already qualitative/plain-language by nature, so the model and judge correctly found nothing
+worth simplifying in most of them. Where it did change something, it was real acronyms a
+general reader wouldn't know on sight: DAU, SaaS, ARPU, ROI - never basic vocabulary.
+
+**Why:** Direct continuation of the Finance pilot (previous log entry) - Aalhad reviewed the
+Finance before/after (readable `.md` and `.html` reports) and approved extending the same pass
+to every remaining domain.
+
+**Cost:** ~$0 - flash-lite tier only.
+
+**Files:** `frameworks` table (7 more fields across 5 rows updated).
+`content/jargon-simplification-2026-11-03/backups/` (all 5 domains' pre-change backups + diffs),
+`content/jargon-simplification-2026-11-03/all-domains-before-after.{md,html}` (combined
+human-readable report covering all 42 frameworks, replaces the Finance-only report as the
+primary reference - the original `finance-*` files are kept for history).
+
+**Proof:** `all-domains-before-after.html` - open directly in a browser, jump-to-domain table
+of contents, red/green before/after blocks per changed field.
+
+**Undo:** Per-domain revert, same as Finance:
+`node backend/scripts/restoreFrameworksBackup.js content/jargon-simplification-2026-11-03/backups/frameworks-<Domain>-pre-simplify-<timestamp>.json`
+
+**Open issues:** None - this closes out the jargon-simplification task across the whole
+Frameworks page. Future new frameworks added to the table won't automatically get this pass;
+re-run the script (no `--domain` flag = all domains) if that's ever wanted again.
+
+---
+
 ## 2026-11-03 — Jargon simplification pass: Finance domain (10/10 frameworks), pilot before site-wide
 **Phase:** M4 (frontend fixes) · **Type:** content fix
 

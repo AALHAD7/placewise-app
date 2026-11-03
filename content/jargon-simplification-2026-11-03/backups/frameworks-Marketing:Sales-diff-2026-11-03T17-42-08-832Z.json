@@ -1,0 +1,80 @@
+[
+  {
+    "id": "93871437-5d68-42a8-af46-246bf6ec809a",
+    "name": "4Ps of Marketing (Marketing Mix)",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original and faithfully preserves all content, structure, and terminology.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "910967ee-a179-4a6c-a71a-da720fc18b07",
+    "name": "AIDA Funnel",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original and preserves all content faithfully.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "1517b71c-4b54-4f54-9be6-b946bead6f25",
+    "name": "Ansoff Matrix",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original framework in every aspect, maintaining faithfulness, precision, and restraint.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "3c732527-4300-48e2-a3b4-cfe1e21a1b7d",
+    "name": "BCG Growth-Share Matrix",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "443a1a9b-b4c4-4308-b266-0a2fd2198105",
+    "name": "CAC vs LTV Unit Economics",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite faithfully preserves all original content and appropriately clarifies specialized finance and tech metrics (SaaS, ARPU, blended CAC, ROI) upon their first appearance for MBA students without violating any constraints.",
+    "attempts": 1,
+    "fields": {
+      "example": {
+        "before": "B2B SaaS with $200/mo ARPU, 80% gross margin, and 2% monthly churn. LTV = ($200 × 0.80) / 0.02 = $8,000. If blended CAC is $2,000, LTV:CAC is 4.0x with a payback period of $2,000 / $160 = 12.5 months.",
+        "after": "B2B SaaS (Software-as-a-Service, a business model licensing software via subscription) with $200/mo ARPU (Average Revenue Per User, the average revenue generated per customer or user), 80% gross margin, and 2% monthly churn. LTV = ($200 × 0.80) / 0.02 = $8,000. If blended CAC (Customer Acquisition Cost, the total cost of acquiring new customers averaged across all channels) is $2,000, LTV:CAC is 4.0x with a payback period of $2,000 / $160 = 12.5 months."
+      },
+      "when_to_use": {
+        "before": "Use when evaluating marketing channel ROI, unit economics, growth runway, and venture pitch readiness.",
+        "after": "Use when evaluating marketing channel ROI (Return on Investment, a metric measuring the profitability of an investment relative to its cost), unit economics, growth runway, and venture pitch readiness."
+      }
+    }
+  },
+  {
+    "id": "c36f6f92-5c11-4dc0-a3ae-c057f1bef6f6",
+    "name": "GTM Strategy Canvas",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original and satisfies all criteria for faithfulness, precision, and restraint.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "b1ad846a-4466-4797-8c1c-7d25efde035e",
+    "name": "Product Life Cycle",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite successfully adhered to all instructions, maintaining faithfulness, precision, and restraint while clarifying a non-exempt term.",
+    "attempts": 1,
+    "fields": {
+      "example": {
+        "before": "A legacy SaaS product past its growth peak, facing new competitors and slowing renewals, is likely in Maturity, not Decline - the right move is often defending share and extending the cycle, not writing it off.",
+        "after": "A legacy SaaS (Software-as-a-Service, a software delivery model hosted centrally and licensed on a subscription basis) product past its growth peak, facing new competitors and slowing renewals, is likely in Maturity, not Decline - the right move is often defending share and extending the cycle, not writing it off."
+      }
+    }
+  },
+  {
+    "id": "c333b076-4d67-4d36-b434-a7bc1b4b7c2b",
+    "name": "STP (Segmentation, Targeting, Positioning)",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is an exact, identical copy of the original framework JSON with no changes to text, items, or structure.",
+    "attempts": 1,
+    "fields": {}
+  }
+]

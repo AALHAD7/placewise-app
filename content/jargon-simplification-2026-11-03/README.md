@@ -1,4 +1,21 @@
-# Jargon simplification — Finance domain pilot — 2026-11-03
+# Jargon simplification — all 6 domains (42 frameworks) — 2026-11-03
+
+**Start here:** `all-domains-before-after.html` — open directly in a browser for the full
+before/after across every domain (jump-to table of contents, red/green diff blocks). This
+folder started as a Finance-only pilot (see below); after review, the same pass ran on the
+remaining 5 domains. The `finance-*` files are the original pilot artifacts, kept for history —
+`all-domains-before-after.*` is the complete, current picture.
+
+**Combined result:** 42 frameworks reviewed across Finance (10), Consulting (7), Prodman (8),
+Marketing:Sales (8), General Management (6), HR (3). 15 frameworks changed, 32 fields total —
+all 10 in Finance, 5 more spread across Consulting/Prodman/Marketing:Sales. Consulting/General
+Management/HR frameworks (SWOT, Porter's, MECE, 3Cs, 9-Box Grid, McKinsey 7S, etc.) are mostly
+already plain-language by nature, so the pass correctly left most of them untouched rather than
+forcing a change. All per-domain backups and diffs: `backups/`.
+
+---
+
+## Original Finance pilot notes
 
 Reason: user feedback (via Aalhad's friends) that Frameworks page content, particularly in
 Finance, uses jargon that's hard to parse without existing domain knowledge. Concrete example
@@ -66,12 +83,7 @@ node backend/scripts/restoreFrameworksBackup.js content/jargon-simplification-20
 
 Restores all 10 Finance rows to their exact pre-simplification text in one step.
 
-## Open question for Aalhad
+## Status: complete
 
-Pilot was scoped to Finance only, per your choice, so you could review before it ran
-everywhere. If the tone/quality above looks right, the same script runs on the remaining 32
-frameworks (Consulting 7, Prodman 8, Marketing:Sales 8, General Management 6, HR 3) with:
-
-```
-node backend/scripts/simplifyFrameworkJargon.js --domain "<Domain>" --apply
-```
+Pilot approved after review; the same pass has since run on all remaining domains. See
+`all-domains-before-after.html` for the full, current before/after across all 42 frameworks.

@@ -1,0 +1,226 @@
+[
+  {
+    "id": "40e79401-8cd2-4db3-8d06-097f22bfdd37",
+    "name": "AARM Funnel",
+    "role": "Product",
+    "level": "mba",
+    "description": "A metrics framework for reasoning about a product's user lifecycle, useful for \"how would you improve metric X\" or \"diagnose this funnel\" questions.",
+    "example": "Prompt: \"DAU for our app dropped 15% last month — how do you investigate?\" Use the funnel to isolate which stage regressed before hypothesizing why.",
+    "steps": [
+      "Acquisition — how new users find and first arrive at the product.",
+      "Activation — whether a new user reaches a meaningful first-value moment.",
+      "Retention — whether users come back and keep using the product over time.",
+      "Monetization — whether and how the product converts usage into revenue.",
+      "For a metric-drop question: identify which stage moved first, then hypothesize causes specific to that stage rather than the whole funnel at once."
+    ],
+    "created_at": "2026-08-13T22:20:18.297177+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:53.185+00:00",
+    "domain": "Prodman",
+    "subdomain": "Metrics & Growth",
+    "when_to_use": null,
+    "when_not_to_use": null,
+    "pitfalls": null,
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "1e20d257-a97f-438c-9d23-b4e1c17655a2",
+    "name": "CIRCLES",
+    "role": "Product",
+    "level": "mba",
+    "description": "A structured approach to product design questions (\"design a product for X\") that makes sure you cover the problem space before jumping to solutions.",
+    "example": "Prompt: \"Design an alarm clock for the visually impaired.\" Walk through each step below out loud, spending the most time on Identify and List.",
+    "steps": [
+      "Comprehend the situation — clarify the user, the goal, and any constraints before proposing anything.",
+      "Identify the customer — pick a specific user segment to design for, not \"everyone\".",
+      "Report the customer's needs — list what that segment actually needs, in their words.",
+      "Cut, through prioritization — pick the 1-2 needs worth solving first and say why.",
+      "List solutions — brainstorm multiple ways to address the prioritized need(s).",
+      "Evaluate trade-offs — weigh the solutions against impact, effort, and constraints.",
+      "Summarize your recommendation — state your pick and the reasoning in one or two sentences."
+    ],
+    "created_at": "2026-08-13T22:20:18.297177+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:50.043+00:00",
+    "domain": "Prodman",
+    "subdomain": "Product Design",
+    "when_to_use": null,
+    "when_not_to_use": null,
+    "pitfalls": null,
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "6f55e9cf-184e-48cd-9787-a6b22106275f",
+    "name": "HEART Framework (Google)",
+    "role": "Product",
+    "level": "mba",
+    "description": "Google's user-centered UX and product metrics framework evaluating Happiness, Engagement, Adoption, Retention, and Task Success through Goals-Signals-Metrics.",
+    "example": "Redesigning checkout flow: Goal = Task Success. Signal = Users checkout without errors. Metric = Checkout completion rate and average time-to-checkout.",
+    "steps": [
+      "Happiness: User satisfaction, Net Promoter Score (NPS), perceived ease of use, sentiment ratings.",
+      "Engagement: Frequency, depth, and intensity of interaction (e.g. daily active visits, comments per user, session duration).",
+      "Adoption: How many new users start using a product or newly launched feature within a given timeframe.",
+      "Retention: Percentage of users returning over time (cohort retention at Day 1, Day 7, Day 30, churn rate).",
+      "Task Success: Efficiency and effectiveness of key user workflows (error rate, time to complete task, task completion rate).",
+      "For each category, define: (1) Goal (what user need are we solving?), (2) Signal (what user behavior indicates success?), (3) Metric (what quantitative KPI do we track?)."
+    ],
+    "created_at": "2026-11-02T17:39:00.27743+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-02T18:25:29.893+00:00",
+    "domain": "Prodman",
+    "subdomain": "Metrics & Growth",
+    "when_to_use": "Use when defining north-star metrics and telemetry for a specific feature, UX redesign, or consumer app.",
+    "when_not_to_use": "Do not try to track all 5 dimensions equally on every project; pick the 1-2 most critical to the current phase.",
+    "pitfalls": [
+      "Tracking vanity engagement metrics (pageviews) without measuring task success or user satisfaction.",
+      "Failing to tie signals to measurable KPIs."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "5a17acf3-2223-4921-91d9-8b50d60196c5",
+    "name": "ICE Score",
+    "role": "Product",
+    "level": "mba",
+    "description": "A faster, rougher cousin of RICE for prioritization under time pressure - three factors instead of four, each scored 1-10.",
+    "example": "Prompt: \"Here are 8 backlog items, rank them in 2 minutes.\" ICE is fast enough to actually do live, where RICE's reach math often is not.",
+    "steps": [
+      "Impact — how much this moves the goal metric if it works, 1-10.",
+      "Confidence — how sure you are the impact estimate is right, 1-10.",
+      "Ease — how cheap/fast this is to ship, 1-10 (inverse of effort).",
+      "Score = (Impact + Confidence + Ease) / 3, or just add them - rank by score, then sanity-check the top 2-3 against judgment out loud."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:50.703+00:00",
+    "domain": "Prodman",
+    "subdomain": "Prioritization",
+    "when_to_use": "Use it when you need to rank a long list quickly (10+ ideas) or the prompt explicitly wants speed over precision.",
+    "when_not_to_use": "Prefer RICE when the interviewer wants to see you reason about reach explicitly, or when effort estimates matter more than a quick gut-check.",
+    "pitfalls": [
+      "Scoring everything a 7-8 out of politeness, which flattens the ranking and defeats the point.",
+      "Not stating what \"10\" and \"1\" anchor to before scoring, so the numbers are not comparable across ideas."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "adf6eab1-be18-487b-84ce-7a8701a9a5d6",
+    "name": "Jobs To Be Done",
+    "role": "Product",
+    "level": "mba",
+    "description": "Reframes \"who is the user\" questions around what job the customer is really \"hiring\" the product to do, independent of any specific solution.",
+    "example": "Prompt: \"Why do people buy a $5 milkshake in the morning?\" The classic JTBD answer: commuters are \"hiring\" it for a long, one-handed, filling companion for a boring drive - not because they wanted a dessert.",
+    "steps": [
+      "State the job in the customer's words: \"When [situation], I want to [motivation], so I can [outcome].\"",
+      "Separate the functional job (the practical task) from the emotional and social jobs (how they want to feel, how they want to be seen).",
+      "Identify who/what the product is really competing with - often not the obvious category competitor, but whatever else currently gets the job done.",
+      "Design the solution around making that job easier, faster, or more reliable - not around adding features nobody hired the product to do."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:56.527+00:00",
+    "domain": "Prodman",
+    "subdomain": "Product Design",
+    "when_to_use": "Use it when a prompt asks you to design for an underserved need, explain why customers switch products, or find whitegespace competitors are missing.",
+    "when_not_to_use": "Skip it for pure prioritization or metrics questions - JTBD explains motivation, it does not rank options or diagnose a funnel.",
+    "pitfalls": [
+      "Stating the job as a feature (\"wants a faster checkout\") instead of the underlying goal (\"wants to feel confident the purchase went through\").",
+      "Forgetting the functional/emotional/social dimensions of a job - most real jobs have all three."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "a50550db-816f-4964-a81b-f2dbd8aea42d",
+    "name": "Kano Model",
+    "role": "Product",
+    "level": "mba",
+    "description": "Classifies customer preferences and product features into five emotional categories to guide roadmaps and balance basic expectations against delight.",
+    "example": "Ride-hailing app: Must-have = Getting picked up and dropped off safely. Performance = Pickup wait time under 3 minutes. Delighter = Free in-car water and preferred Spotify playlist connected.",
+    "steps": [
+      "Must-Have / Basic Needs: Taken for granted when present, causes extreme dissatisfaction when absent (e.g. mobile app login, braking in a car).",
+      "Performance / Linear Needs: Customer satisfaction increases proportionally with execution (e.g. battery life, search speed, storage capacity).",
+      "Delighters / Attractive Needs: Unexpected features that create high customer joy when present, but cause zero dissatisfaction when omitted (e.g. free flight upgrade, AI auto-summaries).",
+      "Indifferent Features: Customers do not care either way — eliminate to save engineering bandwidth.",
+      "Reverse Features: Features that actively annoy users when present (e.g. auto-playing sound, intrusive popups).",
+      "Natural Decay: Note that yesterday's Delighter becomes today's Performance feature and tomorrow's Must-Have."
+    ],
+    "created_at": "2026-11-02T17:38:59.770685+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-02T18:25:33.179+00:00",
+    "domain": "Prodman",
+    "subdomain": "Product Design",
+    "when_to_use": "Use when prioritizing a roadmap to ensure basic reliability isn't sacrificed for flashy features.",
+    "when_not_to_use": "Do not use without direct user research; assumptions about what constitutes a 'delighter' are frequently wrong.",
+    "pitfalls": [
+      "Investing heavily in delighters while the core must-have features are buggy or unreliable.",
+      "Forgetting that customer expectations rise over time, shifting features downward."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "5fe97d9e-7f5f-452a-834a-1b21e26f04e4",
+    "name": "North Star Metric",
+    "role": "Product",
+    "level": "mba",
+    "description": "The single metric that best captures the core value a product delivers to customers - used to align a team around one number instead of a dashboard of vanity metrics.",
+    "example": "Spotify's North Star is closer to \"time spent listening\" than \"subscription revenue\" - revenue follows if that number is healthy.",
+    "steps": [
+      "Identify the core value exchange: what does the customer actually get, and when do they get it?",
+      "Pick a metric that only moves when real value is delivered (not a proxy that can be gamed).",
+      "Check it is leading, not lagging - it should predict revenue/retention, not just restate them.",
+      "Break it into 2-4 input metrics your team can actually influence day to day."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:57.431+00:00",
+    "domain": "Prodman",
+    "subdomain": "Metrics & Growth",
+    "when_to_use": "Use it for \"how would you measure success for this product\" or \"what metric would you track\" questions.",
+    "when_not_to_use": "Do not use it as a stand-in for a full metrics tree - a North Star is one number for alignment, not a diagnostic tool for \"why did this metric move\".",
+    "pitfalls": [
+      "Picking a metric that is easy to move but does not track real value (e.g. app opens instead of completed trips).",
+      "Picking a pure revenue metric - a good North Star usually sits upstream of revenue, tied to the value exchanged, not the money collected."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "dd4002b4-7ad4-483a-bc2f-ae9599459312",
+    "name": "RICE",
+    "role": "Product",
+    "level": "mba",
+    "description": "A lightweight scoring framework for prioritization questions (\"how would you prioritize this backlog\", \"what would you build next\").",
+    "example": "Prompt: \"You have 4 possible features and one quarter — how do you decide?\" Score each on the four factors, then justify the ranking, not just the arithmetic.",
+    "steps": [
+      "Reach — how many users or how much of the business this touches in a given period.",
+      "Impact — how much it moves the goal metric per user reached (often scored on a simple scale).",
+      "Confidence — how sure you are about the reach/impact estimates.",
+      "Effort — the cost to build it, usually in person-time.",
+      "Score = (Reach x Impact x Confidence) / Effort — use it to rank options, then sanity-check the ranking against judgment before presenting it."
+    ],
+    "created_at": "2026-08-13T22:20:18.297177+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:54.123+00:00",
+    "domain": "Prodman",
+    "subdomain": "Prioritization",
+    "when_to_use": null,
+    "when_not_to_use": null,
+    "pitfalls": null,
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  }
+]

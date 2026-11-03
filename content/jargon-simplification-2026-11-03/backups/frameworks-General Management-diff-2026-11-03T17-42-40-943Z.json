@@ -1,0 +1,50 @@
+[
+  {
+    "id": "a421c735-06ae-402a-8d6e-b3e987885395",
+    "name": "Blue Ocean Strategy (Four Actions Framework)",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original text across all fields and arrays.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "5108be68-f44a-48b6-8914-8c8db554adbb",
+    "name": "Business Model Canvas",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original in every aspect (description, example, when_to_use, when_not_to_use, steps, and pitfalls), thus maintaining perfect faithfulness and precision.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "d0239af2-3f83-4bfc-b8f8-a2eb4fb8663c",
+    "name": "PESTEL Analysis",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original and preserves all content, structure, and phrasing accurately.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "d2c6ba50-1b7e-49ba-9019-1662cbbfa563",
+    "name": "Porter's Generic Strategies",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original framework with no changes in faithfulness, precision, or restraint.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "b8c26e60-9962-48c3-b6fb-879577bd7473",
+    "name": "STAR+R",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original framework, perfectly preserving all content, steps, and structure.",
+    "attempts": 1,
+    "fields": {}
+  },
+  {
+    "id": "c3969d38-c7dd-4f52-a9e9-678d8405603f",
+    "name": "SWOT Analysis",
+    "judgeVerdict": "pass",
+    "judgeReasoning": "The rewrite is identical to the original JSON structure and text, maintaining complete faithfulness, precision, and restraint.",
+    "attempts": 1,
+    "fields": {}
+  }
+]

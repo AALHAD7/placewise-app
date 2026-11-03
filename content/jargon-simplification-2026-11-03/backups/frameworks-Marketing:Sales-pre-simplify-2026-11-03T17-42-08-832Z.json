@@ -1,0 +1,302 @@
+[
+  {
+    "id": "93871437-5d68-42a8-af46-246bf6ec809a",
+    "name": "4Ps of Marketing (Marketing Mix)",
+    "role": "Marketing",
+    "level": "mba",
+    "description": "The classic checklist for turning a positioning into an executable marketing plan - Product, Price, Place, Promotion.",
+    "example": "Prompt: \"Plan the marketing mix for a new budget airline route.\" Product = no-frills economy seating; Price = below legacy-carrier fares; Place = direct app booking + budget travel aggregators; Promotion = social-first launch campaign targeting price-sensitive travelers.",
+    "steps": [
+      "Product — what exactly are you selling, and which features matter to the target segment?",
+      "Price — what pricing model and level fits the segment's willingness-to-pay and the competitive set?",
+      "Place — which channels/locations should this be available through?",
+      "Promotion — how will the target segment actually hear about it, and what is the core message?"
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:57.908+00:00",
+    "domain": "Marketing:Sales",
+    "subdomain": "Marketing Mix",
+    "when_to_use": "Use it once STP has defined who you are targeting and how, to structure the actual execution plan.",
+    "when_not_to_use": "Do not use it as your opening structure for a \"should we enter this market\" case - it is an execution checklist, not a strategic decision framework.",
+    "pitfalls": [
+      "Listing all four Ps generically without tying each back to the specific target segment's needs.",
+      "Treating Price as \"as high as possible\" instead of what the segment's willingness-to-pay and the competitive set actually support."
+    ],
+    "diagram_type": "grid",
+    "diagram_data": {
+      "cols": [
+        "",
+        ""
+      ],
+      "rows": [
+        "",
+        ""
+      ],
+      "cells": [
+        [
+          "Product",
+          "Price"
+        ],
+        [
+          "Place",
+          "Promotion"
+        ]
+      ],
+      "xAxis": null,
+      "yAxis": null
+    },
+    "grounded_image": null
+  },
+  {
+    "id": "910967ee-a179-4a6c-a71a-da720fc18b07",
+    "name": "AIDA Funnel",
+    "role": "Marketing",
+    "level": "mba",
+    "description": "A simple model of the stages a customer moves through before buying - Attention, Interest, Desire, Action - used to diagnose or design a marketing funnel.",
+    "example": "A performance-marketing funnel: Attention = a scroll-stopping video ad; Interest = a landing page explaining the product; Desire = social proof and a limited-time offer; Action = a one-tap checkout.",
+    "steps": [
+      "Attention — get noticed in a crowded environment (ads, PR, social reach).",
+      "Interest — hold their attention with relevant information once you have it.",
+      "Desire — build an emotional or rational reason to want this specifically.",
+      "Action — remove friction from the final step that converts interest into a purchase."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:52.246+00:00",
+    "domain": "Marketing:Sales",
+    "subdomain": "Go-to-Market",
+    "when_to_use": "Use it for \"how would you design this campaign\" or \"where in the funnel are we losing customers\" questions.",
+    "when_not_to_use": "Do not use it for post-purchase questions (retention, repeat usage) - AIDA stops at the first purchase; use AARRR/AARM instead for the fuller lifecycle.",
+    "pitfalls": [
+      "Designing all four stages with the same message - each stage needs a different kind of content (Attention needs reach, Action needs a clear, low-friction next step).",
+      "Ignoring which stage is actually the bottleneck before proposing fixes across the whole funnel."
+    ],
+    "diagram_type": "funnel",
+    "diagram_data": {
+      "stages": [
+        "Attention",
+        "Interest",
+        "Desire",
+        "Action"
+      ]
+    },
+    "grounded_image": null
+  },
+  {
+    "id": "1517b71c-4b54-4f54-9be6-b946bead6f25",
+    "name": "Ansoff Matrix",
+    "role": "Marketing",
+    "level": "mba",
+    "description": "Maps four growth strategies along two axes - new vs. existing products, and new vs. existing markets - to structure \"how should we grow\" questions.",
+    "example": "Prompt: \"How should Zomato grow next?\" Market Penetration = more orders from existing cities; Product Development = launch grocery delivery to existing users; Market Development = launch food delivery in a new country; Diversification = enter an unrelated business like fintech.",
+    "steps": [
+      "X-axis: Products (Existing to New, left to right).",
+      "Y-axis: Markets (Existing to New, top to bottom).",
+      "Market Penetration (existing product, existing market): sell more of what you have to who you already serve - lowest risk.",
+      "Product Development (new product, existing market): new offerings for your current customers.",
+      "Market Development (existing product, new market): take what you have into a new segment/geography.",
+      "Diversification (new product, new market): highest risk, needs the strongest justification."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:55.829+00:00",
+    "domain": "Marketing:Sales",
+    "subdomain": "Growth & Scaling",
+    "when_to_use": "Use it for growth-strategy and scaling questions - \"how should this company grow next\", \"should we launch this in a new market or a new product line\".",
+    "when_not_to_use": "Do not use it for a pure profitability/cost question, or when the growth options on the table do not actually differ by product/market newness.",
+    "pitfalls": [
+      "Picking \"Diversification\" by default because it sounds ambitious - it is the highest-risk quadrant and needs strong justification, not enthusiasm.",
+      "Not being specific about what \"new\" means for this client - new to the company, or new to the world?"
+    ],
+    "diagram_type": "grid",
+    "diagram_data": {
+      "cols": [
+        "Existing",
+        "New"
+      ],
+      "rows": [
+        "Existing",
+        "New"
+      ],
+      "cells": [
+        [
+          "Market Penetration",
+          "Product Development"
+        ],
+        [
+          "Market Development",
+          "Diversification"
+        ]
+      ],
+      "xAxis": "Products",
+      "yAxis": "Markets"
+    },
+    "grounded_image": null
+  },
+  {
+    "id": "3c732527-4300-48e2-a3b4-cfe1e21a1b7d",
+    "name": "BCG Growth-Share Matrix",
+    "role": "Marketing",
+    "level": "mba",
+    "description": "Classifies a company's products or business units on relative market share vs. market growth rate, to decide where to invest, hold, or divest.",
+    "example": "Netflix's DVD-by-mail business became a \"Cash Cow\" (high share, low growth) that funded its \"Star\" streaming business (high share, high growth) during the transition.",
+    "steps": [
+      "X-axis: Relative market share (High to Low, left to right).",
+      "Y-axis: Market growth rate (High to Low, top to bottom).",
+      "Stars (high share, high growth): invest to maintain leadership.",
+      "Question Marks (low share, high growth): invest selectively or divest - decide based on potential to become a Star.",
+      "Cash Cows (high share, low growth): harvest cash, invest minimally.",
+      "Dogs (low share, low growth): divest or hold only if strategically necessary."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:52.229+00:00",
+    "domain": "Marketing:Sales",
+    "subdomain": "Market Analysis",
+    "when_to_use": "Use it for portfolio-strategy questions - \"which of these products should we invest in\", \"how should we allocate budget across this portfolio\".",
+    "when_not_to_use": "Do not use it for a single-product question (it needs a portfolio to compare) or when data on relative market share genuinely is not available.",
+    "pitfalls": [
+      "Treating \"Dogs\" as automatically-kill - some Dogs are cash-neutral and strategically necessary (e.g. completing a product line).",
+      "Confusing market growth rate with market share - the two axes are easy to swap by mistake."
+    ],
+    "diagram_type": "grid",
+    "diagram_data": {
+      "cols": [
+        "High",
+        "Low"
+      ],
+      "rows": [
+        "High",
+        "Low"
+      ],
+      "cells": [
+        [
+          "Stars",
+          "Question Marks"
+        ],
+        [
+          "Cash Cows",
+          "Dogs"
+        ]
+      ],
+      "xAxis": "Relative Market Share",
+      "yAxis": "Market Growth Rate"
+    },
+    "grounded_image": null
+  },
+  {
+    "id": "443a1a9b-b4c4-4308-b266-0a2fd2198105",
+    "name": "CAC vs LTV Unit Economics",
+    "role": "Marketing",
+    "level": "mba",
+    "description": "The core unit economics engine comparing Customer Lifetime Value (LTV) against Customer Acquisition Cost (CAC) to test business model sustainability.",
+    "example": "B2B SaaS with $200/mo ARPU, 80% gross margin, and 2% monthly churn. LTV = ($200 × 0.80) / 0.02 = $8,000. If blended CAC is $2,000, LTV:CAC is 4.0x with a payback period of $2,000 / $160 = 12.5 months.",
+    "steps": [
+      "Calculate Customer Acquisition Cost (CAC) = Total Sales & Marketing Spend / Number of New Customers Acquired in period.",
+      "Calculate Customer Lifetime Value (LTV) = (Average Revenue Per User × Gross Margin %) / Churn Rate.",
+      "Evaluate the LTV:CAC Ratio: Healthy SaaS/Tech target is > 3.0x (3:1 to 5:1).",
+      "Calculate CAC Payback Period = CAC / (Monthly ARPU × Gross Margin %) (target is typically < 12 months for B2B, < 6 months for B2C).",
+      "Strategic Levers: To improve ratio, either reduce CAC (organic referrals, conversion optimization) or increase LTV (reduce churn, upsell/cross-sell, price increase)."
+    ],
+    "created_at": "2026-11-02T17:39:00.650913+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-02T18:25:29.494+00:00",
+    "domain": "Marketing:Sales",
+    "subdomain": "Go-to-Market",
+    "when_to_use": "Use when evaluating marketing channel ROI, unit economics, growth runway, and venture pitch readiness.",
+    "when_not_to_use": "Do not calculate blended CAC when scaling paid marketing; look at marginal/paid CAC per specific acquisition channel.",
+    "pitfalls": [
+      "Understating CAC by omitting sales team salaries, software overhead, or onboarding support costs.",
+      "Assuming zero customer churn over multiple years.",
+      "Calculating LTV on gross revenue instead of gross profit margin."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "c36f6f92-5c11-4dc0-a3ae-c057f1bef6f6",
+    "name": "GTM Strategy Canvas",
+    "role": "Marketing",
+    "level": "mba",
+    "description": "A one-page structure for planning a product or market launch - who you are targeting, what you are offering them, and how you will reach and convert them.",
+    "example": "Prompt: \"Plan the GTM for a new UPI-based lending product.\" Target segment: gig workers with thin credit files; value prop: instant approval using UPI transaction history; channels: partnerships with gig platforms, not broad ads; launch sequence: 1 city pilot, then scale by city.",
+    "steps": [
+      "Target segment — who exactly is the first customer, and why them first?",
+      "Value proposition — what specific problem does this solve for that segment, in their words?",
+      "Channels — where does this segment actually spend attention, and which channels are cost-effective to reach them?",
+      "Pricing & offer — what is the launch offer, and does it match the segment's willingness-to-pay?",
+      "Sequencing — what is the phased rollout (one city/segment/channel first), and what triggers expansion to the next phase?"
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:52.274+00:00",
+    "domain": "Marketing:Sales",
+    "subdomain": "Go-to-Market",
+    "when_to_use": "Use it for \"how would you launch this product\" or \"plan the go-to-market for X\" questions - broader than AIDA, covering strategy as well as funnel execution.",
+    "when_not_to_use": "Do not use it for a pure positioning question with no launch/rollout component - use STP alone for that.",
+    "pitfalls": [
+      "Writing a GTM plan with no sequencing - a real GTM plan phases what happens first (e.g. one city, one segment) before scaling.",
+      "Picking channels because they are trendy rather than because the target segment is actually there."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "b1ad846a-4466-4797-8c1c-7d25efde035e",
+    "name": "Product Life Cycle",
+    "role": "Marketing",
+    "level": "mba",
+    "description": "Describes how a product's sales and competitive dynamics typically evolve through four stages - Introduction, Growth, Maturity, Decline - and what strategy fits each.",
+    "example": "A legacy SaaS product past its growth peak, facing new competitors and slowing renewals, is likely in Maturity, not Decline - the right move is often defending share and extending the cycle, not writing it off.",
+    "steps": [
+      "Introduction — low sales, high marketing spend, focus on awareness and early adopters.",
+      "Growth — sales accelerate, competitors enter, focus shifts to differentiation and distribution.",
+      "Maturity — growth slows, market is saturated, focus shifts to efficiency, retention, and defending share.",
+      "Decline — sales fall, focus shifts to harvesting cash, cost-cutting, or a deliberate exit/relaunch."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:56.526+00:00",
+    "domain": "Marketing:Sales",
+    "subdomain": "Market Analysis",
+    "when_to_use": "Use it to explain why a strategy that worked at launch should change later, or to diagnose which stage a declining product is in before recommending a fix.",
+    "when_not_to_use": "Do not force-fit it onto a product whose trajectory genuinely does not follow this curve (e.g. a fad, or a product with structurally recurring demand) - state that explicitly rather than shoehorning it in.",
+    "pitfalls": [
+      "Assuming every declining product is in \"Decline\" - a Maturity-stage dip from a fixable execution issue looks similar but needs a different fix.",
+      "Recommending the same playbook (aggressive growth spending) regardless of which stage the product is actually in."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  },
+  {
+    "id": "c333b076-4d67-4d36-b434-a7bc1b4b7c2b",
+    "name": "STP (Segmentation, Targeting, Positioning)",
+    "role": "Marketing",
+    "level": "mba",
+    "description": "The standard three-step process for deciding who to sell to and how to be seen by them, before any campaign or product decision.",
+    "example": "Prompt: \"How should a new D2C protein brand position itself against Whey Gold Standard?\" Segment by fitness goal (not just age), target the \"convenience-first\" gym-goer segment, position as \"the protein you will actually finish before it expires\".",
+    "steps": [
+      "Segmentation — split the market into groups with meaningfully different needs (behavioral/needs-based beats demographic alone).",
+      "Targeting — pick which segment(s) to pursue, based on size, growth, and fit with the company's strengths.",
+      "Positioning — define how you want the target segment to perceive you relative to alternatives, in one clear, differentiated statement."
+    ],
+    "created_at": "2026-09-24T16:20:35.704649+00:00",
+    "grounded_example": null,
+    "grounded_checked_at": "2026-11-01T23:19:56.527+00:00",
+    "domain": "Marketing:Sales",
+    "subdomain": "Branding & Positioning",
+    "when_to_use": "Use it for \"who should we target\" or \"how should we position this product\" questions - almost always the right starting structure for a branding/launch case.",
+    "when_not_to_use": "Do not use it as a substitute for a GTM plan - STP tells you who and how you want to be perceived, not the channels/budget/timeline to get there.",
+    "pitfalls": [
+      "Segmenting on demographics alone when behavior/needs-based segments would be sharper (two 28-year-olds can have completely different needs).",
+      "A positioning statement that could apply to any competitor - it should name a specific, defensible point of difference."
+    ],
+    "diagram_type": null,
+    "diagram_data": null,
+    "grounded_image": null
+  }
+]
