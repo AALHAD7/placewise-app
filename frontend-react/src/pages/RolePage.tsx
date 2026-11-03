@@ -676,7 +676,7 @@ export default function RolePage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
                   {roleInfo.exitOpportunities.map((ex, i) => (
                     <div key={i} style={{ display: "flex", gap: 9, fontSize: "0.875rem", lineHeight: 1.45, color: "var(--text-700)" }}>
-                      <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--green)", marginTop: 7 }}></span>
+                      <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--indigo)", marginTop: 7 }}></span>
                       <span>{ex}</span>
                     </div>
                   ))}
