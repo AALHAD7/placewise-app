@@ -5,6 +5,40 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-04 — Fixed: AARRR Framework was missing from the diagram pass (now 15/15 covered)
+
+**Phase:** M4 (frontend fixes) · **Type:** bug fix
+
+**What changed:** User asked "does the AI-generated diagram apply for all the 57 frameworks" -
+checking the actual answer surfaced a gap: "AARRR Framework (Pirate Metrics)" was live in the
+database (inserted in the very first discovery-pass apply run, 2026-11-03) but got left off the
+13-framework diagram list in the previous entry - an oversight, not a deliberate exclusion.
+Generated its diagram the same way as the other 13 (flow, grounded in its stored steps:
+Acquisition -> Activation -> Retention -> Referral -> Revenue), added to
+`FRAMEWORK_ASCII_MAP`/`getAsciiDiagramForFramework`.
+
+**Result:** All 15 newly-added frameworks (14 from the discovery pass + Managerial Grid from
+the refinement pass) now have a diagram - 14 generated across the two diagram passes, 1
+(Value Chain Analysis) had a pre-existing entry. Combined with the original 42, all 57 live
+frameworks now have an ASCII diagram.
+
+**Why:** Direct accuracy check prompted by the user's question - worth stating plainly: my
+previous "13/13 done" summary was incomplete, this was a real miss, not a planned scope cut.
+
+**Cost:** ~$0 - one generation call.
+
+**Files:** `frontend-react/src/lib/asciiDiagrams.ts` (1 new map entry + 1 new matching rule).
+
+**Proof:** `npx tsc --noEmit` clean. Verified live (Frameworks -> Product Management -> Metrics
+& Growth -> AARRR Framework (Pirate Metrics) -> Review): diagram renders correctly aligned,
+matches the 5 steps in the stored content exactly.
+
+**Undo:** Revert this commit (git) - no database rows touched.
+
+**Open issues:** None - this was the last gap; all 57 frameworks now have diagrams.
+
+---
+
 ## 2026-11-04 — ASCII diagrams for the 13 casebook-discovered frameworks
 
 **Phase:** M4 (frontend fixes) · **Type:** feature

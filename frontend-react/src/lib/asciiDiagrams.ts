@@ -1053,6 +1053,19 @@ Low Production   │ Impoverished Management (1,1) │ Country Club Management (
 ┌── (4) Analyze internal vs external factors
 │   └──► Formulate targeted recommendations
 ┌── (5) Formulate targeted recommendations`
+  },
+
+  aarrr: {
+    title: "AARRR Framework",
+    ascii: `┌── (1) Acquisition metrics
+│   └──► Activation metrics
+┌── (2) Activation metrics
+│   └──► Retention metrics
+┌── (3) Retention metrics
+│   └──► Referral metrics
+┌── (4) Referral metrics
+│   └──► Revenue metrics
+┌── (5) Revenue metrics`
   }
 };
 
@@ -1157,6 +1170,7 @@ export function getAsciiDiagramForFramework(frameworkName: string): { title: str
   if (norm.includes("freemium")) return FRAMEWORK_ASCII_MAP.freemium;
   if (norm.includes("net promoter") || norm.includes(" nps") || norm.startsWith("nps")) return FRAMEWORK_ASCII_MAP.nps;
   if (norm.includes("csat") || norm.includes("customer satisfaction score")) return FRAMEWORK_ASCII_MAP.csat;
+  if (norm.includes("aarrr") || norm.includes("pirate metric")) return FRAMEWORK_ASCII_MAP.aarrr;
 
   return null;
 }
