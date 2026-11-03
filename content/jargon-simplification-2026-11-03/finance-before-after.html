@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Finance Jargon Simplification — Before/After</title>
+<style>
+  :root {
+    --bg: #101216; --card: #161b24; --border: rgba(255,255,255,0.1);
+    --text: #f5f5f5; --text-dim: rgba(255,255,255,0.65);
+    --orange: #ff6b35; --before-bg: rgba(248,113,113,0.08); --before-border: rgba(248,113,113,0.3);
+    --after-bg: rgba(52,211,153,0.08); --after-border: rgba(52,211,153,0.3);
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Plus Jakarta Sans", "Segoe UI", sans-serif;
+    margin: 0; padding: 32px 20px 80px; line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; margin-bottom: 4px; }
+  .subtitle { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 28px; }
+  .toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 32px; }
+  .toc h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin: 0 0 10px; }
+  .toc a { color: var(--text); text-decoration: none; display: block; padding: 3px 0; font-size: 0.92rem; }
+  .toc a:hover { color: var(--orange); }
+  .toc .count { color: var(--text-dim); font-size: 0.8rem; }
+  .framework { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px 26px; margin-bottom: 22px; scroll-margin-top: 20px; }
+  .framework h2 { margin: 0 0 18px; font-size: 1.25rem; color: var(--orange); }
+  .field { margin-bottom: 20px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-name { font-size: 0.7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+  .diff-block { border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 0.9rem; }
+  .before { background: var(--before-bg); border: 1px solid var(--before-border); }
+  .after { background: var(--after-bg); border: 1px solid var(--after-border); }
+  .label { font-size: 0.68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
+  .before .label { color: #f87171; }
+  .after .label { color: #6ee7b7; }
+  ul { margin: 0; padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  .top-link { font-size: 0.78rem; color: var(--text-dim); text-decoration: none; }
+  .top-link:hover { color: var(--orange); }
+  .added { background: rgba(52,211,153,0.25); border-radius: 3px; padding: 0 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Finance Jargon Simplification — Before / After</h1>
+<p class="subtitle">10 frameworks, 26 fields changed. Only changed fields are shown — anything not listed below was left untouched.</p>
+<div class="toc">
+<h2>Jump to a framework</h2>
+
+<a href="#3-financial-statements-integration">3 Financial Statements Integration <span class="count">(2 fields)</span></a>
+<a href="#beta-and-capital-asset-pricing-model-capm">Beta &amp; Capital Asset Pricing Model (CAPM) <span class="count">(3 fields)</span></a>
+<a href="#comparable-company-analysis">Comparable Company Analysis <span class="count">(2 fields)</span></a>
+<a href="#dcf-discounted-cash-flow">DCF (Discounted Cash Flow) <span class="count">(4 fields)</span></a>
+<a href="#enterprise-value-and-equity-value-the-bridge">Enterprise Value &amp; Equity Value (The Bridge) <span class="count">(3 fields)</span></a>
+<a href="#income-statement-waterfall-and-pandl-walk">Income Statement Waterfall &amp; P&amp;L Walk <span class="count">(2 fields)</span></a>
+<a href="#lbo-basics-leveraged-buyout">LBO Basics (Leveraged Buyout) <span class="count">(3 fields)</span></a>
+<a href="#terminal-value-perpetuity-vs-exit-multiple">Terminal Value (Perpetuity vs Exit Multiple) <span class="count">(3 fields)</span></a>
+<a href="#wacc-weighted-average-cost-of-capital">WACC (Weighted Average Cost of Capital) <span class="count">(3 fields)</span></a>
+<a href="#working-capital-and-cash-conversion-cycle">Working Capital &amp; Cash Conversion Cycle <span class="count">(1 field)</span></a>
+</div>
+<div class="framework" id="3-financial-statements-integration">
+<h2>3 Financial Statements Integration</h2>
+<div class="field">
+<div class="field-name">example</div>
+<div class="diff-block before"><div class="label">Before</div>Question: Walk me through a $10 increase in depreciation at a 20% tax rate. (1) Income Statement: Operating income drops $10, tax drops $2, Net Income drops $8. (2) Cash Flow: Net income -$8, add back +$10 depreciation -&gt; Cash up +$2. (3) Balance Sheet: Cash +$2, PP&amp;E -$10 -&gt; Assets down $8; Retained Earnings down $8 -&gt; Balanced!</div>
+<div class="diff-block after"><div class="label">After</div>Question: Walk me through a $10 increase in depreciation (a non-cash expense reducing asset book value over time) at a 20% tax rate. (1) Income Statement: Operating income drops $10, tax drops $2, Net Income drops $8. (2) Cash Flow: Net income -$8, add back +$10 depreciation -&gt; Cash up +$2. (3) Balance Sheet: Cash +$2, PP&amp;E (Property, Plant, and Equipment, physical assets used in operations) -$10 -&gt; Assets down $8; Retained Earnings down $8 -&gt; Balanced!</div>
+</div>
+<div class="field">
+<div class="field-name">steps</div>
+<div class="diff-block before"><div class="label">Before</div><ul>
+<li>Net Income from the bottom of the Income Statement flows into: (1) Retained Earnings on the Balance Sheet, and (2) the top of Cash Flow from Operations (CFO).</li>
+<li>Non-cash expenses (Depreciation &amp; Amortization) add back on the Cash Flow Statement and reduce Net PP&amp;E on the Balance Sheet.</li>
+<li>Net Working Capital changes (Receivables, Inventory, Payables) on the Balance Sheet flow into Operating Cash Flow (Asset increase = cash outflow; Liability increase = cash inflow).</li>
+<li>Capital Expenditures (Capex) in Cash Flow from Investing (CFI) increase Gross PP&amp;E on the Balance Sheet.</li>
+<li>Debt issuances/repayments, equity raises, and dividend payouts in Cash Flow from Financing (CFF) adjust Balance Sheet Debt and Equity balances.</li>
+<li>Sum of CFO + CFI + CFF = Net Change in Cash, which added to Beginning Cash equals Ending Cash on the Balance Sheet.</li>
+</ul></div>
+<div class="diff-block after"><div class="label">After</div><ul>
+<li>Net Income from the bottom of the Income Statement flows into: (1) Retained Earnings on the Balance Sheet, and (2) the top of Cash Flow from Operations (CFO, cash generated from core business activities).</li>
+<li>Non-cash expenses (Depreciation &amp; Amortization, the gradual expensing of intangible assets over time) add back on the Cash Flow Statement and reduce Net PP&amp;E on the Balance Sheet.</li>
+<li>Net Working Capital (current assets minus current liabilities, measuring short-term liquidity) changes (Receivables, Inventory, Payables) on the Balance Sheet flow into Operating Cash Flow (Asset increase = cash outflow; Liability increase = cash inflow).</li>
+<li>Capital Expenditures (Capex, funds used to acquire or upgrade physical assets) in Cash Flow from Investing (CFI, cash from investments and asset sales) increase Gross PP&amp;E on the Balance Sheet.</li>
+<li>Debt issuances/repayments, equity raises, and dividend payouts in Cash Flow from Financing (CFF, cash flows between a company and its investors and creditors) adjust Balance Sheet Debt and Equity balances.</li>
+<li>Sum of CFO + CFI + CFF = Net Change in Cash, which added to Beginning Cash equals Ending Cash on the Balance Sheet.</li>
+</ul></div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+<div class="framework" id="beta-and-capital-asset-pricing-model-capm">
+<h2>Beta &amp; Capital Asset Pricing Model (CAPM)</h2>
+<div class="field">
+<div class="field-name">description</div>
+<div class="diff-block before"><div class="label">Before</div>Quantifies systematic market risk (Beta) and determines the required expected rate of return on equity (Ke) using CAPM: Ke = Rf + Beta × (Rm - Rf).</div>
+<div class="diff-block after"><div class="label">After</div>Quantifies systematic market risk (Beta) and determines the required expected rate of return on equity (Ke) using CAPM (Capital Asset Pricing Model, a formula relating a stock&#x27;s risk to its expected return): Ke = Rf + Beta × (Rm - Rf).</div>
+</div>
+<div class="field">
+<div class="field-name">when_to_use</div>
+<div class="diff-block before"><div class="label">Before</div>Use to calculate the Cost of Equity (Ke) for WACC, discount levered cash flows, or analyze systematic risk.</div>
+<div class="diff-block after"><div class="label">After</div>Use to calculate the Cost of Equity (Ke) for WACC (Weighted Average Cost of Capital, a firm&#x27;s average cost of capital from all sources), discount levered cash flows, or analyze systematic risk.</div>
+</div>
+<div class="field">
+<div class="field-name">steps</div>
+<div class="diff-block before"><div class="label">Before</div><ul>
+<li>Select Risk-Free Rate (Rf): Use current 10-year or 30-year government bond yield in the company&#x27;s operating currency.</li>
+<li>Estimate Beta (β): Measures sensitivity of the stock&#x27;s returns relative to the broad market portfolio (Cov(Ra,Rm) / Var(Rm)).</li>
+<li>Determine Equity Risk Premium (ERP = Rm - Rf): Historical or forward-looking spread of broad equities over the risk-free rate (typically 5-6%).</li>
+<li>Calculate Cost of Equity: Ke = Rf + β × ERP (add size premium or country risk premium if applicable).</li>
+<li>Unlever and Relever Beta when benchmarking against peer comps: Unlevered Beta (Asset Beta) = Levered Beta / [1 + (1 - t)(D/E)]; Relevered Beta = Asset Beta × [1 + (1 - t)(Target D/E)].</li>
+</ul></div>
+<div class="diff-block after"><div class="label">After</div><ul>
+<li>Select Risk-Free Rate (Rf): Use current 10-year or 30-year government bond yield in the company&#x27;s operating currency.</li>
+<li>Estimate Beta (β): Measures sensitivity of the stock&#x27;s returns relative to the broad market portfolio (Cov(Ra,Rm) / Var(Rm)).</li>
+<li>Determine Equity Risk Premium (ERP = Rm - Rf): Historical or forward-looking spread of broad equities over the risk-free rate (typically 5-6%).</li>
+<li>Calculate Cost of Equity: Ke = Rf + β × ERP (add size premium or country risk premium if applicable).</li>
+<li>Unlever and Relever Beta when benchmarking against peer comps (comparable companies used for benchmarking): Unlevered Beta (Asset Beta) = Levered Beta / [1 + (1 - t)(D/E)]; Relevered Beta = Asset Beta × [1 + (1 - t)(Target D/E)].</li>
+</ul></div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+<div class="framework" id="comparable-company-analysis">
+<h2>Comparable Company Analysis</h2>
+<div class="field">
+<div class="field-name">description</div>
+<div class="diff-block before"><div class="label">Before</div>Values a company by looking at what similar, publicly-traded companies trade for (e.g. EV/Revenue, EV/EBITDA, P/E) and applying those multiples to the target.</div>
+<div class="diff-block after"><div class="label">After</div>Values a company by looking at what similar, publicly-traded companies trade for (e.g. EV/Revenue, EV/EBITDA, P/E) and applying those multiples (valuation metrics comparing a company&#x27;s price to its financial results) to the target.</div>
+</div>
+<div class="field">
+<div class="field-name">when_to_use</div>
+<div class="diff-block before"><div class="label">Before</div>Use it for a quick, market-grounded valuation check, or when the interviewer wants a faster answer than a full DCF.</div>
+<div class="diff-block after"><div class="label">After</div>Use it for a quick, market-grounded valuation check, or when the interviewer wants a faster answer than a full DCF (Discounted Cash Flow, a method valuing a company from its projected future cash flows).</div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+<div class="framework" id="dcf-discounted-cash-flow">
+<h2>DCF (Discounted Cash Flow)</h2>
+<div class="field">
+<div class="field-name">example</div>
+<div class="diff-block before"><div class="label">Before</div>Valuing a subscription business: project 5-10 years of free cash flow from subscriber growth and margins, estimate a terminal value beyond that, then discount everything back using a rate reflecting the business&#x27;s risk (often via WACC).</div>
+<div class="diff-block after"><div class="label">After</div>Valuing a subscription business: project 5-10 years of free cash flow from subscriber growth and margins, estimate a terminal value (the estimated value of a company&#x27;s cash flows beyond the explicit forecast period) beyond that, then discount everything back using a rate reflecting the business&#x27;s risk (often via WACC, the average rate a company pays to finance its assets through debt and equity).</div>
+</div>
+<div class="field">
+<div class="field-name">when_to_use</div>
+<div class="diff-block before"><div class="label">Before</div>Use it when asked to value a company or investment from first principles, or to explain what actually drives a valuation rather than just quoting a multiple.</div>
+<div class="diff-block after"><div class="label">After</div>Use it when asked to value a company or investment from first principles, or to explain what actually drives a valuation rather than just quoting a multiple (a ratio comparing a company&#x27;s financial metric to its share price or value).</div>
+</div>
+<div class="field">
+<div class="field-name">when_not_to_use</div>
+<div class="diff-block before"><div class="label">Before</div>Do not lean on it when reliable long-term cash flow projections are not realistic (early-stage/pre-revenue companies) - a comparables approach is usually more defensible there.</div>
+<div class="diff-block after"><div class="label">After</div>Do not lean on it when reliable long-term cash flow projections are not realistic (early-stage/pre-revenue companies) - a comparables approach (a valuation method comparing a company to similar publicly traded peers) is usually more defensible there.</div>
+</div>
+<div class="field">
+<div class="field-name">steps</div>
+<div class="diff-block before"><div class="label">Before</div><ul>
+<li>Project the company&#x27;s free cash flows for an explicit forecast period (commonly 5-10 years).</li>
+<li>Estimate a terminal value for cash flows beyond the forecast period (perpetuity growth or exit-multiple method).</li>
+<li>Choose a discount rate reflecting the risk of those cash flows (often the Weighted Average Cost of Capital).</li>
+<li>Discount each year&#x27;s cash flow and the terminal value back to present value and sum them.</li>
+<li>Stress-test the output against a plausible range of growth/discount-rate assumptions - a single-point answer is weaker than a defensible range.</li>
+</ul></div>
+<div class="diff-block after"><div class="label">After</div><ul>
+<li>Project the company&#x27;s free cash flows for an explicit forecast period (commonly 5-10 years).</li>
+<li>Estimate a terminal value for cash flows beyond the forecast period (perpetuity growth or exit-multiple method).</li>
+<li>Choose a discount rate reflecting the risk of those cash flows (often the Weighted Average Cost of Capital).</li>
+<li>Discount each year&#x27;s cash flow and the terminal value back to present value (the current worth of a future sum of money) and sum them.</li>
+<li>Stress-test the output against a plausible range of growth/discount-rate assumptions - a single-point answer is weaker than a defensible range.</li>
+</ul></div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+<div class="framework" id="enterprise-value-and-equity-value-the-bridge">
+<h2>Enterprise Value &amp; Equity Value (The Bridge)</h2>
+<div class="field">
+<div class="field-name">example</div>
+<div class="diff-block before"><div class="label">Before</div>Company has $50/share with 10M shares ($500M Equity Value), $150M debt, and $50M cash. Enterprise Value = $500M + $150M - $50M = $600M. With $60M EBITDA, it trades at 10x EV/EBITDA.</div>
+<div class="diff-block after"><div class="label">After</div>Company has $50/share with 10M shares ($500M Equity Value), $150M debt, and $50M cash. Enterprise Value = $500M + $150M - $50M = $600M. With $60M EBITDA (earnings before interest, taxes, depreciation, and amortization), it trades at 10x EV/EBITDA (Enterprise Value to EBITDA, a valuation multiple comparing operating value to core cash earnings).</div>
+</div>
+<div class="field">
+<div class="field-name">when_to_use</div>
+<div class="diff-block before"><div class="label">Before</div>Use whenever bridging between firm-wide valuation (DCF, trading comps) and share-level pricing, or analyzing an M&amp;A offer price.</div>
+<div class="diff-block after"><div class="label">After</div>Use whenever bridging between firm-wide valuation (DCF, a method valuing a company from its projected future cash flows, and trading comps, comparisons of similar public companies) and share-level pricing, or analyzing an M&amp;A (mergers and acquisitions) offer price.</div>
+</div>
+<div class="field">
+<div class="field-name">steps</div>
+<div class="diff-block before"><div class="label">Before</div><ul>
+<li>Start with Equity Value = Diluted Share Price × Fully Diluted Shares Outstanding (Market Cap).</li>
+<li>Add Total Debt (both short-term and long-term interest-bearing debt, notes payable).</li>
+<li>Add Preferred Stock and Non-Controlling / Minority Interest.</li>
+<li>Subtract Cash &amp; Cash Equivalents (and liquid short-term investments) to get Enterprise Value.</li>
+<li>EV represents the cost to acquire the entire operating business debt-free and cash-free.</li>
+<li>Metric alignment: Multiples of EV (EV/EBITDA, EV/EBIT, EV/Sales) measure unlevered cash flows available to all capital providers; Equity Value metrics (P/E, Price/Book) measure cash flows after interest.</li>
+</ul></div>
+<div class="diff-block after"><div class="label">After</div><ul>
+<li>Start with Equity Value = Diluted Share Price × Fully Diluted Shares Outstanding (total shares including all potential options, warrants, and convertibles) (Market Cap).</li>
+<li>Add Total Debt (both short-term and long-term interest-bearing debt, notes payable).</li>
+<li>Add Preferred Stock and Non-Controlling / Minority Interest.</li>
+<li>Subtract Cash &amp; Cash Equivalents (and liquid short-term investments) to get Enterprise Value.</li>
+<li>EV represents the cost to acquire the entire operating business debt-free and cash-free.</li>
+<li>Metric alignment: Multiples of EV (EV/EBITDA, EV/EBIT, EV/Sales) measure unlevered cash flows available to all capital providers; Equity Value metrics (P/E, price-to-earnings ratio, Price/Book) measure cash flows after interest.</li>
+</ul></div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+<div class="framework" id="income-statement-waterfall-and-pandl-walk">
+<h2>Income Statement Waterfall &amp; P&amp;L Walk</h2>
+<div class="field">
+<div class="field-name">description</div>
+<div class="diff-block before"><div class="label">Before</div>The line-by-line mathematical walk from gross revenues down to bottom-line net income, isolating Gross Profit, EBITDA, EBIT, and Pre-tax Profit.</div>
+<div class="diff-block after"><div class="label">After</div>The line-by-line mathematical walk from gross revenues down to bottom-line net income, isolating Gross Profit, EBITDA (earnings before interest, taxes, depreciation, and amortization), EBIT (earnings before interest and taxes), and Pre-tax Profit.</div>
+</div>
+<div class="field">
+<div class="field-name">steps</div>
+<div class="diff-block before"><div class="label">Before</div><ul>
+<li>Gross Revenue minus Returns, Allowances, and Discounts = Net Revenue (Top Line).</li>
+<li>Subtract Cost of Goods Sold (COGS: direct raw materials, direct labor, manufacturing overhead) = Gross Profit.</li>
+<li>Gross Margin % = Gross Profit / Net Revenue.</li>
+<li>Subtract Operating Expenses (SG&amp;A, R&amp;D, Sales &amp; Marketing, Admin) = EBITDA (Earnings Before Interest, Taxes, Depreciation &amp; Amortization).</li>
+<li>Subtract Depreciation (PP&amp;E) and Amortization (Intangibles) = EBIT (Operating Income).</li>
+<li>Add/Subtract Net Interest Expense and Non-Operating Gains/Losses = EBT (Earnings Before Taxes).</li>
+<li>Subtract Corporate Income Tax Expense = Net Income (Bottom Line / Earnings Available to Shareholders).</li>
+</ul></div>
+<div class="diff-block after"><div class="label">After</div><ul>
+<li>Gross Revenue minus Returns, Allowances, and Discounts = Net Revenue (Top Line).</li>
+<li>Subtract Cost of Goods Sold (COGS: direct raw materials, direct labor, manufacturing overhead) = Gross Profit.</li>
+<li>Gross Margin % = Gross Profit / Net Revenue.</li>
+<li>Subtract Operating Expenses (SG&amp;A, R&amp;D, Sales &amp; Marketing, Admin) = EBITDA.</li>
+<li>Subtract Depreciation (PP&amp;E) and Amortization (Intangibles) = EBIT (Operating Income).</li>
+<li>Add/Subtract Net Interest Expense and Non-Operating Gains/Losses = EBT (Earnings Before Taxes).</li>
+<li>Subtract Corporate Income Tax Expense = Net Income (Bottom Line / Earnings Available to Shareholders).</li>
+</ul></div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+<div class="framework" id="lbo-basics-leveraged-buyout">
+<h2>LBO Basics (Leveraged Buyout)</h2>
+<div class="field">
+<div class="field-name">example</div>
+<div class="diff-block before"><div class="label">Before</div>A PE firm buys a stable, cash-generative business using 70% debt and 30% equity, uses the company&#x27;s own cash flow to pay down that debt over 5 years, then sells it - the equity return comes from debt paydown plus any operational improvement or multiple expansion.</div>
+<div class="diff-block after"><div class="label">After</div>A PE firm buys a stable, cash-generative business using 70% debt and 30% equity, uses the company&#x27;s own cash flow to pay down that debt over 5 years, then sells it - the equity return comes from debt paydown plus any operational improvement or multiple expansion (an increase in the valuation multiple between entry and exit).</div>
+</div>
+<div class="field">
+<div class="field-name">when_to_use</div>
+<div class="diff-block before"><div class="label">Before</div>Use it for &quot;why would a PE firm buy this company&quot; or &quot;what makes a good LBO target&quot; questions.</div>
+<div class="diff-block after"><div class="label">After</div>Use it for &quot;why would a PE firm buy this company&quot; or &quot;what makes a good LBO (Leveraged Buyout, an acquisition funded largely with borrowed money) target&quot; questions.</div>
+</div>
+<div class="field">
+<div class="field-name">when_not_to_use</div>
+<div class="diff-block before"><div class="label">Before</div>Do not use it as a general M&amp;A framework - a strategic acquirer buying for synergies is a different question than a financial sponsor buying for a leveraged return.</div>
+<div class="diff-block after"><div class="label">After</div>Do not use it as a general M&amp;A (Mergers and Acquisitions) framework - a strategic acquirer buying for synergies (financial benefits from combining two companies) is a different question than a financial sponsor buying for a leveraged return.</div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+<div class="framework" id="terminal-value-perpetuity-vs-exit-multiple">
+<h2>Terminal Value (Perpetuity vs Exit Multiple)</h2>
+<div class="field">
+<div class="field-name">description</div>
+<div class="diff-block before"><div class="label">Before</div>Represents the ongoing enterprise value beyond the discrete 5-10 year projection horizon, typically accounting for 65% to 85% of total DCF value.</div>
+<div class="diff-block after"><div class="label">After</div>Represents the ongoing enterprise value beyond the discrete 5-10 year projection horizon, typically accounting for 65% to 85% of total DCF (a method valuing a company from its projected future cash flows) value.</div>
+</div>
+<div class="field">
+<div class="field-name">example</div>
+<div class="diff-block before"><div class="label">Before</div>Year 5 FCF is $40M, WACC is 9%, and g is 2.5%. Year 6 FCF = $40M × 1.025 = $41M. Terminal Value = $41M / (0.09 - 0.025) = $630.8M. Discounted at 9% over 5 years: PV(TV) = $630.8M / (1.09)^5 = $409.9M.</div>
+<div class="diff-block after"><div class="label">After</div>Year 5 FCF is $40M, WACC (Weighted Average Cost of Capital, the average rate a company pays to finance its assets) is 9%, and g is 2.5%. Year 6 FCF = $40M × 1.025 = $41M. Terminal Value = $41M / (0.09 - 0.025) = $630.8M. Discounted at 9% over 5 years: PV(TV) = $630.8M / (1.09)^5 = $409.9M.</div>
+</div>
+<div class="field">
+<div class="field-name">steps</div>
+<div class="diff-block before"><div class="label">Before</div><ul>
+<li>Project discrete cash flows until the company reaches steady-state growth and sustainable margins.</li>
+<li>Method 1 — Gordon Growth (Perpetual Growth): TV = [FCF_final × (1 + g)] / (WACC - g), where g is long-term sustainable GDP growth (typically 2-3%).</li>
+<li>Method 2 — Exit Multiple Method: TV = Projected Year N EBITDA × Target EV/EBITDA Multiple based on mature peer multiples.</li>
+<li>Discount Terminal Value back to Present Value: PV(TV) = TV / (1 + WACC)^N.</li>
+<li>Cross-check: Calculate the implied perpetual growth rate from the exit multiple, and implied multiple from Gordon Growth to test realism.</li>
+</ul></div>
+<div class="diff-block after"><div class="label">After</div><ul>
+<li>Project discrete cash flows until the company reaches steady-state growth and sustainable margins.</li>
+<li>Method 1 — Gordon Growth (Perpetual Growth): TV = [FCF_final × (1 + g)] / (WACC - g), where g is long-term sustainable GDP growth (typically 2-3%).</li>
+<li>Method 2 — Exit Multiple Method: TV = Projected Year N EBITDA (Earnings Before Interest, Taxes, Depreciation, and Amortization) × Target EV (Enterprise Value, a measure of total company value)/EBITDA Multiple based on mature peer multiples.</li>
+<li>Discount Terminal Value back to Present Value: PV(TV) = TV / (1 + WACC)^N.</li>
+<li>Cross-check: Calculate the implied perpetual growth rate from the exit multiple, and implied multiple from Gordon Growth to test realism.</li>
+</ul></div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+<div class="framework" id="wacc-weighted-average-cost-of-capital">
+<h2>WACC (Weighted Average Cost of Capital)</h2>
+<div class="field">
+<div class="field-name">when_to_use</div>
+<div class="diff-block before"><div class="label">Before</div>Use in all DCF valuations to discount enterprise-level cash flows to present value, and in corporate finance to evaluate IRR vs hurdle rate.</div>
+<div class="diff-block after"><div class="label">After</div>Use in all DCF (a method valuing a company from its projected future cash flows) valuations to discount enterprise-level cash flows to present value, and in corporate finance to evaluate IRR (the annualized percentage return expected from an investment) vs hurdle rate.</div>
+</div>
+<div class="field">
+<div class="field-name">when_not_to_use</div>
+<div class="diff-block before"><div class="label">Before</div>Do not use WACC to discount Levered Free Cash Flow (FCFE); use Cost of Equity (Ke) for levered equity flows.</div>
+<div class="diff-block after"><div class="label">After</div>Do not use WACC (Weighted Average Cost of Capital, the blended rate a company pays to finance its assets) to discount Levered Free Cash Flow (FCFE); use Cost of Equity (Ke) for levered equity flows.</div>
+</div>
+<div class="field">
+<div class="field-name">steps</div>
+<div class="diff-block before"><div class="label">Before</div><ul>
+<li>Determine target capital structure weights: Equity weight (E/V) and Debt weight (D/V) at market values.</li>
+<li>Calculate Cost of Equity (Ke) using CAPM: Ke = Rf + β × ERP.</li>
+<li>Determine Pre-tax Cost of Debt (Kd) based on effective yield-to-maturity of company bonds or current credit rating spread.</li>
+<li>Apply the corporate interest tax shield: After-tax Cost of Debt = Kd × (1 - Marginal Tax Rate).</li>
+<li>Compute WACC = [E/V × Ke] + [D/V × Kd × (1 - t)].</li>
+<li>Use WACC as the hurdle rate for capital budgeting decisions and the discount rate for Unlevered Free Cash Flow (FCFF) in a DCF.</li>
+</ul></div>
+<div class="diff-block after"><div class="label">After</div><ul>
+<li>Determine target capital structure weights: Equity weight (E/V) and Debt weight (D/V) at market values.</li>
+<li>Calculate Cost of Equity (Ke) using CAPM (Capital Asset Pricing Model, a formula estimating the expected return on equity based on risk): Ke = Rf + β (Beta, a measure of how much a stock&#x27;s price moves relative to the broader market) × ERP (Equity Risk Premium, the excess return investing in stocks offers over risk-free bonds).</li>
+<li>Determine Pre-tax Cost of Debt (Kd) based on effective yield-to-maturity of company bonds or current credit rating spread.</li>
+<li>Apply the corporate interest tax shield: After-tax Cost of Debt = Kd × (1 - Marginal Tax Rate).</li>
+<li>Compute WACC = [E/V × Ke] + [D/V × Kd × (1 - t)].</li>
+<li>Use WACC as the hurdle rate for capital budgeting decisions and the discount rate for Unlevered Free Cash Flow (FCFF) in a DCF.</li>
+</ul></div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+<div class="framework" id="working-capital-and-cash-conversion-cycle">
+<h2>Working Capital &amp; Cash Conversion Cycle</h2>
+<div class="field">
+<div class="field-name">steps</div>
+<div class="diff-block before"><div class="label">Before</div><ul>
+<li>Calculate Days Inventory Outstanding (DIO) = (Average Inventory / COGS) × 365 (how long inventory sits before selling).</li>
+<li>Calculate Days Sales Outstanding (DSO) = (Accounts Receivable / Total Credit Sales) × 365 (how long customers take to pay).</li>
+<li>Calculate Days Payable Outstanding (DPO) = (Accounts Payable / Cost of Goods Sold) × 365 (how long company takes to pay suppliers).</li>
+<li>Calculate Cash Conversion Cycle (CCC) = DIO + DSO - DPO.</li>
+<li>Calculate Operating Net Working Capital (NWC) = Current Operating Assets (excl. cash) - Current Operating Liabilities (excl. debt).</li>
+<li>A lower or negative CCC means the company generates cash from customers before paying vendors, funding growth for free (e.g., Amazon, Apple).</li>
+</ul></div>
+<div class="diff-block after"><div class="label">After</div><ul>
+<li>Calculate Days Inventory Outstanding (DIO, the average number of days inventory is held before being sold) = (Average Inventory / COGS) × 365 (how long inventory sits before selling).</li>
+<li>Calculate Days Sales Outstanding (DSO, the average number of days it takes to collect cash after a credit sale) = (Accounts Receivable / Total Credit Sales) × 365 (how long customers take to pay).</li>
+<li>Calculate Days Payable Outstanding (DPO, the average number of days a company takes to pay its suppliers) = (Accounts Payable / Cost of Goods Sold) × 365 (how long company takes to pay suppliers).</li>
+<li>Calculate Cash Conversion Cycle (CCC, the net time it takes to convert cash outflows into cash inflows from operations) = DIO + DSO - DPO.</li>
+<li>Calculate Operating Net Working Capital (NWC, the capital required for day-to-day operations excluding cash and debt) = Current Operating Assets (excl. cash) - Current Operating Liabilities (excl. debt).</li>
+<li>A lower or negative CCC means the company generates cash from customers before paying vendors, funding growth for free (e.g., Amazon, Apple).</li>
+</ul></div>
+</div>
+<a class="top-link" href="#top">↑ back to top</a>
+</div>
+</div></body></html>
