@@ -647,18 +647,17 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 .fc-icon{
   width:46px; height:46px; border-radius:var(--r-md);
   display:flex; align-items:center; justify-content:center; margin-bottom:14px;
-  background:rgba(37, 99, 235, 0.18);
-  border:1px solid rgba(59, 130, 246, 0.35);
-  box-shadow:0 0 14px rgba(37, 99, 235, 0.25);
+  background:rgba(255, 107, 53, 0.16);
+  border:1px solid rgba(255, 107, 53, 0.35);
+  box-shadow:0 0 14px rgba(255, 107, 53, 0.22);
   color:#ffffff;
   transition:all 0.2s ease;
 }
 .feature-card:hover .fc-icon{
-  background:rgba(255, 107, 53, 0.20);
-  border-color:rgba(255, 107, 53, 0.45);
-  box-shadow:0 0 14px rgba(255, 107, 53, 0.30);
+  background:rgba(255, 107, 53, 0.26);
+  border-color:rgba(255, 107, 53, 0.55);
+  box-shadow:0 0 16px rgba(255, 107, 53, 0.35);
 }
-.feature-card:hover .fc-icon svg{ color:#ff6b35; }
 .feature-card.wide .fc-icon{ margin-bottom:0; }
 .fc-icon svg{ width:21px; height:21px; color:#ffffff; }
 .icon-purple svg, .icon-blue svg, .icon-green svg, .icon-amber svg, .icon-pink svg, .icon-cyan svg{ color:#ffffff; }
