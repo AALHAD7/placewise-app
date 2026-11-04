@@ -5,6 +5,71 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-04 — Reverted the AI-generated "unification" diagrams: restored the original hand-crafted diagrams for all 55 non-colliding original frameworks
+
+**Phase:** M4 (frontend fixes) · **Type:** fix / revert
+
+**What changed:** User compared localhost against production side by side for Porter's Five
+Forces and said plainly: production's diagram (dense, multi-bullet, spatially laid out exactly
+how it's taught - new entrants on top, suppliers/rivalry/buyers in a row, substitutes on the
+bottom, with a strategic-synthesis note) is immediately understandable; localhost's AI-
+generated version (bare 5-line flat list of force names, no detail) is not, and asked for every
+diagram on localhost to match production exactly.
+
+This was the real finding behind both of today's earlier fix attempts (the duplicate-label flow
+bug and the 7 reclassified frameworks): the `bdf2bfe` "unify all 57 on one AI pipeline" commit
+hadn't just fixed the AIDA/AARM collision bug it set out to fix - it had also thrown away the
+original 42 frameworks' hand-crafted diagrams, which were denser, more detailed, and in several
+cases (Porter's Five Forces, MECE, the LBO waterfall, DCF) laid out exactly the way these are
+actually taught, and replaced them with thinner AI-generated versions that only restate what's
+already in the bullet list below the diagram. Production was never redeployed after `bdf2bfe`,
+so it was still silently serving the better, original diagrams the whole time - which is exactly
+why the side-by-side comparison was so stark.
+
+**Fix:** pulled the full original `FRAMEWORK_ASCII_MAP` from git history (`bdf2bfe~1`, the
+commit right before the AI-unification rewrite) and restored its hand-crafted `{title, ascii}`
+content into the current name-keyed map for every framework whose name maps unambiguously to
+one of the original hand-crafted entries - 55 of the 57 live frameworks. Replicated the old
+file's fuzzy name→slug matching rules in a throwaway script to do this safely and verify there
+was exactly one real framework behind each slug before restoring it.
+
+**Kept the AI-generated diagram for 2 frameworks on purpose:** the old matching rules had a
+second real collision this script caught that the original "AIDA/AARM" bug report never
+mentioned - "Dividend Discount Model (Gordon Growth Model)" and "Terminal Value (Perpetuity vs
+Exit Multiple)" both matched the same `gordon growth` rule and would have both received the
+Terminal Value diagram's content (wrong for DDM). Kept their current, already-distinct
+AI-generated diagrams instead of restoring a mismatched hand-crafted one. Same logic for AARM
+Funnel (kept distinct, AI-generated; AIDA Funnel got its real hand-crafted diagram back).
+
+**Kept the name-keyed lookup, not the old fuzzy-match function:** the 1:1 exact-name map built
+earlier today is what makes the AIDA/AARM and DDM/Terminal-Value collisions impossible to
+reintroduce - restoring old *content* didn't mean reverting the *lookup mechanism* that had the
+bug in the first place.
+
+**The 15 newly-discovered frameworks (added after `bdf2bfe`, never existed on production) and
+the 2 kept-AI frameworks above keep their AI-generated diagrams** - there's no richer
+hand-crafted version to restore for content that was never hand-crafted to begin with.
+
+**Why:** Direct response to the user: "is asking for an accurate diagram too much of a task...
+make sure the diagrams are exactly the same as they are in production."
+
+**Files:** `frontend-react/src/lib/asciiDiagrams.ts` (55 entries restored to their original
+hand-crafted content, name-keyed map structure unchanged).
+
+**Proof:** `npx tsc --noEmit` clean. Verified live on localhost (guest session, Consulting
+domain): Porter's Five Forces and MECE now render byte-for-byte identical to the production
+screenshots the user provided. Console clean (only harmless font-preload warnings plus stale
+`ERR_CONNECTION_REFUSED` lines from the brief window before the backend dev server was
+restarted - unrelated to this change).
+
+**Open issues:** This supersedes (not stacks on top of) the two prior diagram-fix entries from
+earlier today for the 7 overlapping frameworks (MECE, Business Model Canvas, PESTEL, 7S, Kano,
+Blue Ocean, GTM) - those are now back to their hand-crafted originals, not the flat issue_tree
+versions built a few hours earlier. The flow-renderer duplicate-label fix still stands for the
+frameworks that only ever had AI-generated diagrams (the 15 new ones + AARM Funnel + DDM).
+
+---
+
 ## 2026-11-04 — Fixed readability of flow/tree diagrams: killed duplicate-label clutter, reclassified flat frameworks mistyped as sequences
 
 **Phase:** M4 (frontend fixes) · **Type:** fix
