@@ -21,9 +21,17 @@ a plain 404, not an error or a confirming "access denied").
 **One real bug found and fixed:** `HomePage.tsx`'s hero `<img>` had `fetchPriority="high"`
 (camelCase) - correct in React 19, but this app is on React 18.3, which doesn't special-case
 that prop yet and logged "React does not recognize the `fetchPriority` prop" on every single
-page load (Home is the landing page everyone hits first). Fixed to lowercase `fetchpriority`,
-the plain HTML attribute spelling, which React 18 passes through without complaint. Verified
-the warning is gone post-fix.
+page load (Home is the landing page everyone hits first). First attempt lowercased it to
+`fetchpriority` - that silences the runtime warning, but broke the actual production build
+(`tsc -b`, run by `npm run build`): `@types/react` 18.3's typings only know the camelCase
+name, so the plain-lowercase attribute fails type-checking. Caught before this reached main
+only because the merge-to-main step below ran a real build first - `npx tsc --noEmit
+-p tsconfig.json` (what every "clean" check earlier in this session actually ran) turned out to
+be a no-op: the root `tsconfig.json` has `"files": []` and only references sub-projects, so
+`-p tsconfig.json` without `-b` silently checks nothing. Confirmed by reverting to the buggy
+version and re-running the same command - exit 0, no error reported, despite the real
+type error being there. Final fix: removed the attribute entirely rather than fight the
+runtime/typings mismatch - it's a non-essential loading-priority hint, not load-bearing.
 
 **Checked and found not to be real problems:** Tone Shifter had a 2-3px page-level overflow at
 390px (`scrollWidth` 393 vs `clientWidth` 390) - traced to sub-pixel rounding across the whole
@@ -32,12 +40,17 @@ Skill page's difficulty picker and Mock Interview's domain picker use a native b
 `<select>` where Role/Company/Frameworks use the custom-styled dropdown - a cosmetic
 inconsistency, not a bug, left as-is (flagging it here in case it's worth a future pass).
 
-**Files:** `frontend-react/src/pages/HomePage.tsx` (one-line fix).
+**Files:** `frontend-react/src/pages/HomePage.tsx` (one-line removal).
 
-**Proof:** `npx tsc --noEmit` clean. Re-ran the console check after the fix: zero warnings/
-errors on Home (previously the one page with a real warning). Zero page-level overflow found
-on any route at desktop width; only the one negligible sub-pixel case on mobile. No broken
-links, no failed API calls, no console errors across any of the 9 routes exercised.
+**Proof:** `npm run build` (real `tsc -b` + `vite build`, not the no-op `--noEmit -p
+tsconfig.json`) clean. Re-ran the console check after the fix: zero warnings/errors on Home
+(previously the one page with a real warning). Zero page-level overflow found on any route at
+desktop width; only the one negligible sub-pixel case on mobile. No broken links, no failed
+API calls, no console errors across any of the 9 routes exercised. Backend: `npm test` 146/147
+- the one failure (`sandbox.test.js`, a Python-subprocess env-isolation check) reproduces
+identically on `main` with none of today's changes applied, so it's a pre-existing,
+environment-specific flake (a macOS `__CF_USER_TEXT_ENCODING` var leaking into the subprocess
+environment), not a regression.
 
 **Open issues:** This was a direct sweep, not the qa-tester agent or a multi-page design
 review - deeper per-page checks (spacing/type-scale/touch-target review, paid-flow testing
