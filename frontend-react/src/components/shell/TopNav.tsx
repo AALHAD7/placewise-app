@@ -224,6 +224,10 @@ export default function TopNav() {
   // link to a 404 the menu's header row IS the profile summary (name +
   // guest/signed-in status) instead of a separate broken link. ------------
   const [avatarOpen, setAvatarOpen] = useState(false);
+  // Mobile hamburger menu - see global.css's max-width:640px block for the
+  // CSS that actually hides .topnav-links and shows .mobile-menu-btn; this
+  // state only controls whether the vertical panel itself is open.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { rendered: confirmRendered, exiting: confirmExiting } = useExitTransition(confirmOpen, 160);
   const doSignOut = () => {
@@ -239,7 +243,7 @@ export default function TopNav() {
   // for 4 independent popovers that never overlap).
   const headerRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    const anyOpen = searchOpen || notifOpen || avatarOpen || confirmOpen;
+    const anyOpen = searchOpen || notifOpen || avatarOpen || confirmOpen || mobileNavOpen;
     if (!anyOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
@@ -247,6 +251,7 @@ export default function TopNav() {
       else if (searchOpen) closeSearch();
       else if (notifOpen) setNotifOpen(false);
       else if (avatarOpen) setAvatarOpen(false);
+      else if (mobileNavOpen) setMobileNavOpen(false);
     };
     const onClick = (e: MouseEvent) => {
       if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
@@ -254,6 +259,7 @@ export default function TopNav() {
         setNotifOpen(false);
         setAvatarOpen(false);
         setConfirmOpen(false);
+        setMobileNavOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -262,7 +268,7 @@ export default function TopNav() {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("mousedown", onClick);
     };
-  }, [searchOpen, notifOpen, avatarOpen, confirmOpen]);
+  }, [searchOpen, notifOpen, avatarOpen, confirmOpen, mobileNavOpen]);
 
   return (
     <header className="topnav" ref={headerRef}>
@@ -288,13 +294,35 @@ export default function TopNav() {
           ))}
         </nav>
 
+        <button
+          type="button"
+          onClick={() => setMobileNavOpen((v) => !v)}
+          title="Menu"
+          aria-label="Menu"
+          aria-expanded={mobileNavOpen}
+          className={"unbutton bell-btn mobile-menu-btn" + (mobileNavOpen ? " active" : "")}
+        >
+          {mobileNavOpen ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="17" x2="20" y2="17" />
+            </svg>
+          )}
+        </button>
+
         <div className="topbar-right">
           {hasStreak && (
             <div className="streak-pill">
               <svg className="flame" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2c1 3-2 4-2 7a3 3 0 0 0 6 0c1 1 2 2.5 2 4.5A6.5 6.5 0 0 1 5 13.5C5 8 9 6 12 2z" />
               </svg>
-              {streak} day streak
+              <span className="streak-count-label">{streak} day streak</span>
               <span className="divider"></span>
               <button type="button" className="unbutton view-stats" onClick={viewStats}>
                 View stats
@@ -490,6 +518,21 @@ export default function TopNav() {
           </div>
         </div>
       </div>
+
+      <nav className={"mobile-nav-panel" + (mobileNavOpen ? " open" : "")} aria-label="Mobile">
+        {NAV.map((entry) => (
+          <NavLink
+            key={entry.to}
+            to={entry.to}
+            end={entry.to === "/"}
+            onClick={() => setMobileNavOpen(false)}
+            className={({ isActive }) => "nav-item" + (isActive ? " active" : "")}
+          >
+            <NavIcon entry={entry} />
+            <span>{entry.label}</span>
+          </NavLink>
+        ))}
+      </nav>
     </header>
   );
 }

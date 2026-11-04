@@ -5,6 +5,50 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-05 — Mobile nav: hamburger menu replaces the wrapping nav-pill row
+
+**Phase:** M4 (frontend fixes) · **Type:** fix
+
+**What changed:** At narrow widths the top nav's 9 pill links (`.topnav-links`) had
+`flex-wrap:wrap` with no mobile-specific layout, so on a phone they wrapped into 2-3 cramped
+rows of pills, eating vertical space before any page content showed - the "menu bar collapses"
+problem the user described, with the fix they asked for by name: "instead of having that menu
+bar we can show three lines at the top left corner and when someone clicks on them... show the
+option and once you click on it again it collapses the menu."
+
+Added a hamburger button (`TopNav.tsx`, reusing the existing circular `.bell-btn` icon-button
+style already used for search/notifications, so it looks native to the bar, not bolted on) that
+only exists below 640px (the breakpoint the old wrap rule already used). Clicking it opens
+`.mobile-nav-panel` - the same 9 `NavLink`s, same active-state styling, listed vertically
+full-width below the header - and the icon swaps to an X. Clicking it again, pressing Escape, or
+navigating to a link all close it; it's wired into the header's existing single
+Escape/outside-click handler (the same one `search`/`notifications`/`avatar` already share)
+rather than a second copy of that logic.
+
+**Found and fixed a CSS cascade bug while testing:** the hamburger button briefly leaked onto
+desktop. `.mobile-menu-btn{display:none}` and `.bell-btn{display:flex}` have equal specificity
+(one class each), and `.bell-btn`'s own rule happens to sit later in `global.css`, so it won on
+source order and overrode the hide rule. Fixed by targeting `.bell-btn.mobile-menu-btn` (two
+classes) instead of `.mobile-menu-btn` alone, which wins regardless of source order - caught by
+screenshotting desktop after the change, not assumed safe.
+
+**Files:** `frontend-react/src/components/shell/TopNav.tsx`,
+`frontend-react/src/styles/global.css`.
+
+**Proof:** `npx tsc --noEmit` clean. Verified live at a 390x844 viewport (iPhone-sized): single-
+row header (hamburger, search, notifications, avatar, no wrapping), menu opens/closes/auto-
+closes-on-navigate correctly, active route highlighted. Spot-checked Home, Frameworks (including
+an opened framework card with its ASCII diagram and the new Ask box), Role, Company,
+Guesstimates and Resume Drill for page-level horizontal overflow (`scrollWidth >
+clientWidth`) - false on all six. Re-verified desktop (1280x720) after the cascade fix: nav bar
+pixel-identical to before this change.
+
+**Open issues:** Only the global nav was restructured; no other page got a dedicated mobile
+layout pass beyond the overflow spot-check above - a page-by-page mobile design review (spacing,
+type scale, touch targets) is a larger, separate task if wanted.
+
+---
+
 ## 2026-11-05 — "Ask about this framework": suggested follow-up questions + voice-enabled free-text Q&A on the Frameworks page
 
 **Phase:** M4 (frontend fixes) · **Type:** feature
