@@ -5,6 +5,38 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-05 — Nav bar wrapping to a second line on narrow (non-maximized) desktop windows
+
+**Phase:** M4 (frontend fixes) · **Type:** fix
+
+**What changed:** User reported, with a live-production screenshot, that on a non-maximized
+Safari window (roughly 850-950px wide - two browser windows side by side) the streak pill,
+search, notifications and avatar were dropping below the nav-pill row instead of staying on
+one line: "the menu bar should not become a second line." This was a pre-existing bug, not
+something introduced by the mobile hamburger work - `.topnav-row` had an unconditional
+`flex-wrap:wrap` (true for every width, not just mobile), so whenever the 9 nav pills plus the
+right-side icons didn't all fit, the whole row wrapped. The new mobile breakpoint
+(max-width:640px) only fixed this below 640px by hiding the pills behind a hamburger; the gap
+between 640px and roughly 1050px (full desktop nav width) was never covered and still wrapped.
+
+**Fix:** `.topnav-row` is now `flex-wrap:nowrap` unconditionally - the header never wraps to a
+second line at any width. `.topnav-links` (the pill row) is `flex-wrap:nowrap` too, with
+`overflow-x:auto` (scrollbar hidden) - so if the 9 pills don't fit in whatever space is left
+after the brand and the right-side icons, they scroll horizontally within their own row
+instead of forcing the header onto two lines. Below 640px the pills are hidden entirely behind
+the hamburger as before, unaffected by this change.
+
+**Files:** `frontend-react/src/styles/global.css`.
+
+**Proof:** `npm run build` clean. Verified live at 800-1050px (the reported bug's width range):
+streak/search/notifications/avatar now stay on the same line as the nav pills at every width
+tested; nav pills scroll rather than wrap when they don't fit (confirmed
+`scrollWidth`/`clientWidth`/`scrollLeft` behave correctly, and the page itself never gets
+horizontal overflow). Re-verified both true mobile (390px, hamburger shown, single line) and
+full desktop (1440px, everything fits, no scrolling) are unaffected.
+
+---
+
 ## 2026-11-05 — Site-wide audit: every route, desktop + mobile, console + overflow + one fix
 
 **Phase:** M4 (frontend fixes) · **Type:** fix / QA

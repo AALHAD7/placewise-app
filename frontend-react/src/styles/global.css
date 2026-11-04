@@ -398,7 +398,7 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
   box-sizing:border-box;
 }
 .topnav-row{
-  display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem 0.75rem;
+  display:flex; align-items:center; flex-wrap:nowrap; gap:0.5rem 0.75rem;
   padding-block:0.625rem; padding-inline:clamp(0.75rem, 2.5vw, 1.25rem);
   width:100%; box-sizing:border-box;
 }
@@ -444,10 +444,19 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
   border: 1px solid rgba(59, 130, 246, 0.35);
 }
 
+/* flex-wrap:nowrap + overflow-x:auto (not wrap) so that at a window width
+   narrower than the full 9-item row but still above the mobile hamburger
+   breakpoint (e.g. two browser windows side by side on a laptop), the pills
+   scroll horizontally within their own row instead of the whole header
+   wrapping onto a second line - the exact bug reported: streak/search/
+   notifications/avatar dropping below the nav on a non-maximized desktop
+   window. Scrollbar hidden since this is a nav bar, not a content area. */
 .topnav-links{
-  display:flex; align-items:center; flex-wrap:wrap; gap:1px; flex:1 1 auto; min-width:0;
+  display:flex; align-items:center; flex-wrap:nowrap; gap:1px; flex:1 1 auto; min-width:0;
   padding:4px; border-radius:20px;
+  overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none;
 }
+.topnav-links::-webkit-scrollbar{ display:none; }
 .topnav-divider{ display:none; }
 
 .nav-item{
@@ -507,7 +516,6 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 .mobile-nav-panel{ display:none; }
 
 @media (max-width:640px){
-  .topnav-row{ flex-wrap:nowrap; }
   .topnav-links{ display:none; }
   .bell-btn.mobile-menu-btn{ display:flex; }
   .topnav{ background:#101216; backdrop-filter:none; -webkit-backdrop-filter:none; }
