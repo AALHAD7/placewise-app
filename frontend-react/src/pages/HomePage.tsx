@@ -193,7 +193,7 @@ export default function HomePage() {
                 alt="A student working through interview prep on a laptop, checklist: Learn, Practice, Improve, Get Hired"
                 width={361}
                 height={212}
-                fetchPriority="high"
+                fetchpriority="high"
                 className="home-illu-image"
                 onError={() => setHeroImgOk(false)}
               />

@@ -5,6 +5,48 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-05 — Site-wide audit: every route, desktop + mobile, console + overflow + one fix
+
+**Phase:** M4 (frontend fixes) · **Type:** fix / QA
+
+**What changed:** User asked for "a complete audit of this website." Asked which kind (mobile,
+functional, visual, security) via AskUserQuestion - no answer came back, so per Auto Mode
+("make the reasonable call and keep going"), ran a direct sweep myself rather than block:
+console errors + page-level horizontal overflow at both desktop (1280px) and mobile (390px) on
+every route in `router.tsx` (Home, Frameworks, Guesstimates, Company, Role, Mock Interview,
+Resume Drill, Tone Shifter, Community), plus a functional click-through of Role -> Skill,
+Company -> pick a company (Flipkart), and a check that `/admin` fails safely for a guest (shows
+a plain 404, not an error or a confirming "access denied").
+
+**One real bug found and fixed:** `HomePage.tsx`'s hero `<img>` had `fetchPriority="high"`
+(camelCase) - correct in React 19, but this app is on React 18.3, which doesn't special-case
+that prop yet and logged "React does not recognize the `fetchPriority` prop" on every single
+page load (Home is the landing page everyone hits first). Fixed to lowercase `fetchpriority`,
+the plain HTML attribute spelling, which React 18 passes through without complaint. Verified
+the warning is gone post-fix.
+
+**Checked and found not to be real problems:** Tone Shifter had a 2-3px page-level overflow at
+390px (`scrollWidth` 393 vs `clientWidth` 390) - traced to sub-pixel rounding across the whole
+page shell, not any single broken element; invisible in the screenshot, not worth chasing.
+Skill page's difficulty picker and Mock Interview's domain picker use a native browser
+`<select>` where Role/Company/Frameworks use the custom-styled dropdown - a cosmetic
+inconsistency, not a bug, left as-is (flagging it here in case it's worth a future pass).
+
+**Files:** `frontend-react/src/pages/HomePage.tsx` (one-line fix).
+
+**Proof:** `npx tsc --noEmit` clean. Re-ran the console check after the fix: zero warnings/
+errors on Home (previously the one page with a real warning). Zero page-level overflow found
+on any route at desktop width; only the one negligible sub-pixel case on mobile. No broken
+links, no failed API calls, no console errors across any of the 9 routes exercised.
+
+**Open issues:** This was a direct sweep, not the qa-tester agent or a multi-page design
+review - deeper per-page checks (spacing/type-scale/touch-target review, paid-flow testing
+like actually running a mock interview or resume upload end-to-end, a security pass on
+auth/RLS) are each their own task if wanted; said so explicitly rather than claim this covers
+them.
+
+---
+
 ## 2026-11-05 — Mobile nav: hamburger menu replaces the wrapping nav-pill row
 
 **Phase:** M4 (frontend fixes) · **Type:** fix
