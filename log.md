@@ -5,6 +5,69 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-04 — Fixed readability of flow/tree diagrams: killed duplicate-label clutter, reclassified flat frameworks mistyped as sequences
+
+**Phase:** M4 (frontend fixes) · **Type:** fix
+
+**What changed:** User compared two screenshots of the same MECE diagram - one from localhost
+(the new AI-generated "flow" diagram: a confusing chain of 4 nodes where each step repeated
+the next step's label, decorated with contrived bracketed phrases like "[ensure independence]")
+against production's old hand-crafted box tree (Problem Statement → Category A/B → sub-cats),
+and said plainly the new one "is extremely useless... it won't make any sense to the student,"
+and to judge every diagram from a student's perspective, not just ship whatever the pipeline
+produced.
+
+Investigated and found two separate real bugs, not one:
+
+1. **Renderer bug (affected all 44 "flow"-typed diagrams):** `flowToAscii`'s box-drawing format
+   printed each node's label twice - once as its own step header, once again as the arrow target
+   of the previous step - e.g. DCF's diagram repeated "Estimate terminal value" on two
+   consecutive lines for no reason. Replaced with a clean vertical chain: each label appears
+   exactly once, connected by a single `│ / ▼` arrow, with the edge's real condition/label (if
+   any) printed on the arrow line instead of stapled onto the node text in brackets.
+
+2. **Content misclassification (7 frameworks):** MECE, Business Model Canvas, PESTEL Analysis,
+   McKinsey 7S Framework, Kano Model, Blue Ocean Strategy, and GTM Strategy Canvas are all flat
+   component breakdowns (PESTEL's 6 factors, BMC's 9 blocks, 7S's 7 elements, etc.), not
+   sequential processes - but the generation pass typed them "flow" anyway, which is what
+   produced MECE's nonsensical fake 4-step "process." Reclassified as `issue_tree` (flat
+   children under one root), matching the Porter's Five Forces fix pattern from the prior
+   entry below. MECE's tree uses its two real criteria (Mutually Exclusive, Collectively
+   Exhaustive) grounded in the framework's existing `example` field - the other two DB steps
+   ("say structure out loud," "prefer simple splits") are usage tips, not structural components,
+   so they stay in the bullet list under the diagram rather than being forced into the tree.
+   McKinsey 7S's "Identify Misalignments" meta-step was dropped from the tree for the same
+   reason (it's an application step, not one of the 7 S's).
+
+No new Gemini calls were needed for either fix - both backup JSON files
+(`backend/scripts/backups/all-42-diagrams-final.json` and
+`backend/scripts/backups/framework-diagrams-2026-11-03T19-30-34-134Z.json`) already held the
+structured `{nodes, edges}` / `{type, data}` from the original generation, so every fix was a
+deterministic re-render from already-grounded content. Zero cost.
+
+**Also retroactively logging:** the previous commit (`d438444`, same session) fixed Porter's
+Five Forces showing 3 invented parent categories instead of 5 flat co-equal forces - caught by
+the user (an IIM student) saying "it is not how we draw here... make sure you are doing it
+accurately." That fix also updated both generation scripts' prompts to forbid inventing
+intermediate grouping nodes for co-equal items. This entry was missed at the time; recorded now
+for completeness.
+
+**Why:** Direct response to the user's correction: shipping *a* diagram isn't the bar - it has
+to actually read clearly to a student seeing it cold, matching how the content is really taught.
+
+**Files:** `frontend-react/src/lib/asciiDiagrams.ts` (44 flow diagrams re-rendered without
+duplicate labels, 7 reclassified flow→issue_tree).
+
+**Proof:** `npx tsc --noEmit` clean. Verified live on localhost (guest session): MECE now
+renders as the same style of box tree as production's old hand-crafted version. Console clean
+(only harmless font-preload warnings).
+
+**Open issues:** Did not re-audit the remaining ~37 flow-typed diagrams for further
+type-vs-content mismatches beyond the 7 found here - only fixed the rendering bug for those.
+If another one turns out to be a flat breakdown wrongly sequenced, same fix pattern applies.
+
+---
+
 ## 2026-11-04 — All 57 frameworks now use one AI-generated diagram pipeline (no more mixed hand-crafted/generated)
 
 **Phase:** M4 (frontend fixes) · **Type:** feature / refactor
