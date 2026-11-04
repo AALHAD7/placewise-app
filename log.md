@@ -5,6 +5,37 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-05 — Every dropdown site-wide now closes on an outside click
+
+**Phase:** M4 (frontend fixes) · **Type:** fix
+
+**What changed:** User asked, site-wide and on mobile too, for every dropdown to collapse the
+instant a click lands anywhere else on the page - until now a dropdown only closed by clicking
+its own trigger again or picking an option. Neither `Selector.tsx` (the shared searchable
+dropdown behind Frameworks' Domain/Topic, Role's Role/Company/Topic, and Company's Company/
+Subsidiary/Job role - 8 instances) nor Tone Shifter's local `LabeledDropdown`/inline unit
+picker (3 more) had any outside-click handling at all.
+
+Added one shared hook, `useOutsideClick.ts` (ref + a `mousedown` listener on `document`,
+active only while the dropdown is actually open), and wired it into both dropdown components
+plus their shared `close` action (`useSelector.ts` already had `toggle`/`reset`; added `close`
+- same as `reset` but leaves the typed search query alone, matching how Escape already closes
+without clearing it). Fixing it in the two shared components covers all 11 dropdown instances
+site-wide at once, mobile included - no page-specific duplication.
+
+**Files:** `frontend-react/src/hooks/useOutsideClick.ts` (new),
+`frontend-react/src/hooks/useSelector.ts`, `frontend-react/src/components/Selector.tsx`,
+`frontend-react/src/pages/{FrameworksPage,RolePage,CompanyPage,ToneShifterPage}.tsx` (pass
+the new `close` prop through to each `<Selector>`/`<LabeledDropdown>` call site).
+
+**Proof:** `npm run build` clean (real `tsc -b`, not the no-op `--noEmit -p tsconfig.json`
+mistake from earlier this session). Verified live: opened the Domain dropdown on Frameworks,
+clicked the page's `<h1>` (a real click, not a synthetic event) - dropdown closed. Repeated at
+a 390px mobile viewport (same result), on Tone Shifter's Domain dropdown, and on Company's
+Company dropdown. No console errors on any of the three pages.
+
+---
+
 ## 2026-11-05 — Nav bar wrapping to a second line on narrow (non-maximized) desktop windows
 
 **Phase:** M4 (frontend fixes) · **Type:** fix

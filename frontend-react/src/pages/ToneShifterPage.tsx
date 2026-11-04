@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent } from "react";
 import { useExitTransition } from "../hooks/useExitTransition";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 import { callClaude, logActivity } from "../lib/apiClient";
 import { parseToneShiftResponse, parseToneShiftRetryResponse, toneShiftPrompt, toneShiftRetryPrompt, type ToneShiftBulletResult } from "../lib/prompts";
 import { useSelectorOpenState } from "../hooks/useSelector";
@@ -33,10 +34,11 @@ function lengthRange(target: number, unit: string): { min: number; max: number }
 
 interface DropdownOption { label: string; selected: boolean; pick: () => void }
 
-function LabeledDropdown({ label, value, hasValue, open, toggle, options }: { label: string; value: string; hasValue: boolean; open: boolean; toggle: () => void; options: DropdownOption[] }) {
+function LabeledDropdown({ label, value, hasValue, open, toggle, close, options }: { label: string; value: string; hasValue: boolean; open: boolean; toggle: () => void; close: () => void; options: DropdownOption[] }) {
   const { rendered, exiting } = useExitTransition(open, 160);
+  const containerRef = useOutsideClick<HTMLDivElement>(open, close);
   return (
-    <div style={{ position: "relative" }}>
+    <div ref={containerRef} style={{ position: "relative" }}>
       <div style={{ background: "var(--surface)", border: "1px solid " + (open ? "var(--border-focus)" : "var(--border-input)"), borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", overflow: "hidden" }}>
         <button type="button" onClick={toggle} aria-expanded={open} aria-haspopup="listbox" className="unbutton selector-trigger" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "15px 18px", cursor: "pointer" }}>
           <div style={{ minWidth: 0 }}>
@@ -76,6 +78,7 @@ export default function ToneShifterPage() {
   const formatSel = useSelectorOpenState();
   const unitSel = useSelectorOpenState();
   const { rendered: unitRendered, exiting: unitExiting } = useExitTransition(unitSel.open, 160);
+  const unitContainerRef = useOutsideClick<HTMLDivElement>(unitSel.open, unitSel.close);
 
   const filled = bullets.filter((b) => b.trim());
   const ready = filled.length > 0 && !!domain && !!format;
@@ -286,8 +289,8 @@ export default function ToneShifterPage() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <LabeledDropdown label="Domain" value={domain || "Select a domain"} hasValue={!!domain} open={domainSel.open} toggle={domainSel.toggle} options={domainOptions} />
-          <LabeledDropdown label="Format" value={format || "Select a format"} hasValue={!!format} open={formatSel.open} toggle={formatSel.toggle} options={formatOptions} />
+          <LabeledDropdown label="Domain" value={domain || "Select a domain"} hasValue={!!domain} open={domainSel.open} toggle={domainSel.toggle} close={domainSel.close} options={domainOptions} />
+          <LabeledDropdown label="Format" value={format || "Select a format"} hasValue={!!format} open={formatSel.open} toggle={formatSel.toggle} close={formatSel.close} options={formatOptions} />
 
           <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "13px 16px 15px" }}>
             <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Length per bullet</div>
@@ -300,7 +303,7 @@ export default function ToneShifterPage() {
                 className="code-textarea-plain"
                 style={{ flex: 1, minWidth: 0, border: "1px solid var(--border-soft)", borderRadius: "var(--r-sm)", padding: "9px 11px", font: "600 0.90625rem 'Instrument Sans',sans-serif", color: "var(--text-900)", outline: "none", background: "var(--field-bg-alt)" }}
               />
-              <div style={{ position: "relative", flex: "none", width: 126 }}>
+              <div ref={unitContainerRef} style={{ position: "relative", flex: "none", width: 126 }}>
                 <button type="button" onClick={unitSel.toggle} aria-expanded={unitSel.open} aria-haspopup="listbox" className="unbutton selector-trigger" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "9px 11px", border: "1px solid " + (unitSel.open ? "var(--border-focus)" : "var(--border-soft)"), borderRadius: "var(--r-sm)", background: "var(--field-bg-alt)", cursor: "pointer" }}>
                   <span style={{ fontSize: "0.96875rem", fontWeight: 600, color: "var(--text-900)" }}>{unit}</span>
                   <span style={{ flex: "none", color: "var(--text-lightgray)", fontSize: "0.75rem", transition: "transform .18s var(--t-ease)", transform: `rotate(${unitSel.open ? 180 : 0}deg)` }}>▾</span>

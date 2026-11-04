@@ -508,6 +508,7 @@ export default function CompanyPage() {
             emptyText={`No matches for “${companySel.query}”.`}
             searchPlaceholder="Search companies..."
             toggle={companySel.toggle}
+            close={companySel.close}
             onQuery={companySel.onQuery}
           />
         </div>
@@ -529,6 +530,7 @@ export default function CompanyPage() {
             disabled={subsidiaryDisabled}
             searchPlaceholder="Search subsidiaries..."
             toggle={subsidiarySel.toggle}
+            close={subsidiarySel.close}
             onQuery={subsidiarySel.onQuery}
             onClear={subsidiary ? clearSubsidiary : undefined}
           />
@@ -546,6 +548,7 @@ export default function CompanyPage() {
             disabled={roleDisabled}
             searchPlaceholder="Search roles..."
             toggle={roleSel.toggle}
+            close={roleSel.close}
             onQuery={roleSel.onQuery}
           />
         </div>

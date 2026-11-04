@@ -322,6 +322,7 @@ export default function FrameworksPage() {
             emptyText={taxonomyError || "Loading domains…"}
             searchPlaceholder="Search domains..."
             toggle={domainSel.toggle}
+            close={domainSel.close}
             onQuery={domainSel.onQuery}
           />
         </div>
@@ -338,6 +339,7 @@ export default function FrameworksPage() {
             disabled={!domain}
             searchPlaceholder="Search topics..."
             toggle={subdomainSel.toggle}
+            close={subdomainSel.close}
             onQuery={subdomainSel.onQuery}
             onClear={() => setSubdomain("")}
           />

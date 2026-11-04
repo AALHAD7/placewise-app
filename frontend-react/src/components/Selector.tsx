@@ -1,5 +1,6 @@
 import type { ChangeEvent, ReactNode } from "react";
 import { useExitTransition } from "../hooks/useExitTransition";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 // Searchable dropdown card - ported from the shared visual shape behind
 // roleSelector()/companySelector()/lightSelector() in frontend/index.html
@@ -29,6 +30,7 @@ interface SelectorProps {
   disabled?: boolean;
   searchPlaceholder: string;
   toggle: () => void;
+  close: () => void;
   onQuery: (e: ChangeEvent<HTMLInputElement>) => void;
   /** Renders a "Clear selection" link inside the dropdown when passed -
    * Role's top-level selector (see migration plan §0.5) and Company's
@@ -39,11 +41,14 @@ interface SelectorProps {
 }
 
 export default function Selector({
-  label, value, hasValue, open, query, options, empty, emptyText, disabled, searchPlaceholder, toggle, onQuery, onClear
+  label, value, hasValue, open, query, options, empty, emptyText, disabled, searchPlaceholder, toggle, close, onQuery, onClear
 }: SelectorProps) {
   // The menu leaves along the path it arrived on rather than vanishing on
   // the state flip - see useExitTransition.
   const { rendered: menuRendered, exiting: menuExiting } = useExitTransition(open && !disabled, 160);
+  // A click anywhere outside this component (trigger + panel) closes it -
+  // the behavior asked for site-wide, not just a second click of the trigger.
+  const containerRef = useOutsideClick<HTMLDivElement>(open && !disabled, close);
   // Enter picks the top option in the currently-filtered list - same option
   // a click would pick, just without reaching for the mouse. When nothing in
   // CANONICAL_ROLES/POPULAR_COMPANIES matches what was typed, that top (and
@@ -62,7 +67,7 @@ export default function Selector({
     }
   }
   return (
-    <div style={{ position: "relative" }}>
+    <div ref={containerRef} style={{ position: "relative" }}>
       <div
         style={{
           background: disabled ? "var(--surface-sunken)" : "var(--surface)",

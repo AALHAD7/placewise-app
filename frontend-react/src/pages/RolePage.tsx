@@ -320,6 +320,7 @@ export default function RolePage() {
             emptyText={`No matches for “${roleSel.query}”.`}
             searchPlaceholder="Search roles..."
             toggle={roleSel.toggle}
+            close={roleSel.close}
             onQuery={roleSel.onQuery}
             onClear={clearRole}
           />
@@ -338,6 +339,7 @@ export default function RolePage() {
             disabled={!role}
             searchPlaceholder="Search companies..."
             toggle={companySel.toggle}
+            close={companySel.close}
             onQuery={companySel.onQuery}
             onClear={clearCompany}
           />
@@ -444,6 +446,7 @@ export default function RolePage() {
                     disabled={topicDisabled}
                     searchPlaceholder="Search topics..."
                     toggle={topicSel.toggle}
+                    close={topicSel.close}
                     onQuery={topicSel.onQuery}
                   />
                 </div>

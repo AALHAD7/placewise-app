@@ -14,6 +14,10 @@ export function useSelectorOpenState() {
     open,
     query,
     toggle: () => setOpen((o) => !o),
+    // Close without clearing the typed search query - same posture as
+    // Escape (Selector.tsx's handleKeyDown), used by useOutsideClick so a
+    // click outside the dropdown closes it without wiping what was typed.
+    close: () => setOpen(false),
     onQuery: (e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value),
     reset: () => {
       setOpen(false);
