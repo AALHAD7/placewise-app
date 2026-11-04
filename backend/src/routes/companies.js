@@ -72,7 +72,10 @@ router.get("/:companyName", optionalAuth, aiLimiter, async (req, res) => {
     res.json({
       success: true,
       company: {
-        name: company?.name || companyName,
+        // A real `companies` row's name wins (hand-curated, trusted); otherwise
+        // prefer the Gemini-resolved full name (e.g. "JPMC" -> "JPMorgan Chase
+        // & Co.") over echoing back whatever abbreviation the student typed.
+        name: company?.name || overview.canonicalName || companyName,
         industry: company?.industry || null,
         culture: company?.culture || [],
         hiringBar: company?.hiring_bar || null,

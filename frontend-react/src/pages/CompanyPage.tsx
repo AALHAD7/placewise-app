@@ -436,6 +436,14 @@ export default function CompanyPage() {
 
   // --- companyInfo() port ---
   const ov = overviewByCompany[company] || { loading: false, error: "", data: null };
+  // The backend resolves a short form/abbreviation (e.g. "JPMC", "ABFRL") to
+  // the company's real full name once the overview loads (companyOverview.js's
+  // canonicalName) - shown instead of the raw typed text once available, so
+  // "JPMC" in the search box becomes "JPMorgan Chase & Co." everywhere on the
+  // page, not just inside the About paragraph. Falls back to what was typed
+  // (or picked) until that resolves, so nothing flashes blank mid-load.
+  const displayName = ov.data?.name || company;
+  const displayParentName = overviewByCompany[parentCompany]?.data?.name || parentCompany;
   const news = newsByCompany[company];
   const timelineInfo = timelineByCompany[company] || { loading: false, error: "", events: [] };
   const valueChainInfo = valueChainByCompany[company] || { loading: false, error: "", stages: [] };
@@ -499,7 +507,7 @@ export default function CompanyPage() {
         <div style={{ order: 1 }}>
           <Selector
             label="Company"
-            value={parentCompany || "Select a company"}
+            value={displayParentName || "Select a company"}
             hasValue={!!parentCompany}
             open={companySel.open}
             query={companySel.query}
@@ -633,8 +641,8 @@ export default function CompanyPage() {
                   value chain, business model - is for `company` specifically,
                   which is the subsidiary once one's picked, never the parent
                   group's own data relabeled. */}
-              {subsidiary && <div style={{ fontSize: "0.78125rem", fontWeight: 600, color: "var(--text-lightgray)" }}>Subsidiary of {parentCompany}</div>}
-              <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700, letterSpacing: "-.015em", color: "var(--text-900)" }}>{company}</h2>
+              {subsidiary && <div style={{ fontSize: "0.78125rem", fontWeight: 600, color: "var(--text-lightgray)" }}>Subsidiary of {displayParentName}</div>}
+              <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700, letterSpacing: "-.015em", color: "var(--text-900)" }}>{displayName}</h2>
             </div>
           </div>
 
@@ -1053,7 +1061,7 @@ export default function CompanyPage() {
           <div role="dialog" aria-modal="true" aria-label={`${company} business model`} className={(bmModalExiting ? "t-panel-out" : "t-panel-in") + " glass-panel"} style={{ width: "100%", maxWidth: 900, borderRadius: "var(--r-md)" }}>
             <div style={{ padding: "24px 26px 18px", borderBottom: "1px solid var(--divider)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
               <div>
-                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{company}</div>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>{displayName}</div>
                 <h2 style={{ margin: "5px 0 0", fontSize: "1.3125rem", fontWeight: 700, letterSpacing: "-.015em", color: "var(--text-900)" }}>Business model</h2>
               </div>
               <button type="button" onClick={() => setBusinessModelOpen(false)} aria-label="Close" className="unbutton link-darken probe-close" style={{ flex: "none", color: "var(--text-lightgray)", fontSize: "1.25rem", cursor: "pointer", lineHeight: 1, padding: "2px 6px" }}>×</button>

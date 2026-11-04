@@ -31,6 +31,7 @@ Plain prose, organized in short clearly labeled parts. Under 550 words.`;
 
 const FORMAT_SYSTEM_PROMPT = `You are extracting a structured company-overview card from research text about a company, for a student preparing for a job interview in India. Respond with ONLY a JSON object, no markdown fences, no commentary, in exactly this shape:
 {
+  "canonicalName": "the company's real, full name - e.g. if the student typed 'JPMC', resolve to 'JPMorgan Chase & Co.'; if they typed 'ABFRL', resolve to 'Aditya Birla Fashion and Retail Limited'; if what they typed is already the standard full name, repeat it back unchanged",
   "about": "2-4 sentence plain-language description of what the company does and how it makes money",
   "sector": "short sector/industry label, e.g. 'FMCG', 'IT Services', 'Management Consulting', 'Fintech'",
   "listed": true, false, or null,
@@ -44,6 +45,8 @@ const FORMAT_SYSTEM_PROMPT = `You are extracting a structured company-overview c
 }
 
 Base every field strictly on the research text below - never add a number, ticker, or date the research didn't state.
+
+"canonicalName" is always required - never leave it as the abbreviation/short form the student typed if you can identify the real name.
 
 "listed" must be a real boolean (true/false), not a string - use JSON null only if the research text genuinely could not determine it either way. "listedDetail" is required whenever "listed" is true or false (never leave it empty in those cases). "sharePrice" must be null unless "listed" is true AND the research gives a concrete figure with a date - never fill it in for an unlisted or uncertain company. "financials" must be null unless the research gives a concrete revenue/profit figure with a period - never write "unknown"/"not available" as its value, use null instead. "sector" is always required - give your best-supported label even if the research didn't use that exact word.
 
@@ -96,6 +99,7 @@ async function fetchCompanyOverview(companyName, cacheKey) {
     Date.now() - new Date(cached.financials_fetched_at).getTime() < CACHE_TTL_MS;
   if (isFresh) {
     return {
+      canonicalName: cached.canonical_name || null,
       about: cached.about, sector: cached.sector, listed: cached.listed, listedDetail: cached.listed_detail,
       sharePrice: cached.share_price, financials: cached.financials,
       facts: cached.facts, investments: cached.investments,
@@ -127,6 +131,7 @@ async function fetchCompanyOverview(companyName, cacheKey) {
   const now = new Date().toISOString();
   const row = {
     company_name: cacheKey,
+    canonical_name: normalizeNullableString(overview.canonicalName),
     about: overview.about || "",
     sector: normalizeNullableString(overview.sector),
     listed: normalizeListed(overview.listed),
@@ -148,6 +153,7 @@ async function fetchCompanyOverview(companyName, cacheKey) {
   if (upsertError) throw upsertError;
 
   return {
+    canonicalName: row.canonical_name,
     about: row.about, sector: row.sector, listed: row.listed, listedDetail: row.listed_detail,
     sharePrice: row.share_price, financials: row.financials,
     facts: row.facts, investments: row.investments,

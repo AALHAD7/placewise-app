@@ -5,6 +5,90 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-05 — Clickable framework names, sliding nav tab highlight, company short-name resolution, Mock Interview card width
+
+**Phase:** M4 (frontend fixes) · **Type:** feature / fix
+
+**What changed:** Four separate user-requested changes, landed together.
+
+**1. Framework names are now clickable (orange, matching "Review"), not just the Review
+button.** `FrameworksPage.tsx`'s name `<span>` now calls the same `toggle(f)` the Review link
+already used, and is styled `var(--indigo)` (the same orange as Review) specifically so a
+student knows it's clickable without needing a tooltip.
+
+**2. Nav-pill scroll indicator is now a real visible element, not a hidden native scrollbar.**
+Earlier today's dropdown-close commit hid the nav-pill row's scrollbar entirely
+(`scrollbar-width:none`); the user's actual complaint ("add a small scroll bar so I can see all
+the sections") was about macOS's *overlay* scrollbar style, which native CSS can't force
+visible regardless of `scrollbar-width`/`scrollbar-color` (confirmed: changing those had zero
+visible effect in headless Chromium screenshots, scrolled or not - it's an OS-level
+always-hidden-until-mid-gesture setting, not something a page can override). Built a small
+custom scroll-progress bar instead (`TopNav.tsx`: a ref on `.topnav-links`, a `scroll`/`resize`-
+driven `navScroll` state, rendered as a thin absolutely-positioned track+thumb) - always
+visible whenever the pills don't all fit, thumb width/position reflecting the real scroll
+ratio.
+
+**3. The active nav tab now slides smoothly between tabs ("soft slider" effect) instead of
+instantly flashing.** Previously each `.nav-item.active` had its own background/box-shadow/
+border that appeared and disappeared independently per link on route change - visually a hard
+cut, not a transition, since two different DOM elements can't visually "slide" into each
+other. Replaced with one shared `.nav-slider` element (CSS `transform`/`width` transition,
+0.28s) whose position is measured off whichever `NavLink` is actually active
+(`isNavEntryActive`, mirroring each link's own `end={entry.to === "/"}` match rule) via
+`useLayoutEffect` keyed on `location.pathname`, re-measured on window resize too. `.nav-item`
+itself now only carries the (instant, fine) text-color/dot/font-weight active state - the
+background lives entirely in the slider, sitting behind the link content via z-index. Regression
+caught and fixed in the same pass: the mobile hamburger panel reused `.nav-item.active` and
+had no slider of its own, so it silently lost its highlight entirely when the background moved
+out of the shared class - added `.mobile-nav-panel .nav-item.active`'s own static background
+back, scoped to that panel only.
+
+**4. Company page resolves a short form/abbreviation to the real company name everywhere, not
+just inside the About paragraph.** Typing "JPMC" or "ABFRL" and hitting enter previously left
+the search box and the page heading showing the raw typed text, while only the About
+paragraph's prose (written by the same Gemini research call) correctly said "JPMorgan Chase &
+Co." Added a `"canonicalName"` field to `companyOverview.js`'s existing structured-extraction
+prompt (same research call already made for every company - zero additional cost) and a
+`canonical_name` column (`migration_048`) to persist it in the cache. `companies.js`'s route
+now prefers `overview.canonicalName` over echoing back the raw `companyName` param. Frontend:
+`CompanyPage.tsx` derives `displayName`/`displayParentName` from the loaded overview and uses
+them for the search box value, the `<h2>` heading next to the logo, the "Subsidiary of ..."
+line, and the Business Model modal's eyebrow label - `company`/`parentCompany` state itself is
+untouched (still the raw typed string), since that's the key every other section's fetch
+(`news`, `roles`, `timeline`, `valueChain`, `rating`, `leadership`, `logo`) is keyed by, and
+renaming it mid-flight would have broken all of those caches.
+
+**Also fixed, smaller:** Mock Interview's "Start a mock interview" card had a stray
+`maxWidth: 520` making it visibly narrower than the "What you'll find here" cards above it -
+removed, so it now spans the same width.
+
+**Files:** `frontend-react/src/pages/FrameworksPage.tsx`,
+`frontend-react/src/components/shell/TopNav.tsx`, `frontend-react/src/styles/global.css`,
+`frontend-react/src/pages/CompanyPage.tsx`, `frontend-react/src/pages/MockInterviewPage.tsx`,
+`frontend-react/src/types/api.ts` (`CompanyOverview.name`),
+`backend/src/lib/companyOverview.js`, `backend/src/routes/companies.js`,
+`backend/db/migration_048_company_canonical_name.sql` (applied via the Supabase Management
+API, same as migration_047).
+
+**Cost:** ~$0 additional - canonical name reuses the overview's existing research call, nothing
+else here calls Gemini.
+
+**Proof:** `npm run build` clean (real `tsc -b` + `vite build`). Verified live: clicking a
+framework name (not just Review) expands/collapses it identically, styled orange. Nav slider
+visibly repositions on route change with a real CSS transition (`getComputedStyle` confirmed
+`transform 0.28s cubic-bezier(...)`), both desktop pill row and mobile hamburger panel show a
+correct active highlight. `curl localhost:4000/api/companies/JPMC` and `/ABFRL` both return the
+resolved full name in `company.name`; live UI search box + heading show "JPMorgan Chase & Co."
+after typing "JPMC" and hitting enter. Mock Interview card now full-width, matching its
+siblings. No console errors on any page checked.
+
+**Open issues:** Noticed but out of scope for this pass - "JPMC" news results pull in unrelated
+Pakistani-hospital headlines (a different, real-world "JPMC" acronym collision in the news
+search, not a bug in this fix) since news search still keys off the raw typed abbreviation, not
+the resolved canonical name.
+
+---
+
 ## 2026-11-05 — Every dropdown site-wide now closes on an outside click
 
 **Phase:** M4 (frontend fixes) · **Type:** fix

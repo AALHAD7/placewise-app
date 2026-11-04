@@ -451,27 +451,33 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
    wrapping onto a second line - the exact bug reported: streak/search/
    notifications/avatar dropping below the nav on a non-maximized desktop
    window. Scrollbar hidden since this is a nav bar, not a content area. */
+/* Thin, visible scrollbar (not hidden) - when zoomed in or the window is
+   narrow enough that the pills don't all fit, a user needs to actually see
+   that there's more to scroll to (Company, Frameworks, etc. sliding off the
+   right edge with no visual cue was the complaint) rather than a hidden
+   overflow that just looks like clipped/missing content. */
 .topnav-links{
   display:flex; align-items:center; flex-wrap:nowrap; gap:1px; flex:1 1 auto; min-width:0;
   padding:4px; border-radius:20px;
-  overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none;
+  overflow-x:auto; scrollbar-width:thin; scrollbar-color:rgba(255, 255, 255, 0.35) transparent;
 }
-.topnav-links::-webkit-scrollbar{ display:none; }
+.topnav-links::-webkit-scrollbar{ height:5px; }
+.topnav-links::-webkit-scrollbar-track{ background:transparent; }
+.topnav-links::-webkit-scrollbar-thumb{ background:rgba(255, 255, 255, 0.35); border-radius:3px; }
+.topnav-links::-webkit-scrollbar-thumb:hover{ background:rgba(255, 255, 255, 0.55); }
 .topnav-divider{ display:none; }
 
 .nav-item{
+  position:relative; z-index:1;
   display:flex; align-items:center; gap:6px; padding:7px 12px;
   border-radius:var(--r-pill); font-size:var(--fs-small); font-weight:500;
   color:rgba(255, 255, 255, 0.90); cursor:pointer; text-decoration:none; white-space:nowrap;
-  transition:all 0.15s ease;
+  transition:color 0.15s ease;
 }
 .nav-item svg{ width:15px; height:15px; flex-shrink:0; color:rgba(255, 255, 255, 0.75); }
 .nav-item:hover:not(.active){ background:rgba(255, 255, 255, 0.10); color:#ffffff; }
 .nav-item.active{
-  background:rgba(37, 99, 235, 0.28);
   color:#ffffff; font-weight:600;
-  box-shadow: 0 0 16px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(59, 130, 246, 0.45);
 }
 .nav-item.active::before{
   content:"";
@@ -483,11 +489,22 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
   box-shadow:0 0 8px #ff6b35;
   margin-right:2px;
 }
-:root[data-theme="dark"] .nav-item.active{
+.nav-item.active svg{ color:#ffffff; }
+
+/* The active pill itself, as one element that slides/resizes to the active
+   NavLink's position instead of each link independently flashing its own
+   background in/out - the "soft slider" transition between tabs. transform
+   (not left) for a GPU-composited slide; sits behind .nav-item content
+   (z-index 0 vs 1) so icon/text/dot stay crisp while it moves underneath. */
+.nav-slider{
+  position:absolute; top:4px; bottom:4px; left:0; z-index:0;
+  border-radius:var(--r-pill);
   background:rgba(37, 99, 235, 0.28);
   box-shadow: 0 0 16px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events:none;
 }
-.nav-item.active svg{ color:#ffffff; }
 
 .pill{
   display:inline-flex; align-items:center; gap:7px;
@@ -546,6 +563,15 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
   }
   .mobile-nav-panel .nav-item + .nav-item{ margin-top:2px; }
   .mobile-nav-panel .nav-item svg{ width:18px; height:18px; }
+  /* The sliding highlight (.nav-slider) only exists in the desktop pill
+     row - this vertical list needs its own static active background back,
+     since .nav-item.active lost its background globally when that slider
+     was introduced. */
+  .mobile-nav-panel .nav-item.active{
+    background:rgba(37, 99, 235, 0.28);
+    box-shadow: 0 0 16px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.45);
+  }
 }
 .streak-pill{
   display:flex; align-items:center; gap:7px;

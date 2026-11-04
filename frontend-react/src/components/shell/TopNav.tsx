@@ -1,6 +1,6 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useExitTransition } from "../../hooks/useExitTransition";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme, type ThemeMode } from "../../hooks/useTheme";
@@ -101,6 +101,14 @@ const NAV: NavEntry[] = [
   }
 ];
 
+// Same match rule as each NavLink's own `end={entry.to === "/"}` below - kept
+// here too so the slider can independently figure out which entry is active
+// (for measuring its position) without reading it back off the DOM's class
+// list, which would lag a render behind.
+function isNavEntryActive(entry: NavEntry, pathname: string): boolean {
+  return entry.to === "/" ? pathname === "/" : pathname.startsWith(entry.to);
+}
+
 function NavIcon({ entry }: { entry: NavEntry }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flex: "none" }}>
@@ -157,6 +165,46 @@ export default function TopNav() {
     const id = setInterval(() => setNow(Date.now()), 30000);
     return () => clearInterval(id);
   }, [isGuest]);
+
+  // Custom scroll indicator for the nav-pill row - see the render below for
+  // why this exists instead of a native scrollbar.
+  const navLinksRef = useRef<HTMLElement>(null);
+  const [navScroll, setNavScroll] = useState({ show: false, leftPct: 0, widthPct: 100 });
+  const updateNavScrollInfo = () => {
+    const el = navLinksRef.current;
+    if (!el) return;
+    const { scrollWidth, clientWidth, scrollLeft } = el;
+    const show = scrollWidth > clientWidth + 1;
+    setNavScroll({
+      show,
+      leftPct: show ? (scrollLeft / scrollWidth) * 100 : 0,
+      widthPct: show ? (clientWidth / scrollWidth) * 100 : 100
+    });
+  };
+  useEffect(() => {
+    updateNavScrollInfo();
+    window.addEventListener("resize", updateNavScrollInfo);
+    return () => window.removeEventListener("resize", updateNavScrollInfo);
+  }, []);
+
+  // The sliding active-tab highlight ("soft slider" between e.g. Frameworks
+  // and Company) - one shared element (.nav-slider, see global.css) whose
+  // position/width is measured off whichever NavLink is actually active and
+  // animated there via CSS transition, instead of each link instantly
+  // flashing its own background on route change.
+  const navItemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const [sliderRect, setSliderRect] = useState<{ x: number; width: number } | null>(null);
+  const location = useLocation();
+  const measureSlider = () => {
+    const activeEntry = NAV.find((entry) => isNavEntryActive(entry, location.pathname));
+    const el = activeEntry ? navItemRefs.current[activeEntry.to] : null;
+    setSliderRect(el ? { x: el.offsetLeft, width: el.offsetWidth } : null);
+  };
+  useLayoutEffect(measureSlider, [location.pathname]);
+  useEffect(() => {
+    window.addEventListener("resize", measureSlider);
+    return () => window.removeEventListener("resize", measureSlider);
+  }, [location.pathname]);
 
   const goHome = () => navigate("/");
   const viewStats = () => {
@@ -282,17 +330,37 @@ export default function TopNav() {
           <span className="brand-name">Placewise</span>
         </button>
 
-        <nav className="topnav-links glass-capsule">
-          {NAV.map((entry, i) => (
-            <Fragment key={entry.to}>
-              <NavLink to={entry.to} end={entry.to === "/"} className={({ isActive }) => "nav-item" + (isActive ? " active" : "")}>
-                <NavIcon entry={entry} />
-                <span>{entry.label}</span>
-              </NavLink>
-              {(i === 0 || i === NAV.length - 2) && <span className="topnav-divider"></span>}
-            </Fragment>
-          ))}
-        </nav>
+        <div style={{ position: "relative", flex: "1 1 auto", minWidth: 0 }}>
+          <nav ref={navLinksRef} onScroll={updateNavScrollInfo} className="topnav-links glass-capsule">
+            {sliderRect && (
+              <div className="nav-slider" style={{ transform: `translateX(${sliderRect.x}px)`, width: sliderRect.width }} />
+            )}
+            {NAV.map((entry, i) => (
+              <Fragment key={entry.to}>
+                <NavLink
+                  to={entry.to}
+                  end={entry.to === "/"}
+                  ref={(el) => { navItemRefs.current[entry.to] = el; }}
+                  className={({ isActive }) => "nav-item" + (isActive ? " active" : "")}
+                >
+                  <NavIcon entry={entry} />
+                  <span>{entry.label}</span>
+                </NavLink>
+                {(i === 0 || i === NAV.length - 2) && <span className="topnav-divider"></span>}
+              </Fragment>
+            ))}
+          </nav>
+          {/* Custom, always-visible scroll indicator - native scrollbars are
+              invisible by default on macOS ("overlay" style, shown only
+              mid-gesture) regardless of CSS, which is exactly why zooming in
+              made Resume Drill/Tone Shifter/Mock Interview/Community look
+              like they'd vanished rather than just being scrollable. */}
+          {navScroll.show && (
+            <div style={{ position: "absolute", left: 10, right: 10, bottom: 2, height: 3, borderRadius: 2, background: "rgba(255, 255, 255, 0.12)", overflow: "hidden", pointerEvents: "none" }}>
+              <div style={{ position: "absolute", top: 0, bottom: 0, left: `${navScroll.leftPct}%`, width: `${navScroll.widthPct}%`, borderRadius: 2, background: "rgba(255, 255, 255, 0.5)" }} />
+            </div>
+          )}
+        </div>
 
         <button
           type="button"

@@ -308,7 +308,7 @@ export default function MockInterviewPage() {
       )}
 
       {!active && (
-        <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "22px 24px", maxWidth: 520 }}>
+        <div style={{ marginTop: 26, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "22px 24px" }}>
           <div style={{ fontSize: "0.96875rem", fontWeight: 700, color: "var(--text-900)" }}>Start a mock interview</div>
           <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", color: "var(--text-gray2)" }}>A real interviewer - asks an opening question, evaluates each answer, and follows up based on what you say.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>

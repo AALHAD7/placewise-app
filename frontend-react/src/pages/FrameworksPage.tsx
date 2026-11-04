@@ -366,7 +366,13 @@ export default function FrameworksPage() {
                 <div key={f.id} style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: "0.96875rem", fontWeight: 600, color: "var(--text-900)" }}>{f.name}</div>
+                      <span
+                        onClick={() => toggle(f)}
+                        title={isOpen ? "Click to collapse" : "Click to expand"}
+                        style={{ fontSize: "0.96875rem", fontWeight: 600, color: "var(--indigo)", cursor: "pointer" }}
+                      >
+                        {f.name}
+                      </span>
                       <div style={{ marginTop: 5, color: "var(--text-gray2)", fontSize: "0.84375rem" }}>{f.description}</div>
                     </div>
                     <span

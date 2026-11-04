@@ -138,6 +138,7 @@ export interface GuesstimateResponse {
 
 // GET /api/companies/:name - backend/src/routes/companies.js
 export interface CompanyOverview {
+  name?: string;
   about?: string;
   sector?: string | null;
   listed?: boolean | null;
