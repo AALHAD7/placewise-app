@@ -5,6 +5,7 @@ import { useSelectorOpenState } from "../hooks/useSelector";
 import Selector, { type SelectorOption } from "../components/Selector";
 import PageHeader from "../components/PageHeader";
 import AsciiDiagram from "../components/AsciiDiagram";
+import FrameworkAskBox from "../components/FrameworkAskBox";
 import { getAsciiDiagramForFramework } from "../lib/asciiDiagrams";
 import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksResponse, FrameworksTaxonomyResponse } from "../types/api";
 
@@ -438,6 +439,8 @@ export default function FrameworksPage() {
                           <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-gray2)", textWrap: "pretty" as const }}>{f.example}</p>
                         </div>
                       )}
+
+                      <FrameworkAskBox framework={f} />
                     </div>
                   )}
                 </div>

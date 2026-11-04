@@ -5,6 +5,66 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-05 — "Ask about this framework": suggested follow-up questions + voice-enabled free-text Q&A on the Frameworks page
+
+**Phase:** M4 (frontend fixes) · **Type:** feature
+
+**What changed:** Added a box under each framework's Review panel so a student can ask a
+follow-up question (by text or by speaking) and get an answer grounded in that framework's
+own already-verified content - a direct build of a feature discussed with the user: "if we
+provide a text box for students to type in their queries regarding the framework... will that
+be a good feature." Scoped deliberately narrow per that discussion, not an open casebook-wide
+chatbot - retrieval is the framework's own row (description/example/steps/pitfalls/when_to_use/
+when_not_to_use), the same content already shown on the page and already fact-checked, not a
+new vector search.
+
+**Suggested-question chips, not a blank box:** 3-4 questions per framework, generated once
+(`backend/scripts/generateFollowUpQuestions.js`, same one-off batch-and-store pattern as the
+diagram scripts) grounded in the framework's own content - specifically the `pitfalls` field,
+since that's already "where students get confused." Ran against all 57 frameworks, 57/57
+succeeded. Spot-checked output is genuinely targeted (Porter's Five Forces: "Rivalry vs
+entrants—how do I keep them separate?"), not generic "what is this" filler.
+
+**Grounded Q&A backend** (`backend/src/lib/frameworkQa.js`, `POST /api/frameworks/ask`): builds
+a prompt from the framework's own fields, generates an answer, then gates it with
+`judgeParaphraseFaithful` - the exact same faithfulness judge the R7b paraphrase layer already
+uses (`consultingRetrieval.js`), reused as-is rather than rebuilt. One retry with feedback if
+the first answer fails the judge; if both fail, falls back to the framework's own raw
+`when_to_use`/`pitfalls` text rather than ever showing an unverified answer (same fail-closed
+posture as the paraphrase pipeline falling back to the verbatim excerpt). `requireAuth` +
+`aiLimiter` (same as `qa.js`'s `/ask`) since this is a paid Gemini call per question.
+
+**Voice input reuses the existing convention, not a new one:** the user was explicit that this
+had to match the mic button already on Resume's clarifying-question box and Skill's answer box
+- built with the same shared `useVoiceRecording` hook and `VoiceRecordButton` component,
+namespaced with its own `recKey` (`framework-ask__<id>`) so it doesn't collide with any other
+mic instance on the page. No new voice-input code was written.
+
+**Files:** `backend/db/migration_047_framework_suggested_questions.sql` (new `text[]` column,
+applied via the Supabase Management API - the direct Postgres port was unreachable from this
+environment, confirmed via `information_schema.columns` instead of a local psql check),
+`backend/scripts/generateFollowUpQuestions.js` (new), `backend/src/lib/frameworkQa.js` (new),
+`backend/src/routes/frameworks.js` (new `POST /ask` route), `frontend-react/src/types/api.ts`
+(`suggested_questions` on `Framework`, new `FrameworkAskResponse`),
+`frontend-react/src/components/FrameworkAskBox.tsx` (new), `frontend-react/src/pages/
+FrameworksPage.tsx` (renders it in each card).
+
+**Cost:** ~$0 - flash-lite tier. One-time batch: 57 generation calls for suggested questions.
+Per-question going forward: 1 generation + 3 judge calls (worst case 2 generations + 6 judge
+calls on a retry) - same shape/cost as one R7b paraphrase-and-verify call.
+
+**Proof:** `npx tsc --noEmit` clean. Verified live on localhost (guest session): opened Porter's
+Five Forces, clicked the "Rivalry vs entrants—how do I keep them separate?" chip, got back a
+correct, specifically-grounded answer (distinguishing rivalry-among-existing-players from
+threat-of-new-entrants, matching the framework's own pitfalls bullet) with `grounded: true` -
+no fallback triggered, no console errors beyond pre-existing harmless font-preload warnings.
+
+**Open issues:** Not deployed - same `wip`-branch-only state as the rest of today's frameworks
+work. Mic/transcription itself wasn't independently re-tested here since it's unmodified shared
+code already exercised by Resume/Skill.
+
+---
+
 ## 2026-11-04 — Reverted the AI-generated "unification" diagrams: restored the original hand-crafted diagrams for all 55 non-colliding original frameworks
 
 **Phase:** M4 (frontend fixes) · **Type:** fix / revert

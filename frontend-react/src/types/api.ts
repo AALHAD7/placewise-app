@@ -71,11 +71,19 @@ export interface Framework {
   steps?: string[];
   diagram_type?: "grid" | "funnel" | null;
   diagram_data?: FrameworkGridDiagram | FrameworkFunnelDiagram | null;
+  suggested_questions?: string[] | null;
 }
 
 export interface FrameworksResponse {
   success: true;
   frameworks: Framework[];
+}
+
+// POST /api/frameworks/ask
+export interface FrameworkAskResponse {
+  success: true;
+  answer: string;
+  grounded: boolean;
 }
 
 // GET /api/frameworks/taxonomy
