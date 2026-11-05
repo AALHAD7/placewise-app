@@ -5,6 +5,47 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-06 — Fix: company news colliding with unrelated real-world acronym use (e.g. "JPMC")
+
+**Phase:** M4 (frontend fixes) · **Type:** fix
+
+**What changed:** `GET /api/companies/:companyName/news` (`backend/src/routes/companies.js`)
+was searching GNews on the raw typed string, quoted verbatim (`"${companyName}"`). For an
+acronym like "JPMC" this matched unrelated real-world uses of the same acronym — in this
+case, Pakistani news coverage of Jinnah Postgraduate Medical Centre, not JPMorgan Chase.
+
+**Fix:** the route now resolves the typed name to its real full name first, via the same
+`getCompanyOverview()` call (and its existing 4-day cache) that already powers the "JPMC" →
+"JPMorgan Chase & Co." resolution shipped 2026-11-05, and searches GNews on that resolved
+name instead. If the resolved name is a full legal name (e.g. "Aditya Birla Fashion and
+Retail Limited") that's too long/strict a quoted phrase for GNews to match anything
+verbatim, it falls back to the original raw typed name for that one lookup — tested live:
+"JPMC" now returns only JPMorgan-relevant headlines (confirmed zero hospital hits across 10
+articles); "ABFRL" still returns its correct 2 real Aditya Birla Fashion articles via the
+fallback path.
+
+**Known cost tradeoff:** a cache-miss company lookup can now make up to 2 GNews calls
+instead of 1 (resolved name, then raw-name fallback only if the first returned zero
+articles) — bounded, since the fallback only fires on an empty result, not on every
+request, and the resolved-name result is cached once found (`news_cache`, 6h TTL, keyed by
+whichever name actually returned articles).
+
+**Cleanup:** manually deleted the two already-polluted `news_cache` rows for `jpmc` and
+`abfrl` (via the Supabase Management API, since direct Postgres access times out from this
+environment) so the fix applies immediately instead of waiting out the 6h TTL.
+
+**Open issue, not fixed:** `companyOverview.js`'s own internal `getNews()` call (used only
+as grounding context for the AI-written overview, not shown directly to students) still
+queries the raw typed name — it runs *before* `canonicalName` is known, so it can't resolve
+first by construction. Lower severity since it only feeds a "best effort" LLM prompt rather
+than being displayed as headlines.
+
+**Verified:** `npm run build` (frontend, unaffected — no frontend changes this entry) clean;
+`node --check` on the edited route file; live curl against the local dev server for both
+"JPMC" and "ABFRL".
+
+---
+
 ## 2026-11-05 — Clickable framework names, sliding nav tab highlight, company short-name resolution, Mock Interview card width
 
 **Phase:** M4 (frontend fixes) · **Type:** feature / fix

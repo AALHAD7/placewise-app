@@ -328,7 +328,29 @@ router.get("/:companyName/news", optionalAuth, async (req, res) => {
   }
 
   try {
-    const { articles, cached, fetchedAt } = await getNews("company", companyName, `"${companyName}"`);
+    // Resolve to the real full name first (cheap - already cached for 4 days
+    // by the main /:companyName route's call to the same function) so a
+    // short form/acronym like "JPMC" or "ABFRL" doesn't collide with an
+    // unrelated real-world use of the same acronym when searching GNews -
+    // e.g. raw "JPMC" also matches Pakistani coverage of Jinnah Postgraduate
+    // Medical Centre. Falls back to the raw typed name if resolution fails.
+    let resolvedName = companyName;
+    try {
+      const overview = await getCompanyOverview(companyName);
+      if (overview.canonicalName) resolvedName = overview.canonicalName;
+    } catch {
+      // fall through with the raw typed name
+    }
+
+    let result = await getNews("company", resolvedName, `"${resolvedName}"`);
+    // A full legal name ("... Limited"/"& Co.") is often too strict a quoted
+    // phrase for GNews to match verbatim - fall back to the raw typed name
+    // (still exact-phrase quoted, so still scoped, just shorter) rather than
+    // show no news at all when resolution over-corrected.
+    if (result.articles.length === 0 && resolvedName !== companyName) {
+      result = await getNews("company", companyName, `"${companyName}"`);
+    }
+    const { articles, cached, fetchedAt } = result;
     res.json({ success: true, company: companyName, articles, cached, fetchedAt });
   } catch (err) {
     console.error("[companies/:companyName/news]", err);
