@@ -166,6 +166,41 @@ export function domainForRole(name) {
   return ROLE_CATALOG.find(r => r.name === canonical)?.domain || null;
 }
 
+// Maps a role's platform domain (the 10-bucket taxonomy above) to the
+// coarser 6-bucket tag actually stored on document_chunks.domain (ingested
+// from source folder names - see migration_001_add_domain.sql). Mirrors
+// frontend-react/src/lib/constants.ts's DOMAIN_TO_DB/mapDomainForRetrieval,
+// which does the same remap for the Resume/Story/Mock Interview domain
+// selector - kept as its own small map here rather than imported, since the
+// two sides have no shared module and the mapping itself is tiny and stable.
+// Three platform domains (Data and Analytics, Operations and Supply Chain,
+// IT and Technology) have no ingested bucket of their own yet - mapped to
+// null on purpose, so a role in one of those domains is left unfiltered
+// (searches the whole corpus) rather than filtered to a wrong/empty bucket.
+const ROLE_DOMAIN_TO_INGEST_DOMAIN = {
+  "Product Management": "Prodman",
+  "Consulting": "Consulting",
+  "Finance and Banking": "Finance",
+  "Marketing and Brand": "Marketing:Sales",
+  "Sales and Business Development": "Marketing:Sales",
+  "Human Resources": "HR",
+  "General Management": "General Management"
+};
+
+/**
+ * The document_chunks.domain value to filter match_document_chunks by for
+ * this role, or null if no domain is known/mappable - the caller should
+ * pass that straight through as filter_domain (null means "search
+ * everything", same as today), never substitute a guess.
+ * @param {string} roleName
+ * @returns {string|null}
+ */
+export function ingestDomainForRole(roleName) {
+  const platformDomain = domainForRole(roleName);
+  if (!platformDomain) return null;
+  return ROLE_DOMAIN_TO_INGEST_DOMAIN[platformDomain] || null;
+}
+
 const MATCH_SYSTEM_PROMPT = `You match a candidate's typed job-role title to the single closest role from a fixed list of canonical role titles used by a campus-placement prep platform. Pick whichever canonical role a recruiter would consider the closest real-world equivalent in scope and seniority - same function and level, not just similar words. Respond with ONLY JSON in exactly this shape: {"nearest": "<one string, copied exactly from the canonical list>"}`;
 
 /**

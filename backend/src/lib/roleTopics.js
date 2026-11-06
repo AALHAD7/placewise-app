@@ -6,6 +6,7 @@ import { CONTENT_VERSION } from "./contentVersion.js";
 import { ROLE_CONTENT_RULES } from "./roleContentRules.js";
 import { checkContentBatch, repairExplanation, verifyPracticePromptOrReplace } from "./contentVerifier.js";
 import { groundedConsultingLookup } from "./consultingRetrieval.js";
+import { ingestDomainForRole } from "./roles.js";
 
 // Same long TTL rationale as roleOverview.js - an interview curriculum for a
 // role doesn't shift week to week.
@@ -22,9 +23,14 @@ const CONSULTING_RAG_V2_ENABLED = process.env.ENABLE_CONSULTING_RAG_V2 === "true
 // v1: pull real excerpts from the OLD corpus (document_chunks) and hand
 // them to the model as loose "context" it may or may not actually use in
 // any given field. Same RAG pattern as resume.js/mockInterview.js/story.js.
-// No domain filter - searches the whole corpus (there's no UI concept of
-// "domain" on the Role tab, and vector similarity already favors whichever
-// ingested domain is actually relevant to the role).
+// roleName here is already resolveRoleTitle's canonical match (see
+// fetchRoleTopics below), so ingestDomainForRole can usually map it to a
+// real document_chunks.domain bucket - there's still no UI concept of
+// "domain" on the Role tab itself, this just reuses the role's own known
+// domain instead of always scanning the whole ~22k-row corpus (no
+// approximate index backs this table anymore, see log.md). Falls back to
+// null (search everything, today's behavior) for the few roles that map to
+// a platform domain with no ingested bucket of its own.
 //
 // Known, deliberate limitation of this v1 path (not fixed here): the model
 // is told context may be used "where genuinely relevant" but is never asked
@@ -44,7 +50,7 @@ async function retrieveContextV1(roleName) {
     const { data: chunks } = await supabase.rpc("match_document_chunks", {
       query_embedding: queryEmbedding,
       match_count: 8,
-      filter_domain: null
+      filter_domain: ingestDomainForRole(roleName)
     });
     return (chunks || []).map((c, i) => `[Source ${i + 1}: ${c.source_file}]\n${c.content}`).join("\n\n---\n\n");
   } catch {

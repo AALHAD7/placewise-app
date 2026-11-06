@@ -6,6 +6,7 @@ import { singleFlight } from "./singleFlight.js";
 import { CONTENT_VERSION } from "./contentVersion.js";
 import { ROLE_CONTENT_RULES } from "./roleContentRules.js";
 import { checkContentBatch, repairExplanation } from "./contentVerifier.js";
+import { ingestDomainForRole } from "./roles.js";
 
 // Same long-TTL reasoning as roleOverview.js - a skill's core concepts and
 // practice problems don't need regenerating often.
@@ -62,10 +63,17 @@ async function retrieveContext(roleName, skillName) {
       [`${roleName} ${skillName} interview questions case studies practice`],
       "RETRIEVAL_QUERY"
     );
+    // filter_domain: roleName is almost always a canonical role here (typed
+    // into the Skill page from a Role already resolved on the frontend), so
+    // ingestDomainForRole can usually map it to a real document_chunks.domain
+    // bucket - narrowing the scan up front instead of a full sequential scan
+    // over all ~22k chunks (no approximate index backs this table anymore,
+    // see log.md). Falls back to null (search everything, today's behavior)
+    // for free text it can't map, same as before.
     const { data: chunks } = await supabase.rpc("match_document_chunks", {
       query_embedding: queryEmbedding,
       match_count: 6,
-      filter_domain: null
+      filter_domain: ingestDomainForRole(roleName)
     });
     return (chunks || []).map((c, i) => `[Source ${i + 1}: ${c.source_file}]\n${c.content}`).join("\n\n---\n\n");
   } catch {

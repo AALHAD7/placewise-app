@@ -6,6 +6,7 @@ import { CONTENT_VERSION } from "./contentVersion.js";
 import { ROLE_CONTENT_RULES } from "./roleContentRules.js";
 import { resolveAliasGroup, mentionsCompany } from "./companyMatcher.js";
 import { retrieveConsultingChunks, buildCitation } from "./consultingRetrieval.js";
+import { ingestDomainForRole } from "./roles.js";
 
 // G2 switch, same env var and off-by-default posture as frameworksGrounding.js/
 // roleTopics.js/chipPanel.js. The mention-gate below (not a similarity
@@ -46,10 +47,17 @@ async function retrieveCompanyChunksV1(roleName, companyName) {
       [`${companyName} ${roleName} interview case study experience`],
       "RETRIEVAL_QUERY"
     );
+    // filter_domain: roleName here is already resolveRoleTitle's canonical
+    // match (see routes/roles.js's company-notes handler), so
+    // ingestDomainForRole can usually narrow this to the role's own ingested
+    // domain bucket instead of a full scan over all ~22k chunks (no
+    // approximate index backs this table anymore, see log.md) - falls back
+    // to null (search everything, today's behavior) when it can't map one.
+    // The mention-gate below is still the real correctness check either way.
     const { data: chunks } = await supabase.rpc("match_document_chunks", {
       query_embedding: queryEmbedding,
       match_count: MATCH_COUNT,
-      filter_domain: null
+      filter_domain: ingestDomainForRole(roleName)
     });
     // The real gate: keep only chunks whose own text actually names the
     // company (via any real alias, exclusions applied). A chunk that merely

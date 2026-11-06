@@ -5,6 +5,99 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-06 — Fix: pass a real domain filter to match_document_chunks at 3 call sites to avoid statement timeouts
+
+**Phase:** R9/ad-hoc fix · **Type:** bug fix (retrieval call sites, not retrieval logic itself)
+
+**What changed:** After Aalhad dropped `document_chunks_embedding_idx` (the IVFFlat vector
+index, to free up free-tier storage), any `match_document_chunks` call with
+`filter_domain: null` does a full sequential scan over all 22,457 rows - domain-filtered calls
+stay fast because the `where domain = ...` predicate narrows the scan before the (now
+unindexed) distance computation. Live timing on Supabase: `filter_domain: null` took ~9.6s
+(right at the ~8s statement-timeout edge - reproduced a `57014` timeout on an earlier run),
+vs ~0.2-0.9s for `filter_domain: "Finance"/"Prodman"/"HR"`.
+
+Three call sites always passed `filter_domain: null` even though they had a role name in
+scope that usually maps to a real domain:
+- `backend/src/lib/skillContent.js` (`retrieveContext`, Skill pages)
+- `backend/src/lib/roleTopics.js` (`retrieveContextV1`, Role topics)
+- `backend/src/lib/roleCompanyTopicNotes.js` (`retrieveCompanyChunksV1`, Role x company notes)
+
+Added `ingestDomainForRole(roleName)` to `backend/src/lib/roles.js` - maps a role's platform
+domain (the 10-bucket taxonomy on `ROLE_CATALOG`) to the 6-bucket tag actually stored on
+`document_chunks.domain` (`Consulting`, `Finance`, `Prodman`, `HR`, `Marketing:Sales`,
+`General Management` - confirmed as the exhaustive, exact set live, counts sum to 22,457).
+Mirrors `frontend-react/src/lib/constants.ts`'s existing `DOMAIN_TO_DB`/`mapDomainForRetrieval`
+remap used for the Resume/Story/Mock Interview domain selector. Three platform domains (Data
+and Analytics, Operations and Supply Chain, IT and Technology) have no ingested bucket of
+their own - `ingestDomainForRole` returns `null` for those on purpose, so those roles still
+search unfiltered (today's behavior), same as any role name it can't resolve at all (free
+text, typos). All three call sites now pass `filter_domain: ingestDomainForRole(roleName)`
+instead of a hardcoded `null`. The existing silent-degradation fallback (empty context on any
+RPC error, including a timeout) is left exactly as-is - it's a reasonable fail-safe; this fix
+addresses the cause, not the symptom.
+
+**Checked, not changed:** `backend/src/routes/story.js`, `mockInterview.js`, `resume.js` pass
+`filter_domain: domain || null` where `domain` comes from the request body. Traced to the
+frontend's `RAG_DOMAIN_OPTIONS`/`mapDomainForRetrieval` (`frontend-react/src/lib/constants.ts`)
+- `""`/"General (all domains)" is a deliberate user-facing choice to search everything, not an
+accidental omission, and every other option already sends a real ingest-bucket string. No fix
+needed there.
+
+**Why:** A dropped index changed a previously-fast `filter_domain: null` path into a
+timeout-risk one; these three sites had a real domain signal sitting unused that would have
+avoided it.
+**Files:** `backend/src/lib/roles.js`, `backend/src/lib/skillContent.js`,
+`backend/src/lib/roleTopics.js`, `backend/src/lib/roleCompanyTopicNotes.js`
+**Proof:** `npm test` → 174 pass, 1 fail (`test/sandbox.test.js`'s pre-existing, unrelated
+sandbox env-leak flake - see `.gsd/STATE.md`). Live Supabase RPC timing:
+`filter_domain: null` 9656ms vs `filter_domain: "Finance"` 931ms / `"Prodman"` 395ms /
+`"HR"` 237ms (same query embedding, `match_count: 8`). `ingestDomainForRole` spot-checked
+against 11 sample role names (all 6 mappable domains + 4 unmappable + 1 free-text, all
+correct). Curled the three affected routes against the running dev server (`:4000`): all
+returned `200` (`/api/skills/Product Manager/Excel`, `/api/roles/Investment Banking
+Associate/topics`, `/api/roles/Consultant/company-notes?company=McKinsey&topics=Case
+Interview`).
+**Undo:** Revert the 4 files; `ingestDomainForRole` is additive (no migration, no schema
+change) so there's nothing to roll back at the data layer.
+**Open issues:** None. The underlying index-drop risk for truly domain-less lookups (free-text
+role names, or the 3 unmapped platform domains) remains - those still do an unindexed full
+scan on `filter_domain: null` and can still occasionally time out; out of scope for this fix
+per the brief (stop triggering the timeout where a domain is actually known, not rebuild the
+index or re-architect every null-filter caller).
+
+## 2026-11-06 — Migration: widen match_ingest_chunks for finance source_class, add chunk metadata
+
+**Phase:** FIN1 (plan 03) · **Type:** migration (written, not yet applied)
+
+**What changed:** Added `backend/db/migration_049_finance_source_class.sql`. It (1) drops and
+recreates `match_ingest_chunks` with a new optional 5th argument,
+`filter_source_classes text[] default null`, whose `where` clause changed from the hardcoded
+`d.source_class = 'club_casebook'` to `d.source_class = any(coalesce(filter_source_classes,
+array['club_casebook']))` — every existing caller (which never passes the new argument) sees
+byte-identical behavior; (2) adds `ingest_chunks.metadata jsonb not null default '{}'`, a
+generic place for the Finance compendium's per-topic tags (domain/level/roles/keywords); (3)
+adds `comment on column` notes on `ingest_chunks.page_start`/`page_end` recording that
+`source_class = 'placewise_reference'` documents (no real PDF pages) repurpose those columns
+as source-markdown line numbers.
+**Why:** Unblocks FIN1.02 (needs `metadata` to write compendium tags into) and FIN1.04 (needs
+the widened RPC to read `placewise_reference` rows alongside `club_casebook`) without touching
+a single existing row's behavior. Follows the exact DROP+CREATE pattern of
+migration_042/044 (a new parameter is a new Postgres signature, not an overload-safe replace).
+**Files:** `backend/db/migration_049_finance_source_class.sql`
+**Proof:** Written matching migration_042/044's structure byte-for-byte on the unchanged
+parts (verified by diff read-through); balanced parens (31/31) and two matched `$$...$$`
+pairs confirmed via a local Python scan (no `psql`/DB access available in this sandbox - see
+`.gsd/STATE.md` "Known gaps"). Not yet applied: needs Aalhad to run it via the Supabase SQL
+editor, or `backend/scripts/apply_migration_049.py` following the
+`apply_migration_041/042/043.py` pattern if direct DB access works from his machine. After
+applying, expect `select proname, pronargs from pg_proc where proname =
+'match_ingest_chunks';` → one row, `pronargs = 5`, and `ingest_chunks.metadata` to exist.
+**Undo:** Rollback block is in the migration file's comments (drops the 5-arg function,
+recreates the 4-arg migration_044 version; the `metadata` column and `comment on column`
+notes can be left in place harmlessly).
+**Open issues:** Not applied yet — blocking FIN1.02/FIN1.04 until Aalhad runs it.
+
 ## 2026-11-06 — Guesstimates: use the full page width instead of a fixed 680px column
 
 **Phase:** R8 (frontend fix) · **Type:** fix
