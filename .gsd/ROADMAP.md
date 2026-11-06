@@ -39,8 +39,8 @@ diagrams included.
 | R6 | Re-ingest Consulting club casebooks | ingestion-engineer | All Consulting PDFs `done`; flagged pages queued; cost logged | done (2026-11-02) — stopped at 7/9 by Aalhad's call ("we have enough data"); FMS Consulting Club 2025-26 and FMS 2024-25 deliberately not ingested, not a gap |
 | R7 | Grounded retrieval on new chunks behind a switch: Frameworks, Guesstimates, Q&A (Consulting) with citations + labelled AI fallback | rag-engineer | `npm test` green; switch off = old behaviour | done (2026-11-02) |
 | R7b | Paraphrase layer: Gemini re-presents retrieved chunk(s) in plain language (idea/logic/numbers unchanged) + faithfulness judge gate, fail-closed to verbatim excerpt; reversible flag | rag-engineer | Faithfulness judge passes on eval set; manual check: same facts, different wording, no verbatim casebook sentences shown by default; flag off = today's verbatim behaviour | done (2026-11-03) — code + tests + eval all pass bar; `ENABLE_ANSWER_PARAPHRASE` still off everywhere, Aalhad to flip when ready |
-| ▶ R8 | Frontend for RAG only: render new diagram types, citations, "AI-generated — not from the casebooks" label | frontend-engineer | Build passes; QA screenshots desktop + phone | todo |
-| R9 | Eval new vs baseline; switch Consulting live; QA on live site | rag-evaluator → qa-tester | No regressions; switch flipped; rollback tested | todo |
+| R8 | Frontend for RAG only: render new diagram types, citations, "AI-generated — not from the casebooks" label | frontend-engineer | Build passes; QA screenshots desktop + phone | done (2026-11-06) |
+| ▶ R9 | Eval new vs baseline; switch Consulting live; QA on live site | rag-evaluator → qa-tester | No regressions; switch flipped; rollback tested | todo |
 
 ---
 

@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import FrameworksPage from "./pages/FrameworksPage";
 import GuesstimatesPage from "./pages/GuesstimatesPage";
+import QaPage from "./pages/QaPage";
 import CompanyPage from "./pages/CompanyPage";
 import RolePage from "./pages/RolePage";
 import MockInterviewPage from "./pages/MockInterviewPage";
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
           { path: "/", element: <HomePage /> },
           { path: "/frameworks", element: <FrameworksPage /> },
           { path: "/guesstimates", element: <GuesstimatesPage /> },
+          { path: "/qa", element: <QaPage /> },
           { path: "/company", element: <CompanyPage /> },
           { path: "/role", element: <RolePage /> },
           { path: "/mock-interview", element: <MockInterviewPage /> },

@@ -68,6 +68,12 @@ const NAV: NavEntry[] = [
     circles: [{ cx: 12, cy: 12, r: 4 }]
   },
   {
+    to: "/qa",
+    label: "Ask",
+    paths: ["M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3", "M12 17h.01"],
+    circles: [{ cx: 12, cy: 12, r: 10 }]
+  },
+  {
     // "Resume Interrogation" is the feature's full name (see ResumePage),
     // but doesn't fit this row alongside 8 other items - shortened per
     // spec to "Resume Drill", used identically here and on Home's card so

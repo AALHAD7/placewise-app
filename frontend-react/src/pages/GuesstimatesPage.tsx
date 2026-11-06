@@ -45,7 +45,9 @@ export default function GuesstimatesPage() {
 
         {!state.loading && !state.error && state.data && !state.data.available && (
           <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "22px 24px", color: "var(--text-lightgray)", fontSize: "0.875rem" }}>
-            Guesstimates practice isn't switched on yet - check back soon.
+            {state.data.reason === "feature_disabled"
+              ? "Guesstimates practice isn't switched on yet - check back soon."
+              : "Couldn't find a fresh problem just now - try again."}
           </div>
         )}
 

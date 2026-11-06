@@ -65,8 +65,14 @@ export interface Framework {
   when_not_to_use?: string;
   pitfalls?: string[];
   example?: string;
-  grounded_example?: { excerpt: string; sourceFile: string };
-  grounded_image?: { url: string; caption: string; sourceFile: string };
+  // `citation`/`rawExcerpt`/`rawCaption`/`similarity` are only present via the v2
+  // (ingest_chunks) grounding path - see frameworksGrounding.js's findGroundingV2.
+  // `citation`/raw fields are for debugging/admin use (CLAUDE.md grounding policy -
+  // per-answer source line is not shown to students); never render them here.
+  // `url` on grounded_image is a Storage URL on the v1 path and always null on v2 -
+  // CLAUDE.md forbids rendering it to students either way; only `.caption` is shown.
+  grounded_example?: { excerpt: string; sourceFile: string; similarity?: number; citation?: GuesstimateCitation; rawExcerpt?: string };
+  grounded_image?: { url: string | null; caption: string; sourceFile: string; similarity?: number; citation?: GuesstimateCitation; rawCaption?: string };
   grounded_checked_at?: string | null;
   steps?: string[];
   diagram_type?: "grid" | "funnel" | null;
@@ -133,6 +139,19 @@ export interface GuesstimateResponse {
   hasDiagram?: boolean;
   citation?: GuesstimateCitation;
   chunks?: { content: string; hasDiagram: boolean; similarity: number }[];
+  citations?: GuesstimateCitation[];
+}
+
+// POST /api/qa/ask - backend/src/routes/qa.js. Free-form grounded Q&A (R8). `citations`
+// is API-only (grounding policy, CLAUDE.md 2026-11-02) - never render it to students;
+// `groundedInCasebooks`/`label` drive GroundingNote instead.
+export interface QaAskResponse {
+  success: true;
+  available: boolean;
+  reason?: "feature_disabled";
+  groundedInCasebooks?: boolean;
+  label?: string | null;
+  answer?: string;
   citations?: GuesstimateCitation[];
 }
 

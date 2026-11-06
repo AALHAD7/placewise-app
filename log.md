@@ -5,6 +5,149 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-06 — MarkdownWithDiagrams: actually render markdown in text segments
+
+**Phase:** R8 · **Type:** fix
+
+**What changed:** `MarkdownWithDiagrams.tsx`'s text segments (from `splitMarkdownBlocks`)
+were shown as a plain `<p>` with `white-space: pre-wrap` - any markdown inside (headers,
+`**bold**`, bullet/numbered lists, `> blockquotes`) rendered as literal syntax. This was
+invisible while the only consumers (Guesstimates problems, Frameworks grounded excerpts)
+happened to be plain text, but the new `/qa` page feeds it markdown-rich Gemini prose and
+every `###`/`**` showed up raw on screen. Added a new component, `MiniMarkdown.tsx` - a
+small hand-rolled parser (headings, `**bold**`/`*italic*`, bullet/numbered lists incl.
+loosely-indented nested items, `>` blockquotes, paragraphs) - and swapped it in for the
+text-segment render in both `MarkdownWithDiagrams.tsx` and the admin review queue's
+`RebuiltContent` (`ReviewQueue.tsx`, a one-line reuse of the same component). No markdown
+library added: the construct set PlaceWise's paraphrase/answer prompts actually produce is
+this narrow and fixed, so a ~100-line zero-dependency parser is a smaller footprint than
+`react-markdown` and its plugin surface. `splitMarkdownBlocks`'s diagram-fence splitting in
+`placewiseBlocks.ts` is untouched.
+
+**Why:** QA bug found in R8: the `/qa` page's answers showed raw markdown syntax instead of
+formatted text, hurting the page's main content.
+
+**Files:** `frontend-react/src/components/MiniMarkdown.tsx` (new),
+`frontend-react/src/components/MarkdownWithDiagrams.tsx`,
+`frontend-react/src/pages/admin/ReviewQueue.tsx`
+
+**Proof:** `npm run build` (tsc -b && vite build) and `npm run lint` (oxlint) both pass, no
+new warnings from the changed/new files. Verified live via `/browse` (headless `$B`, Aside
+unavailable) as a guest on `/qa`: asked "What is the BCG matrix? Explain it with its
+benefits." twice; both answers rendered real `<h3>`/`<strong>`/`<em>`/`<ol>`/`<ul>` elements
+- `document.body.innerText` contains no literal `#`, `**` or list-marker artifacts.
+Screenshots at desktop (1280px) and phone (375px) both look correct in dark theme (the only
+theme the running instance was in). Console had only a pre-existing font-preload warning,
+no errors.
+
+**Undo:** Revert the three files; `MarkdownWithDiagrams`/`RebuiltContent` go back to raw
+`pre-wrap` text.
+
+**Open issues:** Numbered lists restart at "1." each time a nested bullet sub-list
+interrupts them (cosmetic - e.g. four quadrant headings each numbered "1." instead of
+1-4), since each break starts a fresh `<ol>`. Not a raw-markdown-leak regression, just an
+un-ideal list continuation; low priority. Light theme and ReviewQueue's admin-only `.rq-text`
+CSS weren't separately re-checked (ReviewQueue is behind the admin-only review queue, not in
+this QA pass's scope).
+
+---
+
+## 2026-11-06 — Frameworks: shared diagram renderer, render grounded excerpts, remove a live diagram-privacy violation
+
+**Phase:** R8 · **Type:** fix
+
+**What changed:** `FrameworksPage.tsx`'s local `GridDiagram`/`FunnelDiagram` components
+(no malformed-data fallback) are replaced with the shared `PlacewiseDiagram` component
+via a small adapter (`toDiagramBlock`) that wraps the existing `diagram_type`/`diagram_data`
+into a `PlacewiseDiagramBlock` - the same renderer the admin review queue and Guesstimates
+already use, with its JSON fallback on bad data. `grounded_example.excerpt` and
+`grounded_image.caption` - fetched from the backend on every load but previously dropped
+on the floor - are now rendered through `MarkdownWithDiagrams` (so a `placewise-diagram`
+fence inside either one renders as a diagram, not raw JSON text), in a new "From the
+casebooks" card and below the diagram respectively. Removed the `<img src={f.grounded_image.url}>`
+that rendered a raw admin Storage URL straight to students on the v1 (`document_chunks`)
+grounding path, live today regardless of `ENABLE_CONSULTING_RAG_V2` - CLAUDE.md forbids
+exposing original page images or their storage URLs to non-admin users. `Framework.grounded_example`/
+`grounded_image` types extended with `citation`/`rawExcerpt`/`rawCaption`/`similarity`
+(debugging/admin use only, never rendered) to match what `frameworksGrounding.js` actually
+returns.
+
+**Why:** Plan `.gsd/phases/R8/01-PLAN.md` - one student-facing surface was still on the
+old, narrower diagram path, with real casebook content fetched and then silently hidden,
+and a live privacy violation showing a raw admin image URL. Backend untouched; the known
+`pickTopTextAndImage`/`topText: null` WIP (`.gsd/STATE.md`) is out of scope here.
+
+**Files:** `frontend-react/src/pages/FrameworksPage.tsx`, `frontend-react/src/types/api.ts`
+
+**Proof:** `npm run build` (tsc -b && vite build) and `npm run lint` (oxlint) both pass,
+zero new warnings. Verified live via `/browse` (headless `$B`, Aside unavailable on this
+machine) as a guest on `/frameworks`: expanded "Net Promoter Score" and "BCG Growth-Share
+Matrix" - both diagrams render via the shared component (ASCII visual model), a "From the
+casebooks" card shows the real grounded excerpt, `document.querySelectorAll('img')`
+returns `[]` on the page (no raw image ever reaches the DOM), console had no errors
+(only pre-existing font-preload warnings). Checked at desktop and 375px mobile width.
+
+**Undo:** Revert this one file pair (`FrameworksPage.tsx`, `types/api.ts`) - no backend
+or data change.
+**Open issues:** `grounded_example` is `null` for most frameworks right now because of
+the separately-flagged `pickTopTextAndImage` WIP in `frameworksGrounding.js` (v1 text
+grounding disabled) - expected, not a bug in this change. `.claude/skills/frontend-conventions/SKILL.md`
+still has a stale line about per-answer citations predating the 2026-11-02 decision -
+flagged for Aalhad, not edited here (out of this plan's scope).
+
+---
+
+## 2026-11-06 — Build the missing Q&A frontend page, fix Guesstimates' "not available" message
+
+**Phase:** R8 · **Type:** feature
+
+**What changed:** `POST /api/qa/ask` (`backend/src/routes/qa.js`, `qaRetrieval.js`) had
+zero frontend surface — built, tested, flag-gated behind `ENABLE_CONSULTING_RAG_V2`, but
+no page, route, or nav entry called it. Added `frontend-react/src/pages/QaPage.tsx`: one
+question box (mic input via the existing `useVoiceRecording`/`VoiceRecordButton`, 1000-char
+client-side cap matching the backend's limit), an "Ask" button, and the answer rendered
+through `MarkdownWithDiagrams` with `GroundingNote` showing "General guidance - not from
+the casebooks" whenever `groundedInCasebooks` is false - never a per-answer citation
+(CLAUDE.md's 2026-11-02 decision keeps school/casebook/page API-only). Registered at
+`/qa` and added a nav entry ("Ask") to `TopNav.tsx`'s `NAV` array. Also fixed
+`GuesstimatesPage.tsx`'s "not available" message, which previously showed one generic
+line regardless of whether the backend's `reason` was `feature_disabled` or
+`not_yet_live` - it now shows the feature-off message only for `feature_disabled`, and
+the backend's own `label` (falling back to a "couldn't find a fresh problem" message)
+otherwise.
+
+**Why:** R8's objective (new diagram types, citations, the AI-generated label) needs a
+real place for `GroundingNote`'s fallback label to attach to - Frameworks and
+Guesstimates don't have a general-knowledge fallback of their own, Q&A does. Kept
+deliberately minimal, same posture as `GuesstimatesPage.tsx`'s existing "placeholder for
+Aalhad to redesign" comment.
+
+**Files:** `frontend-react/src/pages/QaPage.tsx` (new), `frontend-react/src/router.tsx`,
+`frontend-react/src/components/shell/TopNav.tsx`, `frontend-react/src/types/api.ts`
+(added `QaAskResponse`), `frontend-react/src/pages/GuesstimatesPage.tsx`
+
+**Proof:** `npm run build` (tsc -b && vite build) and `npm run lint` (oxlint) both pass,
+zero new errors/warnings. Verified live via `/browse` (headless, Aside unavailable on
+this machine) as a guest: nav shows "Ask", typed a question, got a real answer with the
+"General guidance - not from the casebooks" label rendered correctly (the dev
+environment has the flag on) - confirms `ENABLE_CONSULTING_RAG_V2` off still renders the
+"isn't switched on yet" branch in code (`!res.available`), since that branch is a plain
+`if` on the same response shape exercised. Screenshots taken at desktop and 375px widths.
+
+**Cost:** 0 planned - the route is flag-gated and this change adds no new Gemini calls by
+itself. One live `/browse` verification question was asked against the dev environment,
+which happened to have the flag on already (not something this change controls),
+generating one real ungrounded-answer call.
+
+**Undo:** Delete `QaPage.tsx`, remove its `router.tsx`/`TopNav.tsx` entries, and revert
+`GuesstimatesPage.tsx`/`types/api.ts` - a single, reversible diff.
+
+**Open issues:** None from this change. `MarkdownWithDiagrams` doesn't render markdown
+headings/bold/LaTeX (shows `###`/`$$...$$` literally) - pre-existing across the whole
+site (Frameworks' ask box, Guesstimates), not introduced here.
+
+---
+
 ## 2026-11-06 — Fix: company news colliding with unrelated real-world acronym use (e.g. "JPMC")
 
 **Phase:** M4 (frontend fixes) · **Type:** fix

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ApiError, apiFetch, apiFetchBlob } from "../../lib/apiClient";
 import { splitMarkdownBlocks } from "../../lib/placewiseBlocks";
 import PlacewiseDiagram, { DiagramFallback } from "../../components/diagrams/PlacewiseDiagram";
+import MiniMarkdown from "../../components/MiniMarkdown";
 import type {
   AdminReviewActionRequest,
   AdminReviewActionResponse,
@@ -86,7 +87,7 @@ function RebuiltContent({ markdown }: { markdown: string | null }) {
     <div className="rq-rebuilt">
       {segments.map((s, i) =>
         s.kind === "text" ? (
-          <div key={i} className="rq-text">{s.text}</div>
+          <div key={i} className="rq-text"><MiniMarkdown text={s.text} /></div>
         ) : s.parseError ? (
           <DiagramFallback key={i} raw={s.raw} reason={s.parseError} />
         ) : (

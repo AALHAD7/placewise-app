@@ -1,4 +1,5 @@
 import PlacewiseDiagram, { DiagramFallback } from "./diagrams/PlacewiseDiagram";
+import MiniMarkdown from "./MiniMarkdown";
 import { splitMarkdownBlocks } from "../lib/placewiseBlocks";
 
 // Extracted from GuesstimatesPage.tsx's original inline ProblemContent (2026-11-02) so
@@ -13,7 +14,7 @@ export default function MarkdownWithDiagrams({ markdown, textStyle }: { markdown
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {segments.map((s, i) =>
         s.kind === "text" ? (
-          <p key={i} style={{ margin: 0, fontSize: "0.9375rem", lineHeight: 1.65, color: "var(--text-900)", whiteSpace: "pre-wrap", ...textStyle }}>{s.text}</p>
+          <MiniMarkdown key={i} text={s.text} style={textStyle} />
         ) : s.parseError ? (
           <DiagramFallback key={i} raw={s.raw} reason={s.parseError} />
         ) : (

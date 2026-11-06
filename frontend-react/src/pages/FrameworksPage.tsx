@@ -6,8 +6,10 @@ import Selector, { type SelectorOption } from "../components/Selector";
 import PageHeader from "../components/PageHeader";
 import AsciiDiagram from "../components/AsciiDiagram";
 import FrameworkAskBox from "../components/FrameworkAskBox";
+import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
+import PlacewiseDiagram from "../components/diagrams/PlacewiseDiagram";
 import { getAsciiDiagramForFramework } from "../lib/asciiDiagrams";
-import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksResponse, FrameworksTaxonomyResponse } from "../types/api";
+import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, FrameworksResponse, FrameworksTaxonomyResponse, PlacewiseDiagramBlock } from "../types/api";
 
 // Rebuilt around a real Domain -> Subdomain -> framework browse flow instead
 // of one flat, ungrouped list (see migration_019_frameworks_taxonomy.sql +
@@ -16,18 +18,6 @@ import type { Framework, FrameworkFunnelDiagram, FrameworkGridDiagram, Framework
 // exist) and the real casebook grounding (frameworksGrounding.js's vector
 // search) are added on top of the same GET /api/frameworks this page always
 // used.
-
-// Apple's palette reserves one saturated blue for accents rather than a
-// rainbow per item (DESIGN.md Do's/Don'ts) - every card gets the same
-// Studio Mist tile and Apple Blue glyph, matching global.css's .icon-*.
-const GRID_COLORS = [
-  { bg: "#f5f5f7", text: "#0066cc" },
-  { bg: "#f5f5f7", text: "#0066cc" },
-  { bg: "#f5f5f7", text: "#0066cc" },
-  { bg: "#f5f5f7", text: "#0066cc" },
-  { bg: "#f5f5f7", text: "#0066cc" },
-  { bg: "#f5f5f7", text: "#0066cc" }
-];
 
 // A domain label as it should read in the UI - frameworks.domain (and
 // document_chunks.domain) store the raw ingestion values ("Prodman",
@@ -40,116 +30,19 @@ function domainLabel(domain: string): string {
   return DOMAIN_LABELS[domain] || domain;
 }
 
-function GridDiagram({ data }: { data: FrameworkGridDiagram }) {
-  const { xAxis, yAxis, cols, rows, cells } = data;
-  const hasColLabels = cols.some((c) => c);
-  const hasRowLabels = rows.some((r) => r);
-  const templateCols = hasRowLabels ? `64px repeat(${cols.length}, 1fr)` : `repeat(${cols.length}, 1fr)`;
-  let colorIdx = 0;
-
-  return (
-    <div style={{ marginTop: 12 }}>
-      {xAxis && (
-        <div style={{ textAlign: "center", fontSize: "0.6875rem", fontWeight: 700, color: "var(--text-lightgray)", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>
-          {xAxis}
-        </div>
-      )}
-      <div style={{ display: "flex" }}>
-        {yAxis && (
-          <div
-            style={{
-              writingMode: "vertical-rl",
-              transform: "rotate(180deg)",
-              fontSize: "0.6875rem",
-              fontWeight: 700,
-              color: "var(--text-lightgray)",
-              letterSpacing: ".08em",
-              textTransform: "uppercase",
-              marginRight: 8,
-              flex: "none"
-            }}
-          >
-            {yAxis}
-          </div>
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {hasColLabels && (
-            <div style={{ display: "grid", gridTemplateColumns: templateCols, gap: 8, marginBottom: 6 }}>
-              {hasRowLabels && <div />}
-              {cols.map((c, i) => (
-                <div key={i} style={{ textAlign: "center", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-gray2)" }}>
-                  {c}
-                </div>
-              ))}
-            </div>
-          )}
-          {rows.map((r, ri) => (
-            <div key={ri} style={{ display: "grid", gridTemplateColumns: templateCols, gap: 8, marginBottom: ri === rows.length - 1 ? 0 : 8 }}>
-              {hasRowLabels && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-gray2)", paddingRight: 4, textAlign: "right" }}>
-                  {r}
-                </div>
-              )}
-              {cells[ri]?.map((cell, ci) => {
-                const c = GRID_COLORS[colorIdx++ % GRID_COLORS.length];
-                return (
-                  <div
-                    key={ci}
-                    style={{
-                      background: c.bg,
-                      color: c.text,
-                      borderRadius: "var(--r-sm)",
-                      padding: "12px 10px",
-                      fontSize: "0.8125rem",
-                      fontWeight: 700,
-                      textAlign: "center",
-                      minHeight: 46,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      lineHeight: 1.25
-                    }}
-                  >
-                    {cell}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FunnelDiagram({ data }: { data: FrameworkFunnelDiagram }) {
-  const { stages } = data;
-  const n = Math.max(stages.length - 1, 1);
-  return (
-    <div style={{ marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      {stages.map((s, i) => {
-        const widthPct = 100 - i * (55 / n);
-        const c = GRID_COLORS[i % GRID_COLORS.length];
-        return (
-          <div
-            key={i}
-            style={{
-              width: `${widthPct}%`,
-              background: c.bg,
-              color: c.text,
-              borderRadius: "var(--r-sm)",
-              padding: "10px 14px",
-              fontSize: "0.8125rem",
-              fontWeight: 700,
-              textAlign: "center"
-            }}
-          >
-            {s}
-          </div>
-        );
-      })}
-    </div>
-  );
+// FrameworkGridDiagram/FrameworkFunnelDiagram are field-for-field identical to
+// PlacewiseDiagramBlock's "matrix"/"funnel" variants - this adapter just wraps the
+// already-fetched diagram_data so PlacewiseDiagram (the shared renderer used by the
+// admin review queue and Guesstimates) can draw it, with its JSON fallback on malformed
+// data, instead of keeping a second, narrower local renderer here.
+function toDiagramBlock(type: "grid" | "funnel", data: FrameworkGridDiagram | FrameworkFunnelDiagram): PlacewiseDiagramBlock {
+  if (type === "grid" && "cols" in data) {
+    return { type: "matrix", xAxis: data.xAxis, yAxis: data.yAxis, cols: data.cols, rows: data.rows, cells: data.cells };
+  }
+  if (type === "funnel" && "stages" in data) {
+    return { type: "funnel", stages: data.stages };
+  }
+  return { type: "other", description: `Malformed ${type} diagram data` };
 }
 
 const DEFAULT_TAXONOMY: FrameworksTaxonomyResponse["domains"] = [
@@ -358,7 +251,7 @@ export default function FrameworksPage() {
             {items.map((f) => {
               const isOpen = !!open[f.id];
               const hasExample = !!f.example;
-              const hasGroundedImageUrl = !!(f.grounded_image && f.grounded_image.url);
+              const hasGroundedImage = !!f.grounded_image;
               const steps = Array.isArray(f.steps) ? f.steps : [];
               const pitfalls = Array.isArray(f.pitfalls) ? f.pitfalls : [];
 
@@ -390,22 +283,24 @@ export default function FrameworksPage() {
                         if (asciiDiag) {
                           return <AsciiDiagram title={asciiDiag.title} ascii={asciiDiag.ascii} />;
                         }
-                        if (f.diagram_type === "grid" && f.diagram_data && "cols" in f.diagram_data) {
-                          return <GridDiagram data={f.diagram_data} />;
-                        }
-                        if (f.diagram_type === "funnel" && f.diagram_data && "stages" in f.diagram_data) {
-                          return <FunnelDiagram data={f.diagram_data} />;
+                        if (f.diagram_type && f.diagram_data) {
+                          return (
+                            <div style={{ marginTop: 12 }}>
+                              <PlacewiseDiagram block={toDiagramBlock(f.diagram_type, f.diagram_data)} />
+                            </div>
+                          );
                         }
                         return null;
                       })()}
 
-                      {hasGroundedImageUrl && (
+                      {hasGroundedImage && f.grounded_image!.caption && (
+                        // Never render `.url` - it's a raw admin Storage URL on the v1
+                        // grounding path and always null on v2 (CLAUDE.md diagram-privacy
+                        // rule: original page images stay admin-only). Only the casebook
+                        // caption, run through the same fence-aware renderer as the rest
+                        // of the grounded markdown, reaches students.
                         <div style={{ marginTop: 16 }}>
-                          <img
-                            src={f.grounded_image!.url}
-                            alt="Diagram from the casebooks"
-                            style={{ maxWidth: "100%", borderRadius: "var(--r-sm)", border: "1px solid var(--card-border)", display: "block" }}
-                          />
+                          <MarkdownWithDiagrams markdown={f.grounded_image!.caption} />
                         </div>
                       )}
 
@@ -445,6 +340,17 @@ export default function FrameworksPage() {
                         <div style={{ marginTop: 12, background: "rgba(96, 165, 250, 0.08)", border: "1px solid rgba(96, 165, 250, 0.30)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
                           <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#60a5fa" }}>Example</div>
                           <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-gray2)", textWrap: "pretty" as const }}>{f.example}</p>
+                        </div>
+                      )}
+                      {f.grounded_example?.excerpt && (
+                        // f.example above is the static authored example; this is the
+                        // real casebook excerpt frameworksGrounding.js retrieves - kept
+                        // as a separate card so neither is dropped or conflated.
+                        <div style={{ marginTop: 12, background: "rgba(139, 92, 246, 0.08)", border: "1px solid rgba(139, 92, 246, 0.30)", borderRadius: "var(--r-sm)", padding: "12px 14px" }}>
+                          <div style={{ fontSize: "0.65625rem", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#a78bfa" }}>From the casebooks</div>
+                          <div style={{ marginTop: 6 }}>
+                            <MarkdownWithDiagrams markdown={f.grounded_example.excerpt} textStyle={{ fontSize: "0.84375rem", color: "var(--text-gray2)" }} />
+                          </div>
                         </div>
                       )}
 

@@ -1,7 +1,23 @@
 # STATE
 
-**Position:** ▶ R8 (frontend-engineer: render new diagram types, citations, AI label).
-Updated 2026-11-03. R7b done.
+**Position:** ▶ R9 (rag-evaluator → qa-tester: eval new vs baseline, switch Consulting
+live, QA on live site).
+Updated 2026-11-06. R8 done: FrameworksPage migrated onto the shared `PlacewiseDiagram`
+component, a live diagram-privacy bug (raw admin Storage URL rendered via `<img>`) fixed,
+`grounded_example`/`grounded_image` now actually render (previously fetched and dropped);
+new `/qa` page built and wired to `POST /api/qa/ask` with `GroundingNote`'s "not from the
+casebooks" label; Guesstimates' "not available" messaging differentiated by `reason`; a
+High-severity markdown-rendering bug on `/qa` (raw `###`/`**` syntax shown) fixed with a
+new `MiniMarkdown.tsx`, reused in the admin `ReviewQueue.tsx`. `npm run build`/`lint` pass.
+Verified independently (`.gsd/phases/R8/VERIFICATION.md`): build/lint clean, no raw image
+URL or per-answer citation anywhere live, markdown parser logic sound and confirmed live,
+QA screenshots exist for all three touched pages (desktop+phone) — `/qa` from the
+session's own pass, `/frameworks` and `/guesstimates` from the verifier's own spot-check
+(session scratchpad path wasn't reachable). Two non-blocking items carried forward for
+Aalhad, not R8 gaps: every seeded grid/funnel framework is still intercepted by the older
+ASCII-diagram lookup before reaching the new shared renderer (code path is correct and
+reachable, just visually unverified live for current seeded data); a Porter's Five Forces
+Q&A question came back ungrounded despite being seeded (possible retrieval-tuning gap).
 Aalhad's call 2026-11-02: verbatim casebook excerpts are not the right student-facing
 presentation — "the idea or the logic should be the same, but it should be presented in a
 different way." Inserted R7b ahead of R5 (admin queue, still todo) and R8. CLAUDE.md's
