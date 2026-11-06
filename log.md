@@ -5,6 +5,101 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-06 — Guesstimates: use the full page width instead of a fixed 680px column
+
+**Phase:** R8 (frontend fix) · **Type:** fix
+
+**What changed:** `GuesstimatesPage.tsx` wrapped everything in `maxWidth: 680`, leaving
+roughly half of desktop width empty. Replaced it with the same page layout convention
+already used by `FrameworksPage`/`RolePage`: a "What you'll find here" `grid-3` intro
+(what the page offers, work-it-yourself framing, swap-it-out), then the practice problem
+in the existing `two-col-sidebar-wide` grid - the problem card on the left (wider, larger
+type, more padding), a static "How to approach it" / "Common pitfalls" tips sidebar on
+the right. The sidebar is static guidance only, not per-answer citation data - CLAUDE.md's
+2026-11-02 grounding-policy decision already removed per-answer school/casebook/page
+attribution from the UI (see `GroundingNote.tsx`), so this does not reintroduce it. Also
+removed the stale "Minimal by design... placeholder for Aalhad to redesign" header comment
+that this change supersedes.
+Fixed a layout bug this surfaced: `.two-col-sidebar-wide`'s mobile breakpoint collapses to
+a single `1fr` grid track, whose implicit minimum width is its content's max-content size,
+not 0 - a wide monospace `AsciiDiagram` box inside the problem card was pushing the whole
+page into horizontal scroll at phone width. Added `minWidth: 0` to both grid-item wrappers.
+**Why:** Aalhad: "use the entire page that is shown; don't leave anything." Minimal,
+convention-matching fix rather than a new pattern.
+**Files:** `frontend-react/src/pages/GuesstimatesPage.tsx`
+**Proof:** `npm run build` (tsc + vite) and `npm run lint` (oxlint) both pass, no new
+warnings/errors introduced. Verified live on the dev server via gstack `/browse`
+(headless screenshots rendered blank in this sandbox - a tool/environment limitation, not
+a page issue - so verified instead via the accessibility snapshot/text dump, which showed
+the new sections and problem card rendering correctly, plus `getComputedStyle`/
+`scrollWidth` checks: at 1280px wide the grid reports two tracks (~735px + ~403px, no
+horizontal overflow); at 375px wide `document.body.scrollWidth` dropped from 510px
+(overflowing) to exactly 375px (no overflow) after the `minWidth: 0` fix.
+**Undo:** revert this commit (restores the `maxWidth: 680` wrapper).
+**Open issues:** none for this fix. Unrelated to scope: the page still doesn't render a
+"not from the casebooks" label for Guesstimates (`GuesstimateResponse.label`/`covered` are
+unused) - flagging for a future ticket, not touched here since the task was explicitly
+layout-only.
+
+---
+
+## 2026-11-06 — Guesstimates: extend R7b's paraphrase + faithfulness-judge layer to the random-pick problem
+
+**Phase:** R7b (extension) · **Type:** feature
+
+**What changed:** `getRandomGuesstimateProblem` (`guesstimateRetrieval.js`) showed its
+winning casebook row verbatim (`problem: row.content`), never going through R7b's
+paraphrase layer at all - it doesn't call `groundedConsultingLookup`, so the existing
+`ENABLE_ANSWER_PARAPHRASE` flag (gating Q&A/Frameworks) could never have reached it.
+Wired `consultingRetrieval.js`'s existing `paraphraseAndVerify` straight into the winning
+row, behind a **new, separate** flag, `ENABLE_GUESSTIMATE_PARAPHRASE` (off by default,
+same reversibility posture as every other paraphrase flag) - deliberately not reusing
+`ENABLE_ANSWER_PARAPHRASE`, so turning paraphrase on for Guesstimates can never silently
+turn it on for Q&A/Frameworks or vice versa. Passes a fixed context string
+(`"a guesstimate practice problem for a student to work through"`) as the paraphrase
+prompt's `queryText`, since there's no real student question for this "give me a problem"
+path - `PARAPHRASE_SYSTEM_PROMPT` only uses that text to describe what the student is
+about to do with the excerpt, never treats it as something to answer. On success,
+`problem` becomes the verified rewrite, with `paraphrased: true` and `rawProblem` (the
+original verbatim text) alongside it - same shape `frameworksGrounding.js` already uses
+for `paraphrased`/`rawExcerpt`. Flag off, or any paraphrase/faithfulness failure
+(`paraphraseAndVerify` itself fails closed on a dropped diagram token, a failed
+faithfulness vote, or a Gemini call error): byte-identical to the pre-existing shape, no
+new keys, `problem` stays the verbatim excerpt. Set `ENABLE_GUESSTIMATE_PARAPHRASE=true`
+in `backend/.env` (local/gitignored only).
+
+**Why:** Aalhad's explicit request: Guesstimates was still showing the raw casebook chunk
+verbatim, which the grounding policy (CLAUDE.md, 2026-11-02) requires to go through the
+paraphrase layer like every other covered answer - but Frameworks/Q&A must stay exactly
+as they are (`ENABLE_ANSWER_PARAPHRASE` untouched, still off by default), so a new,
+independent flag was the only option.
+
+**Files:** `backend/src/lib/guesstimateRetrieval.js`, `backend/.env`,
+`backend/test/guesstimateParaphrase.test.js` (new)
+
+**Proof:** 4 new tests (mocked Gemini/Supabase fetch, no live calls): paraphrase succeeds
+and is used (`.problem` is the rewrite, `.rawProblem` holds the original, `.paraphrased:
+true`); faithfulness judge rejects the rewrite → verbatim fallback, no `rawProblem` key;
+paraphrase call errors (simulated 429) → verbatim fallback; flag off → verbatim, zero
+paraphrase calls attempted, exact pre-existing key set
+(`available`/`problem`/`hasDiagram`/`citation`). `npm test` in `backend/`: all 4 new
+tests pass; pre-existing suite otherwise unchanged (same 3 pre-existing failures already
+tracked in `.gsd/STATE.md` - 1 sandbox env-leak flake, 2 unrelated `pickTopTextAndImage`
+WIP failures - none caused by this change). Reused R7b's existing `paraphraseAndVerify`
+machinery as-is; no new prompt, so no new faithfulness-eval run is required by the
+`grounded-answering` skill's "log the prompt" rule (same prompt, same judge, new caller).
+
+**Undo:** Set `ENABLE_GUESSTIMATE_PARAPHRASE=false` (or delete the line) in
+`backend/.env` to go back to the verbatim excerpt in one step; no code revert needed.
+
+**Open issues:** None. Cost: same per-use paraphrase call as Q&A/Frameworks (1 paraphrase
+call + up to 3 faithfulness-judge votes, all flash-lite tier, cached per chunk content for
+7 days via the existing `paraphraseCache`) - negligible against the $20/month budget
+since Guesstimates' random-pick draws from a fixed ~36-problem book, so the cache quickly
+covers nearly every distinct chunk.
+
+---
+
 ## 2026-11-06 — MarkdownWithDiagrams: actually render markdown in text segments
 
 **Phase:** R8 · **Type:** fix

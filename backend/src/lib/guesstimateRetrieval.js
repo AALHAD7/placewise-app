@@ -1,4 +1,4 @@
-import { groundedConsultingLookup, buildCitation, AI_FALLBACK_LABEL } from "./consultingRetrieval.js";
+import { groundedConsultingLookup, buildCitation, paraphraseAndVerify, AI_FALLBACK_LABEL } from "./consultingRetrieval.js";
 import { generateJSON } from "./gemini.js";
 import { supabase } from "./supabase.js";
 
@@ -7,6 +7,25 @@ import { supabase } from "./supabase.js";
 // this exact source_file (via migration_044's filter_source_file) is what keeps a
 // "guesstimate" request from pulling in FMS/ISB case-interview material instead.
 export const GUESSTIMATES_SOURCE_FILE = "SRCC Guesstimates-Book-Volume-1-6.pdf";
+
+// A separate flag from ENABLE_ANSWER_PARAPHRASE, deliberately - that flag (and the
+// `paraphrase: true` opt-in on groundedConsultingLookup) only ever reaches Q&A
+// (qaRetrieval.js) and Frameworks (frameworksGrounding.js); getRandomGuesstimateProblem
+// below doesn't call groundedConsultingLookup at all (it does its own direct
+// ingest_chunks query + random pick), so turning ENABLE_ANSWER_PARAPHRASE on would never
+// have touched this path anyway. This flag turns the same paraphrase + faithfulness-judge
+// layer (consultingRetrieval.js's paraphraseAndVerify) on for Guesstimates specifically,
+// without changing Q&A/Frameworks' behavior. Off by default, same reversibility posture as
+// every other paraphrase flag.
+const ENABLE_GUESSTIMATE_PARAPHRASE = process.env.ENABLE_GUESSTIMATE_PARAPHRASE === "true";
+
+// paraphraseChunk's prompt asks the model to rewrite "for an MBA student preparing for
+// case/consulting interviews" and takes a "Student's question" as context to keep the
+// rewrite on-topic - there is no real question here (this is "give me a problem to
+// practice", not "answer my question"), so this fixed string stands in for it: it
+// describes what the student is about to do with the text, which is all the prompt
+// actually uses the query for (it is never quoted back or treated as something to answer).
+const GUESSTIMATE_PARAPHRASE_CONTEXT = "a guesstimate practice problem for a student to work through";
 
 
 /**
@@ -168,9 +187,23 @@ export async function getRandomGuesstimateProblem() {
   const candidates = shuffle(rows.filter(row => looksLikeWorkedProblem(row.content)));
   for (const row of candidates.slice(0, MAX_PROBLEM_JUDGE_ATTEMPTS)) {
     if (await judgeIsWorkedProblem(row.content)) {
+      // Flag off (default): byte-identical to pre-existing behavior - no paraphrase call,
+      // no new keys. Flag on: same paraphrase-then-verify-then-fail-closed pipeline R7b
+      // already uses for Q&A/Frameworks (paraphraseAndVerify itself falls back to the
+      // verbatim chunk on any error or failed faithfulness vote - nothing extra to
+      // fail-close here), surfacing `paraphrased`/`rawProblem` the same way
+      // frameworksGrounding.js surfaces `paraphrased`/`rawExcerpt` - present only when a
+      // rewrite was actually used, so a caller/debugger can tell without the key always
+      // being there.
+      if (!ENABLE_GUESSTIMATE_PARAPHRASE) {
+        return { available: true, problem: row.content, hasDiagram: row.has_diagram, citation: buildCitation(row) };
+      }
+      const { content, rawContent, paraphrased } = await paraphraseAndVerify(GUESSTIMATE_PARAPHRASE_CONTEXT, row.content);
       return {
         available: true,
-        problem: row.content,
+        problem: content,
+        paraphrased,
+        ...(paraphrased ? { rawProblem: rawContent } : {}),
         hasDiagram: row.has_diagram,
         citation: buildCitation(row)
       };

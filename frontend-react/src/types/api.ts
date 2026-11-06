@@ -140,6 +140,8 @@ export interface GuesstimateResponse {
   citation?: GuesstimateCitation;
   chunks?: { content: string; hasDiagram: boolean; similarity: number }[];
   citations?: GuesstimateCitation[];
+  paraphrased?: boolean;
+  rawProblem?: string;
 }
 
 // POST /api/qa/ask - backend/src/routes/qa.js. Free-form grounded Q&A (R8). `citations`
