@@ -1,5 +1,5 @@
-import { groundedConsultingLookup, buildCitation, paraphraseAndVerify, AI_FALLBACK_LABEL } from "./consultingRetrieval.js";
-import { generateJSON } from "./gemini.js";
+import { groundedConsultingLookup, buildCitation, paraphraseAndVerify, judgeParaphraseFaithful, AI_FALLBACK_LABEL } from "./consultingRetrieval.js";
+import { generateJSON, generateText } from "./gemini.js";
 import { supabase } from "./supabase.js";
 
 // The one casebook this feature is grounded in - ingested (R6, commit c516be7) but not
@@ -215,7 +215,7 @@ export function splitRawQuestionFromAnswer(content) {
 export async function getRandomGuesstimateProblem() {
   const { data, error } = await supabase
     .from("ingest_chunks")
-    .select("content, has_diagram, page_start, page_end, ingest_documents!inner(source_file, school, club, year, source_class)")
+    .select("id, content, has_diagram, page_start, page_end, ingest_documents!inner(source_file, school, club, year, source_class)")
     .eq("is_active", true)
     .eq("ingest_documents.source_file", GUESSTIMATES_SOURCE_FILE)
     .eq("ingest_documents.source_class", "club_casebook");
@@ -226,6 +226,7 @@ export async function getRandomGuesstimateProblem() {
   }
 
   const rows = (data || []).map(r => ({
+    id: r.id,
     content: r.content,
     has_diagram: r.has_diagram,
     page_start: r.page_start,
@@ -259,7 +260,8 @@ export async function getRandomGuesstimateProblem() {
           question: rawQuestion,
           problem: answerSource,
           hasDiagram: row.has_diagram,
-          citation: buildCitation(row)
+          citation: buildCitation(row),
+          chunkId: row.id
         };
       }
       const { content, rawContent, paraphrased } = await paraphraseAndVerify(GUESSTIMATE_PARAPHRASE_CONTEXT, answerSource);
@@ -270,9 +272,124 @@ export async function getRandomGuesstimateProblem() {
         paraphrased,
         ...(paraphrased ? { rawProblem: rawContent } : {}),
         hasDiagram: row.has_diagram,
-        citation: buildCitation(row)
+        citation: buildCitation(row),
+        chunkId: row.id
       };
     }
   }
   return { available: false, reason: "not_yet_live", label: AI_FALLBACK_LABEL };
+}
+
+// --- Assumption clarification ("ask the interviewer") -----------------------------------
+
+// Aalhad's request, 2026-11-07: mimic a real case interview, where a candidate can ask the
+// interviewer to clarify a scope/assumption before estimating. The client passes only a
+// `chunkId` (never the problem text itself) so the server - not the client - decides what
+// content actually grounds the answer; trusting a client-supplied "context" string instead
+// would let anyone pass arbitrary text and get free-form Gemini generation disconnected
+// from any real guesstimate problem (the exact posture frameworkQa.js/`POST /ask` already
+// takes for the Frameworks follow-up box - this mirrors it).
+//
+// Scoped to this book and `is_active`/`club_casebook` exactly like getRandomGuesstimateProblem's
+// own query, so a guessed/stale id can never pull content from another document.
+async function fetchScopedGuesstimateChunk(chunkId) {
+  const { data, error } = await supabase
+    .from("ingest_chunks")
+    .select("id, content, ingest_documents!inner(source_file, source_class)")
+    .eq("id", chunkId)
+    .eq("is_active", true)
+    .eq("ingest_documents.source_file", GUESSTIMATES_SOURCE_FILE)
+    .eq("ingest_documents.source_class", "club_casebook")
+    .limit(1);
+
+  if (error) {
+    console.warn(`[guesstimateRetrieval] clarification chunk lookup failed: ${error.message}`);
+    return null;
+  }
+  return data?.[0] || null;
+}
+
+const CLARIFICATION_SYSTEM =
+  "You are acting as a case interviewer answering ONE clarifying question about a " +
+  "guesstimate problem's assumptions while the student is still attempting it - the same " +
+  "thing a real candidate does when they ask the interviewer to clarify a scope or " +
+  "assumption before estimating. Answer using ONLY the assumptions/information given below - " +
+  "never add an outside fact or number. If the given content doesn't specify what's asked, " +
+  "say plainly that it isn't specified and that the student should state and justify their " +
+  "own reasonable assumption, rather than guessing what the casebook meant. Critically: if " +
+  "the question asks for the final numeric answer, the full solution structure, or anything " +
+  "that would reveal the diagram/working, you must decline and tell the student to click " +
+  '"Show answer" when ready instead - never leak the solution through this clarification ' +
+  "path. Keep your answer under 80 words - a real interviewer clarifies one point, they " +
+  "don't re-explain the whole problem.";
+
+const CLARIFICATION_RETRY_SUFFIX =
+  "\n\nYour previous answer added something not present in the problem content above, or " +
+  "risked revealing the final answer/solution - stay strictly limited to clarifying the " +
+  'stated assumptions, and if asked for the answer, decline and point to "Show answer" ' +
+  "instead.";
+
+// Cheap, fast pre-check for the obvious case ("what's the answer", "just give me the
+// number") - catches the clearest attempts without a Gemini round-trip. Deliberately not
+// the primary defense (a keyword filter is easy to word around) - CLARIFICATION_SYSTEM's
+// instruction to decline is what actually has to hold for subtler phrasing.
+const ANSWER_REQUEST_RE =
+  /\b(final answer|what('?s| is) the answer|give me the (answer|number)|the actual (answer|number)|full solution|solve (it|this)|just tell me)\b/i;
+
+const CLARIFICATION_DECLINE =
+  'I can\'t give you the final answer or the worked solution here - click "Show answer" ' +
+  "when you're ready for that. Ask me about a specific assumption instead.";
+
+// Fail-closed fallback when neither generation attempt passes the faithfulness judge (or
+// both error) - never show an unverified rewrite, same posture as frameworkQa.js's
+// fallbackAnswer and consultingRetrieval.js's paraphraseAndVerify.
+const CLARIFICATION_SAFE_FALLBACK =
+  "That's not specified in this problem - go with your own reasonable assumption and state " +
+  "it clearly.";
+
+/**
+ * Answers one clarifying question about a specific guesstimate problem's stated assumptions,
+ * scoped server-side to that exact chunk (never trusting client-supplied context - see the
+ * comment above fetchScopedGuesstimateChunk). Same two-attempt generate -> faithfulness-judge
+ * -> fail-closed-to-safe-fallback shape as frameworkQa.js's answerFrameworkQuestion.
+ *
+ * Returns `{ found: false }` if chunkId doesn't resolve to an active row in this book (bad/
+ * stale/guessed id) - callers map that to a 404, never an unhandled error.
+ */
+export async function answerAssumptionClarification(chunkId, question) {
+  if (!chunkId || typeof chunkId !== "string") return { found: false };
+
+  let row;
+  try {
+    row = await fetchScopedGuesstimateChunk(chunkId);
+  } catch (err) {
+    console.warn(`[guesstimateRetrieval] clarification lookup threw: ${err.message}`);
+    return { found: false };
+  }
+  if (!row) return { found: false };
+
+  if (ANSWER_REQUEST_RE.test(question)) {
+    return { found: true, answer: CLARIFICATION_DECLINE, grounded: true };
+  }
+
+  const { answerSource } = splitRawQuestionFromAnswer(row.content);
+  const prompt = `Problem's assumptions/information:\n"""${answerSource}"""\n\nStudent's clarifying question: ${question}`;
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const answer = await generateText({
+        system: attempt === 0 ? CLARIFICATION_SYSTEM : CLARIFICATION_SYSTEM + CLARIFICATION_RETRY_SUFFIX,
+        prompt,
+        maxTokens: 250,
+        temperature: 0.3,
+        feature: "guesstimateClarify"
+      });
+      const faithful = await judgeParaphraseFaithful(answerSource, answer);
+      if (faithful) return { found: true, answer, grounded: true };
+    } catch (err) {
+      console.warn(`[guesstimateRetrieval] clarification attempt ${attempt} failed: ${err.message}`);
+    }
+  }
+
+  return { found: true, answer: CLARIFICATION_SAFE_FALLBACK, grounded: false };
 }

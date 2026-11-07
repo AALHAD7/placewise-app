@@ -5,6 +5,170 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — Guesstimates: "ask the interviewer" clarifying-question endpoint
+
+**Phase:** M1 (Consulting RAG) · **Type:** feature
+
+**What changed:** Aalhad's request — let a student ask the AI "interviewer" up to 2
+clarifying questions about a guesstimate problem's assumptions while attempting it (a real
+case-interview habit), never revealing the final numeric answer or worked solution. A
+parallel frontend-engineer session is building the UI (text/mic input, 2-ask cap, exchange
+history); this session built the backend contract it calls.
+
+Mirrors `frameworkQa.js`'s `answerFrameworkQuestion`/`POST /frameworks/ask` pattern exactly,
+for the same security reason that pattern exists: the client must never be trusted to supply
+the grounding "context" text itself (a client could pass arbitrary text as "context" and get
+free-form Gemini generation completely disconnected from any real guesstimate problem — a
+prompt-injection/abuse vector). Instead the client passes only `chunkId` (the id
+`getRandomGuesstimateProblem` already returns for the problem in play), and the server looks
+up that exact row itself, scoped to the SRCC Guesstimates book (`is_active=true`,
+`source_class=club_casebook`, `source_file=GUESSTIMATES_SOURCE_FILE`) — the same scope
+`getRandomGuesstimateProblem` already uses, so a guessed/stale/foreign id can never pull
+content from another document.
+
+1. `getRandomGuesstimateProblem` (`backend/src/lib/guesstimateRetrieval.js`) now returns
+   `chunkId: row.id` in both the `ENABLE_GUESSTIMATE_PARAPHRASE` on and off branches, so the
+   client has something stable to reference in the follow-up call.
+2. New `answerAssumptionClarification(chunkId, question)`: fetches the scoped row,
+   splits it with the existing `splitRawQuestionFromAnswer` and grounds only in
+   `answerSource` (assumptions/diagram/working — title excluded, not needed). New
+   `CLARIFICATION_SYSTEM` prompt: answer the one clarifying question using only the given
+   content, say plainly if something isn't specified (student should state and justify
+   their own assumption rather than guess), and — the critical rule — decline and point to
+   "Show answer" if the question asks for the final number, the full solution, or anything
+   that would reveal the diagram/working. A cheap regex pre-check
+   (`ANSWER_REQUEST_RE`, e.g. "what's the final answer", "just give me the number") short-
+   circuits the obvious cases before any Gemini call; the prompt instruction is the real
+   defense for subtler phrasing, same "don't over-engineer a keyword filter" posture agreed
+   going in. Generation goes through `generateText`, gated by the same
+   `judgeParaphraseFaithful` (`consultingRetrieval.js`) faithfulness judge, one retry with a
+   correction suffix, then a safe generic fallback ("That's not specified in this problem —
+   go with your own reasonable assumption and state it clearly.") if both attempts fail —
+   same fail-closed shape as `frameworkQa.js`. A not-found/wrong-scope chunk id returns
+   `{ found: false }` rather than throwing.
+3. New route `POST /api/guesstimates/clarify` (`backend/src/routes/guesstimates.js`):
+   `requireAuth` + `aiLimiter` (same posture as `frameworks.js`'s `POST /ask` — a paid
+   Gemini call per question), gated by the existing `ENABLE_CONSULTING_RAG_V2` switch like
+   `/random`/`/ask`. Body `{ chunkId, question }`; `question` capped at 300 chars (shorter
+   than Frameworks' 500 — meant to be one quick clarifying question, not an essay). New
+   `validateClarifyInput` pulled out as a pure, exported function (same reasoning as
+   `decideCoverage`) so the validation logic is unit-testable without an Express/auth
+   harness — there is none in this codebase yet. Responses: `{ success: true, answer }` /
+   400 (bad input) / 404 (chunk not found) / 500, `errorDetail` on error.
+
+**Why:** Aalhad's explicit request, mimicking a real case interview's clarify-before-
+estimating step; the server-side chunk lookup (vs. trusting client context) is a direct,
+already-settled security decision, not re-litigated here.
+
+**Files:** `backend/src/lib/guesstimateRetrieval.js`, `backend/src/routes/guesstimates.js`,
+`backend/test/guesstimateClarify.test.js` (new), `backend/test/guesstimateParaphrase.test.js`
+(updated one assertion for the new `chunkId` key).
+
+**Proof:** `npm test` in `backend/`: 207/208 pass (the 1 failure, `sandbox.test.js`'s
+`__CF_USER_TEXT_ENCODING` environment-leak check, is the same pre-existing macOS-only flake
+noted in this file's 2026-11-07 entry above, unrelated to this change). 11 new tests cover:
+a faithful clarification answer is returned; a failed-faithfulness and a both-attempts-
+errored generation both fall back to the safe generic response; a not-found/wrong-scope
+chunk id returns `found: false` without throwing; a missing chunkId never touches the
+network; an obvious "give me the final answer" request declines via the cheap pre-check
+without any generation call; and `validateClarifyInput`'s five input-validation branches
+(missing chunkId, missing/blank question, over-length question, a valid trimmed request).
+All network-mocked (fetch stubbed for both Supabase `ingest_chunks` REST calls and Gemini
+`generateContent`), no live calls in the test run.
+
+Live-verified separately (real Gemini + Supabase, read-only, via a throwaway script,
+deleted after): pulled a real active SRCC chunk (Swiggy Delhi daily orders, id
+`3a4cfcf6-ed6c-4dc9-9d06-a3a61580330f`), asked "What population figure should I use?" and
+got back a real, grounded answer ("The total population of Delhi is given as 40 million" —
+confirmed present verbatim in that chunk's own diagram root node, not invented); asked
+"What's the final answer to this problem?" and confirmed the cheap pre-check declined and
+redirected to "Show answer" without a generation call; asked with a deliberately bad chunk
+id and confirmed `{ found: false }`, no throw. `is_active` and all other data untouched —
+read-only probe, ~3 live Gemini calls (well within the $20/month budget).
+
+**Eval:** Not run. This is a new, additive endpoint (no existing retrieval/prompt/coverage
+logic changed) with no question in `backend/eval/questions.jsonl` exercising it — none of
+the eval runners call `answerAssumptionClarification` or `POST /guesstimates/clarify`, so
+there is nothing for a full paid eval run to regress on.
+
+**Frontend contract (for the parallel frontend-engineer session):**
+`POST /api/guesstimates/clarify`, `Authorization: Bearer <token>` required (same as any
+other `requireAuth` AI route), body `{ "chunkId": string, "question": string }` where
+`chunkId` is `state.data.chunkId` from the `/random` response and `question` is capped at
+300 chars client-side too (matches the server's cap, so a client can show "question too
+long" before the round-trip). Success: `{ "success": true, "answer": string }`. Failure
+shapes: 400 `{ success: false, error }` (missing/blank/too-long input), 404
+`{ success: false, error: "Guesstimate problem not found." }` (bad/stale chunkId), 500
+`{ success: false, error, detail }`. The 2-ask-per-problem cap is enforced client-side only,
+per the task's instruction — the server has no per-session counter and will answer a 3rd+
+call if one is somehow sent.
+
+---
+
+## 2026-11-07 — Guesstimates: "ask the interviewer" panel on the frontend
+
+**Phase:** M1 (Consulting RAG) · **Type:** feature
+
+**What changed:** Built the UI side of the clarifying-question feature above
+(`frontend-react/src/pages/GuesstimatesPage.tsx`). Added a panel next to the existing
+"Your attempt" scratchpad: "Ask the interviewer a clarifying question (optional, up to 2)"
+with a textarea, its own mic button (`recKey: "guesstimates-clarify"`, independent
+recording state from the attempt box's `"guesstimates-attempt"`, reusing
+`useVoiceRecording`/`VoiceRecordButton` exactly as `FrameworkAskBox.tsx` does), and an Ask
+button. Calls the new `POST /api/guesstimates/clarify` with `{ chunkId, question }` via
+`apiFetch`, and renders each successful exchange as a "You asked: ... / <answer>" pair —
+same visual convention as `FrameworkAskBox.tsx`'s asked-question display.
+
+Capped at exactly 2 exchanges, enforced **client-side only** (a local `{question,
+answer}[]` array capped at length 2) — the backend route has no server-side cap by design
+(see the entry above); this is UX pacing, not a security boundary. A failed request shows
+an inline `t-shake`-styled error and does not consume a slot (only a successful round-trip
+gets pushed to the array), so a flaky network call never costs the student one of their 2
+asks. Once 2 exchanges exist, the input/mic/Ask row is replaced with "You've used both
+clarifying questions for this problem." The exchange history stays visible after "Show
+answer" is clicked — removing content the student already saw would be jarring — but new
+asks are disabled post-reveal, since clarifying is moot once the full solution is shown.
+"Try another" resets the exchanges array alongside everything it already reset (question,
+attempt text, reveal state). If `state.data.chunkId` is missing (an older cached response,
+or a backend rollout that hasn't landed), the ask control disables itself instead of
+sending a request with an undefined chunkId.
+
+Added `chunkId?: string` to `GuesstimateResponse` and a new `GuesstimateClarifyResponse`
+(`{ success: true, answer: string }`) to `frontend-react/src/types/api.ts`, checked
+directly against the landed backend route (`backend/src/routes/guesstimates.js`) rather
+than only the agreed contract, since both sessions were touching related code at the same
+time — no conflict: the backend session never touched `types/api.ts`.
+
+**Why:** Aalhad's explicit request — a real case interview lets the candidate clarify
+scope/assumptions before estimating; the Guesstimates practice page had no way to do that.
+
+**Files:** `frontend-react/src/pages/GuesstimatesPage.tsx`,
+`frontend-react/src/types/api.ts`.
+
+**Proof:** `npm run build` (tsc + vite) and `npm run lint` (oxlint) both pass in
+`frontend-react/` — build succeeds, lint reports only pre-existing warnings (none new from
+this change). Live-checked end to end against the already-running dev server
+(`localhost:5175`) and backend (`localhost:4000`) as a guest user, via gstack's headless
+browser fallback (`$B`, Aside unavailable on this machine): loaded a live "Revenue of a
+Delhi-Gurgaon toll plaza in a day" problem, asked two real clarifying questions and got
+real grounded answers back ("That's not specified in this problem - go with your own
+reasonable assumption and state it clearly."; "No, you cannot assume peak-hour traffic
+only. The toll is operational 24 hours a day, divided into low, medium, and high frequency
+hours lasting 10, 6, and 8 hours respectively."). Confirmed: the input/mic/Ask row
+disappears and the "used both" note appears after the 2nd ask; the exchange history stays
+visible through "Show answer" while no new-ask controls reappear; "Try another" clears the
+problem, attempt and exchanges together. Checked at desktop and 375px widths — the panel
+stacks cleanly on mobile, same card/token styling as the rest of the page. No console
+errors beyond a pre-existing, harmless Google Fonts preload warning.
+
+**Undo:** Revert the two files listed above.
+
+**Open issues:** None — the frontend and backend contracts matched on first check, no
+rework needed. Not yet deployed to Vercel/pushed; this change is staged, ready to commit
+alongside the backend session's commit.
+
+---
+
 ## 2026-11-07 — Guesstimates pre-attempt question no longer leaks the casebook's ASSUMPTIONS
 
 **Phase:** M1 (Consulting RAG) · **Type:** bugfix

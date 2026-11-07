@@ -149,6 +149,17 @@ export interface GuesstimateResponse {
   citations?: GuesstimateCitation[];
   paraphrased?: boolean;
   rawProblem?: string;
+  // Identifies the source chunk so a clarifying question (POST
+  // /api/guesstimates/clarify) can be answered against the same problem.
+  // Optional: older cached responses / pre-rollout backends may omit it.
+  chunkId?: string;
+}
+
+// POST /api/guesstimates/clarify - backend/src/routes/guesstimates.js. Up to 2 clarifying
+// questions per problem, capped client-side only (GuesstimatesPage.tsx); no server-side cap.
+export interface GuesstimateClarifyResponse {
+  success: true;
+  answer: string;
 }
 
 // POST /api/qa/ask - backend/src/routes/qa.js. Free-form grounded Q&A (R8). `citations`

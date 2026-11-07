@@ -170,5 +170,5 @@ test("getRandomGuesstimateProblem: flag off returns the verbatim excerpt, no par
   assert.equal(result.question, "NUMBER OF TYRES SOLD IN INDIA PER YEAR");
   assert.equal(result.problem, "\nASSUMPTIONS\n\n1. India has 25 crore vehicles.", "flag off still splits title from answer, just skips paraphrasing");
   assert.equal(trackRewriteCalls.count, 0, "no paraphrase call should be attempted at all when the flag is off");
-  assert.deepEqual(Object.keys(result).sort(), ["available", "citation", "hasDiagram", "problem", "question"].sort());
+  assert.deepEqual(Object.keys(result).sort(), ["available", "chunkId", "citation", "hasDiagram", "problem", "question"].sort());
 });

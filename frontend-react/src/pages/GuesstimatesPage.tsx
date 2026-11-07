@@ -5,7 +5,7 @@ import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
 import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import VoiceRecordButton from "../components/VoiceRecordButton";
 import { useVoiceRecording } from "../hooks/useVoiceRecording";
-import type { GuesstimateResponse } from "../types/api";
+import type { GuesstimateClarifyResponse, GuesstimateResponse } from "../types/api";
 
 // R8: first real UI for Guesstimates (backend-only as of R7 - GET
 // /api/guesstimates/random, grounded in the SRCC Guesstimates Book only,
@@ -36,8 +36,23 @@ import type { GuesstimateResponse } from "../types/api";
 // title (always present, never paraphrased) and `problem` is now the answer
 // portion only (assumptions + diagram + working). See
 // backend/src/lib/guesstimateRetrieval.js's getRandomGuesstimateProblem.
+//
+// 2026-11-07 (same day, Aalhad's call): added an "ask the interviewer a
+// clarifying question" panel next to the attempt scratchpad, mirroring real
+// case interviews where you can clarify scope/assumptions before estimating.
+// Capped at 2 asks per problem - enforced here only (UX pacing, not a
+// security boundary; POST /api/guesstimates/clarify has no server-side cap).
+// Exchanges stay visible after "Show answer" (removing content the student
+// already saw would be jarring) but new asks are disabled once revealed,
+// since the point is moot once the full solution is shown. Requires the new
+// `chunkId` field on GuesstimateResponse; if it's missing (older cached
+// response, or backend rollout hasn't landed yet), the ask control disables
+// itself instead of sending a request with no chunkId.
 
 type LoadState = { loading: boolean; error: string; data: GuesstimateResponse | null };
+type ClarifyExchange = { question: string; answer: string };
+
+const MAX_CLARIFY_ASKS = 2;
 
 export default function GuesstimatesPage() {
   const [state, setState] = useState<LoadState>({ loading: true, error: "", data: null });
@@ -45,8 +60,21 @@ export default function GuesstimatesPage() {
   const [revealed, setRevealed] = useState(false);
   const { recording, micError, startRecording, stopRecording } = useVoiceRecording();
 
+  // Clarifying questions ("ask the interviewer"), 2026-11-07: capped at
+  // MAX_CLARIFY_ASKS client-side only - UX pacing, not a security boundary (the
+  // backend route has no server-side cap). A failed request doesn't consume a
+  // slot - only a successful exchange gets pushed. Kept visible (not hidden)
+  // after reveal, but new asks are disabled, since removing content the
+  // student already saw would feel jarring.
+  const [clarifyQuestion, setClarifyQuestion] = useState("");
+  const [clarifyExchanges, setClarifyExchanges] = useState<ClarifyExchange[]>([]);
+  const [clarifyLoading, setClarifyLoading] = useState(false);
+  const [clarifyError, setClarifyError] = useState("");
+
   const recKey = "guesstimates-attempt";
   const isRecording = !!recording[recKey];
+  const clarifyRecKey = "guesstimates-clarify";
+  const isClarifyRecording = !!recording[clarifyRecKey];
 
   function onToggleMic() {
     if (isRecording) {
@@ -56,10 +84,45 @@ export default function GuesstimatesPage() {
     }
   }
 
+  function onToggleClarifyMic() {
+    if (isClarifyRecording) {
+      stopRecording(clarifyRecKey);
+    } else {
+      startRecording(clarifyRecKey, () => clarifyQuestion, setClarifyQuestion);
+    }
+  }
+
+  const clarifyAsksLeft = MAX_CLARIFY_ASKS - clarifyExchanges.length;
+  const canAskClarify = !revealed && clarifyAsksLeft > 0 && !!state.data?.chunkId;
+
+  async function onAskClarify() {
+    const text = clarifyQuestion.trim();
+    const chunkId = state.data?.chunkId;
+    if (!text || !chunkId || clarifyLoading || clarifyAsksLeft <= 0) return;
+    setClarifyLoading(true);
+    setClarifyError("");
+    try {
+      const res = await apiFetch<GuesstimateClarifyResponse>(
+        "/api/guesstimates/clarify",
+        { method: "POST", body: JSON.stringify({ chunkId, question: text }) },
+        "Failed to get an answer to that question."
+      );
+      setClarifyExchanges((ex) => [...ex, { question: text, answer: res.answer }]);
+      setClarifyQuestion("");
+    } catch (err) {
+      setClarifyError(err instanceof Error ? err.message : "Failed to get an answer to that question.");
+    } finally {
+      setClarifyLoading(false);
+    }
+  }
+
   const load = useCallback(() => {
     setState((s) => ({ ...s, loading: true, error: "" }));
     setAttempt("");
     setRevealed(false);
+    setClarifyQuestion("");
+    setClarifyExchanges([]);
+    setClarifyError("");
     apiFetch<GuesstimateResponse>("/api/guesstimates/random", {}, "Failed to load a guesstimate.")
       .then((data) => setState({ loading: false, error: "", data }))
       .catch((e) => setState({ loading: false, error: e instanceof Error ? e.message : "Could not load a guesstimate.", data: null }));
@@ -184,6 +247,61 @@ export default function GuesstimatesPage() {
                   <VoiceRecordButton recording={isRecording} onClick={onToggleMic} />
                   {micError[recKey] && <span style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{micError[recKey]}</span>}
                 </div>
+              </div>
+
+              <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
+                  Ask the interviewer a clarifying question (optional, up to {MAX_CLARIFY_ASKS})
+                </div>
+
+                {clarifyExchanges.map((ex, i) => (
+                  <div key={i} style={{ marginTop: 10, paddingBottom: 10, borderBottom: "1px solid var(--divider)" }}>
+                    <div style={{ fontSize: "0.78125rem", fontWeight: 600, color: "var(--indigo)" }}>You asked: {ex.question}</div>
+                    <p style={{ margin: "6px 0 0", fontSize: "0.84375rem", lineHeight: 1.55, color: "var(--text-gray2)", textWrap: "pretty" as const }}>{ex.answer}</p>
+                  </div>
+                ))}
+
+                {clarifyAsksLeft <= 0 ? (
+                  <div style={{ marginTop: 10, fontSize: "0.78125rem", color: "var(--text-lightgray)" }}>
+                    You've used both clarifying questions for this problem.
+                  </div>
+                ) : (
+                  <>
+                    <textarea
+                      value={clarifyQuestion}
+                      onChange={(e) => setClarifyQuestion(e.target.value)}
+                      placeholder="e.g. Should I assume this is for an urban market only?"
+                      disabled={revealed || !state.data?.chunkId}
+                      maxLength={300}
+                      style={{ width: "100%", height: 56, resize: "vertical", marginTop: 10, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", lineHeight: 1.5, color: "var(--text-900)", background: "var(--field-bg)" }}
+                    />
+                    <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 9, flexWrap: "wrap" }}>
+                      <VoiceRecordButton recording={isClarifyRecording} onClick={onToggleClarifyMic} />
+                      <button
+                        type="button"
+                        onClick={onAskClarify}
+                        disabled={!canAskClarify || !clarifyQuestion.trim() || clarifyLoading}
+                        className="btn-outline-indigo"
+                        style={{ border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 14px", font: "600 0.8125rem 'Instrument Sans',sans-serif", cursor: canAskClarify && clarifyQuestion.trim() && !clarifyLoading ? "pointer" : "default", background: "var(--surface)", color: "var(--text-700)" }}
+                      >
+                        {clarifyLoading ? "Asking…" : "Ask"}
+                      </button>
+                      {(micError[clarifyRecKey] || clarifyError) && (
+                        <span className="t-shake" style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{micError[clarifyRecKey] || clarifyError}</span>
+                      )}
+                    </div>
+                    {revealed && (
+                      <div style={{ marginTop: 8, fontSize: "0.75rem", color: "var(--text-lightgray)" }}>
+                        The answer's already shown below, so clarifying questions are closed for this problem.
+                      </div>
+                    )}
+                    {!revealed && !state.data?.chunkId && (
+                      <div style={{ marginTop: 8, fontSize: "0.75rem", color: "var(--text-lightgray)" }}>
+                        Clarifying questions aren't available for this problem right now.
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap" }}>
