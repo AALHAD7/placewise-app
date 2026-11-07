@@ -1,4 +1,5 @@
 import { Router } from "express";
+import crypto from "node:crypto";
 import { optionalAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
@@ -163,8 +164,21 @@ router.post("/chip-panel", optionalAuth, aiLimiter, async (req, res) => {
   }
 });
 
+// Bounded in-memory evaluation cache: identical question + answer submissions
+// receive strictly deterministic, identical results across students.
+const practiceEvaluationCache = new Map();
+const MAX_PRACTICE_EVAL_CACHE = 1000;
+
+function getPracticeEvalCacheKey(question, answer, role, company) {
+  const normQ = String(question || "").trim().toLowerCase();
+  const normA = String(answer || "").trim().toLowerCase();
+  const normR = String(role || "").trim().toLowerCase();
+  const normC = String(company || "").trim().toLowerCase();
+  return crypto.createHash("sha256").update(`${normQ}:::${normA}:::${normR}:::${normC}`).digest("hex");
+}
+
 // In-page Practice Problem Evaluator - evaluates a candidate's practice
-// answer using Gemini without redirecting away from the Role page.
+// answer using an objective standardized rubric and deterministic temperature.
 router.post("/evaluate-practice", optionalAuth, aiLimiter, async (req, res) => {
   const { role, company, topic, difficulty, question, userAnswer } = req.body || {};
 
@@ -175,20 +189,62 @@ router.post("/evaluate-practice", optionalAuth, aiLimiter, async (req, res) => {
     return res.status(400).json({ success: false, error: "Please enter an answer with at least 5 characters before evaluating." });
   }
 
-  const systemPrompt = `You are an elite interview coach and senior hiring bar-raiser evaluating a candidate's practice answer for top MBA, consulting, tech, and corporate roles (e.g. Chief of Staff, PM, Strategy).
-Be insightful, rigorous, structured, and constructive.
+  const cacheKey = getPracticeEvalCacheKey(question, userAnswer, role, company);
+  if (practiceEvaluationCache.has(cacheKey)) {
+    if (req.user && req.user.id) {
+      logActivity(req.user.id, "practice_problem", role || "General");
+    }
+    return res.json({ success: true, evaluation: practiceEvaluationCache.get(cacheKey) });
+  }
+
+  const systemPrompt = `You are an elite, objective interview evaluation engine evaluating practice responses for top MBA, consulting, tech, and corporate roles (e.g. Chief of Staff, PM, Investment Banking, Strategy).
+
+CRITICAL STANDARDIZED RUBRIC & FAIRNESS RULES:
+1. OBJECTIVE 4-DIMENSION RUBRIC (Each dimension is strictly graded from 0.0 to 2.5):
+   - problemFraming (0.0 to 2.5): Direct relevance to the problem. Did the candidate answer the exact prompt and scenario constraints?
+     * 2.0 - 2.5: Directly answers the core prompt and scenario constraints; no filler.
+     * 1.0 - 1.9: Addresses the main question broadly but wanders or misses secondary prompt requirements.
+     * 0.0 - 0.9: Off-topic or fails to understand the core question.
+   - structure (0.0 to 2.5): MECE framework and logical grouping.
+     * 2.0 - 2.5: Clear mutually exclusive, collectively exhaustive (MECE) structure, logical hierarchy, clear buckets.
+     * 1.0 - 1.9: Has categorization, but some categories overlap or leave obvious blind spots.
+     * 0.0 - 0.9: Disorganized laundry list or rambling unstructured text.
+   - analyticalDepth (0.0 to 2.5): Specific operational mechanisms, metrics, and quantitative/commercial levers.
+     * 2.0 - 2.5: Identifies specific operational mechanisms, quantitative levers, metrics, cost drivers, or real-world dynamics.
+     * 1.0 - 1.9: Mentions standard high-level points but lacks concrete mechanisms or operational details.
+     * 0.0 - 0.9: Generic buzzwords with no actionable depth.
+   - prioritization (0.0 to 2.5): Commercial pragmatism and 80/20 prioritization.
+     * 2.0 - 2.5: Clearly prioritizes the highest-impact 80/20 levers, highlights implementation realities, risks, or key trade-offs.
+     * 1.0 - 1.9: Treats every bullet point with equal weight; lacks clear prioritization.
+     * 0.0 - 0.9: Impractical, unrealistic, or devoid of business judgment.
+
+2. SCENARIO ISOLATION RULE:
+   If the question itself specifies an industry, company, or scenario (e.g. "A steel manufacturer...", "An edtech startup..."), evaluate the candidate strictly on that scenario. Do NOT penalize the answer for not discussing ${company || "a specific company"} if the problem explicitly posited a different company or sector.
+
+3. SCORE CALCULATION & BANDS:
+   - score = round(problemFraming + structure + analyticalDepth + prioritization, 1). Range: 1.0 to 10.0.
+   - rating MUST match the score:
+     * 8.5 to 10.0: "Strong" (Bar raiser; highly structured, prioritized, concrete operational levers)
+     * 6.5 to 8.4: "Good" (Solid answer; good coverage but lacks deep prioritization or operational metrics)
+     * 1.0 to 6.4: "Needs Improvement" (Generic, laundry list, or unstructured)
 
 Context:
 Role: ${role || "General"}
-${company ? `Target Company: ${company}` : ""}
+${company ? `Target Employer Context: ${company}` : ""}
 ${topic ? `Topic / Skill: ${topic}` : ""}
 Difficulty: ${difficulty || "Medium"}
 
-Evaluate the candidate's answer thoroughly and return ONLY a valid JSON object matching this exact schema:
+Respond with ONLY a valid JSON object matching this schema:
 {
-  "score": <number between 1.0 and 10.0, e.g. 7.5>,
+  "score": <number between 1.0 and 10.0>,
   "rating": "<Strong | Good | Needs Improvement>",
-  "summary": "<1-2 sentence high-level assessment of the response>",
+  "rubricBreakdown": {
+    "problemFraming": <number 0.0 to 2.5>,
+    "structure": <number 0.0 to 2.5>,
+    "analyticalDepth": <number 0.0 to 2.5>,
+    "prioritization": <number 0.0 to 2.5>
+  },
+  "summary": "<1-2 sentence objective assessment of the response against the rubric>",
   "strengths": ["<specific strength 1>", "<specific strength 2>"],
   "improvements": ["<specific missed angle, weak point, or gap 1>", "<specific improvement 2>"],
   "modelAnswer": "<A structured, benchmark answer demonstrating how an exceptional candidate would tackle this problem using structured frameworks, root-cause diagnosis, or strategic levers>",
@@ -204,12 +260,44 @@ ${userAnswer}
 Provide your structured evaluation in JSON.`;
 
   try {
-    const evaluation = await generateJSON({
+    const rawEval = await generateJSON({
       system: systemPrompt,
       prompt,
       maxTokens: 2500,
+      temperature: 0.0, // Zero temperature for deterministic, consistent scoring across students
       allowEscalation: true
     });
+
+    const evaluation = { ...rawEval };
+
+    // Standardize score calculation from rubric breakdown for mathematical consistency
+    let score = typeof evaluation.score === "number" ? evaluation.score : 5.0;
+    if (evaluation.rubricBreakdown && typeof evaluation.rubricBreakdown === "object") {
+      const b = evaluation.rubricBreakdown;
+      const f = typeof b.problemFraming === "number" ? Math.max(0, Math.min(2.5, b.problemFraming)) : 1.5;
+      const s = typeof b.structure === "number" ? Math.max(0, Math.min(2.5, b.structure)) : 1.5;
+      const d = typeof b.analyticalDepth === "number" ? Math.max(0, Math.min(2.5, b.analyticalDepth)) : 1.5;
+      const p = typeof b.prioritization === "number" ? Math.max(0, Math.min(2.5, b.prioritization)) : 1.5;
+      score = Number(Math.min(10, Math.max(1, f + s + d + p)).toFixed(1));
+      evaluation.rubricBreakdown = {
+        problemFraming: Number(f.toFixed(1)),
+        structure: Number(s.toFixed(1)),
+        analyticalDepth: Number(d.toFixed(1)),
+        prioritization: Number(p.toFixed(1))
+      };
+    } else {
+      score = Number(Math.min(10, Math.max(1, score)).toFixed(1));
+    }
+
+    evaluation.score = score;
+    evaluation.rating = score >= 8.5 ? "Strong" : score >= 6.5 ? "Good" : "Needs Improvement";
+
+    // Store in bounded in-memory cache
+    if (practiceEvaluationCache.size >= MAX_PRACTICE_EVAL_CACHE) {
+      const oldestKey = practiceEvaluationCache.keys().next().value;
+      practiceEvaluationCache.delete(oldestKey);
+    }
+    practiceEvaluationCache.set(cacheKey, evaluation);
 
     if (req.user && req.user.id) {
       logActivity(req.user.id, "practice_problem", role || "General");

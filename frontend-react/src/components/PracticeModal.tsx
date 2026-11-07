@@ -15,6 +15,12 @@ export interface PracticeModalProps {
 interface EvaluationResult {
   score: number;
   rating: "Strong" | "Good" | "Needs Improvement";
+  rubricBreakdown?: {
+    problemFraming: number;
+    structure: number;
+    analyticalDepth: number;
+    prioritization: number;
+  };
   summary: string;
   strengths: string[];
   improvements: string[];
@@ -499,9 +505,39 @@ export default function PracticeModal({
                   })()}
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                  AI Interview Coach Assessment
+                  Standardized Rubric Assessment
                 </div>
               </div>
+
+              {/* Standardized Rubric Breakdown */}
+              {evaluation.rubricBreakdown && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 8, marginTop: 14 }}>
+                  <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "8px", padding: "8px 10px" }}>
+                    <div style={{ fontSize: "0.65625rem", color: "#94a3b8", textTransform: "uppercase", fontWeight: 700, letterSpacing: ".06em" }}>Problem Framing</div>
+                    <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#ffffff", marginTop: 2 }}>
+                      {evaluation.rubricBreakdown.problemFraming} <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>/ 2.5</span>
+                    </div>
+                  </div>
+                  <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "8px", padding: "8px 10px" }}>
+                    <div style={{ fontSize: "0.65625rem", color: "#94a3b8", textTransform: "uppercase", fontWeight: 700, letterSpacing: ".06em" }}>MECE Structure</div>
+                    <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#ffffff", marginTop: 2 }}>
+                      {evaluation.rubricBreakdown.structure} <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>/ 2.5</span>
+                    </div>
+                  </div>
+                  <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "8px", padding: "8px 10px" }}>
+                    <div style={{ fontSize: "0.65625rem", color: "#94a3b8", textTransform: "uppercase", fontWeight: 700, letterSpacing: ".06em" }}>Analytical Depth</div>
+                    <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#ffffff", marginTop: 2 }}>
+                      {evaluation.rubricBreakdown.analyticalDepth} <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>/ 2.5</span>
+                    </div>
+                  </div>
+                  <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "8px", padding: "8px 10px" }}>
+                    <div style={{ fontSize: "0.65625rem", color: "#94a3b8", textTransform: "uppercase", fontWeight: 700, letterSpacing: ".06em" }}>Prioritization</div>
+                    <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#ffffff", marginTop: 2 }}>
+                      {evaluation.rubricBreakdown.prioritization} <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>/ 2.5</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Summary */}
               {evaluation.summary && (
