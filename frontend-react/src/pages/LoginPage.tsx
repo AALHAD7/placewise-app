@@ -47,8 +47,11 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent" }}>
       <div style={{ width: 380, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "32px 30px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9, justifyContent: "center" }}>
-          <span style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-900)" }}>Placewise</span>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, justifyContent: "center" }}>
+          <img src="/brand/placewise-icon.svg" alt="PlaceWise" width="52" height="52" style={{ borderRadius: 12, boxShadow: "0 8px 24px rgba(37, 99, 235, 0.25)" }} />
+          <span style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-900)", letterSpacing: "-0.02em" }}>
+            Place<span style={{ color: "#ff6b35" }}>Wise</span>
+          </span>
         </div>
         <p style={{ margin: "8px 0 24px", textAlign: "center", color: "var(--text-gray2)", fontSize: "0.84375rem" }}>
           {mode === "signin" ? "Sign in to continue" : "Create your account"}

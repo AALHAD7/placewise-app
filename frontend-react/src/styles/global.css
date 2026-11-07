@@ -397,13 +397,15 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
   .nav-item{ color:var(--text-900); }
 }
 
-.brand-left{ display:flex; align-items:center; gap:8px; }
-.brand-bars{ display:flex; align-items:flex-end; gap:2px; height:20px; }
-.brand-bars span{ width:4px; border-radius:2px; display:block; }
-.brand-bars span:nth-child(1){ height:8px; background:rgba(255, 255, 255, 0.5); }
-.brand-bars span:nth-child(2){ height:14px; background:#2563eb; box-shadow:0 0 8px rgba(37, 99, 235, 0.6); }
-.brand-bars span:nth-child(3){ height:20px; background:#ff6b35; box-shadow:0 0 10px rgba(255, 107, 53, 0.7); }
+.brand-left{ display:flex; align-items:center; gap:9px; text-decoration:none; }
+.brand-logo-desktop{ width:28px; height:28px; display:block; flex-shrink:0; transition:transform 0.18s ease; }
+.brand-logo-mobile{ display:none; width:30px; height:30px; flex-shrink:0; border-radius:6px; transition:transform 0.18s ease; }
+.brand-left:hover .brand-logo-desktop{ transform:scale(1.06); }
+.brand-left:hover .brand-logo-mobile{ transform:scale(1.06); }
 .brand-name{ font-weight:800; font-size:1.1875rem; letter-spacing:-.018em; color:#ffffff; }
+.brand-accent{ color:#ff6b35; }
+.mobile-brand-header{ display:flex; align-items:center; gap:8px; padding:8px 10px 12px; border-bottom:1px solid rgba(255, 255, 255, 0.08); margin-bottom:8px; }
+.mobile-brand-tagline{ font-size:0.6875rem; color:rgba(255, 255, 255, 0.5); margin-left:auto; font-weight:500; }
 
 /* --- Materials & depth --- */
 .topnav{
@@ -581,6 +583,8 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
   /* Brand text + topbar-right icons both compress to fit one row with the
      hamburger button - streak pill and user name text are the two widest,
      most skippable-on-a-phone elements, so those go first. */
+  .brand-logo-desktop{ display:none; }
+  .brand-logo-mobile{ display:block; }
   .brand-name{ display:none; }
   .streak-pill{ padding:5px 9px; }
   .streak-pill .streak-count-label{ display:none; }

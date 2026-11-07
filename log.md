@@ -5,6 +5,27 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Brand: integrated new PlaceWise logo and mobile app icon across web & mobile UI
+
+**Phase:** M1 (Consulting RAG) · **Type:** design / branding
+
+**What changed:** Aalhad provided new brand logo and icon assets in `design/brand/`.
+1. Brand assets deployed to `frontend-react/public/brand/`:
+   - `placewise-mark.svg`: Transparent vector emblem mark (blue 'P' with orange ascending growth stair arrow).
+   - `placewise-icon.svg`: High-contrast squircle app icon on dark `#0A0D14` backdrop, optimized for mobile home screens and compact viewports.
+   - `placewise-logo.svg`: Full horizontal lockup with wordmark and tagline.
+2. Favicon & Web App icon:
+   - Replaced default favicon in `frontend-react/public/favicon.svg` with `placewise-mark.svg`.
+   - Updated `frontend-react/index.html` with explicit `<link rel="icon" type="image/svg+xml" href="/brand/placewise-mark.svg" />` and `<link rel="apple-touch-icon" href="/brand/placewise-icon.svg" />`.
+3. Top Navigation (`TopNav.tsx` & `global.css`):
+   - Desktop view: replaced placeholder 3-bar icon with `placewise-mark.svg` (28x28px) and styled wordmark `Place`<span className="brand-accent">Wise</span>.
+   - Mobile view (<=640px): switches cleanly to `placewise-icon.svg` (30x30px squircle app icon) on the top bar to maximize navbar space.
+   - Mobile drawer: added `.mobile-brand-header` displaying the mark, wordmark, and "From Prep to Placement" tagline at the top of the slide-out menu.
+4. Login page (`LoginPage.tsx`):
+   - Updated header with `placewise-icon.svg` (52x52px with soft glow) and bold `PlaceWise` wordmark.
+
+---
+
 ## 2026-11-08 — TopNav: fix horizontal scroll clipping so Role icon stays strictly inside capsule
 
 **Phase:** M1 (Consulting RAG) · **Type:** bugfix / UI polish

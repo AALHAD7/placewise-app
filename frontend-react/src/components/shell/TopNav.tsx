@@ -268,12 +268,9 @@ export default function TopNav() {
     <header className="topnav" ref={headerRef}>
       <div className="topnav-row">
         <button type="button" onClick={goHome} title="Back to home" className="unbutton brand-left" style={{ cursor: "pointer", flex: "none" }}>
-          <div className="brand-bars">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          <span className="brand-name">Placewise</span>
+          <img src="/brand/placewise-mark.svg" alt="PlaceWise" width="28" height="28" className="brand-logo-desktop" />
+          <img src="/brand/placewise-icon.svg" alt="PlaceWise" width="30" height="30" className="brand-logo-mobile" />
+          <span className="brand-name">Place<span className="brand-accent">Wise</span></span>
         </button>
 
         <div className="topnav-capsule-wrapper glass-capsule">
@@ -449,6 +446,15 @@ export default function TopNav() {
       </div>
 
       <nav className={"mobile-nav-panel" + (mobileNavOpen ? " open" : "")} aria-label="Mobile">
+        <div className="mobile-brand-header">
+          <img src="/brand/placewise-mark.svg" alt="" width="22" height="22" />
+          <span className="brand-name" style={{ display: "inline-block", fontSize: "1rem" }}>
+            Place<span className="brand-accent">Wise</span>
+          </span>
+          <span className="mobile-brand-tagline">
+            From Prep to Placement
+          </span>
+        </div>
         {NAV.map((entry) => (
           <NavLink
             key={entry.to}

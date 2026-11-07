@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">PlaceWise mark</title>
+  <desc id="desc">Transparent blue P emblem with an orange ascending stair arrow.</desc>
+  <path fill="#2563EB" fill-rule="evenodd" d="M12 10h68c42 0 66 24 66 56s-24 56-66 56H44v28H12zm32 29v55h36c22 0 32-10 32-28S102 39 80 39z"/>
+  <path fill="none" stroke="#FF6B35" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" d="M51 86 67 72h13l15-15h11l13-14"/>
+  <path fill="#FF6B35" d="m111 39 20-8-6 21z"/>
+</svg>

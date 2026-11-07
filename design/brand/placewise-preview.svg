@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 768" role="img" aria-labelledby="title desc">
+  <title id="title">PlaceWise logo asset preview</title>
+  <desc id="desc">PlaceWise horizontal lockup, dark app icon, and favicon mark.</desc>
+  <rect width="1024" height="768" fill="#0A0D14"/>
+  <g font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" fill="#6B7280" font-size="20" letter-spacing="1.5">
+    <text x="105" y="120">HORIZONTAL LOGO</text><text x="670" y="120">APP ICON</text><text x="400" y="620">32 × 32 FAVICON</text>
+  </g>
+  <g transform="translate(105 210) scale(1.08)">
+    <path fill="#2563EB" fill-rule="evenodd" d="M12 10h68c42 0 66 24 66 56s-24 56-66 56H44v28H12zm32 29v55h36c22 0 32-10 32-28S102 39 80 39z"/>
+    <path fill="none" stroke="#FF6B35" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" d="M51 86 67 72h13l15-15h11l13-14"/><path fill="#FF6B35" d="m111 39 20-8-6 21z"/>
+    <text x="190" y="87" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="62" font-weight="650" letter-spacing="-2"><tspan fill="#FFFFFF">Place</tspan><tspan fill="#FF6B35">Wise</tspan></text>
+    <text x="194" y="121" fill="#FFFFFF" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16" letter-spacing="1.5">From Prep to Placement.</text>
+  </g>
+  <g transform="translate(670 190) scale(1.55)">
+    <rect width="192" height="192" rx="34" fill="#0A0D14"/>
+    <g transform="translate(16 15) scale(1.02)">
+      <path fill="#2563EB" fill-rule="evenodd" d="M12 10h68c42 0 66 24 66 56s-24 56-66 56H44v28H12zm32 29v55h36c22 0 32-10 32-28S102 39 80 39z"/>
+      <path fill="none" stroke="#FF6B35" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" d="M51 86 67 72h13l15-15h11l13-14"/><path fill="#FF6B35" d="m111 39 20-8-6 21z"/>
+    </g>
+  </g>
+  <g transform="translate(494 648) scale(.5)">
+    <path fill="#2563EB" fill-rule="evenodd" d="M12 10h68c42 0 66 24 66 56s-24 56-66 56H44v28H12zm32 29v55h36c22 0 32-10 32-28S102 39 80 39z"/>
+    <path fill="none" stroke="#FF6B35" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" d="M51 86 67 72h13l15-15h11l13-14"/><path fill="#FF6B35" d="m111 39 20-8-6 21z"/>
+  </g>
+</svg>
