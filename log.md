@@ -5,6 +5,17 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Analytics: connected direct Google Analytics 4 Measurement ID (G-NX3SN9VKKQ)
+
+**Phase:** M1 (Consulting RAG) · **Type:** analytics / infrastructure
+
+**What changed:** Aalhad provided the direct GA4 Measurement ID `G-NX3SN9VKKQ`.
+1. `frontend-react/index.html`:
+   - Updated the Google tag loader to `https://www.googletagmanager.com/gtag/js?id=G-NX3SN9VKKQ`.
+   - Added direct config `gtag('config', 'G-NX3SN9VKKQ')`, streaming all web traffic, session statistics, and pageviews directly to the GA4 Property.
+
+---
+
 ## 2026-11-08 — Analytics: integrated Google Tag Manager / GA4 (GTM-KXPWBPDH) with SPA route tracking
 
 **Phase:** M1 (Consulting RAG) · **Type:** analytics / infrastructure
