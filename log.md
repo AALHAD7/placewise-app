@@ -5,6 +5,159 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-06 — FIN1.05: Finance eval questions + read-only preview eval (cross-domain leakage check)
+
+**Phase:** FIN1 · **Type:** eval
+
+**What changed:** Added 12 new rows to `backend/eval/questions.jsonl` (append-only, every
+pre-existing line untouched): 8 covered Finance questions spread across the compendium
+(TVM/NPV, Ind AS 115 revenue recognition, DuPont, DCF/FCFF, LBO mechanics, options payoffs,
+NPA classification, UPI economics), 2 not-covered Finance questions (live repo rate, a named
+company's unpublished internal numbers — both genuinely outside the compendium's scope), and
+2 `crossDomainProbe:true` questions (a Consulting-flavored MECE question and a Finance-flavored
+WACC question) to directly test FIN1.04's domain-widening. Built
+`backend/eval/run_eval_finance_preview.js`, mirroring `run_eval_paraphrase_preview.js`'s
+read-only local-retrieval-over-inactive-rows pattern: fetches the 208 still-inactive Finance
+`ingest_chunks` rows (FIN1.02's document, `is_active=false`) plus the same 9 inactive
+Consulting documents the existing preview scripts use, computes cosine similarity locally,
+and calls the real `decideCoverage`/`judgeRelevanceOnce` from `consultingRetrieval.js` — never
+the live `match_ingest_chunks` RPC, never touching `is_active`. For the 2 probe questions, it
+retrieves against the COMBINED Finance+Consulting pool and reports which domain's chunk
+actually won. (One bug caught and fixed during this run: `ingest_documents.domain` is `null`
+for every pre-existing Consulting document — never backfilled, since Consulting was the only
+domain before FIN1 — so the script infers a domain label from `source_class` instead, which
+is what the leakage check actually needed.)
+**Why:** FIN1.04 shipped Q&A's domain-widening (drops the old Consulting-only filter, relies
+on the existing relevance judge instead of a new classifier) on the strength of a reversible
+design, not evidence. This plan was explicitly the evidence-gathering step before any
+Finance switch-over decision.
+**Results (real run, `backend/eval/results/2026-11-06-finance-preview.{json,md}`):**
+- Coverage match: **10/10 (100%)** — all 8 covered and both not-covered Finance questions
+  got the expected verdict.
+- must_include term survival: **6/8 (75%)** on covered questions. Two misses: f005 (LBO)
+  retrieved a neighboring PE topic ("PE Value Creation Levers and Returns Attribution")
+  instead of "[14.2] LBO Mechanics" on one run (retrieval is not perfectly deterministic —
+  rerunning sometimes returns the exact topic chunk, sometimes an adjacent one in the same
+  module); f008 (UPI) retrieved "Payment Aggregators, Gateways and Payment Orchestration"
+  instead of "[21.3] UPI Deep Dive", missing the literal "NPCI" term. Both misses are a
+  **content/chunking granularity** finding, not a correctness or leakage failure: the
+  relevance judge correctly accepted both as genuinely on-topic (adjacent compendium
+  sections covering closely related subject matter), and the answer the student would see
+  would still be substantively accurate — but it means a specific must_include term can
+  legitimately land in a different, still-relevant chunk from the one the question was
+  anchored on. Worth watching if a real switch-over eval sees the same pattern at scale.
+- **Cross-domain leakage probes: NO LEAKAGE DETECTED.** The Consulting-flavored MECE
+  question's winning chunk was from a Consulting casebook; the Finance-flavored WACC
+  question's winning chunk was from the Finance compendium. Sample size is 2 probes — a
+  first signal, not a final verdict, same caveat every other preview eval this session has
+  carried.
+**Files:** `backend/eval/questions.jsonl`, `backend/eval/run_eval_finance_preview.js`,
+`backend/eval/results/2026-11-06-finance-preview.json`,
+`backend/eval/results/2026-11-06-finance-preview.md`
+**Proof:** `node eval/run_eval_finance_preview.js` run twice (once to catch and fix the
+`domain` column bug above, once clean) against real Gemini calls. Real call count: 12
+embedding calls + 216 relevance-judge calls (flash-lite tier, 3-vote gate × up to 6 covering
+rows × 12 questions that reached the gate). `is_active` confirmed unchanged (never written by
+this script — read-only `select`, no `update`/`upsert` anywhere in it).
+**Cost:** Flash-lite tier only, well under a dollar for this run (12 embedding calls +
+216 short relevance-judge calls, same cheap pattern as the existing preview evals) —
+negligible against the $20/month budget.
+**Open issues:** FIN1.04's domain-widening looks safe on this small sample; Aalhad's own
+unresolved item — growing Finance eval coverage further (per the M2 done-when criteria, the
+same way R3's 39 questions grew from a smaller starter set) — still stands before a full
+switch-over decision.
+
+---
+
+## 2026-11-06 — FIN1.04: Q&A widened to both source classes, policy decision recorded
+
+**Phase:** FIN1 · **Type:** retrieval
+
+**What changed:** Threaded an optional `sourceClasses` param through
+`retrieveConsultingChunks` and `groundedConsultingLookup` in `consultingRetrieval.js`,
+forwarded to `match_ingest_chunks`'s 5th `filter_source_classes` argument (defaulting to
+`null`, which the RPC coalesces to today's exact `club_casebook`-only behavior — every
+existing caller, Frameworks and Guesstimates, is unaffected). `qaRetrieval.js`'s
+`groundedQaAnswer` now calls `groundedConsultingLookup` with `domain: null` (dropping the
+old hardcoded `"Consulting"` filter) and `sourceClasses: ["club_casebook",
+"placewise_reference"]`, so free-form Q&A can reach both Consulting casebook content and
+the Finance compendium once it's switched on, relying on the existing 3-vote relevance
+judge (not a new domain classifier) to keep answers on-topic — a deliberate, reversible
+first attempt per Aalhad's call this session; FIN1.05 adds cross-domain leakage probes to
+the eval set as the first real evidence on this risk. Frameworks (`frameworksGrounding.js`)
+and Guesstimates (`guesstimateRetrieval.js`) were not touched. Added a "Second source
+class, same presentation" decision note to CLAUDE.md's grounding policy, in the same style
+as the existing 2026-11-02 notes: `placewise_reference` content (e.g. the Finance
+compendium) is shown identically to `club_casebook` content, no visible label, distinguished
+only internally by `source_class`.
+**Why:** Closes the "ingested but unreachable" gap from FIN1.02/FIN1.03 — until this
+change, nothing in the retrieval code would ever surface a `placewise_reference` row even
+after it's made active, because Q&A hardcoded `domain: "Consulting"` and the pre-FIN1.03
+RPC hardcoded `club_casebook`.
+**Files:** `backend/src/lib/consultingRetrieval.js`, `backend/src/lib/qaRetrieval.js`,
+`backend/test/consultingRetrieval.test.js`, `backend/test/qaRetrieval.test.js`, `CLAUDE.md`
+**Proof:** `npm test`: 180/181 pass (1 pre-existing, unrelated sandbox env-leak failure —
+see `.gsd/STATE.md`). 4 new tests, 2 per file, network-mocked (same `fetch`-mock pattern as
+`consultingParaphraseFlagOn.test.js`) to assert the real RPC request body carries
+`filter_source_classes` (both values when passed, `null` when omitted) and that
+`groundedQaAnswer` specifically sends `filter_domain: null` plus both source classes.
+Live read-only check: queried `ingest_chunks`/`ingest_documents` directly (service-role
+client, bypassing the RPC's `is_active` filter) and confirmed the 208 Finance chunks from
+FIN1.02 are real rows (`source_class='placewise_reference'`, `domain='Finance'`,
+`source_file='finance_compendium.md'`, `is_active=false`). Then called the live
+`match_ingest_chunks` RPC with `filter_source_classes: ['club_casebook',
+'placewise_reference']` and a dummy embedding: it accepted the array (no error) and
+returned 10 rows, 0 of them from `finance_compendium.md` — confirming the RPC's hardcoded
+`c.is_active = true` clause (migration_049) correctly still excludes the inactive Finance
+chunks today, i.e. this plan wires reachability but does not switch anything on; that
+remains a separate, later decision for Aalhad.
+**Cost:** $0 (no Gemini/embedding calls made; the live RPC probe used a dummy local
+embedding array, not a real `embedContent` call).
+
+---
+
+## 2026-11-06 — FIN1.02: Finance compendium ingested into ingest_documents/ingest_chunks
+
+**Phase:** FIN1 · **Type:** ingestion
+
+**What changed:** Built `backend/scripts/ingestFinanceCompendium.js` and ran it for real
+against `Data Extracted from Claude Cowork/Data/Finance Files/finance_compendium.md`. Parsed
+208 topic chunks (modules 1-25, no topic exceeded the 6000-char split threshold so
+`splitLongContent` never fired), ran each through the conservative diagram-author +
+3-vote faithfulness-judge gate (`financeDiagramAuthor.js`), embedded every chunk's final
+content (`gemini-embedding-001`, confirmed 768-dim), and wrote one `ingest_documents` row
+(`source_class = 'placewise_reference'`, `domain = 'Finance'`, `status = 'done'`) plus 208
+`ingest_chunks` rows, every one `is_active = false`.
+**Why:** Lands the Finance reference compendium in the same `ingest_documents`/`ingest_chunks`
+shape the rest of the retrieval stack reads, so FIN1.04's Q&A wiring has real rows to query
+(via the local preview pattern, not the live RPC, until a separate switch-over decision).
+**Files:** `backend/scripts/ingestFinanceCompendium.js`,
+`backend/ingestion/out/fin1_ingest_report.json`
+**Proof:** `backend/ingestion/out/fin1_ingest_report.json` — 208/208 chunks written; 136
+diagrams proposed, 135 passed the faithfulness judge and were attached (`has_diagram=true`
+on exactly 135 rows, verified against the live table), 1 proposed diagram dropped as
+unfaithful (text-only fallback, the gate working as designed). DB verified directly: exactly
+one `ingest_documents` row for `finance_compendium.md` (`status='done'`), 208 `ingest_chunks`
+rows, 0 with `is_active=true`.
+**Cost:** Real `llm_call_log` count for the `financeDiagramAuthor-*` features this session:
+425 proposal calls + 424 faithfulness-judge calls = 849 flash-lite generation calls, plus 208
+embedding calls (not logged in `llm_call_log`; `embedTexts` doesn't call `logLlmCall`, counted
+from the script's own run report). The completed, written run itself made 208 proposal + 408
+judge + 208 embedding calls (`fin1_ingest_report.json`'s `geminiCalls`); the extra ~217
+proposal/judge calls above that are from (1) the required `--dry-run` pilot before the real
+run (208 proposal calls, by design — zero judge/embedding calls, zero writes) and (2) an
+accidental duplicate background process that was started and killed within ~15s before it
+reached the embedding step or any DB write (no duplicate rows were written — confirmed only
+one `ingest_documents` row exists). All flash-lite tier. Rough cost: low single-digit cents,
+well inside the $20/month budget.
+**Undo:** Nothing is live — `is_active` stays `false` on every row. To fully undo: `delete
+from ingest_documents where source_file = 'finance_compendium.md'` (cascades to its 208
+`ingest_chunks` rows). No existing row anywhere was touched.
+**Open issues:** None for this plan. FIN1.04 (Q&A wiring) and the separate CLAUDE.md doc
+update for `placewise_reference` are out of scope here, per the plan.
+
+---
+
 ## 2026-11-06 — Fix: pass a real domain filter to match_document_chunks at 3 call sites to avoid statement timeouts
 
 **Phase:** R9/ad-hoc fix · **Type:** bug fix (retrieval call sites, not retrieval logic itself)

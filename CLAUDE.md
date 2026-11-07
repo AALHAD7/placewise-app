@@ -45,6 +45,15 @@ Spec: `.gsd/SPEC.md`. Session position: `.gsd/STATE.md`.
   one thing that must never be silently omitted, since hiding it would let general AI
   guidance pass as casebook content.
 - Below the similarity threshold, show nothing rather than a loosely related excerpt.
+- **Second source class, same presentation.** Decided 2026-11-06: in addition to
+  `club_casebook`, a second `source_class` value — `placewise_reference` — exists for
+  curated reference material built for RAG (not sourced from a specific club's casebook;
+  first use: the Finance reference compendium, `.gsd/phases/FIN1/`). Students see
+  `placewise_reference` content presented identically to `club_casebook` content — no
+  visible label distinguishes them, consistent with the no-per-answer-source-line decision
+  above. `source_class` stays accurate internally for Aalhad's own tracking/audit; the
+  per-answer AI-fallback disclosure (casebooks don't cover this, general answer) is
+  unaffected and still applies whenever NEITHER source class covers a question.
 
 **What is grounded in the casebooks**
 - Frameworks page (by domain/subdomain): explanation + rebuilt diagram from casebooks.

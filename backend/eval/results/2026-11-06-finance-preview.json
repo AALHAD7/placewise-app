@@ -1,0 +1,251 @@
+{
+  "runAt": "2026-11-06T14:43:03.219Z",
+  "label": "finance-preview",
+  "isActiveTouched": false,
+  "financeDocId": "3923cb00-cf65-4a9d-862e-0ebef9c7e603",
+  "consultingDocIds": [
+    "e9229429-3eec-478b-b54a-7d5a1cdf6de0",
+    "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+    "17a7c482-5181-423c-b8d5-44f79e90e392",
+    "6ae47aaa-ad2e-4848-9775-75ac2072f79e",
+    "ab676b81-3b29-4c35-b288-6dff71756e26",
+    "fa763d15-dac2-408f-9228-8a5f34785128",
+    "f2c1333f-b205-46fa-991e-551548dffef7",
+    "09c41590-6f53-40be-a19c-60fa645610f4",
+    "faa13328-c4bc-4ed7-8172-6ec5ba38c162"
+  ],
+  "callCounts": {
+    "embedding": 12,
+    "relevanceJudge": 216
+  },
+  "financeResults": [
+    {
+      "id": "f001",
+      "question": "How do you calculate the NPV of a project and decide whether to accept it?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "Net Present Value (NPV)",
+      "topSimilarity": 0.753242595050822,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "f002",
+      "question": "What are the five steps of revenue recognition under Ind AS 115?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "Revenue Recognition: Ind AS 115 / IFRS 15 Five-Step Model",
+      "topSimilarity": 0.8181796323122411,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "f003",
+      "question": "How does DuPont analysis decompose return on equity (ROE)?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "DuPont Analysis (3-Step and 5-Step)",
+      "topSimilarity": 0.800426824689386,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "f004",
+      "question": "How do you build FCFF for a DCF valuation and what rate do you discount it at?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "Discounted Cash Flow: Building FCFF and Discounting",
+      "topSimilarity": 0.7850266622293821,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "f005",
+      "question": "Walk me through the mechanics of a leveraged buyout (LBO).",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "PE Value Creation Levers and Returns Attribution",
+      "topSimilarity": 0.6794910589794273,
+      "mustIncludeCheck": {
+        "verdict": "fail",
+        "reason": "Missing from matched chunk: leveraged buyout, sponsor equity"
+      }
+    },
+    {
+      "id": "f006",
+      "question": "What is the payoff for a call option buyer at expiry and what is moneyness?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "Options: Basics, Payoffs and Moneyness",
+      "topSimilarity": 0.7191236131267796,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "f007",
+      "question": "What is a non-performing asset (NPA) and how do Indian banks classify and provide for NPAs?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "Asset Quality: NPAs, Provisioning, Restructuring and Write-offs",
+      "topSimilarity": 0.7803807328142692,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "f008",
+      "question": "How does UPI work and how do payment apps make money given zero MDR on UPI P2M transactions?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "Payment Aggregators, Gateways and Payment Orchestration",
+      "topSimilarity": 0.6613048872855963,
+      "mustIncludeCheck": {
+        "verdict": "fail",
+        "reason": "Missing from matched chunk: NPCI"
+      }
+    },
+    {
+      "id": "f009",
+      "question": "What is the RBI's exact current repo rate as of this week?",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "f010",
+      "question": "What were Reliance Industries' actual unpublished internal quarterly segment numbers for FY26 Q3?",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    }
+  ],
+  "probeResults": [
+    {
+      "id": "f011",
+      "question": "What is the MECE principle and how do you use it to structure a consulting case?",
+      "expectedDomain": "Consulting",
+      "covered": true,
+      "winningDomain": "Consulting",
+      "winningSectionTitle": "Frameworks provide clarity of thought and helps you structure your arguments bet",
+      "winningSourceFile": "IIM Calcutta Consulting CaseBook 2025-26.pdf",
+      "leaked": false,
+      "top6RowsByDomain": [
+        {
+          "domain": "Consulting",
+          "source_file": "IIM Calcutta Consulting CaseBook 2025-26.pdf",
+          "section_title": "Frameworks provide clarity of thought and helps you structure your arguments bet",
+          "similarity": 0.751
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "ISB Consulting Casebook 2025.pdf",
+          "section_title": "Structure and Approach",
+          "similarity": 0.73
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "ISB Consulting Casebook 2025.pdf",
+          "section_title": "How to use these frameworks?",
+          "similarity": 0.728
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "ISB Consulting Casebook 2025.pdf",
+          "section_title": "MECE based Framework",
+          "similarity": 0.721
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "ISB Consulting Casebook 2025.pdf",
+          "section_title": "Case Frameworks (part 3/6)",
+          "similarity": 0.71
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "ISB Consulting Casebook 2025.pdf",
+          "section_title": "Case Frameworks (part 6/6)",
+          "similarity": 0.704
+        }
+      ]
+    },
+    {
+      "id": "f012",
+      "question": "What is WACC and how do you calculate it from the cost of equity and after-tax cost of debt?",
+      "expectedDomain": "Finance",
+      "covered": true,
+      "winningDomain": "Finance",
+      "winningSectionTitle": "Cost of Debt and WACC in Practice",
+      "winningSourceFile": "finance_compendium.md",
+      "leaked": false,
+      "top6RowsByDomain": [
+        {
+          "domain": "Finance",
+          "source_file": "finance_compendium.md",
+          "section_title": "Cost of Debt and WACC in Practice",
+          "similarity": 0.736
+        },
+        {
+          "domain": "Finance",
+          "source_file": "finance_compendium.md",
+          "section_title": "Opportunity Cost, Incremental Cash Flows and the Cost of Capital",
+          "similarity": 0.709
+        },
+        {
+          "domain": "Finance",
+          "source_file": "finance_compendium.md",
+          "section_title": "Cost of Equity: CAPM, Beta Estimation and Levering/Unlevering",
+          "similarity": 0.671
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIMA-Consult-Prep-Book-Case-Book-2025-26.pdf",
+          "section_title": "Pepper Spray Manufacturer – Interview Transcript (2/2)",
+          "similarity": 0.649
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIMA-Consult-Prep-Book-Case-Book-2025-26.pdf",
+          "section_title": "Pepper Spray Manufacturer – Interview Transcript (2/2)",
+          "similarity": 0.649
+        },
+        {
+          "domain": "Finance",
+          "source_file": "finance_compendium.md",
+          "section_title": "Capital Structure Theory: Modigliani-Miller, Trade-Off and Pecking Order",
+          "similarity": 0.646
+        }
+      ]
+    }
+  ]
+}

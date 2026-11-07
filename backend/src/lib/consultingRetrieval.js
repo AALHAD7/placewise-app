@@ -56,14 +56,15 @@ export function buildCitation(row) {
  * frameworksGrounding.js's findGrounding - a retrieval miss must never take
  * down the page it's enriching.
  */
-export async function retrieveConsultingChunks(queryText, { domain, matchCount = 6, sourceFile } = {}) {
+export async function retrieveConsultingChunks(queryText, { domain, matchCount = 6, sourceFile, sourceClasses } = {}) {
   try {
     const [queryEmbedding] = await embedTexts([queryText], "RETRIEVAL_QUERY");
     const { data, error } = await supabase.rpc("match_ingest_chunks", {
       query_embedding: queryEmbedding,
       match_count: matchCount,
       filter_domain: domain || null,
-      filter_source_file: sourceFile || null
+      filter_source_file: sourceFile || null,
+      filter_source_classes: sourceClasses || null
     });
     if (error) throw error;
     return data || [];
@@ -388,8 +389,10 @@ async function paraphraseRowForOutput(queryText, row) {
  * for any reason (or want to show both) have it; callers that just read `.content` (every
  * caller today) get the paraphrase transparently and don't need to change.
  */
-export async function groundedConsultingLookup(queryText, { domain = "Consulting", matchCount = 6, sourceFile, paraphrase = false } = {}) {
-  const rows = await retrieveConsultingChunks(queryText, { domain, matchCount, sourceFile });
+// File name is a holdover from R7 (Consulting-only); this function is domain- and
+// source-class-agnostic as of FIN1 - see qaRetrieval.js's cross-domain Q&A call.
+export async function groundedConsultingLookup(queryText, { domain = "Consulting", matchCount = 6, sourceFile, paraphrase = false, sourceClasses } = {}) {
+  const rows = await retrieveConsultingChunks(queryText, { domain, matchCount, sourceFile, sourceClasses });
   const { covered, rows: coveringRows } = decideCoverage(rows);
 
   if (!covered) {

@@ -61,7 +61,8 @@ switch live.
 | ID | Task | Agent | Extra done-when | Status |
 |---|---|---|---|---|
 | D1 | Product management | ingestion-engineer → rag-engineer | Grounded PM content is on with citations | todo |
-| D2 | Finance | ingestion-engineer | Charts and tables: all numbers match the source (number coverage = 100%) | todo |
+| FIN1 | Finance reference compendium (`finance_compendium.md`, 208 topics) — curated reference material, not a club casebook; new `source_class = placewise_reference`, ingested into `ingest_documents`/`ingest_chunks` and wired to Q&A, `is_active=false` until Aalhad switches it on | ingestion-engineer → backend-engineer → rag-engineer → rag-evaluator | 208 topic chunks ingested and embedded; `match_ingest_chunks` accepts `placewise_reference` alongside `club_casebook`; Q&A can retrieve Finance content; ≥10 Finance eval questions added and scored; CLAUDE.md's grounding policy documents the new source class; cost logged | todo |
+| D2 | Finance (club casebooks) | ingestion-engineer | Charts and tables: all numbers match the source (number coverage = 100%); Frameworks-page taxonomy expansion for the FIN1 compendium's 26 modules is follow-up work here, not in FIN1 | todo |
 | D3 | Marketing / Sales | ingestion-engineer | — | todo |
 | D4 | HR | ingestion-engineer | — | todo |
 | D5 | General Management | ingestion-engineer | — | todo |

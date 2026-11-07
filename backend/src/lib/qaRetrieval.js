@@ -42,7 +42,24 @@ export async function groundedQaAnswer(question) {
   // paraphrase: true opts in to the paraphrase layer (grounded-answering skill) - a
   // no-op unless ENABLE_ANSWER_PARAPHRASE is also on, in which case each chunk's
   // `.content` below is the rewrite (verified faithful) rather than the verbatim excerpt.
-  const result = await groundedConsultingLookup(question, { domain: "Consulting", matchCount: 6, paraphrase: true });
+  //
+  // domain: null + sourceClasses covering both club_casebook and placewise_reference
+  // (FIN1.04): a free-form question can be about any domain the casebooks/compendium
+  // cover, so Q&A (and only Q&A - Frameworks and Guesstimates keep their domain/
+  // source-file scoping) drops the domain filter and searches both source classes.
+  // This relies on the similarity threshold plus the existing 3-vote relevance judge
+  // (RELEVANCE_SYSTEM_PROMPT's explicit "same-category vocabulary isn't enough" rule) to
+  // reject a Consulting question matching a Finance chunk, or vice versa, rather than
+  // adding a second Gemini call to classify the question's domain first - not yet
+  // justified by evidence (no eval has shown the relevance judge failing this way;
+  // FIN1.05's eval is the first real signal on this specific risk). This is a one-line,
+  // fully reversible change (revert this options object) if that eval shows leakage.
+  const result = await groundedConsultingLookup(question, {
+    domain: null,
+    matchCount: 6,
+    paraphrase: true,
+    sourceClasses: ["club_casebook", "placewise_reference"]
+  });
 
   if (!result.covered) {
     const answer = await generateText({

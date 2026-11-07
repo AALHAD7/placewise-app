@@ -7,9 +7,15 @@
 // frameworksGrounding.js's existing findGrounding.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+
+process.env.GEMINI_API_KEY = process.env.GEMINI_API_KEY || "test-gemini-key";
+process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://fake-supabase.test";
+process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "test-supabase-key";
+
 import {
   decideCoverage,
   buildCitation,
+  retrieveConsultingChunks,
   SIMILARITY_THRESHOLD,
   DIAGRAM_SIMILARITY_THRESHOLD,
   AI_FALLBACK_LABEL
@@ -119,4 +125,45 @@ test("AI_FALLBACK_LABEL is a non-empty, visibly-labelled string (grounding polic
   assert.equal(typeof AI_FALLBACK_LABEL, "string");
   assert.ok(AI_FALLBACK_LABEL.length > 0);
   assert.ok(/not from the casebooks/i.test(AI_FALLBACK_LABEL));
+});
+
+// --- retrieveConsultingChunks: sourceClasses forwarding (FIN1.04) ---
+//
+// Network-mocked (same pattern as consultingParaphraseFlagOn.test.js) just enough to
+// capture the body sent to match_ingest_chunks's RPC endpoint - no real Supabase/Gemini
+// call is made.
+function installFakeFetchForRpcCapture(t, { capture }) {
+  t.mock.method(globalThis, "fetch", async (url, opts) => {
+    const href = typeof url === "string" ? url : url.toString();
+    if (href.includes(":embedContent")) {
+      return new Response(JSON.stringify({ embedding: { values: new Array(768).fill(0) } }), { status: 200 });
+    }
+    if (href.includes("/rest/v1/rpc/match_ingest_chunks")) {
+      capture.push(JSON.parse(opts.body));
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    return new Response(JSON.stringify({}), { status: 200 });
+  });
+}
+
+test("retrieveConsultingChunks: passing sourceClasses forwards it as filter_source_classes", async t => {
+  const calls = [];
+  installFakeFetchForRpcCapture(t, { capture: calls });
+
+  await retrieveConsultingChunks("what is the finance compendium about?", {
+    sourceClasses: ["club_casebook", "placewise_reference"]
+  });
+
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0].filter_source_classes, ["club_casebook", "placewise_reference"]);
+});
+
+test("retrieveConsultingChunks: no sourceClasses forwards filter_source_classes: null (today's exact behavior)", async t => {
+  const calls = [];
+  installFakeFetchForRpcCapture(t, { capture: calls });
+
+  await retrieveConsultingChunks("what is MECE?", { domain: "Consulting" });
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].filter_source_classes, null);
 });
