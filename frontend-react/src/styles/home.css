@@ -123,6 +123,27 @@
   }
 }
 
+.home-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--home-r-chip);
+  background: rgba(37, 99, 235, 0.14);
+  border: 1px solid rgba(59, 130, 246, 0.32);
+  color: #93c5fd;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-bottom: 1.125rem;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.12);
+}
+
+.home-hero-badge svg {
+  color: #60a5fa;
+  flex-shrink: 0;
+}
+
 .home-hero h1 {
   font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
   line-height: 1.08;

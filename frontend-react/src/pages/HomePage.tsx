@@ -67,6 +67,14 @@ function UploadIcon() {
     </svg>
   );
 }
+function BookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+  );
+}
 
 // The curved hand-drawn arrow under the Caveat note - a small inline SVG,
 // not an icon font glyph, so it reads as a sketch rather than a UI icon.
@@ -164,6 +172,10 @@ export default function HomePage() {
 
         <section className="home-hero">
           <div>
+            <div className="home-hero-badge">
+              <BookIcon />
+              <span>Answers are grounded in IIM case books</span>
+            </div>
             <h1>
               Interview prep that starts
               <span className="accent">from your resume</span>

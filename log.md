@@ -5,6 +5,19 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Homepage: added prominent "Answers are grounded in IIM case books" trust kicker
+
+**Phase:** M1 (Consulting RAG) · **Type:** copy / trust & grounding disclosure
+
+**What changed:** Aalhad requested adding the line “Answers are grounded in IIM case books” on the homepage so students clearly know that the site is grounded in IIM casebooks.
+1. `frontend-react/src/pages/HomePage.tsx`:
+   - Added `BookIcon` component.
+   - Inserted a prominent top trust badge directly above the hero title: `Answers are grounded in IIM case books`.
+2. `frontend-react/src/styles/home.css`:
+   - Added `.home-hero-badge` styled to match the royal blue & neon accent theme (`rgba(37, 99, 235, 0.14)` background, `rgba(59, 130, 246, 0.32)` border, `#93c5fd` text, glowing SVG icon).
+
+---
+
 ## 2026-11-08 — Guesstimates: prevent timer duration selection from refreshing the current question
 
 **Phase:** M1 (Consulting RAG) · **Type:** bugfix / UX polish
