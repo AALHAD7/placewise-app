@@ -183,7 +183,17 @@ textarea::placeholder, input::placeholder{color:rgba(255,255,255,0.50)}
 select option{background:#16181d;color:#ffffff}
 *{box-sizing:border-box}
 
-/* Any element using var(--surface) for background gets frosted glass blur and royal blue/charcoal border */
+
+/* Lock background scrolling when any modal is open */
+.app-shell[data-modal="true"] {
+  overflow: hidden;
+  height: 100vh;
+}
+
+body[data-modal="true"] {
+  overflow: hidden;
+}
+
 [style*="var(--surface)"] {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

@@ -135,9 +135,12 @@ export default function CompanyPage() {
   useEffect(() => {
     const shell = document.querySelector<HTMLElement>(".app-shell");
     if (!shell) return;
-    shell.dataset.modal = stageModalRendered && !stageModalExiting ? "true" : "false";
+    const active = stageModalRendered && !stageModalExiting;
+    shell.dataset.modal = active ? "true" : "false";
+    document.body.dataset.modal = active ? "true" : "false";
     return () => {
       shell.dataset.modal = "false";
+      document.body.dataset.modal = "false";
     };
   }, [stageModalRendered, stageModalExiting]);
   useEffect(() => {
@@ -978,7 +981,7 @@ export default function CompanyPage() {
           className={stageModalExiting ? "t-scrim-out" : "t-scrim-in"}
           onClick={(e) => { if (e.target === e.currentTarget) setOpenStage(null); }}
           data-lenis-prevent
-          style={{ position: "fixed", inset: 0, background: "rgba(17,20,45,.55)", zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "48px 20px", overflow: "auto" }}
+          style={{ position: "fixed", inset: 0, background: "rgba(17,20,45,.55)", zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "48px 20px", overflow: "hidden" }}
         >
           <div role="dialog" aria-modal="true" aria-label={openStage.name} className={(stageModalExiting ? "t-panel-out" : "t-panel-in") + " glass-panel"} style={{ width: "100%", maxWidth: 640, borderRadius: "var(--r-md)" }}>
             <div style={{ padding: "24px 26px 18px", borderBottom: "1px solid var(--divider)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
@@ -1027,7 +1030,7 @@ export default function CompanyPage() {
           className={bmModalExiting ? "t-scrim-out" : "t-scrim-in"}
           onClick={(e) => { if (e.target === e.currentTarget) setBusinessModelOpen(false); }}
           data-lenis-prevent
-          style={{ position: "fixed", inset: 0, background: "rgba(17,20,45,.55)", zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "48px 20px", overflow: "auto" }}
+          style={{ position: "fixed", inset: 0, background: "rgba(17,20,45,.55)", zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "48px 20px", overflow: "hidden" }}
         >
           <div role="dialog" aria-modal="true" aria-label={`${company} business model`} className={(bmModalExiting ? "t-panel-out" : "t-panel-in") + " glass-panel"} style={{ width: "100%", maxWidth: 900, borderRadius: "var(--r-md)" }}>
             <div style={{ padding: "24px 26px 18px", borderBottom: "1px solid var(--divider)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
