@@ -5,6 +5,25 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Favicon: added multi-format PNG/ICO assets and cache-busters for Safari & Chrome tab icons
+
+**Phase:** M1 (Consulting RAG) · **Type:** bugfix / branding
+
+**What changed:** Aalhad reported that browser tabs still displayed the legacy purple thunderbolt icon instead of the new PlaceWise brand mark.
+1. Root cause:
+   - Safari and WebKit require raster PNGs for `apple-touch-icon` (SVG is silently ignored by Safari's touch icon parser).
+   - Safari aggressively caches domain favicons in an internal SQLite database (`~/Library/Safari/Favicon Cache/favicons.db`) and requires cache-busting query strings (`?v=2`) on `<link rel="icon">` tags to invalidate existing cached icons.
+   - Standard `/favicon.ico` and `/apple-touch-icon.png` were missing at the root of `public/`, prompting browsers to fall back to their prior cached icon.
+2. Fix:
+   - Generated native raster icons using macOS WebKit QuickLook and PIL:
+     - `favicon.ico`: multi-resolution ICO (16x16, 32x32, 48x48)
+     - `apple-touch-icon.png` & `apple-touch-icon-precomposed.png`: 180x180 PNG
+     - `favicon-32x32.png`, `favicon-16x16.png`, `favicon-48x48.png`: crisp raster marks
+     - `site.webmanifest`: PWA manifest linking to brand assets
+   - Updated `frontend-react/index.html` with cache-busted declarations (`?v=2`) across SVG mark, PNG favicons, Apple touch icon, and ICO fallback.
+
+---
+
 ## 2026-11-08 — Brand: integrated new PlaceWise logo and mobile app icon across web & mobile UI
 
 **Phase:** M1 (Consulting RAG) · **Type:** design / branding
