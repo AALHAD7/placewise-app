@@ -18,7 +18,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />
     <link rel="manifest" href="/site.webmanifest?v=2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#F5F8FF" />
+    <meta name="theme-color" content="#0A0D14" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Plus Jakarta Sans 700 (H1/headings/buttons) and Caveat 600 (the
@@ -38,11 +38,8 @@
       // which should ever break page load.
       (function () {
         try {
-          var stored = null;
-          try { stored = localStorage.getItem("placewise-theme"); } catch (e) {}
-          var mode = stored === "dark" ? "dark" : "light";
-          document.documentElement.setAttribute("data-theme", mode);
-          document.documentElement.style.colorScheme = mode;
+          document.documentElement.setAttribute("data-theme", "dark");
+          document.documentElement.style.colorScheme = "dark";
         } catch (e) {}
       })();
     </script>

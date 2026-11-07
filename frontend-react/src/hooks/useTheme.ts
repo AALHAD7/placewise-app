@@ -8,28 +8,21 @@ export type ThemeMode = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
 
 const STORAGE_KEY = "placewise-theme";
-const LIGHT_THEME_COLOR = "#F5F8FF";
-const DARK_THEME_COLOR = "#0B1220";
+const DARK_THEME_COLOR = "#0A0D14";
 
 function readStoredMode(): ThemeMode {
-  try {
-    const v = localStorage.getItem(STORAGE_KEY);
-    if (v === "light" || v === "dark") return v;
-  } catch {
-    // ignore - private browsing / blocked storage
-  }
-  return "light";
+  return "dark";
 }
 
-function resolve(mode: ThemeMode): ResolvedTheme {
-  return mode === "dark" ? "dark" : "light";
+function resolve(_mode?: ThemeMode): ResolvedTheme {
+  return "dark";
 }
 
-function applyTheme(resolved: ResolvedTheme) {
-  document.documentElement.setAttribute("data-theme", resolved);
-  document.documentElement.style.colorScheme = resolved;
+function applyTheme(_resolved?: ResolvedTheme) {
+  document.documentElement.setAttribute("data-theme", "dark");
+  document.documentElement.style.colorScheme = "dark";
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", resolved === "dark" ? DARK_THEME_COLOR : LIGHT_THEME_COLOR);
+  if (meta) meta.setAttribute("content", DARK_THEME_COLOR);
 }
 
 interface ThemeValue {

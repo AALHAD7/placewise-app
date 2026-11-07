@@ -5,6 +5,21 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — UI Polish: removed theme switcher and locked design permanently to Obsidian Dark mode
+
+**Phase:** M1 (Consulting RAG) · **Type:** design / UX polish
+
+**What changed:** Aalhad requested removal of the non-functional "Light / Dark / System" segmented control:
+1. Root cause:
+   - PlaceWise's brand identity, components, glass capsules, visualizer diagrams, and card surfaces are intentionally built for the dark Obsidian (`#0A0D14`) palette.
+   - The theme options in the account menu gave the illusion of a choice that was non-functional and inconsistent with the site design.
+2. Fix:
+   - Removed the "Theme" switcher (`Light / Dark / System`) and `THEME_OPTIONS` from the user avatar dropdown menu in `TopNav.tsx`.
+   - Set pre-paint script and `useTheme.ts` to permanently lock to `data-theme="dark"` and `color-scheme: dark`.
+   - Set `<meta name="theme-color" content="#0A0D14">` in `index.html`.
+
+---
+
 ## 2026-11-08 — Scalability: raised global IP rate-limit from 300 to 3000 req/15min for campus Wi-Fi NAT
 
 **Phase:** M1 (Consulting RAG) · **Type:** scalability / infrastructure

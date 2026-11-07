@@ -3,7 +3,6 @@ import { useExitTransition } from "../../hooks/useExitTransition";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../contexts/AuthContext";
-import { useTheme, type ThemeMode } from "../../hooks/useTheme";
 
 // Ported from frontend/index.html lines 226-292. Active-state styling uses
 // NavLink's isActive instead of the old item() method's per-item JS-computed
@@ -139,17 +138,10 @@ function formatCountdown(msLeft: number): string {
   return h > 0 ? `${h}h ${m}m left` : `${m}m left`;
 }
 
-const THEME_OPTIONS: { mode: ThemeMode; label: string }[] = [
-  { mode: "light", label: "Light" },
-  { mode: "dark", label: "Dark" },
-  { mode: "system", label: "System" }
-];
-
 export default function TopNav() {
   const navigate = useNavigate();
   const { data, sessionName, reload } = useDashboard();
   const { isGuest, guestExpiresAt, signOut } = useAuth();
-  const { mode: themeMode, setMode: setThemeMode } = useTheme();
   const streak = data?.streak || 0;
   const hasStreak = streak > 0;
   const initials =
@@ -361,28 +353,12 @@ export default function TopNav() {
               </div>
             </button>
             {avatarOpen && (
-              <div role="menu" aria-label="Account" className="t-pop-in glass-panel" style={{ ["--pop-origin" as string]: "top right", position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 30, width: 220, borderRadius: "var(--r-md)", padding: 10 }}>
+              <div role="menu" aria-label="Account" className="t-pop-in glass-panel" style={{ ["--pop-origin" as string]: "top right", position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 30, width: 200, borderRadius: "var(--r-md)", padding: 10 }}>
                 <div style={{ padding: "6px 8px 10px", borderBottom: "1px solid var(--card-border)", marginBottom: 6 }}>
                   <div style={{ fontSize: "0.84375rem", fontWeight: 700, color: "var(--text-900)" }}>{sessionName}</div>
                   <div style={{ fontSize: "0.75rem", color: "var(--text-gray2)", marginTop: 2 }}>{isGuest ? "Guest session" : "Signed in"}</div>
                 </div>
-                <div style={{ padding: "4px 8px", fontSize: "0.71875rem", fontWeight: 700, letterSpacing: "0.04em", color: "var(--text-lightgray)", textTransform: "uppercase" }}>Theme</div>
-                <div style={{ display: "flex", gap: 4, padding: "0 8px 8px" }}>
-                  {THEME_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.mode}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={themeMode === opt.mode}
-                      onClick={() => setThemeMode(opt.mode)}
-                      className="unbutton theme-pick"
-                      data-active={themeMode === opt.mode}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-                <div style={{ borderTop: "1px solid var(--card-border)", marginTop: 4, paddingTop: 6 }}>
+                <div>
                   {isGuest ? (
                     <button
                       type="button"
