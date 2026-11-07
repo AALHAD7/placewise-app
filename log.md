@@ -5,6 +5,19 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Guesstimates: prevent timer duration selection from refreshing the current question
+
+**Phase:** M1 (Consulting RAG) · **Type:** bugfix / UX polish
+
+**What changed:** Aalhad reported that clicking any duration on the timer (5m, 10m, 15m, custom) caused the current question to refresh and get treated as completed.
+1. Root cause: `load` callback had `[timerMode, customMinutes]` in its `useCallback` dependency array, and an effect with `[load]` re-invoked `load()` on every timer mode or duration click.
+2. Fix:
+   - Stored `timerModeRef` and `customMinutesRef` so `load` reads the latest timer duration without needing them as reactive dependencies.
+   - Decoupled `load` to have zero dependencies (`[]`), ensuring it only mounts on initial page load or when explicitly triggered via "Try another", "Random Problem", or selecting a problem from the catalog.
+   - Adjusting timer duration now strictly updates the countdown clock without refreshing the problem, clearing the attempt, or triggering any network fetch.
+
+---
+
 ## 2026-11-08 — Guesstimates: modal background scroll lock & strict practiced-only tagging after answer submission
 
 **Phase:** M1 (Consulting RAG) · **Type:** bugfix / UX polish

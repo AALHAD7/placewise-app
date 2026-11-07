@@ -149,6 +149,16 @@ export default function GuesstimatesPage() {
   const [timerRunning, setTimerRunning] = useState(false);
   const [timeExpiredNotice, setTimeExpiredNotice] = useState<string | null>(null);
 
+  const timerModeRef = useRef(timerMode);
+  useEffect(() => {
+    timerModeRef.current = timerMode;
+  }, [timerMode]);
+
+  const customMinutesRef = useRef(customMinutes);
+  useEffect(() => {
+    customMinutesRef.current = customMinutes;
+  }, [customMinutes]);
+
   const attemptRef = useRef(attempt);
   useEffect(() => {
     attemptRef.current = attempt;
@@ -355,12 +365,13 @@ export default function GuesstimatesPage() {
 
     // Reset timer to configured duration
     setTimerRunning(false);
-    if (timerMode === "off") {
+    const mode = timerModeRef.current;
+    if (mode === "off") {
       setSecondsLeft(0);
-    } else if (timerMode === "custom") {
-      setSecondsLeft(customMinutes * 60);
+    } else if (mode === "custom") {
+      setSecondsLeft(customMinutesRef.current * 60);
     } else {
-      setSecondsLeft(parseInt(timerMode, 10) * 60);
+      setSecondsLeft(parseInt(mode, 10) * 60);
     }
 
     const currentSeen = sessionSeenRef.current;
@@ -382,7 +393,7 @@ export default function GuesstimatesPage() {
         }
       })
       .catch((e) => setState({ loading: false, error: e instanceof Error ? e.message : "Could not load a guesstimate.", data: null }));
-  }, [timerMode, customMinutes]);
+  }, []);
 
   useEffect(() => {
     load();
