@@ -7,7 +7,20 @@ import { singleFlight } from "./singleFlight.js";
 // kept identical rather than re-derived, since R4's eval hasn't run against this
 // pipeline yet (grounded-answering skill: "tune only with eval evidence, log it").
 export const SIMILARITY_THRESHOLD = 0.5;
-export const DIAGRAM_SIMILARITY_THRESHOLD = 0.58;
+// Raised 0.58 -> 0.65 (2026-11-07, live-bug fix: MECE's Frameworks page was showing a
+// cached grounded_image whose real content was an unrelated SRCC Guesstimates Book
+// worked example - "license plates in Maharashtra" - at 0.71 similarity, well above the
+// old 0.58 bar). Checked every genuine diagram match across the full eval set
+// (backend/eval/results/2026-11-07-r9-5vote-run1.json): every one of them scores 0.725+
+// (range 0.725-0.843, 22 samples); 0.65 keeps a comfortable margin under that floor so no
+// real match in the evidence this codebase has is at risk, while meaningfully raising the
+// bar from today's 0.58. It alone would NOT have blocked the 0.71 MECE match - that's why
+// the primary fix is the source-file exclusion below, not this number; this is
+// defense-in-depth, not the fix. Not pushed further (e.g. to 0.70, just above the bad
+// match) because the eval sample is small (22 points) and sitting right at the edge of the
+// real-match floor risks rejecting a genuine match on a different question - a threshold
+// change needs more eval evidence than this one incident provides to go further than 0.65.
+export const DIAGRAM_SIMILARITY_THRESHOLD = 0.65;
 
 export const AI_FALLBACK_LABEL = "General guidance — not from the casebooks";
 
@@ -51,12 +64,34 @@ export function buildCitation(row) {
 }
 
 /**
+ * Pure: drops any row whose source_file is in `excludeSourceFiles`, pulled out of
+ * retrieveConsultingChunks so it's unit-testable without a network call - same reasoning
+ * as decideCoverage being split out above. A no-op (returns `rows` as-is) when
+ * `excludeSourceFiles` is empty/undefined, so every pre-existing caller that doesn't pass
+ * it gets byte-identical behavior.
+ */
+export function excludeRowsBySourceFile(rows, excludeSourceFiles) {
+  if (!excludeSourceFiles || !excludeSourceFiles.length) return rows;
+  return (rows || []).filter(r => !excludeSourceFiles.includes(r.source_file));
+}
+
+/**
  * I/O: embeds the query and calls match_ingest_chunks for the given domain.
  * Returns [] (not a throw) on any failure, same resilience posture as
  * frameworksGrounding.js's findGrounding - a retrieval miss must never take
  * down the page it's enriching.
+ *
+ * `excludeSourceFiles` (2026-11-07, live-bug fix): filters the RPC's rows in JS
+ * (excludeRowsBySourceFile above) rather than adding a new filter_* parameter to
+ * match_ingest_chunks - a schema/RPC migration would need Aalhad to run it (agents'
+ * sandbox can't reach the Postgres port - see .gsd/STATE.md "Known gaps"), and shipping
+ * code that calls a not-yet-migrated RPC signature would fail the RPC call entirely
+ * (caught below, degrading to "no grounding at all" for every caller) until the migration
+ * landed - a worse regression than the bug being fixed. Filtering client-side needs no
+ * migration and is safe to deploy immediately. `domain`/`sourceFile`/`sourceClasses` stay
+ * server-side filters (unaffected, pre-existing).
  */
-export async function retrieveConsultingChunks(queryText, { domain, matchCount = 6, sourceFile, sourceClasses } = {}) {
+export async function retrieveConsultingChunks(queryText, { domain, matchCount = 6, sourceFile, sourceClasses, excludeSourceFiles } = {}) {
   try {
     const [queryEmbedding] = await embedTexts([queryText], "RETRIEVAL_QUERY");
     const { data, error } = await supabase.rpc("match_ingest_chunks", {
@@ -67,7 +102,7 @@ export async function retrieveConsultingChunks(queryText, { domain, matchCount =
       filter_source_classes: sourceClasses || null
     });
     if (error) throw error;
-    return data || [];
+    return excludeRowsBySourceFile(data || [], excludeSourceFiles);
   } catch (err) {
     console.warn(`[consultingRetrieval] lookup failed: ${err.message}`);
     return [];
@@ -240,6 +275,16 @@ const PARAPHRASE_SYSTEM_PROMPT =
   "logic easier to follow. You must NOT introduce any claim, number, name, step or example " +
   "that is not already present in the excerpt - the idea and the logic must stay exactly " +
   "the same; only the presentation changes.\n\n" +
+  "You MUST actually rewrite the text - never return the excerpt unchanged or nearly " +
+  "unchanged, even if it already looks clear, well-formatted, or like a clean numbered " +
+  "list. A numbered assumptions list, a raw PDF artifact line (e.g. \"Click here to view " +
+  "detailed spreadsheet\"), a difficulty-indicator row, or a terse casebook heading all " +
+  "still need rewriting into natural sentences a student would actually say out loud - " +
+  "drop or fold in boilerplate UI/PDF artifacts that add no information (like a " +
+  "'click here' link or a difficulty-bar row), restate numbered items as flowing prose or " +
+  "a cleaner list in your own words, and turn a bare heading into a sentence introducing " +
+  "the problem. If you cannot find anything to change, you have not tried hard enough - " +
+  "at minimum, restate every sentence in different words while keeping every fact.\n\n" +
   "The excerpt may contain placeholder tokens of the exact form [[PLACEWISE_DIAGRAM_BLOCK_N]] " +
   "(N is a number) standing in for a diagram that has been removed for this step. Copy every " +
   "such token through to your output EXACTLY as written, in the same relative position in " +
@@ -427,8 +472,8 @@ async function paraphraseRowForOutput(queryText, row) {
  */
 // File name is a holdover from R7 (Consulting-only); this function is domain- and
 // source-class-agnostic as of FIN1 - see qaRetrieval.js's cross-domain Q&A call.
-export async function groundedConsultingLookup(queryText, { domain = "Consulting", matchCount = 6, sourceFile, paraphrase = false, sourceClasses } = {}) {
-  const rows = await retrieveConsultingChunks(queryText, { domain, matchCount, sourceFile, sourceClasses });
+export async function groundedConsultingLookup(queryText, { domain = "Consulting", matchCount = 6, sourceFile, paraphrase = false, sourceClasses, excludeSourceFiles } = {}) {
+  const rows = await retrieveConsultingChunks(queryText, { domain, matchCount, sourceFile, sourceClasses, excludeSourceFiles });
   const { covered, rows: coveringRows } = decideCoverage(rows);
 
   if (!covered) {

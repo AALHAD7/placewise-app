@@ -5,6 +5,83 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — Live incident: MECE (and 2 other) Frameworks pages showing Guesstimates-book content
+
+**Phase:** R9 follow-up (live-bug fix, QA finding)
+**Type:** fix
+
+**What changed:** QA on the live Consulting Frameworks page found MECE's `grounded_image`
+was the cached SRCC Guesstimates Book (`SRCC Guesstimates-Book-Volume-1-6.pdf`, pages 7-8,
+similarity 0.71) — a "FRAMEWORKS" index page that names MECE among six generic estimation
+techniques, followed by an unrelated "DEMAND SIDE APPROACH" license-plates-in-Maharashtra
+worked guesstimate, rendered directly under the real MECE diagram. Confirmed via the real
+production API (`GET /api/frameworks?domain=Consulting`) and by reading
+`frameworksGrounding.js`/`consultingRetrieval.js` directly, not just the QA report:
+
+- **Root cause was narrower than "no domain filter."** `findGroundingV2` (the live v2 path —
+  confirmed `ENABLE_CONSULTING_RAG_V2=true` in production via the `citation.pages` field,
+  which only the v2/`ingest_chunks` path can return) already passes `domain: "Consulting"`
+  to `match_ingest_chunks`, and the RPC already filters by it server-side. The real gap: the
+  Guesstimates Book is *also* `domain = "Consulting"` (same as every FMS/ISB/SRCC
+  case-interview casebook) — a domain filter structurally cannot separate it out. The chunk
+  cleared `DIAGRAM_SIMILARITY_THRESHOLD` (then 0.58) at 0.71, and also cleared the relevance
+  judge, because Frameworks' query (`"<name> framework diagram case study real example
+  application <subdomain>"`) is itself a generic, synthetic query that an index-style page
+  mentioning the framework by name satisfies well — unlike Q&A, this isn't a real student
+  question the judge's specificity rules were tuned against.
+- **Found 2 more affected rows from the same 2026-11-01/02 cache batch**, same casebook:
+  "Market Sizing (Top-Down / Bottom-Up)" (pages 7-8) and "Market Entry Framework" (page 6).
+  Checked all 57 seeded frameworks across every domain — no others matched (`grounded_image`/
+  `grounded_example` citation containing "Guesstimate").
+- **Fix 1 (primary):** added `excludeRowsBySourceFile` (pure, tested) to
+  `consultingRetrieval.js` and an `excludeSourceFiles` option on `retrieveConsultingChunks`/
+  `groundedConsultingLookup`, filtering the RPC's rows in JS rather than adding a new
+  `filter_*` parameter to the `match_ingest_chunks` RPC — a schema migration needs Aalhad to
+  run it (agents' sandbox can't reach the Postgres port, confirmed again this session with a
+  5s connect timeout), and shipping code that calls a not-yet-migrated signature would break
+  the RPC call entirely until the migration landed, a worse regression than the bug itself.
+  `frameworksGrounding.js`'s `findGroundingV2` now passes `excludeSourceFiles:
+  [GUESSTIMATES_SOURCE_FILE]` (imported from `guesstimateRetrieval.js`, the existing constant
+  — no new source of truth). Guesstimates itself is grounded from this exact book on purpose,
+  via its own feature; it should never also surface as a Frameworks "real example."
+- **Fix 2 (defense-in-depth, evidence-based):** raised `DIAGRAM_SIMILARITY_THRESHOLD`
+  (`consultingRetrieval.js`) and `IMAGE_SIMILARITY_THRESHOLD` (`frameworksGrounding.js`'s v1
+  path, kept in sync) from 0.58 to 0.65. Checked every genuine diagram match in the full R9
+  eval run (`backend/eval/results/2026-11-07-r9-5vote-run1.json`): 22 samples, range
+  0.725-0.843, none below 0.72. 0.65 keeps a comfortable margin under that floor (no real
+  match in the evidence this codebase has is at risk) while meaningfully raising the bar.
+  Deliberately not pushed higher (e.g. 0.70, just above the bad match's 0.71) — the eval
+  sample is small and sitting at the edge of the real-match floor risks a false reject on a
+  different question; a threshold that tight needs more eval evidence than one incident
+  provides. This alone would **not** have blocked the 0.71 match — the source-file exclusion
+  above is the actual fix, this is a second layer.
+- **Cache fix (direct DB write, authorized):** cleared `grounded_image`/`grounded_checked_at`
+  on exactly the 3 affected rows (not a blanket wipe). A verification `curl` against the
+  still-undeployed production API recomputed one of them (Market Sizing) back to the same
+  wrong casebook under the *old* code, confirming the bug is live and that clearing cache
+  alone (without the code fix) isn't sufficient. Re-ran the recompute by calling the new,
+  locally-fixed `withGroundedExamples` directly against the real production Supabase
+  instance (service-role key, no Render deploy needed) — this both proved the fix (all 3 now
+  cite `The FMS Consulting CaseBook 2023-24 (1).pdf` at 0.72-0.76 similarity, in-range with
+  the eval's genuine matches) and, as a side effect of calling the real function, wrote the
+  corrected result straight to the production `frameworks` table. Verified via the real API
+  afterward: MECE/Market Sizing/Market Entry Framework all now show the correct FMS casebook
+  content. `grounded_checked_at` is fresh, so the still-unpatched deployed API code won't
+  recompute (and re-break) these 3 rows again for 7 days regardless of deploy timing — but
+  the code fix still needs deploying for this to be structurally fixed rather than luck +
+  a 7-day grace window.
+- **Tests:** `backend/test/consultingRetrieval.test.js` — 4 new tests (pure
+  `excludeRowsBySourceFile` behavior, plus one proving the exclusion reaches end-to-end
+  through `retrieveConsultingChunks`'s RPC response). `npm test`: 184/185 pass (1
+  pre-existing, unrelated sandbox env-leak flake, same one every prior entry this week notes).
+
+**Files:** `backend/src/lib/consultingRetrieval.js`, `backend/src/lib/frameworksGrounding.js`,
+`backend/test/consultingRetrieval.test.js`. **Not pushed** — committed locally only; needs to
+reach `origin/main` for Render to actually stop serving the old, unpatched grounding logic
+(the production data fix above holds for ~7 days independent of the deploy).
+
+---
+
 ## 2026-11-07 — Live incident: SRCC Guesstimates chunk-bleed, 8 more `ingest_chunks` rows deactivated
 
 **Phase:** R9.4 follow-up (direct incident fix, no gstack review — data-only `is_active` toggle)
@@ -48,6 +125,50 @@ these off, only the broken/duplicate copies are removed.
 
 **Files:** none (data-only). Audit/fix scripts were temporary, run from `backend/` against
 Supabase directly via `@supabase/supabase-js`, deleted after use — not committed.
+
+---
+
+## 2026-11-07 — Fix: Guesstimates error state had no retry button
+
+**Phase:** QA follow-up (frontend bug fix)
+**Type:** fix
+
+**What changed:** `frontend-react/src/pages/GuesstimatesPage.tsx` — the error branch (when
+`GET /api/guesstimates/random` fails, e.g. the `net::ERR_TIMED_OUT` a QA pass hit from rapid
+repeated "Try another" clicks) rendered only red "Failed to fetch" text with no way to retry,
+so a student who hit any transient fetch failure was stuck until a full page reload. Added a
+"Try another" button to the error branch, calling the same `load()` the success-state button
+already calls, wrapped in the same card styling (`var(--surface)` / `var(--border-input)` /
+`var(--r-md)`) as the rest of the page. Also added the same retry button to the "not
+available" empty state (when the backend returns `available: false` for a reason other than
+`feature_disabled`, which is a static "coming soon" message with no point retrying) — that
+branch had the same dead-end problem.
+
+**Why:** every data view must handle loading, empty and error states per
+`frontend-conventions`; the error state was the one branch missing a way forward.
+
+**Files:** `frontend-react/src/pages/GuesstimatesPage.tsx`.
+
+**Proof:**
+- `npm run build` — passes (`tsc -b && vite build`, output below).
+- `npm run lint` — passes, exit 0 (only pre-existing oxlint warnings unrelated to this file's
+  diff, e.g. the `set-state-in-effect` warning on this page's existing `useEffect` was already
+  present before this change).
+- Verified live: ran the dev server with `VITE_API_BASE` pointed at a dead port
+  (`http://localhost:9`, env var only, no code change, dev server killed after) to force a
+  real fetch failure, then drove it with gstack's `$B` browser (Aside unavailable on this
+  machine) as a signed-in guest. Confirmed via snapshot (`@e15 [button] "Try another"`) and
+  screenshot that the error card now shows "Failed to fetch" with a working "Try another"
+  button underneath, at both desktop and 375px mobile width (single column, no horizontal
+  overflow). Screenshots:
+  `/private/tmp/claude-501/-Users-aalhad-Projects-Placement-Website/7a003324-646c-4faf-89b9-ddbd7c41f95b/scratchpad/guesstimates_error_state.png`
+  (desktop) and
+  `/private/tmp/claude-501/-Users-aalhad-Projects-Placement-Website/7a003324-646c-4faf-89b9-ddbd7c41f95b/scratchpad/guesstimates_error2-mobile.png`
+  (375px).
+
+**Not yet committed** — left for the coordinating session to sequence against a parallel
+backend fix landing around the same time; no conflicting files (`git status` showed only this
+one frontend file modified at hand-off).
 
 **Proof:**
 - Before: 69 total rows / 67 active / 2 inactive (the 2 already off from the earlier

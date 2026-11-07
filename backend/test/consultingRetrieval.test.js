@@ -16,6 +16,7 @@ import {
   decideCoverage,
   buildCitation,
   retrieveConsultingChunks,
+  excludeRowsBySourceFile,
   SIMILARITY_THRESHOLD,
   DIAGRAM_SIMILARITY_THRESHOLD,
   AI_FALLBACK_LABEL
@@ -70,6 +71,33 @@ test("decideCoverage: mixed rows keep only the ones clearing their own bar", () 
 test("decideCoverage: empty/undefined input is not covered, never throws", () => {
   assert.equal(decideCoverage([]).covered, false);
   assert.equal(decideCoverage(undefined).covered, false);
+});
+
+// --- excludeRowsBySourceFile ---
+// Added 2026-11-07 (live-bug fix): MECE's Frameworks page was showing a cached
+// grounded_image whose real content was from the unrelated SRCC Guesstimates Book -
+// same domain ("Consulting") as every real case-cracking casebook, so filter_domain alone
+// can't keep it out. This is the client-side exclusion filter frameworksGrounding.js now
+// applies to keep that book out of Frameworks' results specifically.
+
+test("excludeRowsBySourceFile: drops rows whose source_file is excluded", () => {
+  const rows = [
+    { source_file: "SRCC Guesstimates-Book-Volume-1-6.pdf", content: "guesstimate" },
+    { source_file: "The FMS Consulting CaseBook 2023-24.pdf", content: "case" }
+  ];
+  const kept = excludeRowsBySourceFile(rows, ["SRCC Guesstimates-Book-Volume-1-6.pdf"]);
+  assert.deepEqual(kept.map(r => r.source_file), ["The FMS Consulting CaseBook 2023-24.pdf"]);
+});
+
+test("excludeRowsBySourceFile: no-op when excludeSourceFiles is empty/undefined", () => {
+  const rows = [{ source_file: "a.pdf" }, { source_file: "b.pdf" }];
+  assert.deepEqual(excludeRowsBySourceFile(rows, undefined), rows);
+  assert.deepEqual(excludeRowsBySourceFile(rows, []), rows);
+});
+
+test("excludeRowsBySourceFile: handles undefined/empty rows without throwing", () => {
+  assert.deepEqual(excludeRowsBySourceFile(undefined, ["a.pdf"]), []);
+  assert.deepEqual(excludeRowsBySourceFile([], ["a.pdf"]), []);
 });
 
 // --- buildCitation ---
@@ -132,7 +160,7 @@ test("AI_FALLBACK_LABEL is a non-empty, visibly-labelled string (grounding polic
 // Network-mocked (same pattern as consultingParaphraseFlagOn.test.js) just enough to
 // capture the body sent to match_ingest_chunks's RPC endpoint - no real Supabase/Gemini
 // call is made.
-function installFakeFetchForRpcCapture(t, { capture }) {
+function installFakeFetchForRpcCapture(t, { capture, rpcRows = [] }) {
   t.mock.method(globalThis, "fetch", async (url, opts) => {
     const href = typeof url === "string" ? url : url.toString();
     if (href.includes(":embedContent")) {
@@ -140,7 +168,7 @@ function installFakeFetchForRpcCapture(t, { capture }) {
     }
     if (href.includes("/rest/v1/rpc/match_ingest_chunks")) {
       capture.push(JSON.parse(opts.body));
-      return new Response(JSON.stringify([]), { status: 200 });
+      return new Response(JSON.stringify(rpcRows), { status: 200 });
     }
     return new Response(JSON.stringify({}), { status: 200 });
   });
@@ -166,4 +194,27 @@ test("retrieveConsultingChunks: no sourceClasses forwards filter_source_classes:
 
   assert.equal(calls.length, 1);
   assert.equal(calls[0].filter_source_classes, null);
+});
+
+// Added 2026-11-07 (live-bug fix, see excludeRowsBySourceFile above): proves the exclusion
+// actually reaches end-to-end through retrieveConsultingChunks, not just the pure helper -
+// a row from the excluded Guesstimates book is dropped from what the RPC returned, while
+// an unrelated row with no source_file set (should never be excluded by accident) stays.
+test("retrieveConsultingChunks: excludeSourceFiles drops matching rows from the RPC response", async t => {
+  const calls = [];
+  installFakeFetchForRpcCapture(t, {
+    capture: calls,
+    rpcRows: [
+      { source_file: "SRCC Guesstimates-Book-Volume-1-6.pdf", content: "guesstimate framework index", similarity: 0.71 },
+      { source_file: "The FMS Consulting CaseBook 2023-24.pdf", content: "MECE segmentation", similarity: 0.78 }
+    ]
+  });
+
+  const rows = await retrieveConsultingChunks("what is MECE?", {
+    domain: "Consulting",
+    excludeSourceFiles: ["SRCC Guesstimates-Book-Volume-1-6.pdf"]
+  });
+
+  assert.equal(calls.length, 1);
+  assert.deepEqual(rows.map(r => r.source_file), ["The FMS Consulting CaseBook 2023-24.pdf"]);
 });

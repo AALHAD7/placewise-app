@@ -1,6 +1,7 @@
 import { supabase } from "./supabase.js";
 import { embedTexts } from "./gemini.js";
 import { groundedConsultingLookup } from "./consultingRetrieval.js";
+import { GUESSTIMATES_SOURCE_FILE } from "./guesstimateRetrieval.js";
 
 // Below this, a "closest match" isn't actually about the framework - better
 // to show nothing than a misleadingly-labeled irrelevant excerpt.
@@ -9,7 +10,11 @@ const SIMILARITY_THRESHOLD = 0.5;
 // matching a framework name loosely is a much weaker signal than a text
 // excerpt actually discussing it (captions are short, generic-sounding
 // descriptions of a picture, easy to false-positive on).
-const IMAGE_SIMILARITY_THRESHOLD = 0.58;
+// Raised 0.58 -> 0.65 2026-11-07 (same number, same eval evidence and reasoning as
+// consultingRetrieval.js's DIAGRAM_SIMILARITY_THRESHOLD - see that constant's comment).
+// This v1 (document_chunks) path and the v2 path below score images independently, but
+// there's no reason for the two bars to disagree now that both have the same evidence.
+const IMAGE_SIMILARITY_THRESHOLD = 0.65;
 
 // R7 switch: off by default, so flipping it off at any time restores today's
 // exact behavior (document_chunks + frameworksGrounding below). On, and only
@@ -30,7 +35,20 @@ async function findGroundingV2(fw) {
   // ENABLE_ANSWER_PARAPHRASE is also on; when it is, `excerpt`/`caption` below are already
   // the verified rewrite (diagram JSON untouched either way - see protectDiagramBlocks),
   // and `rawExcerpt`/`rawCaption` carry the original verbatim text alongside it.
-  const result = await groundedConsultingLookup(query, { domain: "Consulting", paraphrase: true });
+  // excludeSourceFiles (2026-11-07, live-bug fix): keeps the SRCC Guesstimates Book out of
+  // Frameworks' results. filter_domain can't do this on its own - that book is domain =
+  // "Consulting", same as every real case-cracking casebook Frameworks should draw from -
+  // and its own "FRAMEWORKS" index page mentions MECE/market-sizing by name among a list
+  // of generic estimation techniques, which was enough to clear both the similarity
+  // threshold and the relevance judge for a synthetic, generic-sounding Frameworks query
+  // (unlike Q&A, this query is never a specific student question). Guesstimates is grounded
+  // from this exact book on purpose, via its own feature (guesstimateRetrieval.js) - it
+  // should never also surface as a Frameworks "real example".
+  const result = await groundedConsultingLookup(query, {
+    domain: "Consulting",
+    paraphrase: true,
+    excludeSourceFiles: [GUESSTIMATES_SOURCE_FILE]
+  });
   if (!result.covered) return { example: null, image: null };
 
   const textIdx = result.chunks.findIndex(c => !c.hasDiagram);
