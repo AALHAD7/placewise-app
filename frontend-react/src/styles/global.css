@@ -487,15 +487,24 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
    that there's more to scroll to (Company, Frameworks, etc. sliding off the
    right edge with no visual cue was the complaint) rather than a hidden
    overflow that just looks like clipped/missing content. */
-.topnav-links{
-  display:flex; align-items:center; flex-wrap:nowrap; gap:1px; flex:1 1 auto; min-width:0;
-  padding:4px; border-radius:20px;
-  overflow-x:auto; scrollbar-width:thin; scrollbar-color:rgba(255, 255, 255, 0.35) transparent;
+.topnav-capsule-wrapper{
+  position:relative; flex:1 1 auto; min-width:0;
+  border-radius:20px;
+  overflow:hidden;
+  isolation:isolate;
+  -webkit-mask-image:-webkit-radial-gradient(white, black);
+  mask-image:radial-gradient(white, black);
 }
-.topnav-links::-webkit-scrollbar{ height:5px; }
-.topnav-links::-webkit-scrollbar-track{ background:transparent; }
-.topnav-links::-webkit-scrollbar-thumb{ background:rgba(255, 255, 255, 0.35); border-radius:3px; }
-.topnav-links::-webkit-scrollbar-thumb:hover{ background:rgba(255, 255, 255, 0.55); }
+
+.topnav-links{
+  position:relative;
+  display:flex; align-items:center; flex-wrap:nowrap; gap:1px; width:100%; min-width:0;
+  padding:4px; border-radius:20px;
+  overflow-x:auto; overflow-y:hidden;
+  scrollbar-width:none; -ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch;
+}
+.topnav-links::-webkit-scrollbar{ display:none; }
 .topnav-divider{ display:none; }
 
 .nav-item{
@@ -564,7 +573,7 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 .mobile-nav-panel{ display:none; }
 
 @media (max-width:640px){
-  .topnav-links{ display:none; }
+  .topnav-capsule-wrapper, .topnav-links{ display:none; }
   .bell-btn.mobile-menu-btn{ display:flex; }
   .topnav{ background:#101216; backdrop-filter:none; -webkit-backdrop-filter:none; }
   :root[data-theme="dark"] .topnav{ background:#101216; backdrop-filter:none; -webkit-backdrop-filter:none; }

@@ -5,6 +5,20 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — TopNav: fix horizontal scroll clipping so Role icon stays strictly inside capsule
+
+**Phase:** M1 (Consulting RAG) · **Type:** bugfix / UI polish
+
+**What changed:** Aalhad reported that when scrolling horizontally in the top navigation bar, the Role icon escaped outside the capsule boundary on the left.
+1. Root cause:
+   - `<nav className="topnav-links glass-capsule">` had `backdrop-filter: blur(20px)` and `overflow-x: auto`. In Safari/WebKit, elements with `backdrop-filter` and `overflow` fail to clip descendants with `position: relative; z-index: 1;`. When scrolling to the right, the Role icon translated past `x = 0` and escaped outside the capsule border onto the topbar.
+2. Fix:
+   - Introduced `.topnav-capsule-wrapper` which wraps `<nav>` with `border-radius: 20px`, `overflow: hidden`, `isolation: isolate`, and `-webkit-mask-image: -webkit-radial-gradient(white, black)`.
+   - Moved `glass-capsule` to the stationary outer wrapper, guaranteeing hard-edge hardware clipping of all scrolling nav items at the 20px rounded capsule boundary across WebKit and all browsers.
+   - Cleaned up inner `.topnav-links` scrollbar and synced custom scroll indicator.
+
+---
+
 ## 2026-11-08 — Analytics: connected direct Google Analytics 4 Measurement ID (G-NX3SN9VKKQ)
 
 **Phase:** M1 (Consulting RAG) · **Type:** analytics / infrastructure

@@ -276,8 +276,8 @@ export default function TopNav() {
           <span className="brand-name">Placewise</span>
         </button>
 
-        <div style={{ position: "relative", flex: "1 1 auto", minWidth: 0 }}>
-          <nav ref={navLinksRef} onScroll={updateNavScrollInfo} className="topnav-links glass-capsule">
+        <div className="topnav-capsule-wrapper glass-capsule">
+          <nav ref={navLinksRef} onScroll={updateNavScrollInfo} className="topnav-links">
             {sliderRect && (
               <div className="nav-slider" style={{ transform: `translateX(${sliderRect.x}px)`, width: sliderRect.width }} />
             )}
@@ -302,7 +302,7 @@ export default function TopNav() {
               made Resume Drill/Tone Shifter/Mock Interview/Community look
               like they'd vanished rather than just being scrollable. */}
           {navScroll.show && (
-            <div style={{ position: "absolute", left: 10, right: 10, bottom: 2, height: 3, borderRadius: 2, background: "rgba(255, 255, 255, 0.12)", overflow: "hidden", pointerEvents: "none" }}>
+            <div style={{ position: "absolute", left: 10, right: 10, bottom: 2, height: 3, borderRadius: 2, background: "rgba(255, 255, 255, 0.12)", overflow: "hidden", pointerEvents: "none", zIndex: 10 }}>
               <div style={{ position: "absolute", top: 0, bottom: 0, left: `${navScroll.leftPct}%`, width: `${navScroll.widthPct}%`, borderRadius: 2, background: "rgba(255, 255, 255, 0.5)" }} />
             </div>
           )}
