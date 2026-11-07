@@ -5,6 +5,23 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — Diagram rendering: render all diagrams horizontally with side-by-side pillar cards and horizontal/vertical toggle
+
+**Phase:** M1 / UI · **Type:** feature / polish
+
+**What changed:** Aalhad requested making all diagrams horizontal across the platform.
+1. `asciiDiagrams.ts`:
+   - Updated `flowToAscii`, `treeToAscii`, and `funnelToAscii` to generate wide horizontal diagrams by default.
+   - For hierarchical trees and DAGs (e.g., Profit Tree, Issue Trees): renders the root centered at the top with a branching connector splitting down into side-by-side parallel column cards across the screen width (e.g. `REVENUE` on the left, `COST` on the right), with their respective sub-drivers, leaves, and calculations nested cleanly inside each card.
+   - For sequential pipelines and funnels: connects stages horizontally with `──►` directional arrows.
+   - Modernized all 8 remaining vertical numbered list diagrams in `FRAMEWORK_ASCII_MAP` (AARM, AARRR, ADDIE, CSAT, Kirkpatrick, NPS, Precedent Transactions, Residual Income, TSM) into horizontal process and pillar cards.
+2. `AsciiDiagram.tsx` & `PlacewiseDiagram.tsx`:
+   - Added an interactive layout toggle (`⇄ Horizontal` / `⇅ Vertical`) in the ASCII card header, defaulting to `Horizontal` while allowing instant one-click switching to the vertical outline view.
+   - Copy button automatically copies whichever view is currently active.
+3. Verified frontend builds cleanly with zero TypeScript errors.
+
+---
+
 ## 2026-11-07 — Guesstimates: warn and penalize directly jumping to answer without clarifying assumptions
 
 **Phase:** M1 (Consulting RAG) · **Type:** feature / polish

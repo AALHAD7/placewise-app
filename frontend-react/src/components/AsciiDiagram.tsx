@@ -3,15 +3,30 @@ import { useState } from "react";
 interface AsciiDiagramProps {
   title?: string;
   ascii: string;
+  horizontalAscii?: string;
+  verticalAscii?: string;
   subtitle?: string;
   className?: string;
 }
 
-export default function AsciiDiagram({ title, ascii, subtitle, className = "" }: AsciiDiagramProps) {
+export default function AsciiDiagram({
+  title,
+  ascii,
+  horizontalAscii,
+  verticalAscii,
+  subtitle,
+  className = ""
+}: AsciiDiagramProps) {
   const [copied, setCopied] = useState(false);
+  const [mode, setMode] = useState<"horizontal" | "vertical">("horizontal");
+
+  const hasBoth = Boolean(horizontalAscii && verticalAscii);
+  const activeAscii = hasBoth
+    ? (mode === "vertical" ? verticalAscii! : horizontalAscii!)
+    : (horizontalAscii || ascii);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(ascii).then(() => {
+    navigator.clipboard.writeText(activeAscii).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     });
@@ -35,6 +50,8 @@ export default function AsciiDiagram({ title, ascii, subtitle, className = "" }:
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 8,
           padding: "9px 14px",
           background: "rgba(22, 27, 36, 0.9)",
           borderBottom: "1px solid rgba(59, 130, 246, 0.2)"
@@ -65,24 +82,75 @@ export default function AsciiDiagram({ title, ascii, subtitle, className = "" }:
             </span>
           )}
         </div>
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="unbutton"
-          style={{
-            fontSize: "0.71875rem",
-            fontWeight: 600,
-            color: copied ? "#34d399" : "rgba(255, 255, 255, 0.7)",
-            background: copied ? "rgba(52, 211, 153, 0.15)" : "rgba(255, 255, 255, 0.08)",
-            border: "1px solid " + (copied ? "rgba(52, 211, 153, 0.35)" : "rgba(255, 255, 255, 0.15)"),
-            padding: "3px 10px",
-            borderRadius: "var(--r-sm)",
-            cursor: "pointer",
-            transition: "all 0.15s ease"
-          }}
-        >
-          {copied ? "Copied ✓" : "Copy ASCII"}
-        </button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {hasBoth && (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: "rgba(255, 255, 255, 0.06)",
+                borderRadius: "var(--r-sm)",
+                padding: "2px",
+                border: "1px solid rgba(255, 255, 255, 0.1)"
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setMode("horizontal")}
+                style={{
+                  fontSize: "0.6875rem",
+                  fontWeight: 600,
+                  padding: "3px 8px",
+                  borderRadius: "4px",
+                  border: "none",
+                  cursor: "pointer",
+                  background: mode === "horizontal" ? "rgba(59, 130, 246, 0.35)" : "transparent",
+                  color: mode === "horizontal" ? "#93c5fd" : "rgba(255, 255, 255, 0.6)",
+                  transition: "all 0.15s ease"
+                }}
+              >
+                ⇄ Horizontal
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("vertical")}
+                style={{
+                  fontSize: "0.6875rem",
+                  fontWeight: 600,
+                  padding: "3px 8px",
+                  borderRadius: "4px",
+                  border: "none",
+                  cursor: "pointer",
+                  background: mode === "vertical" ? "rgba(59, 130, 246, 0.35)" : "transparent",
+                  color: mode === "vertical" ? "#93c5fd" : "rgba(255, 255, 255, 0.6)",
+                  transition: "all 0.15s ease"
+                }}
+              >
+                ⇅ Vertical
+              </button>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="unbutton"
+            style={{
+              fontSize: "0.71875rem",
+              fontWeight: 600,
+              color: copied ? "#34d399" : "rgba(255, 255, 255, 0.7)",
+              background: copied ? "rgba(52, 211, 153, 0.15)" : "rgba(255, 255, 255, 0.08)",
+              border: "1px solid " + (copied ? "rgba(52, 211, 153, 0.35)" : "rgba(255, 255, 255, 0.15)"),
+              padding: "3px 10px",
+              borderRadius: "var(--r-sm)",
+              cursor: "pointer",
+              transition: "all 0.15s ease"
+            }}
+          >
+            {copied ? "Copied ✓" : "Copy ASCII"}
+          </button>
+        </div>
       </div>
 
       {subtitle && (
@@ -104,7 +172,7 @@ export default function AsciiDiagram({ title, ascii, subtitle, className = "" }:
           tabSize: 2
         }}
       >
-        {ascii}
+        {activeAscii}
       </pre>
     </div>
   );

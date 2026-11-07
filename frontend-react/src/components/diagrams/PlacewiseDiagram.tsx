@@ -231,6 +231,8 @@ function Body({ block }: { block: unknown }) {
       <AsciiDiagram
         title={b.title || `${b.type.replace("_", " ").toUpperCase()}`}
         ascii={asciiRes.ascii}
+        horizontalAscii={asciiRes.horizontalAscii}
+        verticalAscii={asciiRes.verticalAscii}
         subtitle={notes}
       />
     );

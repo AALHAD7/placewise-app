@@ -95,45 +95,29 @@ export const FRAMEWORK_ASCII_MAP: Record<string, { title: string; ascii: string 
 
   "AARM Funnel": {
     title: "AARM Funnel Framework",
-    ascii: `(1) Acquisition
-     │  [First arrival]
-     ▼
-(2) Activation
-     │  [First-value moment]
-     ▼
-(3) Retention
-     │  [Ongoing usage]
-     ▼
-(4) Monetization
-     │  [Convert revenue]
-     ▼
-(5) Diagnose & Isolate Drop`
+    ascii: `┌─────────────────────┐       ┌─────────────────────┐       ┌─────────────────────┐       ┌─────────────────────┐
+│ 1. ACQUISITION      │ ──►   │ 2. ACTIVATION       │ ──►   │ 3. RETENTION        │ ──►   │ 4. MONETIZATION     │
+│ • Initial discovery │       │ • First-value moment│       │ • Habitual usage    │       │ • Revenue conversion│
+│ • Channel traffic   │       │ • Core setup/onboard│       │ • Churn mitigation │       │ • LTV expansion     │
+└─────────────────────┘       └─────────────────────┘       └─────────────────────┘       └─────────────────────┘`
   },
 
   "AARRR Framework (Pirate Metrics)": {
-    title: "AARRR Framework",
-    ascii: `┌── (1) Acquisition metrics
-│   └──► Activation metrics
-┌── (2) Activation metrics
-│   └──► Retention metrics
-┌── (3) Retention metrics
-│   └──► Referral metrics
-┌── (4) Referral metrics
-│   └──► Revenue metrics
-┌── (5) Revenue metrics`
+    title: "AARRR Framework (Pirate Metrics)",
+    ascii: `┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│ 1. ACQUISITION   │──►  │  2. ACTIVATION   │──►  │   3. RETENTION   │──►  │   4. REFERRAL    │──►  │    5. REVENUE    │
+│ • Top-of-funnel  │     │ • First aha-mom. │     │ • Cohort repeat  │     │ • Viral loop / k │     │ • ARPU / pricing │
+│ • Organic / paid │     │ • Profile config │     │ • Feature stick  │     │ • NPS & invites  │     │ • Margin capture │
+└──────────────────┘     └──────────────────┘     └──────────────────┘     └──────────────────┘     └──────────────────┘`
   },
 
   "ADDIE Model": {
-    title: "ADDIE Model",
-    ascii: `┌── (1) Analysis
-│   └──► Design
-┌── (2) Design
-│   └──► Development
-┌── (3) Development
-│   └──► Implementation
-┌── (4) Implementation
-│   └──► Evaluation
-┌── (5) Evaluation`
+    title: "ADDIE Instructional Design Model",
+    ascii: `┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│   1. ANALYSIS    │──►  │    2. DESIGN     │──►  │  3. DEVELOPMENT  │──►  │4. IMPLEMENTATION │──►  │  5. EVALUATION   │
+│ • Learner needs  │     │ • Learning objs  │     │ • Draft content  │     │ • Deliver / LMS  │     │ • Kirkpatrick L1 │
+│ • Skill gaps/KPI │     │ • Media & test   │     │ • Iterative pilot│     │ • Facilitate trn │     │ • Business impact│
+└──────────────────┘     └──────────────────┘     └──────────────────┘     └──────────────────┘     └──────────────────┘`
   },
 
   "AIDA Funnel": {
@@ -315,16 +299,11 @@ Growth       ├─────────────────────�
   },
 
   "Customer Satisfaction Score (CSAT)": {
-    title: "Customer Satisfaction Score (CSAT)",
-    ascii: `┌── (1) Identify segment or channel
-│   └──► Map customer journey
-┌── (2) Map customer journey
-│   └──► Isolate operational pain points
-┌── (3) Isolate operational pain points
-│   └──► Analyze internal vs external factors
-┌── (4) Analyze internal vs external factors
-│   └──► Formulate targeted recommendations
-┌── (5) Formulate targeted recommendations`
+    title: "Customer Satisfaction Score (CSAT) Diagnostic Flow",
+    ascii: `┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│ 1. SEGMENT/CHANNEL  │──►  │ 2. JOURNEY MAPPING  │──►  │ 3. PAIN POINT ROOT  │──►  │ 4. ACTION & FIX     │
+│ • Identify cohorts  │     │ • Touchpoint survey │     │ • Internal ops vs   │     │ • SLA improvements  │
+│ • Response sampling │     │ • Drop-off moments  │     │   external friction │     │ • Product adjustments`
   },
 
   "DCF (Discounted Cash Flow)": {
@@ -555,14 +534,12 @@ Growth       ├─────────────────────�
   },
 
   "Kirkpatrick Model": {
-    title: "Kirkpatrick Model",
-    ascii: `┌── (1) Level 1: Reaction
-│   └──► Level 2: Learning
-┌── (2) Level 2: Learning
-│   └──► Level 3: Behavior
-┌── (3) Level 3: Behavior
-│   └──► Level 4: Results
-┌── (4) Level 4: Results`
+    title: "Kirkpatrick 4-Level Training Evaluation Model",
+    ascii: `┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│ LEVEL 1: REACTION   │──►  │ LEVEL 2: LEARNING   │──►  │ LEVEL 3: BEHAVIOR   │──►  │ LEVEL 4: RESULTS    │
+│ • Engagement/smile  │     │ • Skills & knowledge│     │ • On-the-job change │     │ • Business KPI lift │
+│ • Material relevance│     │ • Pre/post testing  │     │ • Habit adoption    │     │ • ROI & cost savings│
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘     └─────────────────────┘`
   },
 
   "LBO Basics (Leveraged Buyout)": {
@@ -729,16 +706,16 @@ Low Production   │ Impoverished Management (1,1) │ Country Club Management (
   },
 
   "Net Promoter Score": {
-    title: "Net Promoter Score Calculation Flow",
-    ascii: `┌── (1) Survey customers (0-10 scale)
-│   └──► Categorize promoters (9-10)
-┌── (2) Categorize promoters (9-10)
-│   └──► Categorize neutral (7-8)
-┌── (3) Categorize neutral (7-8)
-│   └──► Categorize detractors (0-6)
-┌── (4) Categorize detractors (0-6)
-│   └──► Calculate score (Promoters - Detractors)
-┌── (5) Calculate score (Promoters - Detractors)`
+    title: "Net Promoter Score (NPS) Segmentation & Formula",
+    ascii: `┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│ DETRACTORS (0 - 6)  │     │ PASSIVES (7 - 8)    │     │ PROMOTERS (9 - 10)  │
+├─────────────────────┤     ├─────────────────────┤     ├─────────────────────┤
+│ • Unhappy / churn   │     │ • Satisfied but not │     │ • Loyal enthusiasts │
+│ • Negative referral │     │   enthusiastic      │     │ • Fuel organic loop │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
+                                       │
+                                       ▼
+     NPS FORMULA:  % Promoters  -  % Detractors  =  NPS Score (-100 to +100)`
   },
 
   "North Star Metric": {
@@ -855,14 +832,12 @@ STRATEGIC SYNTHESIS:
   },
 
   "Precedent Transaction Analysis": {
-    title: "Precedent Transaction Analysis",
-    ascii: `┌── (1) Identify Transactions
-│   └──► Find Information
-┌── (2) Find Information
-│   └──► Calculate Multiples
-┌── (3) Calculate Multiples
-│   └──► Check and Interpret Results
-┌── (4) Check and Interpret Results`
+    title: "Precedent Transaction Analysis Execution Process",
+    ascii: `┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│ 1. SCREEN DEALS     │──►  │ 2. EXTRACT FINANCIALS│──► │ 3. CALCULATE METRICS│──►  │ 4. IMPLY VALUATION  │
+│ • Industry / subsector│   │ • Enterprise value  │     │ • EV / LTM EBITDA   │     │ • 25th - 75th range │
+│ • Deal size & control│    │ • Control premiums  │     │ • EV / LTM Revenue  │     │ • Control benchmark │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘     └─────────────────────┘`
   },
 
   "Product Life Cycle": {
@@ -928,16 +903,17 @@ STRATEGIC SYNTHESIS:
   },
 
   "Residual Income Model": {
-    title: "Residual Income Model",
-    ascii: `┌── (1) Identify current book value
-│   └──► Calculate annual residual income
-┌── (2) Calculate annual residual income
-│   └──► Discount residual income to PV
-┌── (3) Discount residual income to PV
-│   └──► Calculate terminal value
-┌── (4) Calculate terminal value
-│   └──► Sum book value and PVs
-┌── (5) Sum book value and PVs`
+    title: "Residual Income Model (RIM) Valuation Components",
+    ascii: `┌─────────────────────┐       ┌───────────────────────────────┐       ┌───────────────────────────────┐
+│ CURRENT BOOK VALUE  │   +   │ PRESENT VALUE OF FORECAST RI  │   +   │ PRESENT VALUE OF TERMINAL RI  │
+│ (Starting Equity)   │       │ Sum of: RI_t / (1 + Ke)^t     │       │ [RI_T+1 / (Ke - g)] / (1+Ke)^T│
+├─────────────────────┤       ├───────────────────────────────┤       ├───────────────────────────────┤
+│ • Common equity     │       │ • Net Income - Equity Charge  │       │ • Normalized persistence      │
+│ • Net asset backing │       │ • Equity Charge = Ke × BV_t-1 │       │ • Long-term value decay/growth│
+└─────────────────────┘       └───────────────────────────────┘       └───────────────────────────────┘
+                                              │
+                                              ▼
+                             INTRINSIC EQUITY VALUE PER SHARE`
   },
 
   "STAR+R": {
@@ -1013,14 +989,17 @@ STRATEGIC SYNTHESIS:
   },
 
   "Treasury Stock Method": {
-    title: "Treasury Stock Method",
-    ascii: `┌── (1) Assume exercise of in-the-money options
-│   └──► Determine total cash proceeds
-┌── (2) Determine total cash proceeds
-│   └──► Calculate repurchased shares
-┌── (3) Calculate repurchased shares
-│   └──► Find net incremental shares
-┌── (4) Find net incremental shares`
+    title: "Treasury Stock Method (TSM) Dilution Mechanics",
+    ascii: `┌──────────────────────┐       ┌──────────────────────┐       ┌──────────────────────┐
+│ 1. IN-THE-MONEY OPTS │ ──►   │ 2. CASH PROCEEDS     │ ──►   │ 3. SHARE REPURCHASE  │
+│ Options exercised at │       │ Proceeds = Options × │       │ Buyback shares at    │
+│ Strike Price < Mkt P │       │ Exercise Strike Price│       │ Current Market Price │
+└──────────────────────┘       └──────────────────────┘       └──────────────────────┘
+                                                                         │
+                                                                         ▼
+                               ┌─────────────────────────────────────────────────────┐
+                               │ 4. NET DILUTED SHARES ADDED = Options - Repurchased │
+                               └─────────────────────────────────────────────────────┘`
   },
 
   "Value Chain Analysis": {
@@ -1097,9 +1076,177 @@ export function getAsciiDiagramForFramework(frameworkName: string): { title: str
 }
 
 /**
- * Converts a structured PlacewiseTreeNode (from an issue_tree block) into clean ASCII art.
+ * Wraps text into lines not exceeding maxW.
  */
-export function treeToAscii(node: PlacewiseTreeNode, prefix = "", isLast = true, isRoot = true): string {
+function wrapWords(text: string, maxW: number): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  if (!words.length) return [""];
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    if ((cur ? cur + " " + w : w).length <= maxW) {
+      cur = cur ? cur + " " + w : w;
+    } else {
+      if (cur) lines.push(cur);
+      cur = w;
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+/**
+ * Renders a horizontal branch tree where the root is centered at the top,
+ * connected via horizontal branching lines and arrows to parallel column cards side-by-side.
+ */
+function renderHorizontalBranchTree(
+  rootTitle: string,
+  branches: Array<{ title: string; items: string[] }>
+): string {
+  if (!branches || branches.length === 0) return `[ ${rootTitle} ]`;
+
+  const numBranches = Math.min(branches.length, 3);
+  const targetTotalWidth = 92;
+  const gap = 3;
+  const colWidth = Math.max(26, Math.floor((targetTotalWidth - (numBranches - 1) * gap) / numBranches));
+
+  const cards = branches.slice(0, numBranches).map((b) => {
+    const cardLines: string[] = [];
+    const border = "─".repeat(colWidth);
+    cardLines.push("┌" + border + "┐");
+    const titleLines = wrapWords(b.title.toUpperCase(), colWidth - 2);
+    for (const tl of titleLines) {
+      cardLines.push("│ " + tl.padEnd(colWidth - 2) + " │");
+    }
+    cardLines.push("├" + border + "┤");
+    for (const item of b.items || []) {
+      const isBullet = item.startsWith("•");
+      const isSub = item.startsWith("-");
+      const clean = item.replace(/^[-*•]\s*/, "");
+      const indent = isSub ? "    - " : isBullet ? "  • " : "    ";
+      const itemLines = wrapWords(clean, colWidth - indent.length - 2);
+      for (let i = 0; i < itemLines.length; i++) {
+        const prefix = i === 0 ? indent : " ".repeat(indent.length);
+        cardLines.push("│ " + (prefix + itemLines[i]).padEnd(colWidth - 2) + " │");
+      }
+    }
+    cardLines.push("└" + border + "┘");
+    return cardLines;
+  });
+
+  const maxLines = Math.max(...cards.map((c) => c.length));
+  for (let i = 0; i < cards.length; i++) {
+    const cWidth = cards[i][0].length;
+    while (cards[i].length < maxLines) {
+      cards[i].push(" ".repeat(cWidth));
+    }
+  }
+
+  const bodyLines: string[] = [];
+  for (let row = 0; row < maxLines; row++) {
+    const lineParts = cards.map((c) => c[row]);
+    bodyLines.push(lineParts.join(" ".repeat(gap)));
+  }
+
+  const centers: number[] = [];
+  let curX = 0;
+  for (let i = 0; i < numBranches; i++) {
+    const w = colWidth + 2;
+    centers.push(curX + Math.floor(w / 2));
+    curX += w + gap;
+  }
+
+  const totalWidth = curX - gap;
+  const overallCenter = Math.floor(totalWidth / 2);
+
+  const topLines: string[] = [];
+  const rootBoxWidth = Math.min(totalWidth - 4, Math.max(rootTitle.length + 8, 22));
+  const rootBorder = "─".repeat(rootBoxWidth);
+  const rootPad = Math.max(0, overallCenter - Math.floor((rootBoxWidth + 2) / 2));
+  const leadSpace = " ".repeat(rootPad);
+
+  topLines.push(leadSpace + "┌" + rootBorder + "┐");
+  topLines.push(
+    leadSpace +
+      "│ " +
+      rootTitle
+        .toUpperCase()
+        .padStart(Math.floor((rootBoxWidth - 2 + rootTitle.length) / 2))
+        .padEnd(rootBoxWidth - 2) +
+      " │"
+  );
+  topLines.push(leadSpace + "└" + rootBorder + "┘");
+  topLines.push(" ".repeat(overallCenter) + "│");
+
+  if (numBranches > 1) {
+    const firstC = centers[0];
+    const lastC = centers[numBranches - 1];
+    let conn = " ".repeat(firstC) + "┌";
+    for (let x = firstC + 1; x < lastC; x++) {
+      if (x === overallCenter) conn += "┴";
+      else if (centers.includes(x)) conn += "┬";
+      else conn += "─";
+    }
+    conn += "┐";
+    topLines.push(conn);
+
+    let arrowLine = "";
+    for (let x = 0; x <= lastC; x++) {
+      if (centers.includes(x)) arrowLine += "▼";
+      else arrowLine += " ";
+    }
+    topLines.push(arrowLine);
+  } else {
+    topLines.push(" ".repeat(overallCenter) + "▼");
+  }
+
+  return [...topLines, ...bodyLines].join("\n");
+}
+
+function collectTreeNodeBullets(node: PlacewiseTreeNode): string[] {
+  const items: string[] = [];
+  const rawLabel = typeof node === "string" ? node : (node.label || "");
+  const clean = String(rawLabel).trim();
+  if (clean) items.push("• " + clean);
+
+  const children = (typeof node === "object" && node && Array.isArray(node.children)) ? node.children : [];
+  for (const ch of children) {
+    const chBullets = collectTreeNodeBullets(ch);
+    for (const cb of chBullets) {
+      if (cb.startsWith("•")) {
+        items.push("- " + cb.replace(/^•\s*/, ""));
+      } else {
+        items.push("  " + cb);
+      }
+    }
+  }
+  return items;
+}
+
+export function treeToHorizontalAscii(node: PlacewiseTreeNode): string {
+  if (!node) return "";
+  const rawLabel = typeof node === "string" ? node : (node.label || "(node)");
+  const rootTitle = String(rawLabel).replace(/\r?\n\s*/g, " · ").trim();
+  const children = (typeof node === "object" && node && Array.isArray(node.children)) ? node.children : [];
+
+  if (children.length === 0) {
+    return `[ ${rootTitle} ]`;
+  }
+
+  const branches = children.map((ch) => {
+    const chLabel = typeof ch === "string" ? ch : (ch.label || "Branch");
+    const chChildren = (typeof ch === "object" && ch && Array.isArray(ch.children)) ? ch.children : [];
+    const items: string[] = [];
+    for (const subCh of chChildren) {
+      items.push(...collectTreeNodeBullets(subCh));
+    }
+    return { title: String(chLabel).trim(), items };
+  });
+
+  return renderHorizontalBranchTree(rootTitle, branches);
+}
+
+export function treeToVerticalAscii(node: PlacewiseTreeNode, prefix = "", isLast = true, isRoot = true): string {
   if (!node) return "";
   const lines: string[] = [];
   const rawLabel = typeof node === "string" ? node : (node.label || "(node)");
@@ -1116,19 +1263,178 @@ export function treeToAscii(node: PlacewiseTreeNode, prefix = "", isLast = true,
 
   for (let i = 0; i < children.length; i++) {
     const childIsLast = i === children.length - 1;
-    lines.push(treeToAscii(children[i], childPrefix, childIsLast, false));
+    lines.push(treeToVerticalAscii(children[i], childPrefix, childIsLast, false));
   }
 
   return lines.join("\n");
 }
 
 /**
- * Converts a flow graph (nodes and edges) into a clean, true vertical diagram.
- * If the graph represents a hierarchy/tree or DAG (like a profit tree, decision tree,
- * or issue breakdown), it renders as an integrated top-to-bottom vertical tree.
- * If it's a linear sequential pipeline, it renders as a vertical boxed flowchart.
+ * Converts a structured PlacewiseTreeNode into clean ASCII art (horizontal by default).
  */
-export function flowToAscii(
+export function treeToAscii(node: PlacewiseTreeNode, mode: "horizontal" | "vertical" = "horizontal"): string {
+  return mode === "vertical" ? treeToVerticalAscii(node) : treeToHorizontalAscii(node);
+}
+
+function renderHorizontalLinearFlow(
+  nodes: Array<{ id: string | number; label: string }>,
+  adj: Map<string, Array<{ to: string; label?: string | null }>>
+): string {
+  const inDeg = new Map<string, number>();
+  for (const n of nodes) inDeg.set(String(n.id), 0);
+  for (const [, targets] of adj) {
+    for (const t of targets) inDeg.set(t.to, (inDeg.get(t.to) || 0) + 1);
+  }
+
+  let currId = nodes.find((n) => (inDeg.get(String(n.id)) || 0) === 0)?.id ?? nodes[0]?.id;
+  const ordered: Array<{ label: string; edgeLabel?: string | null }> = [];
+  const seen = new Set<string>();
+
+  while (currId && !seen.has(String(currId))) {
+    seen.add(String(currId));
+    const n = nodes.find((x) => String(x.id) === String(currId));
+    if (!n) break;
+    const nextList = adj.get(String(currId)) || [];
+    const next = nextList[0];
+    ordered.push({ label: n.label, edgeLabel: next?.label });
+    currId = next?.to;
+  }
+
+  for (const n of nodes) {
+    if (!seen.has(String(n.id))) {
+      ordered.push({ label: n.label });
+    }
+  }
+
+  const numBoxes = Math.min(ordered.length, 4);
+  const boxWidth = Math.max(18, Math.min(26, Math.floor(86 / numBoxes) - 5));
+  const cardList = ordered.map((item) => {
+    const rawLines = item.label.split("\n").map((l) => l.trim()).filter(Boolean);
+    const title = rawLines[0] || "";
+    const sub = rawLines.slice(1);
+    const lines: string[] = [];
+    const b = "─".repeat(boxWidth);
+    lines.push("┌" + b + "┐");
+    const tLines = wrapWords(title, boxWidth - 2);
+    for (const tl of tLines) {
+      lines.push("│ " + tl.padEnd(boxWidth - 2) + " │");
+    }
+    if (sub.length > 0) {
+      lines.push("├" + b + "┤");
+      for (const s of sub.slice(0, 3)) {
+        const cleanS = s.replace(/^[-*•]\s*/, "");
+        const sLines = wrapWords(cleanS, boxWidth - 4);
+        for (let i = 0; i < sLines.length; i++) {
+          const pref = i === 0 ? "• " : "  ";
+          lines.push("│ " + (pref + sLines[i]).padEnd(boxWidth - 2) + " │");
+        }
+      }
+    }
+    lines.push("└" + b + "┘");
+    return lines;
+  });
+
+  const rowHeight = Math.max(...cardList.map((c) => c.length));
+  for (const c of cardList) {
+    while (c.length < rowHeight) c.push(" ".repeat(boxWidth + 2));
+  }
+
+  const out: string[] = [];
+  const midR = Math.floor(rowHeight / 2);
+  for (let r = 0; r < rowHeight; r++) {
+    const arrow = r === midR ? " ──► " : "     ";
+    out.push(cardList.map((c) => c[r]).join(arrow));
+  }
+  return out.join("\n");
+}
+
+function renderHorizontalBranchFlow(
+  nodes: Array<{ id: string | number; label: string }>,
+  adj: Map<string, Array<{ to: string; label?: string | null }>>,
+  inDegree: Map<string, number>,
+  nodeMap: Map<string, { id: string; label: string }>
+): string {
+  let rootIds = nodes.filter((n) => (inDegree.get(String(n.id)) || 0) === 0).map((n) => String(n.id));
+  if (rootIds.length === 0) {
+    rootIds = [String(nodes[0].id)];
+  }
+
+  function collectSubtreeItems(currId: string, visited: Set<string>): string[] {
+    if (visited.has(currId)) return [];
+    visited.add(currId);
+    const items: string[] = [];
+    const node = nodeMap.get(currId);
+    if (!node) return items;
+
+    const rawLines = node.label.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const title = rawLines[0] || `Node ${currId}`;
+    const sub = rawLines.slice(1);
+
+    items.push("• " + title);
+    for (const s of sub) {
+      items.push("- " + s);
+    }
+
+    const children = adj.get(currId) || [];
+    for (const ch of children) {
+      const childItems = collectSubtreeItems(String(ch.to), visited);
+      for (const ci of childItems) {
+        if (ci.startsWith("•")) {
+          items.push("- " + ci.replace(/^•\s*/, ""));
+        } else {
+          items.push("  " + ci);
+        }
+      }
+    }
+    return items;
+  }
+
+  const rootOutputs: string[] = [];
+
+  for (const rootId of rootIds) {
+    const rootNode = nodeMap.get(rootId);
+    if (!rootNode) continue;
+    const rootRawLines = rootNode.label.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const rootTitle = rootRawLines[0] || `Root ${rootId}`;
+
+    const childEdges = adj.get(rootId) || [];
+    if (childEdges.length === 0) {
+      rootOutputs.push(`[ ${rootTitle} ]`);
+      continue;
+    }
+
+    const branches: Array<{ title: string; items: string[] }> = [];
+    const visited = new Set<string>([rootId]);
+
+    for (const ch of childEdges) {
+      const branchId = String(ch.to);
+      const branchNode = nodeMap.get(branchId);
+      if (!branchNode) continue;
+      const bLines = branchNode.label.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const branchTitle = bLines[0] || `Branch ${branchId}`;
+      const branchSub = bLines.slice(1);
+
+      visited.add(branchId);
+      const branchItems: string[] = [];
+      for (const s of branchSub) {
+        branchItems.push("• " + s);
+      }
+
+      const grandchildren = adj.get(branchId) || [];
+      for (const gc of grandchildren) {
+        branchItems.push(...collectSubtreeItems(String(gc.to), visited));
+      }
+
+      branches.push({ title: branchTitle, items: branchItems });
+    }
+
+    rootOutputs.push(renderHorizontalBranchTree(rootTitle, branches));
+  }
+
+  return rootOutputs.join("\n\n");
+}
+
+export function flowToHorizontalAscii(
   nodes: Array<{ id: string | number; label: string }>,
   edges: Array<{ from: string | number; to: string | number; label?: string | null }> = []
 ): string {
@@ -1159,82 +1465,50 @@ export function flowToAscii(
     }
   }
 
-  // Check if it's a purely linear unbranching pipeline
   const isLinear =
     edges.length > 0 &&
-    nodes.every(n => (adj.get(String(n.id))?.length || 0) <= 1) &&
-    Array.from(inDegree.values()).every(deg => deg <= 1);
+    nodes.every((n) => (adj.get(String(n.id))?.length || 0) <= 1) &&
+    Array.from(inDegree.values()).every((deg) => deg <= 1);
 
   if (isLinear) {
-    return renderLinearVerticalFlow(nodes, adj);
+    return renderHorizontalLinearFlow(nodes, adj);
   }
 
-  // Hierarchical vertical tree renderer
-  return renderHierarchicalVerticalFlow(nodes, adj, inDegree, nodeMap);
+  return renderHorizontalBranchFlow(nodes, adj, inDegree, nodeMap);
 }
 
-function renderLinearVerticalFlow(
+export function flowToVerticalAscii(
   nodes: Array<{ id: string | number; label: string }>,
-  adj: Map<string, Array<{ to: string; label?: string | null }>>
+  edges: Array<{ from: string | number; to: string | number; label?: string | null }> = []
 ): string {
-  const inDeg = new Map<string, number>();
-  for (const n of nodes) inDeg.set(String(n.id), 0);
-  for (const [, targets] of adj) {
-    for (const t of targets) inDeg.set(t.to, (inDeg.get(t.to) || 0) + 1);
+  if (!Array.isArray(nodes) || nodes.length === 0) return "";
+
+  const nodeMap = new Map<string, { id: string; label: string }>();
+  for (const n of nodes) {
+    nodeMap.set(String(n.id), { id: String(n.id), label: String(n.label || "") });
   }
 
-  let currId = nodes.find(n => (inDeg.get(String(n.id)) || 0) === 0)?.id ?? nodes[0].id;
-  const ordered: Array<{ label: string; edgeLabel?: string | null }> = [];
-  const seen = new Set<string>();
-
-  while (currId && !seen.has(String(currId))) {
-    seen.add(String(currId));
-    const n = nodes.find(x => String(x.id) === String(currId));
-    if (!n) break;
-    const nextList = adj.get(String(currId)) || [];
-    const next = nextList[0];
-    ordered.push({ label: n.label, edgeLabel: next?.label });
-    currId = next?.to;
-  }
+  const adj = new Map<string, Array<{ to: string; label?: string | null }>>();
+  const inDegree = new Map<string, number>();
 
   for (const n of nodes) {
-    if (!seen.has(String(n.id))) {
-      ordered.push({ label: n.label });
+    const id = String(n.id);
+    adj.set(id, []);
+    inDegree.set(id, 0);
+  }
+
+  for (const e of edges) {
+    const fromId = String(e.from);
+    const toId = String(e.to);
+    if (adj.has(fromId)) {
+      adj.get(fromId)!.push({ to: toId, label: e.label });
+    }
+    if (inDegree.has(toId)) {
+      inDegree.set(toId, (inDegree.get(toId) || 0) + 1);
     }
   }
 
-  const lines: string[] = [];
-  for (let i = 0; i < ordered.length; i++) {
-    const item = ordered[i];
-    const textLines = item.label.split("\n").map(l => l.trim()).filter(Boolean);
-    const maxLen = Math.min(60, Math.max(...textLines.map(l => l.length), 20));
-
-    const border = "─".repeat(maxLen + 4);
-    lines.push(`┌${border}┐`);
-    for (const tl of textLines) {
-      lines.push(`│  ${tl.padEnd(maxLen)}  │`);
-    }
-    lines.push(`└${border}┘`);
-
-    if (i < ordered.length - 1) {
-      const mid = Math.floor((maxLen + 6) / 2);
-      const pad = " ".repeat(Math.max(0, mid - 1));
-      const edgeNote = item.edgeLabel ? ` [${item.edgeLabel}]` : "";
-      lines.push(`${pad}│${edgeNote}`);
-      lines.push(`${pad}▼`);
-    }
-  }
-
-  return lines.join("\n");
-}
-
-function renderHierarchicalVerticalFlow(
-  nodes: Array<{ id: string | number; label: string }>,
-  adj: Map<string, Array<{ to: string; label?: string | null }>>,
-  inDegree: Map<string, number>,
-  nodeMap: Map<string, { id: string; label: string }>
-): string {
-  let rootIds = nodes.filter(n => (inDegree.get(String(n.id)) || 0) === 0).map(n => String(n.id));
+  let rootIds = nodes.filter((n) => (inDegree.get(String(n.id)) || 0) === 0).map((n) => String(n.id));
   if (rootIds.length === 0) {
     rootIds = [String(nodes[0].id)];
   }
@@ -1245,7 +1519,7 @@ function renderHierarchicalVerticalFlow(
   function formatNodeLines(rawText: string): string[] {
     return rawText
       .split(/\r?\n/)
-      .map(l => l.trim())
+      .map((l) => l.trim())
       .filter(Boolean);
   }
 
@@ -1312,7 +1586,7 @@ function renderHierarchicalVerticalFlow(
     traverse(rootIds[r], "", true, new Set(), true);
   }
 
-  const unreached = nodes.filter(n => !visitedGlobal.has(String(n.id)));
+  const unreached = nodes.filter((n) => !visitedGlobal.has(String(n.id)));
   if (unreached.length > 0) {
     outputLines.push("");
     for (const orphan of unreached) {
@@ -1326,6 +1600,58 @@ function renderHierarchicalVerticalFlow(
 }
 
 /**
+ * Converts a flow graph (nodes and edges) into clean ASCII art (horizontal by default).
+ */
+export function flowToAscii(
+  nodes: Array<{ id: string | number; label: string }>,
+  edges: Array<{ from: string | number; to: string | number; label?: string | null }> = [],
+  mode: "horizontal" | "vertical" = "horizontal"
+): string {
+  return mode === "vertical"
+    ? flowToVerticalAscii(nodes, edges)
+    : flowToHorizontalAscii(nodes, edges);
+}
+
+export function funnelToHorizontalAscii(stages: string[]): string {
+  if (!Array.isArray(stages) || stages.length === 0) return "";
+  const numStages = Math.min(stages.length, 5);
+  const boxWidth = Math.max(16, Math.min(22, Math.floor(86 / numStages) - 5));
+  const cardList = stages.slice(0, numStages).map((s, idx) => {
+    const b = "─".repeat(boxWidth);
+    const num = `Stage ${idx + 1}`;
+    const cleanS = String(s).trim();
+    const lines: string[] = [];
+    lines.push("┌" + b + "┐");
+    lines.push("│ " + num.padEnd(boxWidth - 2) + " │");
+    lines.push("├" + b + "┤");
+    const textLines = wrapWords(cleanS, boxWidth - 2);
+    for (const tl of textLines) {
+      lines.push("│ " + tl.padEnd(boxWidth - 2) + " │");
+    }
+    lines.push("└" + b + "┘");
+    return lines;
+  });
+
+  const rowHeight = Math.max(...cardList.map((c) => c.length));
+  for (const c of cardList) {
+    while (c.length < rowHeight) c.push(" ".repeat(boxWidth + 2));
+  }
+
+  const out: string[] = [];
+  const midR = Math.floor(rowHeight / 2);
+  for (let r = 0; r < rowHeight; r++) {
+    const arrow = r === midR ? " ──► " : "     ";
+    out.push(cardList.map((c) => c[r]).join(arrow));
+  }
+  return out.join("\n");
+}
+
+export function funnelToVerticalAscii(stages: string[]): string {
+  if (!Array.isArray(stages) || stages.length === 0) return "";
+  return stages.map((s, i) => `${" ".repeat(i * 2)}▼ Stage ${i + 1}: ${s}`).join("\n");
+}
+
+/**
  * Converts a matrix into a clean ASCII table.
  */
 export function matrixToAscii(
@@ -1335,8 +1661,8 @@ export function matrixToAscii(
   rows: string[] = [],
   cells: (string | null)[][] = []
 ): string {
-  const colWidth = Math.max(...cols.map(c => c.length), 16);
-  const rowHeadWidth = Math.max(...rows.map(r => r.length), 12);
+  const colWidth = Math.max(...cols.map((c) => c.length), 16);
+  const rowHeadWidth = Math.max(...rows.map((r) => r.length), 12);
 
   const headerLine = `┌─${"─".repeat(rowHeadWidth)}─┬` + cols.map(() => `─${"─".repeat(colWidth)}─`).join("┬") + "┐";
   const dividerLine = `├─${"─".repeat(rowHeadWidth)}─┼` + cols.map(() => `─${"─".repeat(colWidth)}─`).join("┼") + "┤";
@@ -1348,17 +1674,17 @@ export function matrixToAscii(
   }
   lines.push(headerLine);
 
-  // Column header row
-  const headRow = `│ ${"".padEnd(rowHeadWidth)} │` + cols.map(c => ` ${c.padEnd(colWidth)} `).join("│") + "│";
+  const headRow = `│ ${"".padEnd(rowHeadWidth)} │` + cols.map((c) => ` ${c.padEnd(colWidth)} `).join("│") + "│";
   lines.push(headRow);
   lines.push(dividerLine);
 
-  // Content rows
   for (let ri = 0; ri < rows.length; ri++) {
     const rowLabel = rows[ri] || `Row ${ri + 1}`;
     const rowCells = cells[ri] || [];
-    const cellRow = `│ ${rowLabel.padEnd(rowHeadWidth)} │` +
-      cols.map((_, ci) => ` ${(rowCells[ci] || "").padEnd(colWidth)} `).join("│") + "│";
+    const cellRow =
+      `│ ${rowLabel.padEnd(rowHeadWidth)} │` +
+      cols.map((_, ci) => ` ${(rowCells[ci] || "").padEnd(colWidth)} `).join("│") +
+      "│";
     lines.push(cellRow);
     if (ri < rows.length - 1) lines.push(dividerLine);
   }
@@ -1372,14 +1698,14 @@ export function matrixToAscii(
  */
 export function tableToAscii(header: string[] = [], rows: (string | null)[][] = []): string {
   if (!header.length && !rows.length) return "";
-  const allRows = [header, ...rows.map(r => r.map(c => c || ""))];
+  const allRows = [header, ...rows.map((r) => r.map((c) => c || ""))];
   const colWidths = header.map((_, ci) =>
-    Math.max(...allRows.map(r => (r[ci] || "").length), 8)
+    Math.max(...allRows.map((r) => (r[ci] || "").length), 8)
   );
 
-  const top = "┌" + colWidths.map(w => "─".repeat(w + 2)).join("┬") + "┐";
-  const mid = "├" + colWidths.map(w => "─".repeat(w + 2)).join("┼") + "┤";
-  const bot = "└" + colWidths.map(w => "─".repeat(w + 2)).join("┴") + "┘";
+  const top = "┌" + colWidths.map((w) => "─".repeat(w + 2)).join("┬") + "┐";
+  const mid = "├" + colWidths.map((w) => "─".repeat(w + 2)).join("┼") + "┤";
+  const bot = "└" + colWidths.map((w) => "─".repeat(w + 2)).join("┴") + "┘";
 
   const lines: string[] = [top];
   lines.push("│" + header.map((h, ci) => ` ${h.padEnd(colWidths[ci])} `).join("│") + "│");
@@ -1394,31 +1720,45 @@ export function tableToAscii(header: string[] = [], rows: (string | null)[][] = 
 }
 
 /**
- * Converts any PlacewiseDiagramBlock into ASCII art.
+ * Converts any PlacewiseDiagramBlock into ASCII art (horizontal by default, with vertical alternative).
  */
-export function diagramBlockToAscii(block: PlacewiseDiagramBlock): { title: string; ascii: string } | null {
+export function diagramBlockToAscii(block: PlacewiseDiagramBlock): {
+  title: string;
+  ascii: string;
+  horizontalAscii?: string;
+  verticalAscii?: string;
+} | null {
   if (!block || typeof block !== "object") return null;
   const title = (block as { title?: string }).title || `${(block as { type: string }).type.toUpperCase()} DIAGRAM`;
 
   switch (block.type) {
-    case "issue_tree":
-      return { title, ascii: treeToAscii(block.root) };
-    case "flow":
-      return { title, ascii: flowToAscii(block.nodes, block.edges) };
-    case "matrix":
-      return { title, ascii: matrixToAscii(block.xAxis, block.yAxis, block.cols, block.rows, block.cells) };
-    case "table":
-      return { title, ascii: tableToAscii(block.header, block.rows) };
-    case "funnel":
-      return {
-        title,
-        ascii: block.stages.map((s, i) => `${" ".repeat(i * 2)}▼ Stage ${i + 1}: ${s}`).join("\n")
-      };
-    case "other":
-      return {
-        title,
-        ascii: `[${block.description}]\n` + (block.labels || []).map(l => ` • ${l}`).join("\n")
-      };
+    case "issue_tree": {
+      const h = treeToHorizontalAscii(block.root);
+      const v = treeToVerticalAscii(block.root);
+      return { title, ascii: h, horizontalAscii: h, verticalAscii: v };
+    }
+    case "flow": {
+      const h = flowToHorizontalAscii(block.nodes, block.edges);
+      const v = flowToVerticalAscii(block.nodes, block.edges);
+      return { title, ascii: h, horizontalAscii: h, verticalAscii: v };
+    }
+    case "matrix": {
+      const m = matrixToAscii(block.xAxis, block.yAxis, block.cols, block.rows, block.cells);
+      return { title, ascii: m };
+    }
+    case "table": {
+      const t = tableToAscii(block.header, block.rows);
+      return { title, ascii: t };
+    }
+    case "funnel": {
+      const h = funnelToHorizontalAscii(block.stages);
+      const v = funnelToVerticalAscii(block.stages);
+      return { title, ascii: h, horizontalAscii: h, verticalAscii: v };
+    }
+    case "other": {
+      const o = `[${block.description}]\n` + (block.labels || []).map((l) => ` • ${l}`).join("\n");
+      return { title, ascii: o };
+    }
     default:
       return null;
   }
