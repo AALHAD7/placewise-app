@@ -333,6 +333,111 @@ export async function getRandomGuesstimateProblem({ excludeIds = [] } = {}) {
   return { available: false, reason: "not_yet_live", label: AI_FALLBACK_LABEL };
 }
 
+let cachedProblemList = null;
+
+/**
+ * Returns a sorted catalog of all curated worked guesstimate practice problems in the
+ * active SRCC casebook so students can browse and select any problem directly.
+ */
+export async function listAllGuesstimateProblems() {
+  if (cachedProblemList && cachedProblemList.length > 0) {
+    return cachedProblemList;
+  }
+  const { data, error } = await supabase
+    .from("ingest_chunks")
+    .select("id, content, has_diagram, page_start, page_end, ingest_documents!inner(source_file, school, club, year, source_class)")
+    .eq("is_active", true)
+    .eq("ingest_documents.source_file", GUESSTIMATES_SOURCE_FILE)
+    .eq("ingest_documents.source_class", "club_casebook")
+    .order("page_start", { ascending: true });
+
+  if (error || !data) {
+    console.warn(`[guesstimateRetrieval] listAllGuesstimateProblems failed: ${error?.message}`);
+    return [];
+  }
+
+  const valid = data.filter((r) => looksLikeWorkedProblem(r.content));
+  const list = [];
+  for (const r of valid) {
+    const { rawQuestion } = splitRawQuestionFromAnswer(r.content);
+    if (!rawQuestion || rawQuestion === GENERIC_QUESTION_FALLBACK || rawQuestion === "ASSUMPTIONS") {
+      continue;
+    }
+    list.push({
+      chunkId: r.id,
+      question: rawQuestion,
+      pageStart: r.page_start,
+      pageEnd: r.page_end,
+      hasDiagram: r.has_diagram,
+      school: r.ingest_documents.school,
+      club: r.ingest_documents.club,
+      year: r.ingest_documents.year
+    });
+  }
+
+  cachedProblemList = list;
+  return list;
+}
+
+/**
+ * Loads a specific worked guesstimate problem by its chunkId, allowing students to
+ * jump straight to a chosen casebook question.
+ */
+export async function getGuesstimateProblemById(chunkId) {
+  if (!chunkId || typeof chunkId !== "string") {
+    return { available: false, error: "Invalid chunkId" };
+  }
+  const { data, error } = await supabase
+    .from("ingest_chunks")
+    .select("id, content, has_diagram, page_start, page_end, ingest_documents!inner(source_file, school, club, year, source_class)")
+    .eq("id", chunkId)
+    .eq("is_active", true)
+    .eq("ingest_documents.source_file", GUESSTIMATES_SOURCE_FILE)
+    .eq("ingest_documents.source_class", "club_casebook")
+    .limit(1);
+
+  if (error || !data || data.length === 0) {
+    return { available: false, reason: "not_found", label: AI_FALLBACK_LABEL };
+  }
+
+  const row = {
+    id: data[0].id,
+    content: data[0].content,
+    has_diagram: data[0].has_diagram,
+    page_start: data[0].page_start,
+    page_end: data[0].page_end,
+    source_file: data[0].ingest_documents.source_file,
+    school: data[0].ingest_documents.school,
+    club: data[0].ingest_documents.club,
+    year: data[0].ingest_documents.year
+  };
+
+  const { rawQuestion, answerSource } = splitRawQuestionFromAnswer(row.content);
+
+  if (!ENABLE_GUESSTIMATE_PARAPHRASE) {
+    return {
+      available: true,
+      question: rawQuestion,
+      problem: answerSource,
+      hasDiagram: row.has_diagram,
+      citation: buildCitation(row),
+      chunkId: row.id
+    };
+  }
+
+  const { content, rawContent, paraphrased } = await paraphraseAndVerify(GUESSTIMATE_PARAPHRASE_CONTEXT, answerSource);
+  return {
+    available: true,
+    question: rawQuestion,
+    problem: content,
+    paraphrased,
+    ...(paraphrased ? { rawProblem: rawContent } : {}),
+    hasDiagram: row.has_diagram,
+    citation: buildCitation(row),
+    chunkId: row.id
+  };
+}
+
 // --- Assumption clarification ("ask the interviewer") -----------------------------------
 
 // Aalhad's request, 2026-11-07: mimic a real case interview, where a candidate can ask the

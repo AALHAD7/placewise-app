@@ -2,7 +2,14 @@ import { Router } from "express";
 import { optionalAuth, requireAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
-import { getRandomGuesstimateProblem, groundedGuesstimateLookup, answerAssumptionClarification, evaluateGuesstimateAttempt } from "../lib/guesstimateRetrieval.js";
+import {
+  getRandomGuesstimateProblem,
+  groundedGuesstimateLookup,
+  answerAssumptionClarification,
+  evaluateGuesstimateAttempt,
+  listAllGuesstimateProblems,
+  getGuesstimateProblemById
+} from "../lib/guesstimateRetrieval.js";
 
 const router = Router();
 
@@ -44,14 +51,56 @@ function getClientKey(req) {
   return `ip:${String(ip).split(",")[0].trim()}`;
 }
 
+// GET /api/guesstimates/list - complete catalog of curated casebook guesstimates
+// so students can browse questions and select exactly what they want to practice.
+router.get("/list", optionalAuth, async (req, res) => {
+  if (!ENABLED) {
+    return res.json({ success: true, available: false, reason: "feature_disabled", problems: [] });
+  }
+  try {
+    const problems = await listAllGuesstimateProblems();
+    res.json({ success: true, available: true, count: problems.length, problems });
+  } catch (err) {
+    console.error("[guesstimates/list]", err);
+    res.status(500).json({ success: false, error: "Failed to list guesstimate problems.", detail: errorDetail(err) });
+  }
+});
+
+// GET /api/guesstimates/problem/:chunkId - fetch a specific casebook guesstimate by ID.
+router.get("/problem/:chunkId", optionalAuth, async (req, res) => {
+  if (!ENABLED) {
+    return res.json({ success: true, available: false, reason: "feature_disabled" });
+  }
+  const { chunkId } = req.params;
+  try {
+    const result = await getGuesstimateProblemById(chunkId);
+    if (!result.available) {
+      return res.status(404).json({ success: false, error: "Guesstimate problem not found." });
+    }
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error("[guesstimates/problem/:chunkId]", err);
+    res.status(500).json({ success: false, error: "Failed to fetch guesstimate problem.", detail: errorDetail(err) });
+  }
+});
+
 // GET /api/guesstimates/random - one practice problem from the SRCC Guesstimates Book,
 // picked at random each request, with its real page citation.
-// Supports `?exclude=id1,id2,...` to ensure the same guesstimate is not asked twice.
+// Supports `?chunkId=...` to load a specific question, or `?exclude=id1,id2,...` to ensure
+// the same guesstimate is not asked twice.
 router.get("/random", optionalAuth, async (req, res) => {
   if (!ENABLED) {
     return res.json({ success: true, available: false, reason: "feature_disabled" });
   }
   try {
+    // If the client explicitly requests a specific problem by ID:
+    if (req.query.chunkId && typeof req.query.chunkId === "string") {
+      const specific = await getGuesstimateProblemById(req.query.chunkId.trim());
+      if (specific.available) {
+        return res.json({ success: true, ...specific });
+      }
+    }
+
     const clientKey = getClientKey(req);
     const serverRecent = recentServedByClient.get(clientKey) || [];
 

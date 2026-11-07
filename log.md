@@ -5,6 +5,35 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Guesstimates: full question catalog browser + interview countdown timer with auto-submit
+
+**Phase:** M1 (Consulting RAG) · **Type:** feature / polish
+
+**What changed:** Aalhad requested two major enhancements for the Guesstimates practice page:
+1. Allow students to browse the list of all available questions and choose specific scenarios to attempt.
+2. Provide an interview timer on the Guesstimates page where the user can choose how much time they want (e.g. 5m, 10m, 15m, custom), and upon time expiration, their answer is automatically submitted for evaluation.
+
+**Implementation:**
+1. `backend/src/lib/guesstimateRetrieval.js` & `backend/src/routes/guesstimates.js`:
+   - `listAllGuesstimateProblems`: returns all 25 curated, worked casebook guesstimates ordered by page number, cached in memory for sub-millisecond response times.
+   - `getGuesstimateProblemById(chunkId)`: retrieves a specific guesstimate by chunk ID with real citation and diagram metadata.
+   - `GET /api/guesstimates/list`: new endpoint returning the full 25-problem catalog.
+   - `GET /api/guesstimates/problem/:chunkId`: new endpoint to fetch a chosen problem by ID.
+   - `GET /api/guesstimates/random`: extended to accept optional `?chunkId=...` for direct lookup.
+2. `frontend-react/src/pages/GuesstimatesPage.tsx`:
+   - **Catalog Browser Modal**: added `Browse All Questions (25)` button and modal with search filtering, page numbers, diagram indicators, and practiced/unattempted tags. Clicking any question loads it immediately. Added a corresponding Question Catalog card in the sidebar.
+   - **Interview Countdown Timer**:
+     * Mode presets: `5m` (Sprint), `10m` (Standard consulting case interview — default), `15m` (Deep dive), `Custom` (1-60m), and `Off` (Untimed).
+     * Monospace digital countdown with color-coded states (normal blue/white, warning amber at <2m, urgent red at <30s).
+     * Controls: `▶ Start`, `⏸ Pause`, `↺ Reset`. Auto-pauses on manual answer submission or solution reveal.
+     * Web Audio synthesis double-chime when time expires.
+     * **Auto-submission on 00:00**: if the candidate has typed >=5 characters, automatically submits their answer for AI Interview Coach evaluation with a time-expired notice banner; if empty, automatically reveals the benchmark casebook solution.
+3. Tests & Build:
+   - Added `getGuesstimateProblemById` tests in `backend/test/guesstimateRetrieval.test.js`. All 38 backend guesstimate tests pass.
+   - Frontend TypeScript build compiles cleanly with 0 errors.
+
+---
+
 ## 2026-11-07 — Guesstimates: prevent repeat problems with two-level client & server exclusion tracking
 
 **Phase:** M1 (Consulting RAG) · **Type:** feature / polish

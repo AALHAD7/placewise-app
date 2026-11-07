@@ -5,7 +5,15 @@
 // they're intentionally left to the same resilience posture, not re-tested here.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickRandomCoveringChunk, looksLikeWorkedProblem, filterCandidatesByExclusion, shuffle, splitRawQuestionFromAnswer, GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
+import {
+  pickRandomCoveringChunk,
+  looksLikeWorkedProblem,
+  filterCandidatesByExclusion,
+  shuffle,
+  splitRawQuestionFromAnswer,
+  GUESSTIMATES_SOURCE_FILE,
+  getGuesstimateProblemById
+} from "../src/lib/guesstimateRetrieval.js";
 
 test("pickRandomCoveringChunk: not covered returns null", () => {
   const picked = pickRandomCoveringChunk({ covered: false, chunks: [], citations: [] });
@@ -172,4 +180,13 @@ test("filterCandidatesByExclusion: cleans whitespace and handles Set input", () 
   const { pool } = filterCandidatesByExclusion(candidates, excludeSet);
   assert.equal(pool.length, 1);
   assert.equal(pool[0].id, "chunk-2");
+});
+
+test("getGuesstimateProblemById: invalid or empty chunkId returns error safely without throwing", async () => {
+  const res1 = await getGuesstimateProblemById("");
+  assert.equal(res1.available, false);
+  const res2 = await getGuesstimateProblemById(null);
+  assert.equal(res2.available, false);
+  const res3 = await getGuesstimateProblemById(123);
+  assert.equal(res3.available, false);
 });

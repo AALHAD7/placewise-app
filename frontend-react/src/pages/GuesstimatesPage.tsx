@@ -1,11 +1,18 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "../lib/apiClient";
 import PageHeader from "../components/PageHeader";
 import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
 import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import VoiceRecordButton from "../components/VoiceRecordButton";
 import { useVoiceRecording } from "../hooks/useVoiceRecording";
-import type { GuesstimateClarifyResponse, GuesstimateResponse, GuesstimateEvaluation, GuesstimateEvaluateResponse } from "../types/api";
+import type {
+  GuesstimateClarifyResponse,
+  GuesstimateResponse,
+  GuesstimateEvaluation,
+  GuesstimateEvaluateResponse,
+  GuesstimateListItem,
+  GuesstimateListResponse
+} from "../types/api";
 
 // R8: first real UI for Guesstimates (backend-only as of R7 - GET
 // /api/guesstimates/random, grounded in the SRCC Guesstimates Book only,
@@ -74,12 +81,59 @@ function saveStoredSeenIds(ids: string[]): void {
   }
 }
 
+function playTimeUpChime() {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  } catch {
+    // Ignore audio policy errors safely
+  }
+}
+
+function formatTimerSeconds(totalSeconds: number): string {
+  const m = Math.floor(Math.max(0, totalSeconds) / 60);
+  const s = Math.max(0, totalSeconds) % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 export default function GuesstimatesPage() {
   const [state, setState] = useState<LoadState>({ loading: true, error: "", data: null });
   const [seenCount, setSeenCount] = useState<number>(() => getStoredSeenIds().length);
   const [attempt, setAttempt] = useState("");
   const [revealed, setRevealed] = useState(false);
   const { recording, micError, startRecording, stopRecording } = useVoiceRecording();
+
+  // Questions catalog state
+  const [catalog, setCatalog] = useState<GuesstimateListItem[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Interview Timer states (5m, 10m default, 15m, custom, off)
+  const [timerMode, setTimerMode] = useState<"5" | "10" | "15" | "custom" | "off">("10");
+  const [customMinutes, setCustomMinutes] = useState(10);
+  const [secondsLeft, setSecondsLeft] = useState(600);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timeExpiredNotice, setTimeExpiredNotice] = useState<string | null>(null);
+
+  const attemptRef = useRef(attempt);
+  useEffect(() => {
+    attemptRef.current = attempt;
+  }, [attempt]);
+
+  const onSubmitRef = useRef<() => void>(() => {});
 
   // Clarifying questions ("ask the interviewer"), 2026-11-07: capped at
   // MAX_CLARIFY_ASKS client-side only - UX pacing, not a security boundary (the
@@ -141,15 +195,19 @@ export default function GuesstimatesPage() {
     }
   }
 
-  async function onSubmitAttempt() {
-    const text = attempt.trim();
+  async function onSubmitAttempt(isAutoSubmit = false) {
+    const text = attemptRef.current.trim();
     if (!text || submitLoading) return;
     if (text.length < 5) {
       setSubmitError("Please write an attempt with at least 5 characters.");
       return;
     }
+    setTimerRunning(false); // Stop timer upon evaluation
     setSubmitLoading(true);
     setSubmitError("");
+    if (isAutoSubmit) {
+      setTimeExpiredNotice("⏰ Time's up! Your attempt was automatically submitted for evaluation.");
+    }
     try {
       const res = await apiFetch<GuesstimateEvaluateResponse>(
         "/api/guesstimates/evaluate",
@@ -176,7 +234,85 @@ export default function GuesstimatesPage() {
     }
   }
 
-  const load = useCallback(() => {
+  useEffect(() => {
+    onSubmitRef.current = () => {
+      onSubmitAttempt(true);
+    };
+  });
+
+  function handleSetTimerMode(mode: "5" | "10" | "15" | "custom" | "off") {
+    setTimerMode(mode);
+    setTimerRunning(false);
+    setTimeExpiredNotice(null);
+    if (mode === "off") {
+      setSecondsLeft(0);
+    } else if (mode === "custom") {
+      setSecondsLeft(customMinutes * 60);
+    } else {
+      const m = parseInt(mode, 10);
+      setSecondsLeft(m * 60);
+    }
+  }
+
+  function handleCustomMinutesChange(mins: number) {
+    const clamped = Math.max(1, Math.min(60, isNaN(mins) ? 10 : mins));
+    setCustomMinutes(clamped);
+    if (timerMode === "custom") {
+      setTimerRunning(false);
+      setSecondsLeft(clamped * 60);
+    }
+  }
+
+  function handleStartTimer() {
+    if (secondsLeft <= 0) {
+      const initial = timerMode === "custom" ? customMinutes * 60 : parseInt(timerMode, 10) * 60;
+      setSecondsLeft(initial || 600);
+    }
+    setTimeExpiredNotice(null);
+    setTimerRunning(true);
+  }
+
+  function handlePauseTimer() {
+    setTimerRunning(false);
+  }
+
+  function handleResetTimer() {
+    setTimerRunning(false);
+    setTimeExpiredNotice(null);
+    if (timerMode === "off") {
+      setSecondsLeft(0);
+    } else if (timerMode === "custom") {
+      setSecondsLeft(customMinutes * 60);
+    } else {
+      setSecondsLeft(parseInt(timerMode, 10) * 60);
+    }
+  }
+
+  useEffect(() => {
+    if (!timerRunning || timerMode === "off") return;
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setTimerRunning(false);
+          playTimeUpChime();
+          const currentText = attemptRef.current.trim();
+          if (currentText.length >= 5) {
+            setTimeExpiredNotice("⏰ Time's up! Your attempt was automatically submitted for evaluation.");
+            if (onSubmitRef.current) onSubmitRef.current();
+          } else {
+            setTimeExpiredNotice("⏰ Time's up! Interview timer expired before an attempt was submitted. Benchmark solution revealed below.");
+            setRevealed(true);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timerRunning, timerMode]);
+
+  const load = useCallback((targetChunkId?: string) => {
     setState((s) => ({ ...s, loading: true, error: "" }));
     setAttempt("");
     setRevealed(false);
@@ -186,9 +322,25 @@ export default function GuesstimatesPage() {
     setClarifyQuestion("");
     setClarifyExchanges([]);
     setClarifyError("");
+    setTimeExpiredNotice(null);
+
+    // Reset timer to configured duration
+    setTimerRunning(false);
+    if (timerMode === "off") {
+      setSecondsLeft(0);
+    } else if (timerMode === "custom") {
+      setSecondsLeft(customMinutes * 60);
+    } else {
+      setSecondsLeft(parseInt(timerMode, 10) * 60);
+    }
 
     const currentSeen = getStoredSeenIds();
-    const query = currentSeen.length ? `?exclude=${encodeURIComponent(currentSeen.join(","))}` : "";
+    let query = "";
+    if (targetChunkId) {
+      query = `?chunkId=${encodeURIComponent(targetChunkId)}`;
+    } else if (currentSeen.length) {
+      query = `?exclude=${encodeURIComponent(currentSeen.join(","))}`;
+    }
 
     apiFetch<GuesstimateResponse>(`/api/guesstimates/random${query}`, {}, "Failed to load a guesstimate.")
       .then((data) => {
@@ -203,11 +355,33 @@ export default function GuesstimatesPage() {
         }
       })
       .catch((e) => setState({ loading: false, error: e instanceof Error ? e.message : "Could not load a guesstimate.", data: null }));
-  }, []);
+  }, [timerMode, customMinutes]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    setCatalogLoading(true);
+    apiFetch<GuesstimateListResponse>("/api/guesstimates/list", {}, "Failed to load questions catalog.")
+      .then((res) => {
+        if (res && Array.isArray(res.problems)) {
+          setCatalog(res.problems);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setCatalogLoading(false));
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && isCatalogOpen) {
+        setIsCatalogOpen(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCatalogOpen]);
 
   return (
     <>
@@ -274,7 +448,7 @@ export default function GuesstimatesPage() {
               <div className="t-shake" style={{ color: "var(--red-dark)", fontSize: "0.84375rem" }}>{state.error}</div>
               <button
                 type="button"
-                onClick={load}
+                onClick={() => load()}
                 style={{ marginTop: 18, border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", padding: "8px 18px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--indigo)", background: "none", cursor: "pointer" }}
               >
                 Try another
@@ -291,7 +465,7 @@ export default function GuesstimatesPage() {
                 <div>
                   <button
                     type="button"
-                    onClick={load}
+                    onClick={() => load()}
                     style={{ marginTop: 18, border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", padding: "8px 18px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--indigo)", background: "none", cursor: "pointer" }}
                   >
                     Try another
@@ -302,26 +476,248 @@ export default function GuesstimatesPage() {
           )}
 
           {!state.loading && !state.error && state.data?.available && (
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "28px 32px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
-                  Practice problem
+            <>
+              {/* Question selection action bar */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: 10,
+                  marginBottom: 14
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsCatalogOpen(true)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "8px 14px",
+                      borderRadius: "var(--r-sm)",
+                      fontSize: "0.8125rem",
+                      fontWeight: 600,
+                      background: "rgba(59, 130, 246, 0.12)",
+                      border: "1px solid rgba(59, 130, 246, 0.35)",
+                      color: "#93c5fd",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease"
+                    }}
+                  >
+                    <span>📚</span>
+                    <span>Browse All Questions ({catalog.length || 25})</span>
+                    <span style={{ fontSize: "0.6875rem", opacity: 0.7 }}>▾</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => load()}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "8px 14px",
+                      borderRadius: "var(--r-sm)",
+                      fontSize: "0.8125rem",
+                      fontWeight: 600,
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "1px solid var(--border-soft)",
+                      color: "var(--text-gray2)",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <span>🎲</span>
+                    <span>Random Problem</span>
+                  </button>
                 </div>
-                {seenCount > 1 && (
-                  <div style={{ fontSize: "0.6875rem", color: "var(--indigo)", fontWeight: 600, background: "rgba(99, 102, 241, 0.08)", padding: "2px 8px", borderRadius: "var(--r-pill)" }}>
-                    Problem #{seenCount} · Never repeated
-                  </div>
-                )}
-              </div>
-              <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
-                {state.data.question && <MarkdownWithDiagrams markdown={state.data.question} />}
+
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {seenCount > 0 && (
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-lightgray)" }}>
+                      <strong>{seenCount}</strong> / {catalog.length || 25} completed
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>
-                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
-                  Your attempt
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "28px 32px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                  <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
+                    Practice problem
+                  </div>
+                  {seenCount > 1 && (
+                    <div style={{ fontSize: "0.6875rem", color: "var(--indigo)", fontWeight: 600, background: "rgba(99, 102, 241, 0.08)", padding: "2px 8px", borderRadius: "var(--r-pill)" }}>
+                      Problem #{seenCount} · Never repeated
+                    </div>
+                  )}
                 </div>
-                <textarea
+                <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
+                  {state.data.question && <MarkdownWithDiagrams markdown={state.data.question} />}
+                </div>
+
+                <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                    <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
+                      Your attempt
+                    </div>
+
+                    {/* Interview Timer */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        background: "rgba(15, 20, 29, 0.8)",
+                        border: "1px solid " + (secondsLeft <= 30 && timerRunning && timerMode !== "off" ? "rgba(239, 68, 68, 0.5)" : secondsLeft <= 120 && timerRunning && timerMode !== "off" ? "rgba(245, 158, 11, 0.4)" : "rgba(59, 130, 246, 0.25)"),
+                        padding: "4px 10px",
+                        borderRadius: "8px",
+                        boxShadow: secondsLeft <= 30 && timerRunning && timerMode !== "off" ? "0 0 12px rgba(239, 68, 68, 0.25)" : "none",
+                        transition: "all 0.3s ease",
+                        flexWrap: "wrap"
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                        <span style={{ fontSize: "0.6875rem", color: "#94a3b8", fontWeight: 600, marginRight: 2 }}>⏱ Timer:</span>
+                        {(["5", "10", "15", "custom", "off"] as const).map((m) => (
+                          <button
+                            key={m}
+                            type="button"
+                            onClick={() => handleSetTimerMode(m)}
+                            style={{
+                              fontSize: "0.6875rem",
+                              fontWeight: 600,
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              border: "none",
+                              cursor: "pointer",
+                              background: timerMode === m ? "rgba(59, 130, 246, 0.35)" : "transparent",
+                              color: timerMode === m ? "#93c5fd" : "rgba(255, 255, 255, 0.5)"
+                            }}
+                          >
+                            {m === "off" ? "Off" : m === "custom" ? "Custom" : `${m}m`}
+                          </button>
+                        ))}
+                      </div>
+
+                      {timerMode === "custom" && (
+                        <input
+                          type="number"
+                          min={1}
+                          max={60}
+                          value={customMinutes}
+                          onChange={(e) => handleCustomMinutesChange(Number(e.target.value))}
+                          style={{
+                            width: 44,
+                            padding: "2px 4px",
+                            fontSize: "0.75rem",
+                            borderRadius: 4,
+                            background: "rgba(0, 0, 0, 0.4)",
+                            border: "1px solid rgba(255, 255, 255, 0.2)",
+                            color: "#ffffff",
+                            textAlign: "center"
+                          }}
+                        />
+                      )}
+
+                      {timerMode !== "off" && (
+                        <>
+                          <div
+                            style={{
+                              fontFamily: "monospace",
+                              fontSize: "0.9375rem",
+                              fontWeight: 800,
+                              letterSpacing: ".06em",
+                              color: secondsLeft <= 30 && timerRunning ? "#f87171" : secondsLeft <= 120 && timerRunning ? "#fbbf24" : "#ffffff",
+                              minWidth: 46,
+                              textAlign: "center"
+                            }}
+                          >
+                            {formatTimerSeconds(secondsLeft)}
+                          </div>
+
+                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            {!timerRunning ? (
+                              <button
+                                type="button"
+                                onClick={handleStartTimer}
+                                style={{
+                                  fontSize: "0.6875rem",
+                                  fontWeight: 700,
+                                  padding: "3px 8px",
+                                  borderRadius: "4px",
+                                  background: "rgba(16, 185, 129, 0.2)",
+                                  color: "#34d399",
+                                  border: "1px solid rgba(16, 185, 129, 0.4)",
+                                  cursor: "pointer"
+                                }}
+                              >
+                                ▶ Start
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={handlePauseTimer}
+                                style={{
+                                  fontSize: "0.6875rem",
+                                  fontWeight: 700,
+                                  padding: "3px 8px",
+                                  borderRadius: "4px",
+                                  background: "rgba(245, 158, 11, 0.2)",
+                                  color: "#fbbf24",
+                                  border: "1px solid rgba(245, 158, 11, 0.4)",
+                                  cursor: "pointer"
+                                }}
+                              >
+                                ⏸ Pause
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={handleResetTimer}
+                              title="Reset Timer"
+                              style={{
+                                fontSize: "0.6875rem",
+                                fontWeight: 600,
+                                padding: "3px 6px",
+                                borderRadius: "4px",
+                                background: "rgba(255, 255, 255, 0.08)",
+                                color: "rgba(255, 255, 255, 0.6)",
+                                border: "1px solid rgba(255, 255, 255, 0.15)",
+                                cursor: "pointer"
+                              }}
+                            >
+                              ↺
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {timeExpiredNotice && (
+                    <div
+                      style={{
+                        marginTop: 10,
+                        padding: "8px 12px",
+                        borderRadius: "6px",
+                        background: "rgba(239, 68, 68, 0.15)",
+                        border: "1px solid rgba(239, 68, 68, 0.35)",
+                        color: "#fca5a5",
+                        fontSize: "0.8125rem",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8
+                      }}
+                    >
+                      <span>⏰</span>
+                      <span>{timeExpiredNotice}</span>
+                    </div>
+                  )}
+
+                  <textarea
                   value={attempt}
                   onChange={(e) => setAttempt(e.target.value)}
                   placeholder="Work it out on paper, then type or speak your structure and final number here."
@@ -331,7 +727,7 @@ export default function GuesstimatesPage() {
                   <VoiceRecordButton recording={isRecording} onClick={onToggleMic} />
                   <button
                     type="button"
-                    onClick={onSubmitAttempt}
+                    onClick={() => onSubmitAttempt(false)}
                     disabled={!attempt.trim() || submitLoading}
                     className="btn-outline-indigo"
                     style={{
@@ -433,7 +829,10 @@ export default function GuesstimatesPage() {
                 {!revealed && (
                   <button
                     type="button"
-                    onClick={() => setRevealed(true)}
+                    onClick={() => {
+                      setRevealed(true);
+                      setTimerRunning(false);
+                    }}
                     className="btn-outline-indigo"
                     style={{ border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 16px", font: "600 0.8125rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)" }}
                   >
@@ -442,7 +841,7 @@ export default function GuesstimatesPage() {
                 )}
                 <button
                   type="button"
-                  onClick={load}
+                  onClick={() => load()}
                   style={{ border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", padding: "9px 18px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--indigo)", background: "none", cursor: "pointer" }}
                 >
                   Try another
@@ -574,10 +973,39 @@ export default function GuesstimatesPage() {
                 </div>
               )}
             </div>
+            </>
           )}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
+          {/* Question Catalog Quick Card */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Question Catalog</div>
+              <span style={{ fontSize: "0.6875rem", color: "var(--indigo)", fontWeight: 700 }}>{catalog.length || 25} Problems</span>
+            </div>
+            <p style={{ margin: "10px 0 14px", fontSize: "0.8125rem", lineHeight: 1.5, color: "var(--text-gray2)" }}>
+              Browse all 25 real interview questions from the SRCC Casebook and choose any topic to practice.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsCatalogOpen(true)}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: "var(--r-sm)",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                background: "rgba(59, 130, 246, 0.12)",
+                border: "1px solid rgba(59, 130, 246, 0.3)",
+                color: "#93c5fd"
+              }}
+            >
+              📚 Browse All 25 Questions
+            </button>
+          </div>
+
           <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
             <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>How to approach it</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
@@ -611,6 +1039,181 @@ export default function GuesstimatesPage() {
           </div>
         </div>
       </div>
+
+      {/* Questions Catalog Modal */}
+      {isCatalogOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsCatalogOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.78)",
+            backdropFilter: "blur(6px)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: 720,
+              maxHeight: "85vh",
+              display: "flex",
+              flexDirection: "column",
+              background: "linear-gradient(180deg, #111622 0%, #0a0d14 100%)",
+              border: "1px solid rgba(59, 130, 246, 0.35)",
+              borderRadius: 14,
+              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.75)",
+              overflow: "hidden"
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                padding: "18px 22px",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between"
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#ffffff" }}>
+                  Casebook Guesstimates Catalog
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 2 }}>
+                  Select any of the 25 real interview questions from the SRCC Casebook
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCatalogOpen(false)}
+                style={{
+                  background: "rgba(255, 255, 255, 0.08)",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  color: "#ffffff",
+                  borderRadius: 6,
+                  padding: "4px 10px",
+                  fontSize: "0.875rem",
+                  cursor: "pointer"
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div style={{ padding: "14px 22px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Filter questions (e.g. Swiggy, market size, Delhi, flights, revenue, cars)..."
+                style={{
+                  width: "100%",
+                  padding: "9px 12px",
+                  background: "rgba(0, 0, 0, 0.4)",
+                  border: "1px solid rgba(59, 130, 246, 0.25)",
+                  borderRadius: 8,
+                  fontSize: "0.84375rem",
+                  color: "#ffffff",
+                  outline: "none"
+                }}
+              />
+            </div>
+
+            {/* Questions list */}
+            <div style={{ padding: "12px 22px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+              {catalogLoading ? (
+                <div style={{ padding: "20px 0", textAlign: "center", color: "#94a3b8", fontSize: "0.875rem" }}>
+                  Loading questions catalog…
+                </div>
+              ) : (
+                (() => {
+                  const filtered = catalog.filter((item) => {
+                    if (!searchQuery.trim()) return true;
+                    const q = searchQuery.toLowerCase();
+                    return item.question.toLowerCase().includes(q) || String(item.pageStart).includes(q);
+                  });
+                  if (filtered.length === 0) {
+                    return (
+                      <div style={{ padding: "20px 0", textAlign: "center", color: "#94a3b8", fontSize: "0.875rem" }}>
+                        No questions match "{searchQuery}"
+                      </div>
+                    );
+                  }
+                  return filtered.map((item, index) => {
+                    const isCurrent = state.data?.chunkId === item.chunkId;
+                    const isSolved = getStoredSeenIds().includes(item.chunkId);
+                    return (
+                      <div
+                        key={item.chunkId}
+                        onClick={() => {
+                          setIsCatalogOpen(false);
+                          load(item.chunkId);
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "12px 14px",
+                          borderRadius: 8,
+                          background: isCurrent ? "rgba(59, 130, 246, 0.18)" : "rgba(255, 255, 255, 0.03)",
+                          border: "1px solid " + (isCurrent ? "rgba(59, 130, 246, 0.4)" : "rgba(255, 255, 255, 0.07)"),
+                          cursor: "pointer",
+                          transition: "all 0.15s ease"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = isCurrent ? "rgba(59, 130, 246, 0.25)" : "rgba(255, 255, 255, 0.06)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = isCurrent ? "rgba(59, 130, 246, 0.18)" : "rgba(255, 255, 255, 0.03)";
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flex: 1, minWidth: 0, marginRight: 12 }}>
+                          <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 700, minWidth: 22, marginTop: 2 }}>
+                            {index + 1}.
+                          </span>
+                          <div>
+                            <div style={{ fontSize: "0.84375rem", fontWeight: 600, color: isCurrent ? "#93c5fd" : "#ffffff", lineHeight: 1.4 }}>
+                              {item.question}
+                            </div>
+                            <div style={{ fontSize: "0.71875rem", color: "#94a3b8", marginTop: 3 }}>
+                              Casebook p. {item.pageStart} {item.hasDiagram && "· 📊 Includes Visual Breakdown"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          {isCurrent && (
+                            <span style={{ fontSize: "0.6875rem", background: "rgba(59, 130, 246, 0.25)", color: "#93c5fd", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>
+                              Active
+                            </span>
+                          )}
+                          {isSolved && !isCurrent && (
+                            <span style={{ fontSize: "0.6875rem", background: "rgba(16, 185, 129, 0.15)", color: "#34d399", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>
+                              ✓ Practiced
+                            </span>
+                          )}
+                          <span style={{ fontSize: "0.8125rem", color: "var(--indigo)" }}>
+                            ➜
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

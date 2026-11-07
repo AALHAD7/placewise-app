@@ -158,6 +158,21 @@ export interface GuesstimateResponse {
   cycleReset?: boolean;
 }
 
+export interface GuesstimateListItem {
+  chunkId: string;
+  question: string;
+  pageStart: number;
+  pageEnd?: number;
+  hasDiagram?: boolean;
+}
+
+export interface GuesstimateListResponse {
+  success: boolean;
+  available: boolean;
+  count: number;
+  problems: GuesstimateListItem[];
+}
+
 // POST /api/guesstimates/clarify - backend/src/routes/guesstimates.js. Up to 2 clarifying
 // questions per problem, capped client-side only (GuesstimatesPage.tsx); no server-side cap.
 export interface GuesstimateClarifyResponse {
