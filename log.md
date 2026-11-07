@@ -5,6 +5,19 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — Diagram rendering: true vertical tree ASCII art for flow and profit structures
+
+**Phase:** M1 / UI · **Type:** feature / fix
+
+**What changed:** Aalhad requested converting disconnected numbered diagram flows (`┌── (1) Profits`, `┌── (2) Revenue`) into a clean vertical diagram.
+1. `flowToAscii` (`frontend-react/src/lib/asciiDiagrams.ts`) was previously iterating over nodes in arbitrary order and printing each node as an isolated root box with child-reference edges.
+2. Rewrote `flowToAscii` to build an adjacency graph and calculate node in-degrees:
+   - For hierarchical trees and DAGs (e.g., profit trees, decision trees, MECE breakdowns), it identifies root nodes and recursively traverses children to produce a connected top-to-bottom vertical tree (`[ Root ]` -> `├── [ Branch ]` -> `│   └── [ Leaf ]`), cleanly formatting bulleted items beneath each node and handling multi-parent/cycle cases cleanly.
+   - For linear pipeline sequences, it formats them into vertical flowchart cards connected by directional down-arrows (`│` -> `▼`).
+3. Verified frontend build passes with zero TypeScript errors.
+
+---
+
 ## 2026-11-07 — Guesstimates: "ask the interviewer" clarifying-question endpoint
 
 **Phase:** M1 (Consulting RAG) · **Type:** feature

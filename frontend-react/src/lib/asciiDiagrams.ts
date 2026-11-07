@@ -1122,35 +1122,207 @@ export function treeToAscii(node: PlacewiseTreeNode, prefix = "", isLast = true,
   return lines.join("\n");
 }
 
+/**
+ * Converts a flow graph (nodes and edges) into a clean, true vertical diagram.
+ * If the graph represents a hierarchy/tree or DAG (like a profit tree, decision tree,
+ * or issue breakdown), it renders as an integrated top-to-bottom vertical tree.
+ * If it's a linear sequential pipeline, it renders as a vertical boxed flowchart.
+ */
 export function flowToAscii(
   nodes: Array<{ id: string | number; label: string }>,
   edges: Array<{ from: string | number; to: string | number; label?: string | null }> = []
 ): string {
   if (!Array.isArray(nodes) || nodes.length === 0) return "";
-  const labelOf = new Map(nodes.map(n => [String(n.id), n.label]));
-  const lines: string[] = [];
 
-  for (let i = 0; i < nodes.length; i++) {
-    const n = nodes[i];
-    const out = edges.filter(e => String(e.from) === String(n.id));
-    lines.push(`┌── (${i + 1}) ${n.label}`);
-    if (out.length > 0) {
-      for (let j = 0; j < out.length; j++) {
-        // Only the target node's first line (its title/name) - not its full label,
-        // which may itself be multi-line (title + numbered sub-items). Using the full
-        // label here duplicated that node's whole content: once as this preview arrow,
-        // again as its own proper heading on the next iteration (found 2026-11-07, a
-        // real Q&A "Value Chain" answer showing every step's items twice).
-        const fullTarget = labelOf.get(String(out[j].to)) || `Node ${out[j].to}`;
-        const target = fullTarget.split("\n")[0];
-        const edgeNote = out[j].label ? ` [${out[j].label}]` : "";
-        const isLastEdge = j === out.length - 1;
-        lines.push(`│   ${isLastEdge ? "└──►" : "├──►"} ${target}${edgeNote}`);
-      }
+  const nodeMap = new Map<string, { id: string; label: string }>();
+  for (const n of nodes) {
+    nodeMap.set(String(n.id), { id: String(n.id), label: String(n.label || "") });
+  }
+
+  const adj = new Map<string, Array<{ to: string; label?: string | null }>>();
+  const inDegree = new Map<string, number>();
+
+  for (const n of nodes) {
+    const id = String(n.id);
+    adj.set(id, []);
+    inDegree.set(id, 0);
+  }
+
+  for (const e of edges) {
+    const fromId = String(e.from);
+    const toId = String(e.to);
+    if (adj.has(fromId)) {
+      adj.get(fromId)!.push({ to: toId, label: e.label });
+    }
+    if (inDegree.has(toId)) {
+      inDegree.set(toId, (inDegree.get(toId) || 0) + 1);
+    }
+  }
+
+  // Check if it's a purely linear unbranching pipeline
+  const isLinear =
+    edges.length > 0 &&
+    nodes.every(n => (adj.get(String(n.id))?.length || 0) <= 1) &&
+    Array.from(inDegree.values()).every(deg => deg <= 1);
+
+  if (isLinear) {
+    return renderLinearVerticalFlow(nodes, adj);
+  }
+
+  // Hierarchical vertical tree renderer
+  return renderHierarchicalVerticalFlow(nodes, adj, inDegree, nodeMap);
+}
+
+function renderLinearVerticalFlow(
+  nodes: Array<{ id: string | number; label: string }>,
+  adj: Map<string, Array<{ to: string; label?: string | null }>>
+): string {
+  const inDeg = new Map<string, number>();
+  for (const n of nodes) inDeg.set(String(n.id), 0);
+  for (const [, targets] of adj) {
+    for (const t of targets) inDeg.set(t.to, (inDeg.get(t.to) || 0) + 1);
+  }
+
+  let currId = nodes.find(n => (inDeg.get(String(n.id)) || 0) === 0)?.id ?? nodes[0].id;
+  const ordered: Array<{ label: string; edgeLabel?: string | null }> = [];
+  const seen = new Set<string>();
+
+  while (currId && !seen.has(String(currId))) {
+    seen.add(String(currId));
+    const n = nodes.find(x => String(x.id) === String(currId));
+    if (!n) break;
+    const nextList = adj.get(String(currId)) || [];
+    const next = nextList[0];
+    ordered.push({ label: n.label, edgeLabel: next?.label });
+    currId = next?.to;
+  }
+
+  for (const n of nodes) {
+    if (!seen.has(String(n.id))) {
+      ordered.push({ label: n.label });
+    }
+  }
+
+  const lines: string[] = [];
+  for (let i = 0; i < ordered.length; i++) {
+    const item = ordered[i];
+    const textLines = item.label.split("\n").map(l => l.trim()).filter(Boolean);
+    const maxLen = Math.min(60, Math.max(...textLines.map(l => l.length), 20));
+
+    const border = "─".repeat(maxLen + 4);
+    lines.push(`┌${border}┐`);
+    for (const tl of textLines) {
+      lines.push(`│  ${tl.padEnd(maxLen)}  │`);
+    }
+    lines.push(`└${border}┘`);
+
+    if (i < ordered.length - 1) {
+      const mid = Math.floor((maxLen + 6) / 2);
+      const pad = " ".repeat(Math.max(0, mid - 1));
+      const edgeNote = item.edgeLabel ? ` [${item.edgeLabel}]` : "";
+      lines.push(`${pad}│${edgeNote}`);
+      lines.push(`${pad}▼`);
     }
   }
 
   return lines.join("\n");
+}
+
+function renderHierarchicalVerticalFlow(
+  nodes: Array<{ id: string | number; label: string }>,
+  adj: Map<string, Array<{ to: string; label?: string | null }>>,
+  inDegree: Map<string, number>,
+  nodeMap: Map<string, { id: string; label: string }>
+): string {
+  let rootIds = nodes.filter(n => (inDegree.get(String(n.id)) || 0) === 0).map(n => String(n.id));
+  if (rootIds.length === 0) {
+    rootIds = [String(nodes[0].id)];
+  }
+
+  const visitedGlobal = new Set<string>();
+  const outputLines: string[] = [];
+
+  function formatNodeLines(rawText: string): string[] {
+    return rawText
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(Boolean);
+  }
+
+  function traverse(
+    currId: string,
+    prefix: string,
+    isLast: boolean,
+    pathSet: Set<string>,
+    isRoot: boolean,
+    edgeNote?: string | null
+  ) {
+    const node = nodeMap.get(currId);
+    if (!node) return;
+
+    const rawLines = formatNodeLines(node.label);
+    const mainTitle = rawLines[0] || `Node ${currId}`;
+    const subItems = rawLines.slice(1);
+    const noteSuffix = edgeNote ? ` (${edgeNote})` : "";
+
+    const isCycle = pathSet.has(currId);
+    const alreadyVisited = visitedGlobal.has(currId) && !isRoot;
+
+    if (isRoot) {
+      outputLines.push(`[ ${mainTitle} ]${noteSuffix}`);
+    } else {
+      const connector = isLast ? "└── " : "├── ";
+      outputLines.push(`${prefix}${connector}[ ${mainTitle} ]${noteSuffix}`);
+    }
+
+    const nextPrefix = isRoot ? "" : prefix + (isLast ? "    " : "│   ");
+
+    for (const item of subItems) {
+      const cleanItem = item.replace(/^[-*•]\s*/, "");
+      outputLines.push(`${nextPrefix}    • ${cleanItem}`);
+    }
+
+    if (isCycle) {
+      outputLines.push(`${nextPrefix}    └──► (cycle)`);
+      return;
+    }
+
+    if (alreadyVisited) {
+      const children = adj.get(currId) || [];
+      if (children.length > 0) {
+        outputLines.push(`${nextPrefix}    └──► (see above)`);
+        return;
+      }
+    }
+
+    visitedGlobal.add(currId);
+    const nextPathSet = new Set(pathSet);
+    nextPathSet.add(currId);
+
+    const children = adj.get(currId) || [];
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const childIsLast = i === children.length - 1;
+      traverse(child.to, nextPrefix, childIsLast, nextPathSet, false, child.label);
+    }
+  }
+
+  for (let r = 0; r < rootIds.length; r++) {
+    if (r > 0) outputLines.push("");
+    traverse(rootIds[r], "", true, new Set(), true);
+  }
+
+  const unreached = nodes.filter(n => !visitedGlobal.has(String(n.id)));
+  if (unreached.length > 0) {
+    outputLines.push("");
+    for (const orphan of unreached) {
+      if (!visitedGlobal.has(String(orphan.id))) {
+        traverse(String(orphan.id), "", true, new Set(), true);
+      }
+    }
+  }
+
+  return outputLines.join("\n");
 }
 
 /**
