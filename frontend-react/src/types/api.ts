@@ -162,6 +162,25 @@ export interface GuesstimateClarifyResponse {
   answer: string;
 }
 
+export interface GuesstimateEvaluation {
+  score: number;
+  rating: "Strong" | "Good" | "Needs Improvement";
+  rubricBreakdown?: {
+    structure: number;
+    assumptions: number;
+    calculation: number;
+  };
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+  benchmarkComparison?: string;
+}
+
+export interface GuesstimateEvaluateResponse {
+  success: true;
+  evaluation: GuesstimateEvaluation;
+}
+
 // POST /api/qa/ask - backend/src/routes/qa.js. Free-form grounded Q&A (R8). `citations`
 // is API-only (grounding policy, CLAUDE.md 2026-11-02) - never render it to students;
 // `groundedInCasebooks`/`label` drive GroundingNote instead.

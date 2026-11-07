@@ -5,7 +5,7 @@ import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
 import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import VoiceRecordButton from "../components/VoiceRecordButton";
 import { useVoiceRecording } from "../hooks/useVoiceRecording";
-import type { GuesstimateClarifyResponse, GuesstimateResponse } from "../types/api";
+import type { GuesstimateClarifyResponse, GuesstimateResponse, GuesstimateEvaluation, GuesstimateEvaluateResponse } from "../types/api";
 
 // R8: first real UI for Guesstimates (backend-only as of R7 - GET
 // /api/guesstimates/random, grounded in the SRCC Guesstimates Book only,
@@ -71,6 +71,10 @@ export default function GuesstimatesPage() {
   const [clarifyLoading, setClarifyLoading] = useState(false);
   const [clarifyError, setClarifyError] = useState("");
 
+  const [evaluation, setEvaluation] = useState<GuesstimateEvaluation | null>(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
   const recKey = "guesstimates-attempt";
   const isRecording = !!recording[recKey];
   const clarifyRecKey = "guesstimates-clarify";
@@ -116,10 +120,46 @@ export default function GuesstimatesPage() {
     }
   }
 
+  async function onSubmitAttempt() {
+    const text = attempt.trim();
+    if (!text || submitLoading) return;
+    if (text.length < 5) {
+      setSubmitError("Please write an attempt with at least 5 characters.");
+      return;
+    }
+    setSubmitLoading(true);
+    setSubmitError("");
+    try {
+      const res = await apiFetch<GuesstimateEvaluateResponse>(
+        "/api/guesstimates/evaluate",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            chunkId: state.data?.chunkId || "",
+            question: state.data?.question || "",
+            attempt: text
+          })
+        },
+        "Failed to evaluate your attempt."
+      );
+      if (res && res.evaluation) {
+        setEvaluation(res.evaluation);
+        setRevealed(true);
+      }
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Failed to evaluate your attempt.");
+    } finally {
+      setSubmitLoading(false);
+    }
+  }
+
   const load = useCallback(() => {
     setState((s) => ({ ...s, loading: true, error: "" }));
     setAttempt("");
     setRevealed(false);
+    setEvaluation(null);
+    setSubmitLoading(false);
+    setSubmitError("");
     setClarifyQuestion("");
     setClarifyExchanges([]);
     setClarifyError("");
@@ -245,7 +285,25 @@ export default function GuesstimatesPage() {
                 />
                 <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 9, flexWrap: "wrap" }}>
                   <VoiceRecordButton recording={isRecording} onClick={onToggleMic} />
+                  <button
+                    type="button"
+                    onClick={onSubmitAttempt}
+                    disabled={!attempt.trim() || submitLoading}
+                    className="btn-outline-indigo"
+                    style={{
+                      border: "1px solid var(--card-border)",
+                      borderRadius: "var(--r-sm)",
+                      padding: "9px 16px",
+                      font: "600 0.8125rem 'Instrument Sans',sans-serif",
+                      cursor: attempt.trim() && !submitLoading ? "pointer" : "default",
+                      background: attempt.trim() && !submitLoading ? "linear-gradient(135deg, #ff6b35 0%, #ea580c 100%)" : "var(--surface)",
+                      color: "#ffffff"
+                    }}
+                  >
+                    {submitLoading ? "Evaluating…" : "Submit attempt"}
+                  </button>
                   {micError[recKey] && <span style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{micError[recKey]}</span>}
+                  {submitError && <span className="t-shake" style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{submitError}</span>}
                 </div>
               </div>
 
@@ -323,6 +381,92 @@ export default function GuesstimatesPage() {
                   Try another
                 </button>
               </div>
+
+              {evaluation && (
+                <div
+                  style={{
+                    marginTop: 22,
+                    background: "rgba(15, 20, 29, 0.95)",
+                    border: "1px solid rgba(59, 130, 246, 0.35)",
+                    borderRadius: "14px",
+                    padding: "20px",
+                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)"
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, paddingBottom: 14, borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ fontSize: "1.375rem", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.02em" }}>
+                        {evaluation.score} <span style={{ fontSize: "0.875rem", color: "#64748b", fontWeight: 500 }}>/ 10</span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          padding: "3px 10px",
+                          borderRadius: "999px",
+                          background: evaluation.rating === "Strong" ? "rgba(16, 185, 129, 0.15)" : evaluation.rating === "Good" ? "rgba(59, 130, 246, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                          color: evaluation.rating === "Strong" ? "#34d399" : evaluation.rating === "Good" ? "#60a5fa" : "#f87171",
+                          border: `1px solid ${evaluation.rating === "Strong" ? "rgba(16, 185, 129, 0.3)" : evaluation.rating === "Good" ? "rgba(59, 130, 246, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
+                        }}
+                      >
+                        {evaluation.rating}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+                      Your Attempt Assessment
+                    </div>
+                  </div>
+
+                  {evaluation.rubricBreakdown && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 8, marginTop: 14 }}>
+                      <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "8px", padding: "8px 10px" }}>
+                        <div style={{ fontSize: "0.65625rem", color: "#94a3b8", textTransform: "uppercase", fontWeight: 700, letterSpacing: ".06em" }}>Structure &amp; Formula</div>
+                        <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#ffffff", marginTop: 2 }}>{evaluation.rubricBreakdown.structure} <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>/ 3.0</span></div>
+                      </div>
+                      <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "8px", padding: "8px 10px" }}>
+                        <div style={{ fontSize: "0.65625rem", color: "#94a3b8", textTransform: "uppercase", fontWeight: 700, letterSpacing: ".06em" }}>Assumptions</div>
+                        <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#ffffff", marginTop: 2 }}>{evaluation.rubricBreakdown.assumptions} <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>/ 4.0</span></div>
+                      </div>
+                      <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "8px", padding: "8px 10px" }}>
+                        <div style={{ fontSize: "0.65625rem", color: "#94a3b8", textTransform: "uppercase", fontWeight: 700, letterSpacing: ".06em" }}>Calculation &amp; Scale</div>
+                        <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#ffffff", marginTop: 2 }}>{evaluation.rubricBreakdown.calculation} <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>/ 3.0</span></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {evaluation.summary && (
+                    <p style={{ margin: "14px 0 16px", fontSize: "0.875rem", lineHeight: 1.6, color: "#e2e8f0" }}>
+                      {evaluation.summary}
+                    </p>
+                  )}
+
+                  {evaluation.benchmarkComparison && (
+                    <div style={{ marginBottom: 14, background: "rgba(255, 107, 53, 0.08)", border: "1px solid rgba(255, 107, 53, 0.25)", borderRadius: "8px", padding: "10px 14px", fontSize: "0.8125rem", lineHeight: 1.55, color: "#ffedd5" }}>
+                      <strong style={{ color: "#ff8c42" }}>Benchmark Comparison: </strong>
+                      {evaluation.benchmarkComparison}
+                    </div>
+                  )}
+
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
+                    {evaluation.strengths?.length > 0 && (
+                      <div style={{ background: "rgba(16, 185, 129, 0.06)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "10px", padding: "12px 14px" }}>
+                        <div style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#34d399", marginBottom: 8 }}>Strengths</div>
+                        <ul style={{ margin: 0, paddingLeft: 18, fontSize: "0.8125rem", lineHeight: 1.55, color: "#cbd5e1" }}>
+                          {evaluation.strengths.map((s, i) => <li key={i}>{s}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                    {evaluation.improvements?.length > 0 && (
+                      <div style={{ background: "rgba(245, 158, 11, 0.06)", border: "1px solid rgba(245, 158, 11, 0.2)", borderRadius: "10px", padding: "12px 14px" }}>
+                        <div style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#fbbf24", marginBottom: 8 }}>Areas to Improve</div>
+                        <ul style={{ margin: 0, paddingLeft: 18, fontSize: "0.8125rem", lineHeight: 1.55, color: "#cbd5e1" }}>
+                          {evaluation.improvements.map((imp, i) => <li key={i}>{imp}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {revealed && state.data.problem && (
                 <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>

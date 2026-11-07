@@ -393,3 +393,106 @@ export async function answerAssumptionClarification(chunkId, question) {
 
   return { found: true, answer: CLARIFICATION_SAFE_FALLBACK, grounded: false };
 }
+
+const GUESSTIMATE_EVALUATION_SYSTEM = `You are a senior management consulting case interviewer evaluating a candidate's guesstimate practice attempt.
+Be insightful, structured, and constructive.
+
+EVALUATION RUBRIC (Total 10.0 points):
+1. Structure & Formula (0.0 to 3.0):
+   - 2.5 - 3.0: Clear, logical decomposition into MECE drivers (top-down population/usage or bottom-up capacity/turnover).
+   - 1.5 - 2.4: Reasonable structure but minor missing factors or slight overlap.
+   - 0.0 - 1.4: Jumped directly to numbers without a coherent formula or structure.
+
+2. Assumptions & Sanity Checks (0.0 to 4.0):
+   - 3.2 - 4.0: Realistic, sensible assumptions grounded in real-world benchmarks; boundary conditions checked.
+   - 2.0 - 3.1: Plausible assumptions, but some numbers are overly high/low or unstated.
+   - 0.0 - 1.9: Highly unrealistic or ungrounded assumptions that distort the final estimate.
+
+3. Calculation & Order of Magnitude (0.0 to 3.0):
+   - 2.5 - 3.0: Clean math, realistic order of magnitude matching the problem scale.
+   - 1.5 - 2.4: Math has slight arithmetic or rounding friction; within a plausible range.
+   - 0.0 - 1.4: Major arithmetic error or final number off by an order of magnitude.
+
+SCORE & BANDS:
+- score = round(structure + assumptions + calculation, 1). Range: 1.0 to 10.0.
+- rating:
+  * 8.0 to 10.0: "Strong"
+  * 6.0 to 7.9: "Good"
+  * 1.0 to 5.9: "Needs Improvement"
+
+Respond with ONLY a valid JSON object matching this schema:
+{
+  "score": <number between 1.0 and 10.0>,
+  "rating": "<Strong | Good | Needs Improvement>",
+  "rubricBreakdown": {
+    "structure": <number 0.0 to 3.0>,
+    "assumptions": <number 0.0 to 4.0>,
+    "calculation": <number 0.0 to 3.0>
+  },
+  "summary": "<1-2 sentence constructive assessment>",
+  "strengths": ["<specific strength 1>", "<specific strength 2>"],
+  "improvements": ["<specific improvement 1>", "<specific improvement 2>"],
+  "benchmarkComparison": "<1-2 sentences comparing candidate's structure and final number against the benchmark casebook solution>"
+}`;
+
+/**
+ * Evaluates a candidate's guesstimate practice attempt against the problem's worked benchmark
+ * solution using an objective, consistent rubric.
+ */
+export async function evaluateGuesstimateAttempt(chunkId, question, attempt) {
+  let benchmarkSolution = "";
+  if (chunkId && typeof chunkId === "string") {
+    try {
+      const row = await fetchScopedGuesstimateChunk(chunkId);
+      if (row?.content) {
+        const { answerSource } = splitRawQuestionFromAnswer(row.content);
+        benchmarkSolution = answerSource;
+      }
+    } catch (err) {
+      console.warn(`[guesstimateRetrieval] evaluate attempt chunk lookup failed: ${err.message}`);
+    }
+  }
+
+  const prompt = `GUESSTIMATE PROBLEM:
+${question}
+
+${benchmarkSolution ? `CASEBOOK BENCHMARK SOLUTION:\n"""${benchmarkSolution.slice(0, 3000)}"""\n` : ""}
+CANDIDATE'S ATTEMPT:
+"""${attempt}"""
+
+Evaluate the candidate's attempt in JSON.`;
+
+  try {
+    const raw = await generateJSON({
+      system: GUESSTIMATE_EVALUATION_SYSTEM,
+      prompt,
+      maxTokens: 1200,
+      temperature: 0.0,
+      feature: "guesstimateEvaluate"
+    });
+
+    const evaluation = { ...raw };
+    let score = typeof evaluation.score === "number" ? evaluation.score : 5.0;
+    if (evaluation.rubricBreakdown && typeof evaluation.rubricBreakdown === "object") {
+      const b = evaluation.rubricBreakdown;
+      const s = typeof b.structure === "number" ? Math.max(0, Math.min(3, b.structure)) : 2.0;
+      const a = typeof b.assumptions === "number" ? Math.max(0, Math.min(4, b.assumptions)) : 2.5;
+      const c = typeof b.calculation === "number" ? Math.max(0, Math.min(3, b.calculation)) : 2.0;
+      score = Number(Math.min(10, Math.max(1, s + a + c)).toFixed(1));
+      evaluation.rubricBreakdown = {
+        structure: Number(s.toFixed(1)),
+        assumptions: Number(a.toFixed(1)),
+        calculation: Number(c.toFixed(1))
+      };
+    } else {
+      score = Number(Math.min(10, Math.max(1, score)).toFixed(1));
+    }
+    evaluation.score = score;
+    evaluation.rating = score >= 8.0 ? "Strong" : score >= 6.0 ? "Good" : "Needs Improvement";
+
+    return { found: true, evaluation };
+  } catch (err) {
+    console.warn(`[guesstimateRetrieval] evaluate attempt failed: ${err.message}`);
+    throw err;
+  }
+}

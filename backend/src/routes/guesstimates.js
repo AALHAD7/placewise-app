@@ -2,7 +2,7 @@ import { Router } from "express";
 import { optionalAuth, requireAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
-import { getRandomGuesstimateProblem, groundedGuesstimateLookup, answerAssumptionClarification } from "../lib/guesstimateRetrieval.js";
+import { getRandomGuesstimateProblem, groundedGuesstimateLookup, answerAssumptionClarification, evaluateGuesstimateAttempt } from "../lib/guesstimateRetrieval.js";
 
 const router = Router();
 
@@ -91,6 +91,29 @@ router.post("/clarify", requireAuth, aiLimiter, async (req, res) => {
   } catch (err) {
     console.error("[guesstimates/clarify]", err);
     res.status(500).json({ success: false, error: "Failed to answer that question.", detail: errorDetail(err) });
+  }
+});
+
+// POST /api/guesstimates/evaluate { chunkId, question, attempt }
+// Evaluates a candidate's written or spoken guesstimate attempt against the
+// casebook's benchmark worked solution with standard rubric breakdown.
+router.post("/evaluate", optionalAuth, aiLimiter, async (req, res) => {
+  if (!ENABLED) {
+    return res.json({ success: true, available: false, reason: "feature_disabled" });
+  }
+  const { chunkId, question, attempt } = req.body || {};
+  if (!question || typeof question !== "string" || !question.trim()) {
+    return res.status(400).json({ success: false, error: "question is required." });
+  }
+  if (!attempt || typeof attempt !== "string" || attempt.trim().length < 5) {
+    return res.status(400).json({ success: false, error: "Please enter your attempt (at least 5 characters) before submitting." });
+  }
+  try {
+    const result = await evaluateGuesstimateAttempt(chunkId, question.trim(), attempt.trim());
+    res.json({ success: true, evaluation: result.evaluation });
+  } catch (err) {
+    console.error("[guesstimates/evaluate]", err);
+    res.status(500).json({ success: false, error: "Failed to evaluate guesstimate attempt.", detail: errorDetail(err) });
   }
 });
 
