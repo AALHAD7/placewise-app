@@ -92,7 +92,16 @@ export default function GuesstimatesPage() {
           )}
 
           {state.error && !state.loading && (
-            <div className="t-shake" style={{ color: "var(--red-dark)", fontSize: "0.84375rem" }}>{state.error}</div>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "26px 28px" }}>
+              <div className="t-shake" style={{ color: "var(--red-dark)", fontSize: "0.84375rem" }}>{state.error}</div>
+              <button
+                type="button"
+                onClick={load}
+                style={{ marginTop: 18, border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", padding: "8px 18px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--indigo)", background: "none", cursor: "pointer" }}
+              >
+                Try another
+              </button>
+            </div>
           )}
 
           {!state.loading && !state.error && state.data && !state.data.available && (
@@ -100,6 +109,17 @@ export default function GuesstimatesPage() {
               {state.data.reason === "feature_disabled"
                 ? "Guesstimates practice isn't switched on yet - check back soon."
                 : "Couldn't find a fresh problem just now - try again."}
+              {state.data.reason !== "feature_disabled" && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={load}
+                    style={{ marginTop: 18, border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", padding: "8px 18px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--indigo)", background: "none", cursor: "pointer" }}
+                  >
+                    Try another
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
