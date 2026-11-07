@@ -5,6 +5,21 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — Guesstimates: warn and penalize directly jumping to answer without clarifying assumptions
+
+**Phase:** M1 (Consulting RAG) · **Type:** feature / polish
+
+**What changed:** Aalhad's instruction: if a student submits a guesstimate attempt without using the assumption / clarifying question option, explicitly tell them that directly jumping to the answer is the wrong approach.
+1. `GuesstimatesPage.tsx`:
+   - Passes `usedClarification: boolean` and `clarifyingQuestions: string[]` to `POST /api/guesstimates/evaluate`.
+   - If an attempt is entered and no clarifying questions were asked, displays a consulting tip reminder above the submit button reminding students not to jump directly to the answer.
+   - In the assessment card, displays a prominent alert box ("Critical Interview Pitfall: Directly Jumping to the Answer") explaining why jumping straight to numbers without clarifying boundary conditions with the interviewer is a major case interview mistake.
+2. `guesstimateRetrieval.js` & `guesstimates.js`:
+   - Updated `evaluateGuesstimateAttempt` and `GUESSTIMATE_EVALUATION_SYSTEM`: when `usedClarification` is false, informs the model to penalize the candidate's assumptions score (capped at 2.0/4.0), flags `missedAssumptionsWarning: true`, provides `assumptionsGuidance`, and ensures the improvements list advises clarifying scope/boundary conditions first.
+3. Verified frontend builds cleanly with zero errors.
+
+---
+
 ## 2026-11-07 — Diagram rendering: true vertical tree ASCII art for flow and profit structures
 
 **Phase:** M1 / UI · **Type:** feature / fix

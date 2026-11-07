@@ -394,7 +394,7 @@ export async function answerAssumptionClarification(chunkId, question) {
   return { found: true, answer: CLARIFICATION_SAFE_FALLBACK, grounded: false };
 }
 
-const GUESSTIMATE_EVALUATION_SYSTEM = `You are a senior management consulting case interviewer evaluating a candidate's guesstimate practice attempt.
+const GUESSTIMATE_EVALUATION_SYSTEM = `You are a senior management consulting case interviewer (McKinsey, BCG, Bain) evaluating a candidate's guesstimate practice attempt.
 Be insightful, structured, and constructive.
 
 EVALUATION RUBRIC (Total 10.0 points):
@@ -404,9 +404,16 @@ EVALUATION RUBRIC (Total 10.0 points):
    - 0.0 - 1.4: Jumped directly to numbers without a coherent formula or structure.
 
 2. Assumptions & Sanity Checks (0.0 to 4.0):
-   - 3.2 - 4.0: Realistic, sensible assumptions grounded in real-world benchmarks; boundary conditions checked.
+   - 3.2 - 4.0: Realistic, sensible assumptions grounded in real-world benchmarks; boundary conditions clarified/checked.
    - 2.0 - 3.1: Plausible assumptions, but some numbers are overly high/low or unstated.
-   - 0.0 - 1.9: Highly unrealistic or ungrounded assumptions that distort the final estimate.
+   - 0.0 - 1.9: Highly unrealistic or ungrounded assumptions, or candidate jumped directly to the answer without clarifying assumptions.
+
+CRITICAL CONSULTING METHODOLOGY RULE:
+In consulting interviews, candidates must NEVER jump directly to calculations or answers without clarifying scope, boundary conditions, or stating key assumptions. If the candidate did NOT use the interviewer clarification / assumption option and jumped directly to their answer, this is the WRONG approach:
+- Penalize the Assumptions score (cap at 2.0 max out of 4.0).
+- Set "missedAssumptionsWarning": true.
+- In "assumptionsGuidance", explain clearly: "Directly jumping to the answer without clarifying assumptions is the wrong approach in consulting interviews. Interviewers expect you to clarify scope, geography, or constraints before calculating."
+- Include as an improvement: "Directly jumping to the answer without clarifying assumptions is the wrong approach. Always clarify scope and boundary conditions with the interviewer first."
 
 3. Calculation & Order of Magnitude (0.0 to 3.0):
    - 2.5 - 3.0: Clean math, realistic order of magnitude matching the problem scale.
@@ -432,14 +439,34 @@ Respond with ONLY a valid JSON object matching this schema:
   "summary": "<1-2 sentence constructive assessment>",
   "strengths": ["<specific strength 1>", "<specific strength 2>"],
   "improvements": ["<specific improvement 1>", "<specific improvement 2>"],
-  "benchmarkComparison": "<1-2 sentences comparing candidate's structure and final number against the benchmark casebook solution>"
+  "benchmarkComparison": "<1-2 sentences comparing candidate's structure and final number against the benchmark casebook solution>",
+  "missedAssumptionsWarning": <boolean>,
+  "assumptionsGuidance": "<string explaining why directly jumping to the answer is the wrong approach if applicable, or guidance on assumptions>"
 }`;
 
 /**
  * Evaluates a candidate's guesstimate practice attempt against the problem's worked benchmark
  * solution using an objective, consistent rubric.
  */
-export async function evaluateGuesstimateAttempt(chunkId, question, attempt) {
+export async function evaluateGuesstimateAttempt(chunkIdOrOpts, questionArg, attemptArg) {
+  let chunkId = "";
+  let question = "";
+  let attempt = "";
+  let usedClarification = false;
+  let clarifyingQuestions = [];
+
+  if (chunkIdOrOpts && typeof chunkIdOrOpts === "object") {
+    chunkId = chunkIdOrOpts.chunkId || "";
+    question = chunkIdOrOpts.question || "";
+    attempt = chunkIdOrOpts.attempt || "";
+    usedClarification = Boolean(chunkIdOrOpts.usedClarification);
+    clarifyingQuestions = Array.isArray(chunkIdOrOpts.clarifyingQuestions) ? chunkIdOrOpts.clarifyingQuestions : [];
+  } else {
+    chunkId = typeof chunkIdOrOpts === "string" ? chunkIdOrOpts : "";
+    question = typeof questionArg === "string" ? questionArg : "";
+    attempt = typeof attemptArg === "string" ? attemptArg : "";
+  }
+
   let benchmarkSolution = "";
   if (chunkId && typeof chunkId === "string") {
     try {
@@ -453,8 +480,14 @@ export async function evaluateGuesstimateAttempt(chunkId, question, attempt) {
     }
   }
 
+  const interviewBehavior = usedClarification
+    ? `INTERVIEWER INTERACTION: The candidate asked the following clarifying questions about assumptions before attempting: ${JSON.stringify(clarifyingQuestions)}`
+    : `INTERVIEWER INTERACTION: The candidate did NOT use the assumption / clarifying question option before submitting. In McKinsey/BCG/Bain interviews, directly jumping to the answer without clarifying assumptions is the WRONG approach. Set "missedAssumptionsWarning": true, cap assumptions score at 2.0 max, and advise that jumping directly to the answer is the wrong approach.`;
+
   const prompt = `GUESSTIMATE PROBLEM:
 ${question}
+
+${interviewBehavior}
 
 ${benchmarkSolution ? `CASEBOOK BENCHMARK SOLUTION:\n"""${benchmarkSolution.slice(0, 3000)}"""\n` : ""}
 CANDIDATE'S ATTEMPT:
@@ -473,10 +506,32 @@ Evaluate the candidate's attempt in JSON.`;
 
     const evaluation = { ...raw };
     let score = typeof evaluation.score === "number" ? evaluation.score : 5.0;
+
+    if (!usedClarification) {
+      evaluation.missedAssumptionsWarning = true;
+      evaluation.assumptionsGuidance = evaluation.assumptionsGuidance ||
+        "Directly jumping to the answer without clarifying assumptions is the wrong approach in consulting interviews. Always clarify scope, geography, or boundary conditions with the interviewer before estimating.";
+      
+      if (!Array.isArray(evaluation.improvements)) {
+        evaluation.improvements = [];
+      }
+      const hasAssumpImprovement = evaluation.improvements.some(imp =>
+        imp.toLowerCase().includes("jumping") || imp.toLowerCase().includes("assumption")
+      );
+      if (!hasAssumpImprovement) {
+        evaluation.improvements.unshift(
+          "Directly jumping to the answer without clarifying assumptions is the wrong approach. Always clarify scope and boundary conditions with the interviewer first."
+        );
+      }
+    }
+
     if (evaluation.rubricBreakdown && typeof evaluation.rubricBreakdown === "object") {
       const b = evaluation.rubricBreakdown;
       const s = typeof b.structure === "number" ? Math.max(0, Math.min(3, b.structure)) : 2.0;
-      const a = typeof b.assumptions === "number" ? Math.max(0, Math.min(4, b.assumptions)) : 2.5;
+      let a = typeof b.assumptions === "number" ? Math.max(0, Math.min(4, b.assumptions)) : 2.5;
+      if (!usedClarification) {
+        a = Math.min(2.0, a);
+      }
       const c = typeof b.calculation === "number" ? Math.max(0, Math.min(3, b.calculation)) : 2.0;
       score = Number(Math.min(10, Math.max(1, s + a + c)).toFixed(1));
       evaluation.rubricBreakdown = {

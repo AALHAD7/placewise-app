@@ -94,14 +94,14 @@ router.post("/clarify", requireAuth, aiLimiter, async (req, res) => {
   }
 });
 
-// POST /api/guesstimates/evaluate { chunkId, question, attempt }
+// POST /api/guesstimates/evaluate { chunkId, question, attempt, usedClarification, clarifyingQuestions }
 // Evaluates a candidate's written or spoken guesstimate attempt against the
 // casebook's benchmark worked solution with standard rubric breakdown.
 router.post("/evaluate", optionalAuth, aiLimiter, async (req, res) => {
   if (!ENABLED) {
     return res.json({ success: true, available: false, reason: "feature_disabled" });
   }
-  const { chunkId, question, attempt } = req.body || {};
+  const { chunkId, question, attempt, usedClarification, clarifyingQuestions } = req.body || {};
   if (!question || typeof question !== "string" || !question.trim()) {
     return res.status(400).json({ success: false, error: "question is required." });
   }
@@ -109,7 +109,13 @@ router.post("/evaluate", optionalAuth, aiLimiter, async (req, res) => {
     return res.status(400).json({ success: false, error: "Please enter your attempt (at least 5 characters) before submitting." });
   }
   try {
-    const result = await evaluateGuesstimateAttempt(chunkId, question.trim(), attempt.trim());
+    const result = await evaluateGuesstimateAttempt({
+      chunkId,
+      question: question.trim(),
+      attempt: attempt.trim(),
+      usedClarification: Boolean(usedClarification),
+      clarifyingQuestions: Array.isArray(clarifyingQuestions) ? clarifyingQuestions : []
+    });
     res.json({ success: true, evaluation: result.evaluation });
   } catch (err) {
     console.error("[guesstimates/evaluate]", err);

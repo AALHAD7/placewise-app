@@ -137,7 +137,9 @@ export default function GuesstimatesPage() {
           body: JSON.stringify({
             chunkId: state.data?.chunkId || "",
             question: state.data?.question || "",
-            attempt: text
+            attempt: text,
+            usedClarification: clarifyExchanges.length > 0,
+            clarifyingQuestions: clarifyExchanges.map((ex) => ex.question)
           })
         },
         "Failed to evaluate your attempt."
@@ -305,6 +307,29 @@ export default function GuesstimatesPage() {
                   {micError[recKey] && <span style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{micError[recKey]}</span>}
                   {submitError && <span className="t-shake" style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{submitError}</span>}
                 </div>
+
+                {attempt.trim() && clarifyExchanges.length === 0 && !revealed && (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      background: "rgba(245, 158, 11, 0.08)",
+                      border: "1px solid rgba(245, 158, 11, 0.3)",
+                      borderRadius: "var(--r-sm)",
+                      padding: "8px 12px",
+                      fontSize: "0.78125rem",
+                      color: "#fbbf24",
+                      lineHeight: 1.5,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8
+                    }}
+                  >
+                    <span style={{ fontSize: "0.9375rem" }}>💡</span>
+                    <span>
+                      <strong>Consulting tip:</strong> Directly jumping to the answer without clarifying assumptions is the wrong approach in case interviews. Use the clarifying question option below to confirm boundary conditions first.
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>
@@ -430,6 +455,34 @@ export default function GuesstimatesPage() {
                       <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "8px", padding: "8px 10px" }}>
                         <div style={{ fontSize: "0.65625rem", color: "#94a3b8", textTransform: "uppercase", fontWeight: 700, letterSpacing: ".06em" }}>Calculation &amp; Scale</div>
                         <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#ffffff", marginTop: 2 }}>{evaluation.rubricBreakdown.calculation} <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>/ 3.0</span></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {(evaluation.missedAssumptionsWarning || clarifyExchanges.length === 0) && (
+                    <div
+                      style={{
+                        marginTop: 14,
+                        background: "rgba(239, 68, 68, 0.1)",
+                        border: "1px solid rgba(239, 68, 68, 0.35)",
+                        borderRadius: "10px",
+                        padding: "12px 16px",
+                        color: "#fca5a5",
+                        fontSize: "0.84375rem",
+                        lineHeight: 1.55
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, color: "#f87171", marginBottom: 4 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="8" x2="12" y2="12" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        Critical Interview Pitfall: Directly Jumping to the Answer
+                      </div>
+                      <div>
+                        {evaluation.assumptionsGuidance ||
+                          "You submitted an answer without clarifying any assumptions. In top-tier management consulting interviews (McKinsey, BCG, Bain), directly jumping to the answer without clarifying scope, boundary conditions, or constraints with the interviewer is considered the wrong approach. Always clarify assumptions before calculating."}
                       </div>
                     </div>
                   )}

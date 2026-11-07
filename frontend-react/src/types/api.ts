@@ -174,6 +174,8 @@ export interface GuesstimateEvaluation {
   strengths: string[];
   improvements: string[];
   benchmarkComparison?: string;
+  missedAssumptionsWarning?: boolean;
+  assumptionsGuidance?: string;
 }
 
 export interface GuesstimateEvaluateResponse {
