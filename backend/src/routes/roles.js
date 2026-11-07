@@ -10,6 +10,7 @@ import { getRoleCompanyTopicNotes } from "../lib/roleCompanyTopicNotes.js";
 import { getChipPanel } from "../lib/chipPanel.js";
 import { generateJSON } from "../lib/gemini.js";
 import { logActivity } from "../lib/activity.js";
+import { supabase } from "../lib/supabase.js";
 
 const router = Router();
 
@@ -164,10 +165,36 @@ router.post("/chip-panel", optionalAuth, aiLimiter, async (req, res) => {
   }
 });
 
-// Bounded in-memory evaluation cache: identical question + answer submissions
-// receive strictly deterministic, identical results across students.
+// Two-level cache for practice evaluations:
+// 1. In-memory (fast, ephemeral): survives the current server process lifetime.
+// 2. Supabase persistent (durable): survives restarts and works across serverless instances.
+// Both use the same sha256 key so identical submissions always get identical scores.
 const practiceEvaluationCache = new Map();
 const MAX_PRACTICE_EVAL_CACHE = 1000;
+
+async function getPracticeEvalFromDB(cacheKey) {
+  try {
+    const { data, error } = await supabase
+      .from("practice_eval_cache")
+      .select("evaluation")
+      .eq("cache_key", cacheKey)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data.evaluation;
+  } catch {
+    return null; // Table may not exist yet — graceful fallback to in-memory
+  }
+}
+
+async function savePracticeEvalToDB(cacheKey, evaluation) {
+  try {
+    await supabase
+      .from("practice_eval_cache")
+      .upsert({ cache_key: cacheKey, evaluation }, { onConflict: "cache_key", ignoreDuplicates: true });
+  } catch {
+    // Best-effort — if table doesn't exist, in-memory cache still works
+  }
+}
 
 function getPracticeEvalCacheKey(question, answer, role, company) {
   const normQ = String(question || "").trim().toLowerCase();
@@ -190,11 +217,21 @@ router.post("/evaluate-practice", optionalAuth, aiLimiter, async (req, res) => {
   }
 
   const cacheKey = getPracticeEvalCacheKey(question, userAnswer, role, company);
+  // 1. Fast path: in-memory cache
   if (practiceEvaluationCache.has(cacheKey)) {
     if (req.user && req.user.id) {
       logActivity(req.user.id, "practice_problem", role || "General");
     }
     return res.json({ success: true, evaluation: practiceEvaluationCache.get(cacheKey) });
+  }
+  // 2. Persistent path: Supabase (survives restarts and serverless cold starts)
+  const dbCached = await getPracticeEvalFromDB(cacheKey);
+  if (dbCached) {
+    practiceEvaluationCache.set(cacheKey, dbCached); // warm in-memory cache
+    if (req.user && req.user.id) {
+      logActivity(req.user.id, "practice_problem", role || "General");
+    }
+    return res.json({ success: true, evaluation: dbCached });
   }
 
   const systemPrompt = `You are an elite, objective interview evaluation engine evaluating practice responses for top MBA, consulting, tech, and corporate roles (e.g. Chief of Staff, PM, Investment Banking, Strategy).
@@ -265,7 +302,7 @@ Provide your structured evaluation in JSON.`;
       prompt,
       maxTokens: 2500,
       temperature: 0.0, // Zero temperature for deterministic, consistent scoring across students
-      allowEscalation: true
+      allowEscalation: false // CRITICAL: same model must always evaluate — different models give different scores
     });
 
     const evaluation = { ...rawEval };
@@ -298,6 +335,8 @@ Provide your structured evaluation in JSON.`;
       practiceEvaluationCache.delete(oldestKey);
     }
     practiceEvaluationCache.set(cacheKey, evaluation);
+    // Persist to Supabase for cross-instance and cross-restart consistency
+    savePracticeEvalToDB(cacheKey, evaluation); // fire-and-forget
 
     if (req.user && req.user.id) {
       logActivity(req.user.id, "practice_problem", role || "General");
