@@ -1136,7 +1136,13 @@ export function flowToAscii(
     lines.push(`┌── (${i + 1}) ${n.label}`);
     if (out.length > 0) {
       for (let j = 0; j < out.length; j++) {
-        const target = labelOf.get(String(out[j].to)) || `Node ${out[j].to}`;
+        // Only the target node's first line (its title/name) - not its full label,
+        // which may itself be multi-line (title + numbered sub-items). Using the full
+        // label here duplicated that node's whole content: once as this preview arrow,
+        // again as its own proper heading on the next iteration (found 2026-11-07, a
+        // real Q&A "Value Chain" answer showing every step's items twice).
+        const fullTarget = labelOf.get(String(out[j].to)) || `Node ${out[j].to}`;
+        const target = fullTarget.split("\n")[0];
         const edgeNote = out[j].label ? ` [${out[j].label}]` : "";
         const isLastEdge = j === out.length - 1;
         lines.push(`│   ${isLastEdge ? "└──►" : "├──►"} ${target}${edgeNote}`);
