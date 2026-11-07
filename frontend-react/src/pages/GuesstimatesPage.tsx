@@ -60,22 +60,31 @@ type LoadState = { loading: boolean; error: string; data: GuesstimateResponse | 
 type ClarifyExchange = { question: string; answer: string };
 
 const MAX_CLARIFY_ASKS = 2;
-const SEEN_GUESSTIMATES_STORAGE_KEY = "placewise_seen_guesstimates";
+const PRACTICED_GUESSTIMATES_STORAGE_KEY = "placewise_practiced_guesstimates";
 
-function getStoredSeenIds(): string[] {
+function getStoredPracticedIds(): string[] {
   try {
-    const raw = localStorage.getItem(SEEN_GUESSTIMATES_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string" && id.trim()) : [];
+    if (typeof window !== "undefined" && window.localStorage) {
+      // Clear legacy seen key so problems merely opened are not tagged as practiced
+      if (localStorage.getItem("placewise_seen_guesstimates")) {
+        localStorage.removeItem("placewise_seen_guesstimates");
+      }
+      const raw = localStorage.getItem(PRACTICED_GUESSTIMATES_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string" && id.trim()) : [];
+    }
+    return [];
   } catch {
     return [];
   }
 }
 
-function saveStoredSeenIds(ids: string[]): void {
+function saveStoredPracticedIds(ids: string[]): void {
   try {
-    localStorage.setItem(SEEN_GUESSTIMATES_STORAGE_KEY, JSON.stringify(ids.slice(-100)));
+    if (typeof window !== "undefined" && window.localStorage) {
+      localStorage.setItem(PRACTICED_GUESSTIMATES_STORAGE_KEY, JSON.stringify(ids.slice(-100)));
+    }
   } catch {
     // ignore quota errors
   }
@@ -110,7 +119,8 @@ function formatTimerSeconds(totalSeconds: number): string {
 
 export default function GuesstimatesPage() {
   const [state, setState] = useState<LoadState>({ loading: true, error: "", data: null });
-  const [seenCount, setSeenCount] = useState<number>(() => getStoredSeenIds().length);
+  const [practicedIds, setPracticedIds] = useState<string[]>(() => getStoredPracticedIds());
+  const sessionSeenRef = useRef<string[]>([]);
   const [attempt, setAttempt] = useState("");
   const [revealed, setRevealed] = useState(false);
   const { recording, micError, startRecording, stopRecording } = useVoiceRecording();
@@ -120,6 +130,17 @@ export default function GuesstimatesPage() {
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Lock body scroll when catalog modal is open to prevent background scrolling on macOS/iOS
+  useEffect(() => {
+    if (isCatalogOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isCatalogOpen]);
 
   // Interview Timer states (5m, 10m default, 15m, custom, off)
   const [timerMode, setTimerMode] = useState<"5" | "10" | "15" | "custom" | "off">("10");
@@ -226,6 +247,14 @@ export default function GuesstimatesPage() {
       if (res && res.evaluation) {
         setEvaluation(res.evaluation);
         setRevealed(true);
+        if (state.data?.chunkId) {
+          const currentChunkId = state.data.chunkId;
+          setPracticedIds((prev) => {
+            const next = Array.from(new Set([...prev, currentChunkId]));
+            saveStoredPracticedIds(next);
+            return next;
+          });
+        }
       }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Failed to evaluate your attempt.");
@@ -334,7 +363,7 @@ export default function GuesstimatesPage() {
       setSecondsLeft(parseInt(timerMode, 10) * 60);
     }
 
-    const currentSeen = getStoredSeenIds();
+    const currentSeen = sessionSeenRef.current;
     let query = "";
     if (targetChunkId) {
       query = `?chunkId=${encodeURIComponent(targetChunkId)}`;
@@ -347,11 +376,9 @@ export default function GuesstimatesPage() {
         setState({ loading: false, error: "", data });
         if (data.available && data.chunkId) {
           const newId = data.chunkId;
-          const nextSeen = data.cycleReset
+          sessionSeenRef.current = data.cycleReset
             ? [newId]
-            : Array.from(new Set([...currentSeen, newId]));
-          saveStoredSeenIds(nextSeen);
-          setSeenCount(nextSeen.length);
+            : Array.from(new Set([...sessionSeenRef.current, newId]));
         }
       })
       .catch((e) => setState({ loading: false, error: e instanceof Error ? e.message : "Could not load a guesstimate.", data: null }));
@@ -535,9 +562,9 @@ export default function GuesstimatesPage() {
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  {seenCount > 0 && (
+                  {practicedIds.length > 0 && (
                     <span style={{ fontSize: "0.75rem", color: "var(--text-lightgray)" }}>
-                      <strong>{seenCount}</strong> / {catalog.length || 25} completed
+                      <strong>{practicedIds.length}</strong> / {catalog.length || 25} practiced
                     </span>
                   )}
                 </div>
@@ -548,11 +575,17 @@ export default function GuesstimatesPage() {
                   <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
                     Practice problem
                   </div>
-                  {seenCount > 1 && (
-                    <div style={{ fontSize: "0.6875rem", color: "var(--indigo)", fontWeight: 600, background: "rgba(99, 102, 241, 0.08)", padding: "2px 8px", borderRadius: "var(--r-pill)" }}>
-                      Problem #{seenCount} · Never repeated
-                    </div>
-                  )}
+                  {(() => {
+                    const idx = catalog.findIndex((item) => item.chunkId === state.data?.chunkId);
+                    if (idx >= 0) {
+                      return (
+                        <div style={{ fontSize: "0.6875rem", color: "var(--indigo)", fontWeight: 600, background: "rgba(99, 102, 241, 0.08)", padding: "2px 8px", borderRadius: "var(--r-pill)" }}>
+                          Question {idx + 1} of {catalog.length || 25}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
                 <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
                   {state.data.question && <MarkdownWithDiagrams markdown={state.data.question} />}
@@ -1046,6 +1079,7 @@ export default function GuesstimatesPage() {
           role="dialog"
           aria-modal="true"
           onClick={() => setIsCatalogOpen(false)}
+          onWheel={(e) => e.stopPropagation()}
           style={{
             position: "fixed",
             inset: 0,
@@ -1055,14 +1089,17 @@ export default function GuesstimatesPage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: 16
+            padding: 16,
+            overscrollBehavior: "contain"
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
+            onWheel={(e) => e.stopPropagation()}
             style={{
               width: "100%",
               maxWidth: 720,
+              height: "min(85vh, 720px)",
               maxHeight: "85vh",
               display: "flex",
               flexDirection: "column",
@@ -1076,6 +1113,7 @@ export default function GuesstimatesPage() {
             {/* Header */}
             <div
               style={{
+                flex: "0 0 auto",
                 padding: "18px 22px",
                 borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
                 display: "flex",
@@ -1109,7 +1147,7 @@ export default function GuesstimatesPage() {
             </div>
 
             {/* Search Input */}
-            <div style={{ padding: "14px 22px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
+            <div style={{ flex: "0 0 auto", padding: "14px 22px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
               <input
                 type="text"
                 value={searchQuery}
@@ -1129,7 +1167,19 @@ export default function GuesstimatesPage() {
             </div>
 
             {/* Questions list */}
-            <div style={{ padding: "12px 22px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+            <div
+              style={{
+                flex: "1 1 auto",
+                minHeight: 0,
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+                padding: "12px 22px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8
+              }}
+            >
               {catalogLoading ? (
                 <div style={{ padding: "20px 0", textAlign: "center", color: "#94a3b8", fontSize: "0.875rem" }}>
                   Loading questions catalog…
@@ -1150,7 +1200,7 @@ export default function GuesstimatesPage() {
                   }
                   return filtered.map((item, index) => {
                     const isCurrent = state.data?.chunkId === item.chunkId;
-                    const isSolved = getStoredSeenIds().includes(item.chunkId);
+                    const isPracticed = practicedIds.includes(item.chunkId);
                     return (
                       <div
                         key={item.chunkId}
@@ -1196,7 +1246,7 @@ export default function GuesstimatesPage() {
                               Active
                             </span>
                           )}
-                          {isSolved && !isCurrent && (
+                          {isPracticed && !isCurrent && (
                             <span style={{ fontSize: "0.6875rem", background: "rgba(16, 185, 129, 0.15)", color: "#34d399", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>
                               ✓ Practiced
                             </span>

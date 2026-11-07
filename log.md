@@ -5,6 +5,34 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Guesstimates: modal background scroll lock & strict practiced-only tagging after answer submission
+
+**Phase:** M1 (Consulting RAG) · **Type:** bugfix / UX polish
+
+**What changed:** Aalhad reported two issues on the Guesstimates page catalog:
+1. Scrolling inside the "Casebook Guesstimates Catalog" modal was scrolling the background page rather than the questions list.
+2. Questions were prematurely tagged with `✓ Practiced` even when the student had merely viewed or loaded the problem without submitting an answer.
+
+**Implementation:**
+1. `frontend-react/src/pages/GuesstimatesPage.tsx`:
+   - **Modal Scroll Lock & Flex Container Fix**:
+     * Added body scroll lock hook (`document.body.style.overflow = "hidden"`) when `isCatalogOpen` is true, restoring previous overflow on unmount/close.
+     * Fixed flexbox constraints on modal dialog: `height: "min(85vh, 720px)"`, `maxHeight: "85vh"`, with `flex: "0 0 auto"` on header and search controls.
+     * Fixed questions list scroll boundaries: `flex: "1 1 auto"`, `minHeight: 0`, `overflowY: "auto"`, `overscrollBehavior: "contain"`, and `WebkitOverflowScrolling: "touch"`.
+     * Added `onWheel={(e) => e.stopPropagation()}` on overlay and dialog cards to isolate mouse wheel / trackpad gestures.
+   - **Strict Practiced Tagging**:
+     * Separated session viewing from answering: created `placewise_practiced_guesstimates` storage key.
+     * Cleaned up legacy `placewise_seen_guesstimates` key on mount so previously viewed questions lose the premature `✓ Practiced` badge immediately.
+     * In `onSubmitAttempt`: adds `chunkId` to `practicedIds` strictly after receiving a successful evaluation (`res && res.evaluation`).
+     * Random problem exclusion tracking now uses an in-memory session ref (`sessionSeenRef`) rather than mistaking seen problems for practiced ones.
+     * Catalog questions list checks `practicedIds.includes(item.chunkId)` before rendering `✓ Practiced`.
+     * Replaced misleading `Problem #{seenCount}` text with casebook position indicator `Question X of 25`.
+2. Verification:
+   - Frontend built cleanly with zero TypeScript errors (`tsc -b && vite build`).
+   - Guesstimates retrieval test suite passed 23/23 tests.
+
+---
+
 ## 2026-11-08 — Guesstimates: full question catalog browser + interview countdown timer with auto-submit
 
 **Phase:** M1 (Consulting RAG) · **Type:** feature / polish
