@@ -88,10 +88,12 @@ test("getRandomGuesstimateProblem: flag on + faithful rewrite is used as .proble
   const result = await getRandomGuesstimateProblem();
 
   assert.equal(result.available, true);
+  assert.equal(result.question, "NUMBER OF ORDERS PLACED ON SWIGGY IN DELHI IN A DAY");
   assert.equal(result.paraphrased, true);
-  assert.equal(result.rawProblem, ROW_CONTENT);
+  assert.equal(result.rawProblem, "\nASSUMPTIONS\n\n1. Population of Delhi is 2 crore.");
   assert.ok(result.problem.startsWith("A clearer rewrite"), "problem should be the rewrite, not the verbatim excerpt");
   assert.notEqual(result.problem, result.rawProblem);
+  assert.ok(!result.question.includes("ASSUMPTIONS"), "question (shown pre-attempt) must never include the assumptions section");
 });
 
 const REJECTED_ROW_CONTENT =
@@ -109,7 +111,8 @@ test("getRandomGuesstimateProblem: flag on + faithfulness judge rejects the rewr
   const result = await getRandomGuesstimateProblem();
 
   assert.equal(result.available, true);
-  assert.equal(result.problem, REJECTED_ROW_CONTENT, "must fall back to the verbatim excerpt");
+  assert.equal(result.question, "TOLL PLAZA DAILY REVENUE");
+  assert.equal(result.problem, "\nASSUMPTIONS\n\n1. Toll plaza sees 10,000 vehicles per day.", "must fall back to the verbatim answer portion, excluding the title");
   assert.equal(result.paraphrased, false);
   assert.equal(result.rawProblem, undefined, "no rawProblem key when the rewrite was rejected");
 });
@@ -146,7 +149,8 @@ test("getRandomGuesstimateProblem: flag on + a paraphrase call that errors falls
   const result = await getRandomGuesstimateProblem();
 
   assert.equal(result.available, true);
-  assert.equal(result.problem, ERRORED_ROW_CONTENT, "must fall back to the verbatim excerpt on a paraphrase call error");
+  assert.equal(result.question, "CREDIT CARDS ISSUED IN INDIA PER YEAR");
+  assert.equal(result.problem, "\nASSUMPTIONS\n\n1. India's population is 140 crore.", "must fall back to the verbatim answer portion on a paraphrase call error");
   assert.equal(result.paraphrased, false);
   assert.equal(result.rawProblem, undefined);
 });
@@ -163,7 +167,8 @@ test("getRandomGuesstimateProblem: flag off returns the verbatim excerpt, no par
   const result = await getRandomGuesstimateProblem();
 
   assert.equal(result.available, true);
-  assert.equal(result.problem, FLAG_OFF_ROW_CONTENT);
+  assert.equal(result.question, "NUMBER OF TYRES SOLD IN INDIA PER YEAR");
+  assert.equal(result.problem, "\nASSUMPTIONS\n\n1. India has 25 crore vehicles.", "flag off still splits title from answer, just skips paraphrasing");
   assert.equal(trackRewriteCalls.count, 0, "no paraphrase call should be attempted at all when the flag is off");
-  assert.deepEqual(Object.keys(result).sort(), ["available", "citation", "hasDiagram", "problem"].sort());
+  assert.deepEqual(Object.keys(result).sort(), ["available", "citation", "hasDiagram", "problem", "question"].sort());
 });

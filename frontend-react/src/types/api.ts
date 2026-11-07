@@ -135,6 +135,13 @@ export interface GuesstimateResponse {
   reason?: "feature_disabled" | "not_yet_live";
   covered?: boolean;
   label?: string | null;
+  // Bare title only, split server-side from raw content before paraphrasing
+  // (2026-11-07: the old client-side split on the already-paraphrased combined
+  // text leaked the ASSUMPTIONS section - solution methodology, not neutral
+  // problem framing - into the question). Never paraphrased.
+  question?: string;
+  // The answer portion only (assumptions + diagram + worked solution) - no
+  // longer includes the title. `paraphrased`/`rawProblem` describe this field.
   problem?: string;
   hasDiagram?: boolean;
   citation?: GuesstimateCitation;

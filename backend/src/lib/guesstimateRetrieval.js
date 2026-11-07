@@ -135,6 +135,42 @@ export async function judgeIsWorkedProblem(content) {
 
 const MAX_PROBLEM_JUDGE_ATTEMPTS = 5;
 
+// Generic placeholder when a chunk has no newline at all to split on (rare - every real
+// problem checked live in the SRCC book follows "TITLE\n\n<rest>", confirmed 2026-11-07
+// across Swiggy orders / toll plaza / healthy biscuits / Ola-Uber cabs / flights / the
+// Maharashtra license-plates worked example).
+const GENERIC_QUESTION_FALLBACK = "Estimate the following:";
+
+/**
+ * Pure: splits a raw chunk into a bare title (`rawQuestion`, shown to the student BEFORE
+ * they attempt the problem) and everything else (`answerSource`, the assumptions/working/
+ * diagram that is part of the worked SOLUTION, only shown after paraphrasing/reveal).
+ *
+ * Found 2026-11-07 (Aalhad, live): the casebook's own ASSUMPTIONS section is a solving
+ * decision (e.g. "average family is 4 members", "15% of cars are red"), not neutral problem
+ * framing - showing it pre-attempt defeats the point of practicing blind. The previous fix
+ * tried to split the *paraphrased* blob client-side at the first diagram fence, but
+ * paraphrasing merges the title and assumptions into one flowing paragraph with no reliable
+ * boundary left - so the split has to happen here, on the raw chunk, before paraphrasing
+ * ever runs.
+ *
+ * Every real problem in this book follows "TITLE\n\n<firm | difficulty-bars>\n\n<click-here
+ * link>\n\nASSUMPTIONS\n\n1. ...\n```placewise-diagram..." (confirmed live, migration
+ * ingest_chunks, SRCC Guesstimates-Book-Volume-1-6.pdf, pages 21/14/15/16) - the first line
+ * is always just the title, whether written as "# TITLE" or "## EXAMPLE: ...". Stripping a
+ * leading "#"/whitespace run turns that into a plain bare question, not raw markdown.
+ */
+export function splitRawQuestionFromAnswer(content) {
+  const idx = content.indexOf("\n");
+  if (idx === -1) {
+    return { rawQuestion: GENERIC_QUESTION_FALLBACK, answerSource: content };
+  }
+  const titleLine = content.slice(0, idx);
+  const rawQuestion = titleLine.replace(/^#+\s*/, "").trim();
+  const answerSource = content.slice(idx + 1);
+  return { rawQuestion: rawQuestion || GENERIC_QUESTION_FALLBACK, answerSource };
+}
+
 /**
  * Full "give me a guesstimate to practice" lookup. Distinct from the grounding policy's
  * usual "not covered -> labelled general answer" path: a miss here means "the casebook
@@ -187,20 +223,33 @@ export async function getRandomGuesstimateProblem() {
   const candidates = shuffle(rows.filter(row => looksLikeWorkedProblem(row.content)));
   for (const row of candidates.slice(0, MAX_PROBLEM_JUDGE_ATTEMPTS)) {
     if (await judgeIsWorkedProblem(row.content)) {
-      // Flag off (default): byte-identical to pre-existing behavior - no paraphrase call,
-      // no new keys. Flag on: same paraphrase-then-verify-then-fail-closed pipeline R7b
-      // already uses for Q&A/Frameworks (paraphraseAndVerify itself falls back to the
-      // verbatim chunk on any error or failed faithfulness vote - nothing extra to
-      // fail-close here), surfacing `paraphrased`/`rawProblem` the same way
-      // frameworksGrounding.js surfaces `paraphrased`/`rawExcerpt` - present only when a
-      // rewrite was actually used, so a caller/debugger can tell without the key always
-      // being there.
+      // Split BEFORE paraphrasing (2026-11-07 fix, see splitRawQuestionFromAnswer): the
+      // title (`rawQuestion`) is the bare question shown pre-attempt and is never
+      // paraphrased - it's a short casebook heading, nothing to rewrite, and the student
+      // must not see any assumptions bundled into it. `answerSource` (assumptions +
+      // working + diagram) is the only part that ever gets paraphrased, same as before.
+      const { rawQuestion, answerSource } = splitRawQuestionFromAnswer(row.content);
+
+      // Flag off (default): byte-identical split behavior - no paraphrase call, no new
+      // keys. Flag on: same paraphrase-then-verify-then-fail-closed pipeline R7b already
+      // uses for Q&A/Frameworks (paraphraseAndVerify itself falls back to the verbatim
+      // chunk on any error or failed faithfulness vote - nothing extra to fail-close
+      // here), surfacing `paraphrased`/`rawProblem` the same way frameworksGrounding.js
+      // surfaces `paraphrased`/`rawExcerpt` - present only when a rewrite was actually
+      // used, so a caller/debugger can tell without the key always being there.
       if (!ENABLE_GUESSTIMATE_PARAPHRASE) {
-        return { available: true, problem: row.content, hasDiagram: row.has_diagram, citation: buildCitation(row) };
+        return {
+          available: true,
+          question: rawQuestion,
+          problem: answerSource,
+          hasDiagram: row.has_diagram,
+          citation: buildCitation(row)
+        };
       }
-      const { content, rawContent, paraphrased } = await paraphraseAndVerify(GUESSTIMATE_PARAPHRASE_CONTEXT, row.content);
+      const { content, rawContent, paraphrased } = await paraphraseAndVerify(GUESSTIMATE_PARAPHRASE_CONTEXT, answerSource);
       return {
         available: true,
+        question: rawQuestion,
         problem: content,
         paraphrased,
         ...(paraphrased ? { rawProblem: rawContent } : {}),

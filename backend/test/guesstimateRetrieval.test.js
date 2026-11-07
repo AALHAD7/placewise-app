@@ -5,7 +5,7 @@
 // they're intentionally left to the same resilience posture, not re-tested here.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickRandomCoveringChunk, looksLikeWorkedProblem, shuffle, GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
+import { pickRandomCoveringChunk, looksLikeWorkedProblem, shuffle, splitRawQuestionFromAnswer, GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
 
 test("pickRandomCoveringChunk: not covered returns null", () => {
   const picked = pickRandomCoveringChunk({ covered: false, chunks: [], citations: [] });
@@ -86,4 +86,33 @@ test("shuffle: does not mutate the input array", () => {
 test("shuffle: empty and single-element arrays pass through safely", () => {
   assert.deepEqual(shuffle([], () => 0.5), []);
   assert.deepEqual(shuffle([1], () => 0.5), [1]);
+});
+
+// --- splitRawQuestionFromAnswer (2026-11-07 fix: ASSUMPTIONS is part of the worked
+// solution, not neutral problem framing, and must never reach the student pre-attempt -
+// the split now happens on the raw chunk, before paraphrasing merges title and
+// assumptions into one blob with no reliable boundary left) ---
+
+test("splitRawQuestionFromAnswer: a real problem's title is a bare question, assumptions stay out of it", () => {
+  const content =
+    "# NUMBER OF ORDERS PLACED ON SWIGGY IN DELHI IN A DAY\n\nBain Capability Network | ⬜⬜⬜⬜⬜\n\nClick here to view detailed spreadsheet XLS\n\nASSUMPTIONS\n\n1. Rural part of Delhi population will not prefer food delivery platforms";
+  const { rawQuestion, answerSource } = splitRawQuestionFromAnswer(content);
+  assert.equal(rawQuestion, "NUMBER OF ORDERS PLACED ON SWIGGY IN DELHI IN A DAY");
+  assert.ok(!rawQuestion.includes("ASSUMPTIONS"));
+  assert.ok(answerSource.includes("ASSUMPTIONS"));
+  assert.ok(answerSource.includes("Click here"));
+});
+
+test("splitRawQuestionFromAnswer: strips a leading '##' and surrounding whitespace from the title", () => {
+  const content = "## EXAMPLE: GUESSTIMATE THE NUMBER OF LICENSE PLATES\n\nASSUMPTIONS Average people per household - 4";
+  const { rawQuestion, answerSource } = splitRawQuestionFromAnswer(content);
+  assert.equal(rawQuestion, "EXAMPLE: GUESSTIMATE THE NUMBER OF LICENSE PLATES");
+  assert.equal(answerSource, "\nASSUMPTIONS Average people per household - 4");
+});
+
+test("splitRawQuestionFromAnswer: no newline at all falls back to a generic question, full content as the answer", () => {
+  const content = "A single-line chunk with no title/body separation.";
+  const { rawQuestion, answerSource } = splitRawQuestionFromAnswer(content);
+  assert.equal(rawQuestion, "Estimate the following:");
+  assert.equal(answerSource, content);
 });

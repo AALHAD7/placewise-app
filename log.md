@@ -5,6 +5,77 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — Guesstimates pre-attempt question no longer leaks the casebook's ASSUMPTIONS
+
+**Phase:** M1 (Consulting RAG) · **Type:** bugfix
+
+**What changed:** Aalhad caught live that the Guesstimates "attempt then reveal" page's
+pre-reveal question included the casebook's own ASSUMPTIONS section (e.g. "average family
+is 4 members", "15% of cars are red") — those are solving decisions baked into the worked
+solution, not neutral problem framing, so showing them before the student attempted the
+problem defeated the point of practicing blind. Root cause: today's split
+(`splitQuestionFromAnswer` in `frontend-react/src/lib/placewiseBlocks.ts`, added earlier
+today) ran client-side on the already-paraphrased blob, splitting at the first diagram
+fence — but paraphrasing merges the title and the assumptions into one flowing paragraph
+with no reliable boundary left to split on.
+
+Fixed by moving the split to the backend, on the raw chunk, before paraphrasing ever runs.
+Pulled several live rows from `ingest_chunks` (SRCC Guesstimates-Book-Volume-1-6.pdf) to
+confirm the shape first: every real problem is `TITLE\n\n<firm | difficulty-bars>\n\n<click-
+here link>\n\nASSUMPTIONS\n\n1. ...\n\`\`\`placewise-diagram...` (Swiggy orders, toll plaza,
+healthy biscuits, Ola/Uber cabs, flights, and the Maharashtra license-plates worked
+example all confirmed). New pure function `splitRawQuestionFromAnswer`
+(`backend/src/lib/guesstimateRetrieval.js`) splits `row.content` at the first newline:
+`rawQuestion` is the first line with any leading `#`/whitespace stripped (the bare title,
+never paraphrased), `answerSource` is everything else (the firm/difficulty/click-here
+boilerplate through ASSUMPTIONS and the diagram — the existing, already-strengthened
+`PARAPHRASE_SYSTEM_PROMPT` in `consultingRetrieval.js` still cleans the boilerplate out of
+this during the rewrite, since that instruction never depended on what precedes it). A
+chunk with no newline at all falls back to a generic `"Estimate the following:"` question
+with the full content as the answer — confirmed rare, no real row in this book hits it.
+
+`getRandomGuesstimateProblem`'s response now returns a new `question` field (always
+present, the bare title, never paraphrased) alongside `problem` (now the answer/solution
+portion only — assumptions + diagram + working, title no longer duplicated into it). This
+split happens regardless of `ENABLE_GUESSTIMATE_PARAPHRASE`; only whether `problem` itself
+gets rewritten is gated by that flag. `paraphrased`/`rawProblem` keep their existing meaning,
+just describing `answerSource` instead of the full chunk. `GuesstimateResponse`
+(`frontend-react/src/types/api.ts`) updated to match — a parallel frontend session updated
+`GuesstimatesPage.tsx` to consume `question`/`problem` directly and deleted the now-dead
+`splitQuestionFromAnswer` client-side split; both edits to `api.ts` landed cleanly (same
+`question` field, no conflict).
+**Why:** Aalhad's direct catch, live — showing solving decisions before a timed attempt
+isn't "practice."
+**Files:** `backend/src/lib/guesstimateRetrieval.js`, `backend/test/guesstimateRetrieval.test.js`,
+`backend/test/guesstimateParaphrase.test.js`, `frontend-react/src/types/api.ts` (shared edit
+with a parallel frontend session), `frontend-react/src/lib/placewiseBlocks.ts`,
+`frontend-react/src/pages/GuesstimatesPage.tsx` (frontend session's edits, not touched here).
+**Proof:** `npm test` in `backend/`: 194/195 pass (the 1 failure, `sandbox.test.js`'s
+`__CF_USER_TEXT_ENCODING` environment-leak check, is a pre-existing macOS-only flake,
+confirmed unrelated by reproducing it on a clean `git stash` of this change). New/updated
+tests cover: a real multi-section problem splits cleanly (title has no `ASSUMPTIONS`,
+answer has both `ASSUMPTIONS` and the `Click here` boilerplate), a `##`-style heading
+strips correctly, the no-newline fallback, and all four `getRandomGuesstimateProblem`
+paraphrase-flag scenarios (faithful rewrite, rejected rewrite, errored call, flag off) now
+assert on `question`/`problem` under the new shape.
+**Eval:** Not run. This change only touches `getRandomGuesstimateProblem` (the `/random`
+random-pick endpoint) — a pure string split before an existing, unchanged paraphrase call.
+None of the eval runners (`backend/eval/run_eval*.js`) exercise that function: the main
+`run_eval.js` treats `guesstimates` as a dark/disabled feature, and
+`run_eval_paraphrase_preview.js`/`run_eval_v2_preview.js` test the `/ask` topic-lookup path
+(`groundedGuesstimateLookup`) via their own local similarity search, never
+`getRandomGuesstimateProblem` or `splitRawQuestionFromAnswer`. No retrieval, judging, or
+prompt logic changed, so there is nothing for those runners to regress on; a full paid eval
+run would have been spending budget to re-confirm unrelated code paths.
+**Undo:** Revert `splitRawQuestionFromAnswer` and the `getRandomGuesstimateProblem` return
+shape to return `problem: row.content` (pre-split) with no `question` key; revert the
+`question`/`problem` doc comments on `GuesstimateResponse`.
+**Open issues:** None. Ready to commit (frontend session's `GuesstimatesPage.tsx`/
+`placewiseBlocks.ts` changes should land in the same commit or the page breaks against the
+new backend contract).
+
+---
+
 ## 2026-11-07 — Q&A answers now include the real diagram when the casebook has one
 
 **Phase:** M1 (Consulting RAG) · **Type:** feature

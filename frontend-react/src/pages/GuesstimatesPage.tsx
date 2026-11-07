@@ -5,7 +5,6 @@ import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
 import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import VoiceRecordButton from "../components/VoiceRecordButton";
 import { useVoiceRecording } from "../hooks/useVoiceRecording";
-import { splitQuestionFromAnswer } from "../lib/placewiseBlocks";
 import type { GuesstimateResponse } from "../types/api";
 
 // R8: first real UI for Guesstimates (backend-only as of R7 - GET
@@ -20,16 +19,23 @@ import type { GuesstimateResponse } from "../types/api";
 //
 // 2026-11-07 (Aalhad's call, seeing the page): question, diagram and worked
 // answer rendered as one continuous block meant a student saw the answer
-// before trying - there was no actual "practice" happening. Now the question
-// is split from the answer (splitQuestionFromAnswer - everything before the
-// first ```placewise-diagram fence is the question, everything from the
-// fence onward is the diagram + worked solution) and the answer half is only
-// mounted after "Show Answer" is clicked - conditionally rendered, not
-// CSS-hidden, so there's nothing in the DOM to peek at. A scratchpad text
+// before trying - there was no actual "practice" happening. The answer half
+// is only mounted after "Show Answer" is clicked - conditionally rendered,
+// not CSS-hidden, so there's nothing in the DOM to peek at. A scratchpad text
 // field + mic button (reusing useVoiceRecording/VoiceRecordButton exactly as
 // FrameworkAskBox does) let the student type or speak their own attempt
 // first; it's never submitted anywhere, just local state cleared on "Try
 // another".
+//
+// 2026-11-07 (same day, bug fix): the question used to be computed client-side
+// by splitting the already-paraphrased `problem` text at the first diagram
+// fence (splitQuestionFromAnswer in placewiseBlocks.ts). That leaked the
+// ASSUMPTIONS section - part of the worked-solution methodology, not neutral
+// problem framing - into the pre-reveal question. The split now happens
+// server-side on raw content before paraphrasing: `question` is the bare
+// title (always present, never paraphrased) and `problem` is now the answer
+// portion only (assumptions + diagram + working). See
+// backend/src/lib/guesstimateRetrieval.js's getRandomGuesstimateProblem.
 
 type LoadState = { loading: boolean; error: string; data: GuesstimateResponse | null };
 
@@ -62,8 +68,6 @@ export default function GuesstimatesPage() {
   useEffect(() => {
     load();
   }, [load]);
-
-  const { question, answer } = state.data?.problem ? splitQuestionFromAnswer(state.data.problem) : { question: "", answer: "" };
 
   return (
     <>
@@ -163,7 +167,7 @@ export default function GuesstimatesPage() {
                 Practice problem
               </div>
               <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
-                {question && <MarkdownWithDiagrams markdown={question} />}
+                {state.data.question && <MarkdownWithDiagrams markdown={state.data.question} />}
               </div>
 
               <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>
@@ -202,13 +206,13 @@ export default function GuesstimatesPage() {
                 </button>
               </div>
 
-              {revealed && answer && (
+              {revealed && state.data.problem && (
                 <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>
                   <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
                     Diagram &amp; worked solution
                   </div>
                   <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
-                    <MarkdownWithDiagrams markdown={answer} />
+                    <MarkdownWithDiagrams markdown={state.data.problem} />
                   </div>
                 </div>
               )}
