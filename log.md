@@ -5,6 +5,21 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Scalability: raised global IP rate-limit from 300 to 3000 req/15min for campus Wi-Fi NAT
+
+**Phase:** M1 (Consulting RAG) · **Type:** scalability / infrastructure
+
+**What changed:** Preemptive fix ahead of batch release:
+1. Root cause:
+   - `generalLimiter` in `backend/src/middleware/rateLimit.js` was capped at 300 requests per 15 minutes keyed on IP address.
+   - On an MBA college campus (e.g. IIM Trichy hostel/campus Wi-Fi), 100-150 students share a single institutional NAT gateway IP.
+   - A single student browsing 3-4 pages generates 15-20 API requests. With 20+ concurrent students, 300 requests would be reached in ~2 minutes, triggering false-positive 429 "Too many requests" blocks campus-wide.
+2. Fix:
+   - Scaled `generalLimiter` from 300 to 3,000 requests per 15 min per IP (~3.3 req/s per IP), safely handling up to 150-200 concurrent campus users.
+   - Genuine abuse / runaway AI generation remains independently protected by user-keyed `aiLimiter` (120 req/15min) and `heavyAiLimiter` (15 req/15min).
+
+---
+
 ## 2026-11-08 — Favicon: added multi-format PNG/ICO assets and cache-busters for Safari & Chrome tab icons
 
 **Phase:** M1 (Consulting RAG) · **Type:** bugfix / branding

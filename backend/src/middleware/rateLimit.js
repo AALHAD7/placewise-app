@@ -54,9 +54,12 @@ export const heavyAiLimiter = rateLimit({
 // Applied globally (server.js) to every request, AI-backed or not — cheap
 // first line of defense against scripted abuse/scraping hitting the plain
 // read endpoints (frameworks, companies, news) that aiLimiter never covers.
+// Sized to 3,000 per 15 min per IP (~3.3 req/s) so a college hostel / campus
+// Wi-Fi NAT gateway sharing one public IP across 100-200 concurrent MBA
+// students never trips a false-positive 429 during placement week.
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 300,
+  limit: 3000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests. Please wait a few minutes and try again." }
@@ -91,7 +94,7 @@ export const adminLimiter = rateLimit({
 
 // R5 admin review queue (/api/admin/review/*). Same gate as adminLimiter, but sized for
 // paging through ~170 flagged pages (detail + image + action per page). The global
-// generalLimiter (300 / 15 min per IP) still applies first, so this is the real ceiling
+// generalLimiter (3000 / 15 min per IP) still applies first, so this is the real ceiling
 // only together with it.
 export const adminReviewLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
