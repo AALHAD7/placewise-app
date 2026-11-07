@@ -160,14 +160,30 @@ const GENERIC_QUESTION_FALLBACK = "Estimate the following:";
  * is always just the title, whether written as "# TITLE" or "## EXAMPLE: ...". Stripping a
  * leading "#"/whitespace run turns that into a plain bare question, not raw markdown.
  */
+// A handful of chunks (found live 2026-11-07, auditing all 59 active SRCC rows) have a
+// stray bare page number as their literal first line (a leftover page-break artifact from
+// ingestion, e.g. "47\n\nSIZE OF ANIMATION/VFX MARKET IN INDIA\n\n...") - that number would
+// otherwise become `rawQuestion`, which is nonsense shown to a student. Skip a leading
+// bare-number line (and any blank lines around it) before taking the first real line as
+// the title.
+const BARE_PAGE_NUMBER_RE = /^\d+$/;
+
 export function splitRawQuestionFromAnswer(content) {
-  const idx = content.indexOf("\n");
-  if (idx === -1) {
+  if (content.indexOf("\n") === -1) {
+    // No title/body separation at all - nothing safe to call "the question".
     return { rawQuestion: GENERIC_QUESTION_FALLBACK, answerSource: content };
   }
-  const titleLine = content.slice(0, idx);
+  const lines = content.split("\n");
+  let i = 0;
+  while (i < lines.length && (lines[i].trim() === "" || BARE_PAGE_NUMBER_RE.test(lines[i].trim()))) {
+    i++;
+  }
+  if (i >= lines.length) {
+    return { rawQuestion: GENERIC_QUESTION_FALLBACK, answerSource: content };
+  }
+  const titleLine = lines[i];
   const rawQuestion = titleLine.replace(/^#+\s*/, "").trim();
-  const answerSource = content.slice(idx + 1);
+  const answerSource = lines.slice(i + 1).join("\n");
   return { rawQuestion: rawQuestion || GENERIC_QUESTION_FALLBACK, answerSource };
 }
 

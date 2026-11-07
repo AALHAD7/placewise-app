@@ -116,3 +116,20 @@ test("splitRawQuestionFromAnswer: no newline at all falls back to a generic ques
   assert.equal(rawQuestion, "Estimate the following:");
   assert.equal(answerSource, content);
 });
+
+test("splitRawQuestionFromAnswer: skips a leading bare page-number line to find the real title", () => {
+  const content = "47\n\nSIZE OF ANIMATION/VFX MARKET IN INDIA\n\nRedSeer Strategy Consultants | ⬜⬜⬜⬜⬜\n\nASSUMPTIONS\n\n1. Movies";
+  const { rawQuestion, answerSource } = splitRawQuestionFromAnswer(content);
+  assert.equal(rawQuestion, "SIZE OF ANIMATION/VFX MARKET IN INDIA");
+  assert.ok(!rawQuestion.match(/^\d+$/));
+  assert.ok(answerSource.includes("ASSUMPTIONS"));
+});
+
+test("splitRawQuestionFromAnswer: a chunk with no real title before ASSUMPTIONS falls back to a placeholder-looking question rather than crashing", () => {
+  const content = "52\n\nASSUMPTIONS\n\n1. Some assumption";
+  const { rawQuestion } = splitRawQuestionFromAnswer(content);
+  // Known data-defect case (no real title present) - documents the current behavior
+  // (picks "ASSUMPTIONS" itself as the title) rather than asserting it's good; chunks
+  // like this are found and deactivated via is_active, not fixed by this function.
+  assert.equal(rawQuestion, "ASSUMPTIONS");
+});
