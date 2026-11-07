@@ -53,3 +53,27 @@ export function splitMarkdownBlocks(md: string | null | undefined): MarkdownSegm
   flush();
   return out;
 }
+
+// Guesstimates practice (GuesstimatesPage): every problem's `problem` markdown is one
+// string shaped title -> firm/difficulty -> assumptions (the question) -> first
+// ```placewise-diagram fence -> "Diagram summary:" -> worked-answer prose (the answer).
+// Confirmed against several live /api/guesstimates/random pulls before relying on this -
+// the question content is everything before the first diagram fence opener, the answer is
+// everything from that fence onward. Reuses OPEN_RE so the fence convention can't drift
+// between this split and splitMarkdownBlocks above.
+export function splitQuestionFromAnswer(md: string | null | undefined): { question: string; answer: string } {
+  const text = String(md || "");
+  const lines = text.split("\n");
+  let fenceLineIndex = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (OPEN_RE.test(lines[i])) {
+      fenceLineIndex = i;
+      break;
+    }
+  }
+  if (fenceLineIndex < 0) return { question: text.trim(), answer: "" };
+  return {
+    question: lines.slice(0, fenceLineIndex).join("\n").trim(),
+    answer: lines.slice(fenceLineIndex).join("\n").trim()
+  };
+}

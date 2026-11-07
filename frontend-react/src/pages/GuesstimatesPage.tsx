@@ -3,6 +3,9 @@ import { apiFetch } from "../lib/apiClient";
 import PageHeader from "../components/PageHeader";
 import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
 import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
+import VoiceRecordButton from "../components/VoiceRecordButton";
+import { useVoiceRecording } from "../hooks/useVoiceRecording";
+import { splitQuestionFromAnswer } from "../lib/placewiseBlocks";
 import type { GuesstimateResponse } from "../types/api";
 
 // R8: first real UI for Guesstimates (backend-only as of R7 - GET
@@ -14,14 +17,43 @@ import type { GuesstimateResponse } from "../types/api";
 // per-answer source attribution (school/casebook/page) - that's
 // debugging/admin-only - so it carries static "how to approach it" guidance
 // instead.
+//
+// 2026-11-07 (Aalhad's call, seeing the page): question, diagram and worked
+// answer rendered as one continuous block meant a student saw the answer
+// before trying - there was no actual "practice" happening. Now the question
+// is split from the answer (splitQuestionFromAnswer - everything before the
+// first ```placewise-diagram fence is the question, everything from the
+// fence onward is the diagram + worked solution) and the answer half is only
+// mounted after "Show Answer" is clicked - conditionally rendered, not
+// CSS-hidden, so there's nothing in the DOM to peek at. A scratchpad text
+// field + mic button (reusing useVoiceRecording/VoiceRecordButton exactly as
+// FrameworkAskBox does) let the student type or speak their own attempt
+// first; it's never submitted anywhere, just local state cleared on "Try
+// another".
 
 type LoadState = { loading: boolean; error: string; data: GuesstimateResponse | null };
 
 export default function GuesstimatesPage() {
   const [state, setState] = useState<LoadState>({ loading: true, error: "", data: null });
+  const [attempt, setAttempt] = useState("");
+  const [revealed, setRevealed] = useState(false);
+  const { recording, micError, startRecording, stopRecording } = useVoiceRecording();
+
+  const recKey = "guesstimates-attempt";
+  const isRecording = !!recording[recKey];
+
+  function onToggleMic() {
+    if (isRecording) {
+      stopRecording(recKey);
+    } else {
+      startRecording(recKey, () => attempt, setAttempt);
+    }
+  }
 
   const load = useCallback(() => {
     setState((s) => ({ ...s, loading: true, error: "" }));
+    setAttempt("");
+    setRevealed(false);
     apiFetch<GuesstimateResponse>("/api/guesstimates/random", {}, "Failed to load a guesstimate.")
       .then((data) => setState({ loading: false, error: "", data }))
       .catch((e) => setState({ loading: false, error: e instanceof Error ? e.message : "Could not load a guesstimate.", data: null }));
@@ -30,6 +62,8 @@ export default function GuesstimatesPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const { question, answer } = state.data?.problem ? splitQuestionFromAnswer(state.data.problem) : { question: "", answer: "" };
 
   return (
     <>
@@ -129,15 +163,55 @@ export default function GuesstimatesPage() {
                 Practice problem
               </div>
               <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
-                {state.data.problem && <MarkdownWithDiagrams markdown={state.data.problem} />}
+                {question && <MarkdownWithDiagrams markdown={question} />}
               </div>
-              <button
-                type="button"
-                onClick={load}
-                style={{ marginTop: 18, border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", padding: "8px 18px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--indigo)", background: "none", cursor: "pointer" }}
-              >
-                Try another
-              </button>
+
+              <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
+                  Your attempt
+                </div>
+                <textarea
+                  value={attempt}
+                  onChange={(e) => setAttempt(e.target.value)}
+                  placeholder="Work it out on paper, then type or speak your structure and final number here."
+                  style={{ width: "100%", height: 110, resize: "vertical", marginTop: 10, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "10px 12px", outline: "none", fontSize: "0.875rem", lineHeight: 1.6, color: "var(--text-900)", background: "var(--field-bg)" }}
+                />
+                <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 9, flexWrap: "wrap" }}>
+                  <VoiceRecordButton recording={isRecording} onClick={onToggleMic} />
+                  {micError[recKey] && <span style={{ fontSize: "0.78125rem", color: "var(--red-dark)" }}>{micError[recKey]}</span>}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap" }}>
+                {!revealed && (
+                  <button
+                    type="button"
+                    onClick={() => setRevealed(true)}
+                    className="btn-outline-indigo"
+                    style={{ border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 16px", font: "600 0.8125rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)" }}
+                  >
+                    Show answer
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={load}
+                  style={{ border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", padding: "9px 18px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--indigo)", background: "none", cursor: "pointer" }}
+                >
+                  Try another
+                </button>
+              </div>
+
+              {revealed && answer && (
+                <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>
+                  <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
+                    Diagram &amp; worked solution
+                  </div>
+                  <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
+                    <MarkdownWithDiagrams markdown={answer} />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

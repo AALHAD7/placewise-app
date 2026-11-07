@@ -230,7 +230,7 @@ export async function judgeRelevance(queryText, chunkContent) {
 // before the chunk ever reaches the paraphrase prompt and spliced back in byte-for-byte
 // afterwards, so no model call ever has a chance to touch it, however it's instructed.
 
-const DIAGRAM_FENCE_RE = /```[ \t]*placewise-diagram[ \t]*\n[\s\S]*?\n```/g;
+export const DIAGRAM_FENCE_RE = /```[ \t]*placewise-diagram[ \t]*\n[\s\S]*?\n```/g;
 const DIAGRAM_TOKEN_RE = /\[\[PLACEWISE_DIAGRAM_BLOCK_\d+\]\]/g;
 const diagramToken = i => `[[PLACEWISE_DIAGRAM_BLOCK_${i}]]`;
 

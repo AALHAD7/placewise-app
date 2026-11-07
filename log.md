@@ -5,6 +5,153 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — Q&A answers now include the real diagram when the casebook has one
+
+**Phase:** M1 (Consulting RAG) · **Type:** feature
+
+**What changed:** `groundedQaAnswer` (`backend/src/lib/qaRetrieval.js`) previously passed
+covering excerpts straight to Gemini with no diagram instructions, so a question like
+"Can you explain to me how the value chain framework works?" only ever got prose, never
+the diagram the source casebook actually draws — even though every ingested
+` ```placewise-diagram ` fence is always immediately followed by an ingestion-time,
+already-fact-checked `Diagram summary:` line (`backend/ingestion/convert.py`). Fixed by:
+- Before building the answer-generation prompt, each excerpt's diagram fence is now
+  stripped to a short `[[PLACEWISE_DIAGRAM_BLOCK_N]]` placeholder token via
+  `protectDiagramBlocks` (reused from `consultingRetrieval.js`, same "never let the LLM
+  touch the diagram" posture the paraphrase layer already uses) — Gemini's answer call
+  never sees raw diagram JSON. `GROUNDED_SYSTEM`'s prompt now tells the model the token
+  means a diagram will render separately right below its answer, so it shouldn't try to
+  describe the diagram's structure itself.
+- After the prose answer comes back, `findDiagramForAnswer` (new, pure, exported) scans
+  `result.chunks` in relevance order and extracts the first diagram fence + its exact
+  `Diagram summary:` line (`extractDiagramWithSummary`, new, pure, exported) from the real
+  underlying chunk content (`rawContent` when the paraphrase layer ran, `content`
+  otherwise) — never from the model's output. That fence+summary is appended verbatim to
+  the final answer string. The frontend's existing `MarkdownWithDiagrams` /
+  `splitMarkdownBlocks` (`placewiseBlocks.ts`) already renders an embedded
+  ` ```placewise-diagram ` fence, so no frontend change was needed.
+- Rule for multiple covering chunks: at most one diagram per answer (the first one found,
+  in relevance order) — deliberately simple, avoids cluttering one answer with several
+  diagrams.
+- No-op when no covering chunk has a diagram (the common case) — confirmed by test.
+**Why:** Aalhad's direct request after seeing Q&A answers stay pure prose even for
+topics (Porter's Value Chain) that are almost always drawn as diagrams in the real
+casebooks.
+**Files:** `backend/src/lib/qaRetrieval.js`, `backend/src/lib/consultingRetrieval.js`
+(exported `DIAGRAM_FENCE_RE`), `backend/test/qaRetrieval.test.js`.
+**Proof:**
+- `npm test` in `backend/`: 191/192 pass; the one failure (`sandbox.test.js`'s "empty
+  environment" check, a `__CF_USER_TEXT_ENCODING` env leak) is pre-existing and unrelated —
+  confirmed identical on `main` before this change via `git stash`.
+- New tests: `extractDiagramWithSummary`/`findDiagramForAnswer` pure-logic cases (fence
+  found, no fence, multi-chunk picks the first, prefers `rawContent`); two full
+  mocked-network `groundedQaAnswer` cases — one covering chunk with a diagram (answer
+  includes the verbatim fence + summary; the captured answer-generation prompt is asserted
+  to contain the placeholder token and **not** `placewise-diagram` or the raw JSON), one
+  without (byte-identical answer, no fence appended).
+- Live verification against real Supabase + Gemini (no live calls skipped): asked
+  `groundedQaAnswer("Can you explain to me how the value chain framework works?")` directly.
+  Result: `groundedInCasebooks: true`, citations from IIM Lucknow's and FMS Delhi's real
+  casebooks, and the final answer string now contains a real
+  ` ```placewise-diagram ` flow block (R&D → inbound → manufacturing → distribution →
+  sales) plus its `Diagram summary:` line, appended after prose that explicitly says "see
+  the diagram below" and does not itself try to describe the diagram's boxes/arrows.
+**Not done / left alone:** No `ENABLE_*` flag was added — this is always-on for Q&A (same
+reversibility as any other code change: revert the diff). Mock interviews and company
+pages untouched, per CLAUDE.md.
+
+---
+
+## 2026-11-07 — Q&A page: stop floating as a narrow column, use the full page width
+
+**Phase:** M4 (frontend fixes) · **Type:** fix
+
+**What changed:** `QaPage.tsx` wrapped its whole content in a fixed `maxWidth: 680` div,
+leaving a large blank area on the right at desktop widths — the same issue already fixed
+today on `GuesstimatesPage.tsx`. Per Aalhad's direct request after seeing it live
+("utilize the entire size of the web page... stretch the component so that it utilizes
+everything"), applied the same site convention instead of inventing a new layout:
+- Added a "What you'll find here" `grid-3` intro (3 `feature-card`s: grounded-first,
+  labelled-when-not, diagrams-where-they-help) above the ask box, matching
+  Guesstimates/Frameworks/Role.
+- Replaced the fixed-width wrapper with `two-col-sidebar-wide` (same CSS class
+  Guesstimates uses). Left column: the ask box / answered-answer card, now grown to the
+  wider `1.55fr` track instead of a 680px cap, with slightly larger padding and type on
+  the answer. Right column: a new sidebar with three clickable "Try asking" example
+  questions (fill the textbox via `setQuestion`, do not auto-submit — a student can edit
+  before asking) and a short "How to get a sharp answer" tips panel, mirroring
+  Guesstimates' "How to approach it" pattern. No per-answer source line was added to
+  either column — `GroundingNote` still only renders for the non-grounded case, per
+  CLAUDE.md's grounding policy.
+- Both columns carry `minWidth: 0` (same reason as Guesstimates: without it a wide answer
+  child can push the grid track past the viewport and cause horizontal scroll at phone
+  width).
+**Why:** Aalhad's call on seeing the live page — the narrow fixed-width card wasted the
+right half of the screen at desktop width.
+**Files:** `frontend-react/src/pages/QaPage.tsx`
+**Proof:** `npm run build` and `npm run lint` pass (no new errors, only pre-existing
+warnings unrelated to this file). Verified live via gstack's headless browser (`$B`,
+Aside unavailable on this machine), logged in as guest:
+- Desktop (1280px responsive capture) and 375px screenshots show the full-width
+  `two-col-sidebar-wide` layout, no narrow floating column.
+- Clicked a "Try asking" example question — it filled the textbox (`Ask` button went
+  from disabled to enabled) without submitting.
+- Asked "Can you explain to me how the value chain framework works?" end to end at
+  1440×900 — answer rendered in the wide left column next to the still-visible sidebar,
+  long multi-paragraph/bulleted text stayed readable, "Ask another" present and
+  clickable. The answer text referenced "(see the diagram below)" but no diagram actually
+  rendered in this dev environment — expected, since the parallel diagram-rendering
+  backend change (`qaRetrieval.js`) is separate work with no frontend change required;
+  `MarkdownWithDiagrams` already renders `placewise-diagram` fences when the backend
+  sends them, so this layout is diagram-ready as soon as that change is live.
+**Undo:** Revert this commit — the previous version had the fixed 680px wrapper and no
+sidebar.
+**Open issues:** None. Not yet pushed to production.
+
+---
+
+## 2026-11-07 — Guesstimates practice flow: question hidden from the answer, attempt scratchpad + mic
+
+**Phase:** M4 (frontend fixes) · **Type:** fix
+
+**What changed:** `GuesstimatesPage.tsx` showed the question, the diagram and the worked
+answer all in one continuous block, so a student saw the solution before trying the
+problem — there was no actual practice. Rebuilt per Aalhad's direct request after seeing
+the page:
+- Added `splitQuestionFromAnswer` (`src/lib/placewiseBlocks.ts`) — a pure function that
+  finds the first ` ```placewise-diagram ` fence opener in the problem's markdown (reusing
+  the same `OPEN_RE` convention `splitMarkdownBlocks` already uses, so the two splitters
+  can't drift) and splits everything before it (title/firm/assumptions = the question)
+  from everything from the fence onward (diagram + "Diagram summary:" + worked prose = the
+  answer). Confirmed this shape holds by pulling 5 live problems from
+  `/api/guesstimates/random` and inspecting the real `problem` field before relying on it.
+- The page now renders the question alone through `MarkdownWithDiagrams`, with an "Your
+  attempt" scratchpad textarea (not submitted/scored anywhere, just student-local state)
+  and a mic button underneath, reusing `useVoiceRecording` + `VoiceRecordButton` exactly as
+  `FrameworkAskBox` does (own `recKey`, no changes to the shared hook/component).
+- The diagram + worked solution only mount after "Show answer" is clicked — conditionally
+  rendered (not CSS-hidden), so nothing is in the DOM to inspect before that click.
+  Confirmed via `$B js "document.body.innerHTML.includes('placewise-diagram')"` → `false`
+  before the click.
+- "Try another" clears the attempt text and the reveal state along with loading a new
+  problem.
+**Why:** Aalhad's call on seeing the live page — a practice feature that shows the answer
+upfront isn't practice.
+**Files:** `frontend-react/src/pages/GuesstimatesPage.tsx`, `frontend-react/src/lib/placewiseBlocks.ts`
+**Proof:** `npm run build` and `npm run lint` pass (no new errors, only pre-existing
+warnings shared with other pages' load-on-mount pattern). Verified live via gstack's
+headless browser (`$B`, Aside unavailable on this machine) at desktop and 375px: question-only
+render confirmed, DOM free of diagram/answer markup pre-reveal, typed text into the attempt
+field, clicked the mic button (gracefully showed "Microphone permission denied or
+unavailable" — no crash, headless has no mic), clicked "Show answer" (diagram + worked
+solution appeared below, question/attempt stayed visible above), clicked "Try another"
+(new question loaded, attempt field empty, answer hidden again, zero console errors
+throughout).
+**Undo:** Revert this commit — the previous single-block render had no split or reveal gate.
+**Open issues:** None. Not yet pushed to production.
+
+---
+
 ## 2026-11-07 — Live incident: MECE (and 2 other) Frameworks pages showing Guesstimates-book content
 
 **Phase:** R9 follow-up (live-bug fix, QA finding)
