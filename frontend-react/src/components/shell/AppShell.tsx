@@ -1,4 +1,5 @@
-import { Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import { DashboardProvider } from "../../hooks/useDashboard";
 import TopNav from "./TopNav";
 import SmoothScroll from "./SmoothScroll";
@@ -16,6 +17,28 @@ import SmoothScroll from "./SmoothScroll";
 // portal to <body> so the shell's transform never becomes their containing
 // block.
 export default function AppShell() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const win = window as unknown as {
+        dataLayer?: Array<Record<string, unknown>>;
+        gtag?: (...args: unknown[]) => void;
+      };
+      if (typeof win.gtag === "function") {
+        win.gtag("event", "page_view", {
+          page_path: location.pathname + location.search,
+          page_title: document.title
+        });
+      } else if (Array.isArray(win.dataLayer)) {
+        win.dataLayer.push({
+          event: "page_view",
+          page_path: location.pathname + location.search,
+          page_title: document.title
+        });
+      }
+    }
+  }, [location]);
   return (
     <DashboardProvider>
       <SmoothScroll />

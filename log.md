@@ -5,6 +5,20 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Analytics: integrated Google Tag Manager / GA4 (GTM-KXPWBPDH) with SPA route tracking
+
+**Phase:** M1 (Consulting RAG) · **Type:** analytics / infrastructure
+
+**What changed:** Aalhad provided the Google Tag / GTM snippet (`GTM-KXPWBPDH`) to wire Google Analytics into PlaceWise.
+1. `frontend-react/index.html`:
+   - Embedded Google Tag Manager / GA4 script and dataLayer initialization in `<head>`.
+   - Embedded standard `<noscript>` iframe immediately following `<body>` for verification and fallback.
+2. `frontend-react/src/components/shell/AppShell.tsx`:
+   - Added automatic client-side route tracking via `useLocation()` hook.
+   - Dispatches `page_view` events to both `gtag()` and `dataLayer.push` on every client-side page navigation (e.g. `/guesstimates`, `/frameworks`, `/mock-interview`).
+
+---
+
 ## 2026-11-08 — Guesstimates: fix answer submission textarea scrolling on Safari & dark mode
 
 **Phase:** M1 (Consulting RAG) · **Type:** bugfix / UX polish
