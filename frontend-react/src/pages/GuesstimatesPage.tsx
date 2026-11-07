@@ -762,11 +762,34 @@ export default function GuesstimatesPage() {
                   )}
 
                   <textarea
-                  value={attempt}
-                  onChange={(e) => setAttempt(e.target.value)}
-                  placeholder="Work it out on paper, then type or speak your structure and final number here."
-                  style={{ width: "100%", height: 110, resize: "vertical", marginTop: 10, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "10px 12px", outline: "none", fontSize: "0.875rem", lineHeight: 1.6, color: "var(--text-900)", background: "var(--field-bg)" }}
-                />
+                    value={attempt}
+                    onChange={(e) => setAttempt(e.target.value)}
+                    placeholder="Work it out on paper, then type or speak your structure and final number here."
+                    style={{
+                      width: "100%",
+                      minHeight: 180,
+                      height: 200,
+                      maxHeight: 550,
+                      overflowY: "auto",
+                      overscrollBehavior: "contain",
+                      WebkitOverflowScrolling: "touch",
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.2)",
+                      resize: "vertical",
+                      marginTop: 10,
+                      border: "1px solid var(--card-border)",
+                      borderRadius: "var(--r-sm)",
+                      padding: "12px 14px",
+                      outline: "none",
+                      fontSize: "0.875rem",
+                      lineHeight: 1.6,
+                      color: "var(--text-900)",
+                      background: "var(--field-bg)"
+                    }}
+                    onWheel={(e) => {
+                      e.stopPropagation();
+                    }}
+                  />
                 <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 9, flexWrap: "wrap" }}>
                   <VoiceRecordButton recording={isRecording} onClick={onToggleMic} />
                   <button
@@ -838,7 +861,30 @@ export default function GuesstimatesPage() {
                       placeholder="e.g. Should I assume this is for an urban market only?"
                       disabled={revealed || !state.data?.chunkId}
                       maxLength={300}
-                      style={{ width: "100%", height: 56, resize: "vertical", marginTop: 10, border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 12px", outline: "none", fontSize: "0.84375rem", lineHeight: 1.5, color: "var(--text-900)", background: "var(--field-bg)" }}
+                      style={{
+                        width: "100%",
+                        height: 64,
+                        minHeight: 64,
+                        maxHeight: 200,
+                        overflowY: "auto",
+                        overscrollBehavior: "contain",
+                        WebkitOverflowScrolling: "touch",
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.2)",
+                        resize: "vertical",
+                        marginTop: 10,
+                        border: "1px solid var(--card-border)",
+                        borderRadius: "var(--r-sm)",
+                        padding: "9px 12px",
+                        outline: "none",
+                        fontSize: "0.84375rem",
+                        lineHeight: 1.5,
+                        color: "var(--text-900)",
+                        background: "var(--field-bg)"
+                      }}
+                      onWheel={(e) => {
+                        e.stopPropagation();
+                      }}
                     />
                     <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 9, flexWrap: "wrap" }}>
                       <VoiceRecordButton recording={isClarifyRecording} onClick={onToggleClarifyMic} />

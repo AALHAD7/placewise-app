@@ -5,6 +5,21 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Guesstimates: fix answer submission textarea scrolling on Safari & dark mode
+
+**Phase:** M1 (Consulting RAG) · **Type:** bugfix / UX polish
+
+**What changed:** Aalhad reported being unable to scroll inside the answer submission text box on the Guesstimates page.
+1. Root cause:
+   - `<textarea>` had no `overflowY: "auto"`, no `overscrollBehavior: "contain"`, and no `-webkit-overflow-scrolling: touch`, causing WebKit / Safari to pass trackpad and mousewheel gestures to the document window rather than scrolling the textarea.
+   - Textarea height was cramped (`height: 110`), and dark theme lacked visible WebKit scrollbar styles.
+2. Fix:
+   - Added explicit `overflowY: "auto"`, `overscrollBehavior: "contain"`, `WebkitOverflowScrolling: "touch"`, `scrollbarWidth: "thin"`, and `onWheel={(e) => e.stopPropagation()}` on both the attempt scratchpad and clarifying question textareas.
+   - Increased default height to 200px (min 180px, max 550px with vertical resize handle).
+   - In `frontend-react/src/styles/global.css`: added custom WebKit scrollbar styles for all textareas (`textarea::-webkit-scrollbar` with clear contrasting thumb on dark surfaces).
+
+---
+
 ## 2026-11-08 — Homepage: added prominent "Answers are grounded in IIM case books" trust kicker
 
 **Phase:** M1 (Consulting RAG) · **Type:** copy / trust & grounding disclosure

@@ -183,6 +183,27 @@ textarea::placeholder, input::placeholder{color:rgba(255,255,255,0.50)}
 select option{background:#16181d;color:#ffffff}
 *{box-sizing:border-box}
 
+/* Clean, visible custom scrollbar for textareas on dark backgrounds */
+textarea {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.2);
+}
+textarea::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+textarea::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+textarea::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+}
+textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+
 
 /* Lock background scrolling when any modal is open */
 .app-shell[data-modal="true"] {
