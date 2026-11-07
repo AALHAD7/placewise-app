@@ -161,3 +161,4 @@ PlaceWise demonstrates how specialized RAG architectures can democratize institu
 
 ---
 *For a live demonstration or code walkthrough, visit [placewise-io.vercel.app](https://placewise-io.vercel.app).*
+
