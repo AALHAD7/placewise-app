@@ -5,7 +5,7 @@
 // they're intentionally left to the same resilience posture, not re-tested here.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickRandomCoveringChunk, looksLikeWorkedProblem, shuffle, splitRawQuestionFromAnswer, GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
+import { pickRandomCoveringChunk, looksLikeWorkedProblem, filterCandidatesByExclusion, shuffle, splitRawQuestionFromAnswer, GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
 
 test("pickRandomCoveringChunk: not covered returns null", () => {
   const picked = pickRandomCoveringChunk({ covered: false, chunks: [], citations: [] });
@@ -132,4 +132,44 @@ test("splitRawQuestionFromAnswer: a chunk with no real title before ASSUMPTIONS 
   // (picks "ASSUMPTIONS" itself as the title) rather than asserting it's good; chunks
   // like this are found and deactivated via is_active, not fixed by this function.
   assert.equal(rawQuestion, "ASSUMPTIONS");
+});
+
+// --- filterCandidatesByExclusion: ensures the same guesstimate is not asked twice ---
+
+test("filterCandidatesByExclusion: drops candidates whose id is in excludeIds", () => {
+  const candidates = [{ id: "chunk-1" }, { id: "chunk-2" }, { id: "chunk-3" }];
+  const { pool, cycleReset } = filterCandidatesByExclusion(candidates, ["chunk-1", "chunk-3"]);
+  assert.equal(cycleReset, false);
+  assert.equal(pool.length, 1);
+  assert.equal(pool[0].id, "chunk-2");
+});
+
+test("filterCandidatesByExclusion: empty excludeIds returns all candidates without cycleReset", () => {
+  const candidates = [{ id: "chunk-1" }, { id: "chunk-2" }];
+  const { pool, cycleReset } = filterCandidatesByExclusion(candidates, []);
+  assert.equal(cycleReset, false);
+  assert.equal(pool.length, 2);
+});
+
+test("filterCandidatesByExclusion: when all candidates are excluded, restarts cycle excluding only the last seen", () => {
+  const candidates = [{ id: "chunk-1" }, { id: "chunk-2" }, { id: "chunk-3" }];
+  const excludeIds = ["chunk-1", "chunk-2", "chunk-3"]; // All seen, chunk-3 is immediate previous
+  const { pool, cycleReset } = filterCandidatesByExclusion(candidates, excludeIds);
+  assert.equal(cycleReset, true);
+  // Must NOT include chunk-3 (immediate previous)
+  assert.equal(pool.length, 2);
+  assert.ok(pool.every(c => c.id !== "chunk-3"));
+});
+
+test("filterCandidatesByExclusion: handles empty or invalid candidates list gracefully", () => {
+  assert.deepEqual(filterCandidatesByExclusion([], ["chunk-1"]), { pool: [], cycleReset: false });
+  assert.deepEqual(filterCandidatesByExclusion(null, ["chunk-1"]), { pool: [], cycleReset: false });
+});
+
+test("filterCandidatesByExclusion: cleans whitespace and handles Set input", () => {
+  const candidates = [{ id: "chunk-1" }, { id: "chunk-2" }];
+  const excludeSet = new Set([" chunk-1 "]);
+  const { pool } = filterCandidatesByExclusion(candidates, excludeSet);
+  assert.equal(pool.length, 1);
+  assert.equal(pool[0].id, "chunk-2");
 });

@@ -5,6 +5,29 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — Guesstimates: prevent repeat problems with two-level client & server exclusion tracking
+
+**Phase:** M1 (Consulting RAG) · **Type:** feature / polish
+
+**What changed:** Aalhad requested making sure that the same guesstimate is not asked twice during practice.
+1. `guesstimateRetrieval.js`:
+   - Added pure function `filterCandidatesByExclusion(candidates, excludeIds)`: filters structurally valid candidate rows against already-seen chunk IDs.
+   - Graceful cycle reset: when all 25 active casebook guesstimates have been completed, restarts the cycle while excluding the single most recently seen guesstimate (`lastSeenId`), guaranteeing no back-to-back repetitions.
+   - `judgeIsWorkedProblem`: added in-memory verdict cache (`problemJudgeCache`) keyed by `chunkId` to avoid redundant Gemini calls for known problem chunks.
+   - `getRandomGuesstimateProblem`: now accepts `{ excludeIds = [] }` and returns `cycleReset: true` when a fresh cycle begins.
+2. `guesstimates.js`:
+   - Updated `GET /api/guesstimates/random` to parse `?exclude=id1,id2,...` query parameter.
+   - Added server-side LRU tracking (`recentServedByClient`) keyed by `user:${id}` or `ip:${ip}` so even if client requests omit query parameters, sequential fetches never repeat.
+3. `GuesstimatesPage.tsx`:
+   - Added persistent `localStorage` storage (`placewise_seen_guesstimates`) tracking solved guesstimate chunk IDs across sessions and page reloads.
+   - `load()` passes `?exclude=` to `/api/guesstimates/random` and appends newly fetched problems to the seen list.
+   - Added clean MBA-focused badge: `Problem #{count} · Never repeated` in the practice problem header.
+4. Tests:
+   - Added 5 new unit tests in `guesstimateRetrieval.test.js` covering normal exclusion, empty exclusion, cycle reset excluding last seen, empty candidates, and whitespace/Set inputs. All 37 guesstimate test cases pass.
+   - Verified frontend React build passes cleanly with zero errors.
+
+---
+
 ## 2026-11-07 — Diagram rendering: render all diagrams horizontally with side-by-side pillar cards and horizontal/vertical toggle
 
 **Phase:** M1 / UI · **Type:** feature / polish

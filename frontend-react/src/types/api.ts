@@ -153,6 +153,9 @@ export interface GuesstimateResponse {
   // /api/guesstimates/clarify) can be answered against the same problem.
   // Optional: older cached responses / pre-rollout backends may omit it.
   chunkId?: string;
+  // Indicates if all available casebook guesstimates have been exhausted and
+  // the practice cycle restarted fresh without back-to-back repeats.
+  cycleReset?: boolean;
 }
 
 // POST /api/guesstimates/clarify - backend/src/routes/guesstimates.js. Up to 2 clarifying

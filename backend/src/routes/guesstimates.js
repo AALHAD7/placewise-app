@@ -32,14 +32,51 @@ export function validateClarifyInput(body) {
 // (ingest_chunks/match_ingest_chunks) that switch already gates. Off by default.
 const ENABLED = process.env.ENABLE_CONSULTING_RAG_V2 === "true";
 
+// Server-side memory tracking of recently served guesstimates per user/IP so sequential
+// calls never repeat the same guesstimate even if the client didn't supply an exclude list.
+const recentServedByClient = new Map();
+const MAX_CLIENT_TRACKING = 1000;
+const MAX_SERVED_HISTORY_PER_CLIENT = 50;
+
+function getClientKey(req) {
+  if (req.user && req.user.id) return `user:${req.user.id}`;
+  const ip = req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "anonymous";
+  return `ip:${String(ip).split(",")[0].trim()}`;
+}
+
 // GET /api/guesstimates/random - one practice problem from the SRCC Guesstimates Book,
 // picked at random each request, with its real page citation.
+// Supports `?exclude=id1,id2,...` to ensure the same guesstimate is not asked twice.
 router.get("/random", optionalAuth, async (req, res) => {
   if (!ENABLED) {
     return res.json({ success: true, available: false, reason: "feature_disabled" });
   }
   try {
-    const result = await getRandomGuesstimateProblem();
+    const clientKey = getClientKey(req);
+    const serverRecent = recentServedByClient.get(clientKey) || [];
+
+    const excludeParam = req.query.exclude;
+    const clientExclude = typeof excludeParam === "string"
+      ? excludeParam.split(",").map((s) => s.trim()).filter(Boolean)
+      : Array.isArray(excludeParam)
+      ? excludeParam.map((s) => String(s).trim()).filter(Boolean)
+      : [];
+
+    const combinedExclude = Array.from(new Set([...clientExclude, ...serverRecent]));
+    const result = await getRandomGuesstimateProblem({ excludeIds: combinedExclude });
+
+    if (result.available && result.chunkId) {
+      const nextHistory = result.cycleReset
+        ? [result.chunkId]
+        : [...serverRecent.filter((id) => id !== result.chunkId), result.chunkId].slice(-MAX_SERVED_HISTORY_PER_CLIENT);
+
+      recentServedByClient.set(clientKey, nextHistory);
+      if (recentServedByClient.size > MAX_CLIENT_TRACKING) {
+        const oldest = recentServedByClient.keys().next().value;
+        recentServedByClient.delete(oldest);
+      }
+    }
+
     res.json({ success: true, ...result });
   } catch (err) {
     console.error("[guesstimates/random]", err);

@@ -53,9 +53,30 @@ type LoadState = { loading: boolean; error: string; data: GuesstimateResponse | 
 type ClarifyExchange = { question: string; answer: string };
 
 const MAX_CLARIFY_ASKS = 2;
+const SEEN_GUESSTIMATES_STORAGE_KEY = "placewise_seen_guesstimates";
+
+function getStoredSeenIds(): string[] {
+  try {
+    const raw = localStorage.getItem(SEEN_GUESSTIMATES_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string" && id.trim()) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredSeenIds(ids: string[]): void {
+  try {
+    localStorage.setItem(SEEN_GUESSTIMATES_STORAGE_KEY, JSON.stringify(ids.slice(-100)));
+  } catch {
+    // ignore quota errors
+  }
+}
 
 export default function GuesstimatesPage() {
   const [state, setState] = useState<LoadState>({ loading: true, error: "", data: null });
+  const [seenCount, setSeenCount] = useState<number>(() => getStoredSeenIds().length);
   const [attempt, setAttempt] = useState("");
   const [revealed, setRevealed] = useState(false);
   const { recording, micError, startRecording, stopRecording } = useVoiceRecording();
@@ -165,8 +186,22 @@ export default function GuesstimatesPage() {
     setClarifyQuestion("");
     setClarifyExchanges([]);
     setClarifyError("");
-    apiFetch<GuesstimateResponse>("/api/guesstimates/random", {}, "Failed to load a guesstimate.")
-      .then((data) => setState({ loading: false, error: "", data }))
+
+    const currentSeen = getStoredSeenIds();
+    const query = currentSeen.length ? `?exclude=${encodeURIComponent(currentSeen.join(","))}` : "";
+
+    apiFetch<GuesstimateResponse>(`/api/guesstimates/random${query}`, {}, "Failed to load a guesstimate.")
+      .then((data) => {
+        setState({ loading: false, error: "", data });
+        if (data.available && data.chunkId) {
+          const newId = data.chunkId;
+          const nextSeen = data.cycleReset
+            ? [newId]
+            : Array.from(new Set([...currentSeen, newId]));
+          saveStoredSeenIds(nextSeen);
+          setSeenCount(nextSeen.length);
+        }
+      })
       .catch((e) => setState({ loading: false, error: e instanceof Error ? e.message : "Could not load a guesstimate.", data: null }));
   }, []);
 
@@ -268,8 +303,15 @@ export default function GuesstimatesPage() {
 
           {!state.loading && !state.error && state.data?.available && (
             <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "28px 32px" }}>
-              <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
-                Practice problem
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
+                  Practice problem
+                </div>
+                {seenCount > 1 && (
+                  <div style={{ fontSize: "0.6875rem", color: "var(--indigo)", fontWeight: 600, background: "rgba(99, 102, 241, 0.08)", padding: "2px 8px", borderRadius: "var(--r-pill)" }}>
+                    Problem #{seenCount} · Never repeated
+                  </div>
+                )}
               </div>
               <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
                 {state.data.question && <MarkdownWithDiagrams markdown={state.data.question} />}

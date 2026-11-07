@@ -90,6 +90,46 @@ export function looksLikeWorkedProblem(content) {
   return /assumptions/i.test(content || "");
 }
 
+/**
+ * Pure: filters candidate rows by excluding previously seen chunk IDs so the same guesstimate
+ * is not asked twice. If all available candidates have been excluded (the student finished all
+ * guesstimates in the casebook), gracefully restarts the pool while still excluding the most
+ * recently seen guesstimate (the last element in excludeIds) so the immediate previous question
+ * is never repeated back-to-back.
+ *
+ * @param {Array<{ id: string }>} candidates - All structurally valid candidate rows
+ * @param {string[]|Set<string>} excludeIds - Chunk IDs already seen/practiced
+ * @returns {{ pool: Array<{ id: string }>, cycleReset: boolean }}
+ */
+export function filterCandidatesByExclusion(candidates, excludeIds = []) {
+  if (!Array.isArray(candidates) || candidates.length === 0) {
+    return { pool: [], cycleReset: false };
+  }
+  const excludeArr = Array.isArray(excludeIds)
+    ? excludeIds.map(id => String(id || "").trim()).filter(Boolean)
+    : excludeIds instanceof Set
+    ? Array.from(excludeIds).map(id => String(id || "").trim()).filter(Boolean)
+    : [];
+
+  const excludeSet = new Set(excludeArr);
+  const unseen = candidates.filter(c => !excludeSet.has(String(c.id)));
+
+  if (unseen.length > 0) {
+    return { pool: unseen, cycleReset: false };
+  }
+
+  // All candidates in the book have been seen!
+  // Start a fresh cycle, but still exclude the single most recently seen guesstimate
+  // so the user never gets the exact same question they just saw back-to-back.
+  const lastSeenId = excludeArr[excludeArr.length - 1];
+  const freshPool = lastSeenId ? candidates.filter(c => String(c.id) !== lastSeenId) : candidates;
+
+  return {
+    pool: freshPool.length > 0 ? freshPool : candidates,
+    cycleReset: true
+  };
+}
+
 const PROBLEM_JUDGE_SYSTEM =
   "You are checking whether a casebook excerpt is an ACTUAL guesstimate practice problem a " +
   "student could work through right now - not theory, an index/table of contents, " +
@@ -117,7 +157,12 @@ const PROBLEM_JUDGE_SYSTEM =
  * regex, to keep the call count down. Fails closed (not a problem) on any error, same
  * posture as judgeRelevance.
  */
-export async function judgeIsWorkedProblem(content) {
+const problemJudgeCache = new Map();
+
+export async function judgeIsWorkedProblem(content, chunkId = null) {
+  if (chunkId && problemJudgeCache.has(chunkId)) {
+    return problemJudgeCache.get(chunkId);
+  }
   try {
     const parsed = await generateJSON({
       system: PROBLEM_JUDGE_SYSTEM,
@@ -126,7 +171,11 @@ export async function judgeIsWorkedProblem(content) {
       temperature: 0,
       feature: "guesstimate-random-pick-problem-judge"
     });
-    return parsed.verdict === "problem";
+    const isProblem = parsed.verdict === "problem";
+    if (chunkId) {
+      problemJudgeCache.set(chunkId, isProblem);
+    }
+    return isProblem;
   } catch (err) {
     console.warn(`[guesstimateRetrieval] problem judge failed: ${err.message}`);
     return false;
@@ -212,7 +261,7 @@ export function splitRawQuestionFromAnswer(content) {
  * structurally-plausible candidates are, in fact, real problems) while still catching the
  * rare false positive like the theory page from bug (2).
  */
-export async function getRandomGuesstimateProblem() {
+export async function getRandomGuesstimateProblem({ excludeIds = [] } = {}) {
   const { data, error } = await supabase
     .from("ingest_chunks")
     .select("id, content, has_diagram, page_start, page_end, ingest_documents!inner(source_file, school, club, year, source_class)")
@@ -237,9 +286,11 @@ export async function getRandomGuesstimateProblem() {
     year: r.ingest_documents.year
   }));
 
-  const candidates = shuffle(rows.filter(row => looksLikeWorkedProblem(row.content)));
+  const validRows = rows.filter(row => looksLikeWorkedProblem(row.content));
+  const { pool, cycleReset } = filterCandidatesByExclusion(validRows, excludeIds);
+  const candidates = shuffle(pool);
   for (const row of candidates.slice(0, MAX_PROBLEM_JUDGE_ATTEMPTS)) {
-    if (await judgeIsWorkedProblem(row.content)) {
+    if (await judgeIsWorkedProblem(row.content, row.id)) {
       // Split BEFORE paraphrasing (2026-11-07 fix, see splitRawQuestionFromAnswer): the
       // title (`rawQuestion`) is the bare question shown pre-attempt and is never
       // paraphrased - it's a short casebook heading, nothing to rewrite, and the student
@@ -261,7 +312,8 @@ export async function getRandomGuesstimateProblem() {
           problem: answerSource,
           hasDiagram: row.has_diagram,
           citation: buildCitation(row),
-          chunkId: row.id
+          chunkId: row.id,
+          ...(cycleReset ? { cycleReset: true } : {})
         };
       }
       const { content, rawContent, paraphrased } = await paraphraseAndVerify(GUESSTIMATE_PARAPHRASE_CONTEXT, answerSource);
@@ -273,7 +325,8 @@ export async function getRandomGuesstimateProblem() {
         ...(paraphrased ? { rawProblem: rawContent } : {}),
         hasDiagram: row.has_diagram,
         citation: buildCitation(row),
-        chunkId: row.id
+        chunkId: row.id,
+        ...(cycleReset ? { cycleReset: true } : {})
       };
     }
   }
