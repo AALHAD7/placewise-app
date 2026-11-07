@@ -108,6 +108,35 @@ const RELEVANCE_SYSTEM_PROMPT =
   "NOT an answer to a question about Swiggy orders - it only tells you such a chapter " +
   "exists). A faithful excerpt must actually contain the worked content (the assumptions, " +
   "the numbers, the answer), not just reference or list it.\n\n" +
+  "A specific employer or firm name is ALSO a specificity trigger, same as a quantity, a " +
+  "city, or a named thing like \"Uber\" or \"Swiggy\" (found 2026-11-06, q033: a firm-agnostic " +
+  "\"day in the life of a consultant\" excerpt was wrongly accepted for a question asking " +
+  "specifically about Bain). If the question names a specific company/employer (e.g. Bain, " +
+  "McKinsey, BCG, or a named client firm), the excerpt must actually name or distinguish " +
+  "THAT firm, not just be generic same-category content that could apply to any consulting " +
+  "firm interchangeably. A generic, firm-agnostic excerpt is NOT faithful to a firm-specific " +
+  "question, even if it is the right general topic (e.g. \"what a first-year consultant's day " +
+  "looks like\" in general is not an answer to \"what is a first-year consultant's day at " +
+  "Bain\" unless it actually talks about Bain).\n\n" +
+  "A specific QUANTITATIVE METRIC is ALSO a specificity trigger (found 2026-11-07, q028: an " +
+  "excerpt estimating Delhi Metro PASSENGER/RIDERSHIP counts was wrongly accepted for a " +
+  "question asking about Delhi Metro REVENUE). If the question asks about one specific metric " +
+  "(e.g. revenue, profit, cost, headcount, volume, ridership/passenger count), an excerpt about " +
+  "a DIFFERENT metric for the same subject is NOT faithful, even though the subject matches " +
+  "exactly and the methodology looks similar - a passenger-count estimation does not answer a " +
+  "revenue question, a headcount estimate does not answer a profit question, and so on. Only " +
+  "treat this as a mismatch when the excerpt's metric is genuinely a different thing being " +
+  "measured, not when it's the same metric under slightly different wording (e.g. \"turnover\" " +
+  "and \"revenue\" are the same metric, not a mismatch).\n\n" +
+  "A specific, NAMED INTERVIEW SUB-TYPE is ALSO a specificity trigger (found 2026-11-07, q035: " +
+  "generic interview DO's/DON'Ts advice - rapport, confidence, body language - was wrongly " +
+  "accepted for a question specifically about STRESS interviews). If the question names a " +
+  "specific interview format or sub-type (e.g. stress interview, case interview, behavioral/" +
+  "fit interview, group discussion), the excerpt must actually address that named sub-type - " +
+  "what makes it distinct, how to handle it specifically - not just be generic interview " +
+  "advice that could apply to any interview of any type. Generic do's/don'ts, generic rapport-" +
+  "building tips, or generic case-interview-cracking advice do not answer a question about a " +
+  "specific, different named sub-type, even though both are \"about interviews\".\n\n" +
   'Respond with ONLY a JSON object, no markdown fences: {"verdict": "faithful" or ' +
   '"unfaithful", "reasoning": "one sentence explaining your judgment"}';
 
@@ -284,20 +313,27 @@ export async function judgeParaphraseFaithfulOnce(original, paraphrase) {
  * expected to already have been converted to `false` by the caller (fail-closed) before
  * it ever reaches here, so this function only ever has to count, never decide what a
  * failure means.
+ *
+ * Bumped from 3 votes (>=2/3) to 5 votes (>=3/5) 2026-11-07: a 3-vote majority flips on
+ * one flaky call (2026-11-07 eval runs of identical code swung 83% -> 58% faithfulness
+ * pass rate on borderline content - see log.md). 5 votes keeps the same "simple majority"
+ * decision rule (just more samples, so one outlier vote can't flip the result on its own)
+ * rather than tightening the bar to something like 4/5, which would change how strict the
+ * check is, not just how stable it is.
  */
 export function faithfulMajority(votes) {
-  return votes.filter(Boolean).length >= 2;
+  return votes.filter(Boolean).length >= 3;
 }
 
 /**
- * I/O: 3-call majority vote (>=2/3 "faithful"), same voting/fail-closed shape as
+ * I/O: 5-call majority vote (>=3/5 "faithful"), same voting/fail-closed shape as
  * judgeRelevance above - one flaky call can't single-handedly flip the outcome, and a
  * failed call counts as "unfaithful" (showing the verbatim excerpt is always safe; a
  * possibly-distorted rewrite silently shown is not).
  */
 export async function judgeParaphraseFaithful(original, paraphrase) {
   const votes = await Promise.all(
-    [0, 1, 2].map(() =>
+    [0, 1, 2, 3, 4].map(() =>
       judgeParaphraseFaithfulOnce(original, paraphrase).then(r => r.faithful).catch(err => {
         console.warn(`[consultingRetrieval] faithfulness judge call failed: ${err.message}`);
         return false;

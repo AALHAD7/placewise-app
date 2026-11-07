@@ -5,6 +5,360 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — R9.4: faithfulness judge bumped 3→5 votes; 3 repeat runs confirm it stabilizes the bar — R9 overall gate now PASSES
+
+**Phase:** R9 · **Type:** fix (one production function) + eval × 3
+
+**What changed:** `backend/src/lib/consultingRetrieval.js`'s `judgeParaphraseFaithful` (the
+paraphrase-faithfulness judge, used by both Q&A/Frameworks paraphrasing via
+`computeParaphraseResult` and by `frameworkQa.js`) now casts **5 votes instead of 3**, with
+`faithfulMajority` requiring **≥3/5** (a plain majority, not a stricter 4/5 bar) — kept as a
+simple majority deliberately: the goal here is to reduce variance from a small sample (one
+flaky call flipping a 3-vote 2-1 to 1-2), not to make the check stricter or more lenient.
+`judgeRelevance` (the separate, unrelated relevance judge) was left untouched — no evidence
+surfaced that it has the same instability (R9.2/R9.3 only ever found faithfulness flipping).
+Updated the matching unit tests in `backend/test/consultingParaphrase.test.js` (5-vote cases
+replacing the old 3-vote ones) and the hardcoded `+= 3` call-count comments in both eval
+scripts (`run_eval_r9.js`, `run_eval_paraphrase_preview.js`) to `+= 5`. No other caller
+(`frameworkQa.js`; `financeDiagramAuthor.js` has its own separate copy of this pattern, out of
+scope) needed changes — the function's return shape (`boolean`) is unchanged.
+
+**Why:** R9.3 found the SAME code, re-run with no paraphrase-related changes, swinging from
+10/12 (83%) to 7/12 (58%) faithfulness pass rate — judge non-determinism on borderline
+content flipping the 3-vote majority, flagged as an open reliability concern since R9.2.
+Aalhad approved increasing the vote count and then empirically re-running multiple times to
+confirm it actually helps, rather than assuming.
+
+**`npm test` after the code change:** 180/181 pass. The 1 failure is the pre-existing sandbox
+env-leak test (`test/sandbox.test.js`, unrelated to this change, already tracked in
+`.gsd/STATE.md`).
+
+**Three back-to-back full `node backend/eval/run_eval_r9.js` runs, no code changes between
+them** (results: `backend/eval/results/2026-11-07-r9-5vote-run{1,2,3}.{json,md}`, each a copy
+of that run's `2026-11-07-r9-fixed.{json,md}` output taken before the next run overwrote it —
+same filename-collision risk as R9.3, avoided this time by copying immediately):
+
+| Bar | Threshold | Run 1 | Run 2 | Run 3 |
+|---|---|---|---|---|
+| Not-covered `coverage_label` (hard blocker) | 100% | 10/10 (100%) | 10/10 (100%) | 10/10 (100%) |
+| Overall correctness pass rate | ≥60% | 29/39 (74%) | 29/39 (74%) | 29/39 (74%) |
+| **Paraphrase faithfulness** | ≥80% | **9/10 (90%)** | **10/10 (100%)** | **10/11 (91%)** |
+| must_include survival after paraphrasing | ≥65% | 19/22 (86%) | 19/22 (86%) | 19/22 (86%) |
+| Inactive-content gate (hard blocker) | majority from `is_active=false` | 22/22 | 22/22 | 22/22 |
+| **Verdict** | | **PASS** | **PASS** | **PASS** |
+
+All three runs PASS on every bar, including the hard blocker, which stayed at 100% across all
+three (consistent with R9.3's fix, unaffected by this change as expected — a different judge).
+The applicable-faithfulness-judgment denominator moved slightly between runs (10, 10, 11) —
+this is the relevance judge's own 3-vote majority occasionally selecting a different top chunk
+run to run (an upstream, separate source of run-to-run variance, not this change), which in
+turn changes how many answers reach the faithfulness check and whether one of them needed
+paraphrasing at all.
+
+**Verdict on the 83%/58% swing:** genuinely stabilized, not just luck on one run. 90%/100%/91%
+across 3 runs is a tight band well clear of the 80% floor, compared to the 83%/58% spread seen
+at 3 votes (a 25-point swing). Still a probabilistic judge, not a deterministic check — 3 runs
+isn't proof it will never dip below 80%, but it's now meaningfully more stable evidence than
+the single flip-flop R9.3 reported.
+
+**Call counts (real, printed by each run):** run 1: 35 embedding + 672 relevance-judge + 22
+paraphrase + 50 faithfulness-judge = 779 total. Run 2: identical, 779 total. Run 3: 35 + 672 +
+22 + 55 faithfulness-judge = 784 total (one more applicable faithfulness check than runs 1-2,
+matching the 11 vs 10 denominator above). **2,342 Gemini calls across all 3 runs**, all
+flash-lite tier (no escalation observed in any run). No token-level billing log exists in this
+codebase to read an exact dollar figure from (`gemini.js` doesn't log token counts); using this
+project's own established flash-lite rate from prior entries (592 calls ≈ "well under $0.10",
+2026-11-03 R7b eval entry above) as the basis, 2,342 calls of the same tier and roughly the
+same call shape (short JSON-only prompts, no vision) scales to **roughly $0.35-$0.45 total**
+for all three runs combined — an estimate from the project's own historical rate, not a figure
+read off a billing dashboard, since this agent has no access to one. Still well under the
+$20/month budget even after this round's extra cost relative to a single-run pass.
+
+**R9 switch-over status:** with this fix, every bar the `run_eval_r9.js` gate checks now
+passes, consistently, across 3 repeat runs: the hard not-covered blocker (100%), overall
+correctness (≥60%), paraphrase faithfulness (≥80%, now 90-100% across runs), must_include
+survival (≥65%), and the inactive-content gate (22/22). **R9's switch-over plans (2-4) are
+cleared on eval evidence to proceed**, pending Aalhad's own sign-off and a QA pass on the live
+site per the R9 roadmap step, which this task did not cover (eval-only, no `is_active` flips
+made here).
+
+**Files:** `backend/src/lib/consultingRetrieval.js` (vote count + comments),
+`backend/test/consultingParaphrase.test.js` (updated tests),
+`backend/eval/run_eval_r9.js`, `backend/eval/run_eval_paraphrase_preview.js` (call-count
+comments only), `backend/eval/results/2026-11-07-r9-5vote-run{1,2,3}.{json,md}` (new).
+
+---
+
+## 2026-11-07 — R9.3: metric- and interview-sub-type specificity fixes for q028/q035 — hard blocker now 100%, still FAIL on a separate, unrelated bar
+
+**Phase:** R9 · **Type:** fix (one production prompt) + eval
+
+**What changed:** added two more specificity rules to `backend/src/lib/consultingRetrieval.js`'s
+`RELEVANCE_SYSTEM_PROMPT`, same pattern/style as R9.2's named-firm rule, confirmed against the
+actual retrieved chunk content (not theorized) in `backend/eval/results/2026-11-07-r9-fixed.json`
+before writing either:
+
+1. **Metric-type rule** — q028 ("daily revenue of Delhi Metro") was wrongly accepted on a chunk
+   that is a worked **passenger/ridership-count** estimation (an issue-tree diagram building up
+   to "# of passengers", not revenue). Added a rule that a specific quantitative metric (revenue,
+   profit, cost, headcount, volume, ridership, etc.) is a specificity trigger: an excerpt about a
+   *different* metric for the same subject is not faithful even when the subject and methodology
+   both match, unless the mismatch is just wording for the same metric (e.g. "turnover" = "revenue",
+   not a trigger).
+2. **Interview-sub-type rule** — q035 ("stress interview prep") was wrongly accepted on a generic
+   interview DO's/DON'Ts excerpt (rapport, confidence, body language) that never mentions stress
+   interviews as a distinct format. Added a rule that a named interview sub-type (stress, case,
+   behavioral/fit, group discussion) is a specificity trigger: generic interview advice doesn't
+   answer a question about one named, different sub-type.
+
+Checked both rules against every currently-passing question that touches a metric or an interview
+topic (q007 toll-plaza revenue, q012/q025/q026 profitability, q015/q020/q021/q034 case-interview
+format questions, f002/f012 Finance metrics) before running the eval, to confirm the new wording is
+narrow enough not to reject genuine matches — none of those involve a metric/sub-type *mismatch*,
+so none were at risk.
+
+**Fresh scorecard (`backend/eval/results/2026-11-07-r9-fixed-v2.{json,md}`, real run — see caveat
+below on the filename):**
+
+| Bar | Threshold | Actual | Met? |
+|---|---|---|---|
+| Not-covered `coverage_label` (hard blocker, dark-feature excluded) | 100% | **10/10 (100%)** | **yes** |
+| Overall correctness pass rate | ≥60% | 30/39 (77%) | yes |
+| Paraphrase faithfulness | ≥80% of applicable judgments | 7/12 (58%) | **NO** |
+| must_include survival after paraphrasing | ≥65% | 20/23 (87%) | yes |
+| Inactive-content gate (hard blocker) | majority from `is_active=false` docs | 23/23 | yes |
+
+**Verdict: still FAIL**, but the specific hard blocker this task targeted is fixed: q028 and q035
+both now correctly return `coverage_label: pass` (no grounded answer shown), bringing the
+not-covered hard blocker to 10/10 (100%), up from 8/10. q004/q006/q009/q024/q026 (the 5
+non-hard-blocker failures carried over from R9.2) are all still failing in this run, unchanged in
+status — confirmed, not re-investigated, since they were never in this task's authorized fix list.
+
+A **new/newly-visible bar miss** appeared: paraphrase faithfulness dropped to 7/12 (58%), below the
+80% threshold — in the R9.2 run this same bar was 10/12 (83%, passing). This is **not attributable
+to this session's prompt change**: the edit here only touched `RELEVANCE_SYSTEM_PROMPT` (which chunk
+is *shown at all*); `PARAPHRASE_SYSTEM_PROMPT` and `FAITHFULNESS_SYSTEM_PROMPT` are untouched, and
+the 5 questions that failed this round (q001, q005, q021, q027, q039) share no content or chunk with
+q028/q035. The faithfulness judge's 3-vote majority was already flagged in R9.2's log entry as "a
+separate, real, but undecided reliability tradeoff...confirmed non-deterministic run-to-run on
+borderline content" — this looks like the same run-to-run judge variance, not a regression from this
+fix, but it is reported honestly as the new blocking bar rather than omitted. Not investigated or
+fixed here — outside this task's scope (relevance-judge specificity only) — flagged for the next
+rag-engineer pass alongside q004/q006/q009/q024/q026.
+
+**Filename caveat:** `run_eval_r9.js` writes to a fixed `${today}-r9-fixed.{json,md}` path with no
+label override, and it was re-run on the same day as R9.2's run. The original R9.2
+`2026-11-07-r9-fixed.json/.md` (never committed — both were untracked in git) were overwritten by
+this run before a copy was taken; the q028/q035 excerpt content quoted above was captured by reading
+that file *before* re-running, so no finding here is unverified, but the pre-fix result file itself
+no longer exists as a separate artifact. `2026-11-07-r9-fixed-v2.{json,md}` is a copy of the
+post-fix file, kept under a distinct name per this task's instruction; `2026-11-07-r9-fixed.{json,md}`
+now also holds the post-fix result (same content as `-v2`).
+
+**Call counts (real, printed by the script):** 35 embedding + 672 relevance-judge + 23 paraphrase +
+36 faithfulness-judge = **766 Gemini calls**, flash-lite tier throughout (no escalation observed) —
+same scale as R9.2's run. Rough cost: well under a dollar at flash-lite pricing.
+
+---
+
+## 2026-11-07 — R9.2: Fixes for the R9.1 gate failure, re-run — still FAIL (but much closer)
+
+**Phase:** R9 · **Type:** fix (eval-script + test-data + one production prompt) + eval
+
+**What changed**, following a prior read-only investigation of R9.1's 19 failures:
+
+1. **Eval-script bug (`backend/eval/run_eval_r9.js`'s `loadChunkPool`)**: added
+   `.order("id", { ascending: true })` to the paginated `ingest_chunks` `.range()` query.
+   Without an explicit order, Postgres/PostgREST was returning non-deterministic row slices
+   across pages, silently dropping entire documents (SRCC Guesstimates, parts of FMS
+   2021-22) from the eval's own search pool and double-counting others — not a production
+   bug, purely an eval-script artifact.
+2. **Scoring-methodology fix (eval-script only, same file)**: `evalDarkFeature` questions
+   (role/company — q015, q022, q023, q034) have no grounded retrieval route yet (a known,
+   pre-existing R4-era finding) and were hard-coded `coverage_label: fail`. These were
+   previously counted in the SAME hard-blocker bucket as a real false-grounded-answer. Fixed:
+   they're still scored and reported (new `darkFeatureSkippedFromHardBlocker` list + a
+   dedicated markdown section) but excluded from the "100% of not-covered questions must
+   show coverage_label:pass" hard-blocker bar, which now measures only real grounding-safety
+   correctness.
+3. **Production prompt fix** (`backend/src/lib/consultingRetrieval.js`'s
+   `RELEVANCE_SYSTEM_PROMPT`): added an explicit rule that a named employer/firm (Bain,
+   McKinsey, BCG, a named client firm) is a specificity trigger, same tier as a quantity,
+   city, or named thing like "Uber" — a firm-agnostic "day in the life of a consultant"
+   excerpt is NOT faithful to a question specifically about Bain, even if it's the right
+   general topic. This is the one real, stable judge gap the investigation found (q033,
+   confirmed reproducible). Logged here per the paraphrase-layer skill's "any prompt change
+   is a prompt change" rule.
+4. **Threshold and judge vote count left untouched**, per the investigation's findings:
+   `SIMILARITY_THRESHOLD`/`DIAGRAM_SIMILARITY_THRESHOLD` aren't the discriminator (good and
+   bad matches sit in the same range), and the judge's 3-vote majority is a separate,
+   real, but *undecided* reliability tradeoff (confirmed non-deterministic run-to-run on
+   borderline content — q035 flipped between 3/3-reject and apparent 2/3-accept) that's
+   Aalhad's call, not mine, to resolve.
+5. **Test-data fixes in `backend/eval/questions.jsonl`** (pre-existing wording mismatches
+   confirmed against the actual retrieved chunk, not retrieval bugs):
+   - q013: the actual pricing decision-tree chunk only branches into "Value based pricing"
+     and "Cost based pricing" — no "Competitor Based" node exists anywhere in that chunk.
+     Removed the term rather than inventing content that isn't there.
+   - q025: chunk says "Raw material costs" (singular "material"); `must_include` required
+     "raw materials" (plural). Fixed the term to "raw material" to match the actual
+     casebook wording (chose to fix wording over adding plurality-insensitivity, since this
+     was a one-term mismatch, not a systemic pattern).
+   - q021: "Analyse" (casebook UK spelling) vs a paraphrase naturally shifting to "analyzing"
+     (US spelling) — general fix, not a one-off patch: added `normalizeUkUs()` in the eval
+     script, applied to both the haystack and each required term before comparing, covering
+     analyse/organise/recognise/colour/favour/behaviour/centre root-spelling variants.
+   - q026: confirmed via a direct `ingest_chunks` query that "value chain" DOES exist in a
+     different chunk on the same casebook's pages 12-14, just not in the single top-ranked
+     chunk the eval script was checking. Fixed the eval script to check `must_include`
+     against the top chunk's paraphrase PLUS the raw content of every other row that passed
+     the relevance judge (`relevantRows`) — matching production, where `qaRetrieval.js`
+     actually shows every relevant row to the student, not just the top one.
+6. **Ground-truth relabel, flagged as reversible**: q039 ("How do you solve a private equity
+   due diligence case?") was `covered:false`, but two independent runs (2026-11-02 and
+   2026-11-06) both retrieved the exact same chunk ("Due Diligence - Case Structure," IIM
+   Lucknow casebook, page 58, similarity 0.7747) — a genuine, substantive, on-topic PE
+   due-diligence case walkthrough. Relabeled to `covered:true`, `expected_source:"IIM L
+   Consulting Casebook 2025"`, `expected_pages:[58]`, `must_include:["Due Diligence","Supply
+   Side","Demand Side"]`. **This is a judgment call, not a certainty** — if Aalhad's actual
+   intent was "case-math walkthroughs shouldn't surface even when topically present,"
+   `covered:false` was deliberate and this should be reverted.
+
+**Fresh scorecard (`backend/eval/results/2026-11-07-r9-fixed.{json,md}`, real run):**
+
+| Bar | Threshold | Actual | Met? |
+|---|---|---|---|
+| Not-covered `coverage_label` (hard blocker, dark-feature excluded) | 100% | 8/10 (80%) | **NO** |
+| Overall correctness pass rate | ≥60% | 28/39 (72%) | yes |
+| Paraphrase faithfulness | ≥80% of applicable judgments | 10/12 (83%) | yes |
+| must_include survival after paraphrasing | ≥65% | 20/23 (87%) | yes |
+| Inactive-content gate (hard blocker) | majority from `is_active=false` docs | 23/23 | yes |
+
+**Verdict: still FAIL** — one hard blocker missed. 9 of the original 19 failures are now
+fixed (q002, q005, q007, q013, q016, q021, q025, q033, q039 all flip fail→pass). But two
+**new or still-open hard-blocker misses surfaced**, both outside this task's authorized fix
+list (named-firm specificity only) and NOT touched:
+- **q028** ("daily revenue of Delhi Metro") is a **new regression caused by fix #1 itself**
+  (the pagination fix): with the pool now complete and deterministic, the embedding query
+  now surfaces a real FMS 2023-24 chunk about Delhi Metro **passenger counts**, which the
+  relevance judge wrongly accepted even though the question asks about **revenue**, a
+  different metric entirely. Previously this document's chunks were partly dropped by the
+  pagination bug, so this miss never surfaced.
+- **q035** ("stress interview prep") is a **pre-existing, already-known miss** (present in
+  the 2026-11-06 baseline too, not introduced by any fix here) — a generic interview
+  DO's/DON'Ts excerpt is accepted for a question about a specific interview sub-type
+  ("stress interview"). Same failure class as q033's firm-specificity gap, but about an
+  interview-type specificity, not a firm name — outside this task's one authorized prompt
+  change (named firms only).
+- **q004, q006, q009, q024, q026** also remain fail (lower severity, not hard-blocker —
+  faithfulness/must_include misses on genuinely covered questions), unrelated to any of the
+  6 authorized fixes above. Not investigated further here; flagged for a future rag-engineer
+  pass.
+
+No further prompt/threshold/vote-count changes were made beyond the 6 explicitly authorized
+above, per scope — expanding the relevance-judge prompt to also cover "metric specificity"
+(revenue vs. passengers) or "interview-sub-type specificity" would fix q028/q035 but was not
+part of this task's agreed scope and risks side effects on other questions without its own
+eval evidence; left for Aalhad's call on a follow-up pass.
+
+**Call counts (real, printed by the script):** 35 embedding + 672 relevance-judge + 23
+paraphrase + 36 faithfulness-judge = **766 Gemini calls**, all flash-lite tier via the
+existing cascade (no escalation observed). Rough cost: at flash-lite's free-tier-equivalent
+pricing this is well under a dollar, consistent with the ~580-call 2026-11-06 run that cost a
+small fraction of the $20/month budget; relevance-judge calls dominate the count (3-vote gate
+× up to several covering rows × 39 questions), same pattern as before.
+
+**Files:** `backend/eval/run_eval_r9.js`, `backend/src/lib/consultingRetrieval.js`,
+`backend/eval/questions.jsonl`, `backend/eval/results/2026-11-07-r9-fixed.{json,md}`.
+**Proof:** `node eval/run_eval_r9.js` run to completion (766 real Gemini calls, read-only,
+`is_active` and both feature flags confirmed untouched by the script's own design); `npm
+test` run after the code changes: 180/181 pass (1 pre-existing sandbox env-leak failure,
+unrelated, tracked in STATE.md).
+
+---
+
+## 2026-11-07 — R9.1: Full-scale Consulting switch-over gate eval — FAIL
+
+**Phase:** R9 · **Type:** eval
+
+**What changed:** Built `backend/eval/run_eval_r9.js`, the single authoritative, dated,
+pass/fail-scored R9 gate that merges the v2 relevance-gate correctness eval
+(`run_eval_v2_preview.js`, 2026-11-02) and the paraphrase/faithfulness eval
+(`run_eval_paraphrase_preview.js`, 2026-11-03) into one run against the real pipeline
+combination (v2 retrieval + relevance gate + paraphrase + faithfulness judge) that switch-over
+would actually turn on. Calls the real production functions directly from
+`consultingRetrieval.js` (`decideCoverage`, `judgeRelevanceOnce`, `paraphraseChunk`,
+`judgeParaphraseFaithful`) — not reimplementations. Read-only: never touched `is_active`,
+never set `ENABLE_CONSULTING_RAG_V2` or `ENABLE_ANSWER_PARAPHRASE` (confirmed by
+`grep -c "\.update("` returning 0 and no env var writes anywhere in the script).
+
+**Scope note:** `questions.jsonl` has grown to 51 lines since this plan was authored — a
+parallel, already-committed FIN1 phase appended 12 Finance-domain questions (`f001`-`f012`,
+including 2 `crossDomainProbe` questions). This run scoped to the original 39 Consulting
+questions only, identified by id prefix `q001`-`q039` (all `domain:"Consulting"`); the 12
+Finance questions, and `f011` (also `domain:"Consulting"` but a FIN1 cross-domain probe, not
+one of the original 39), were excluded as out of scope for this Consulting-specific gate.
+
+**Scorecard against the plan's explicit pass bar:**
+
+| Bar | Threshold | Actual | Met? |
+|---|---|---|---|
+| Not-covered `coverage_label` (hard blocker) | 100% | 8/12 (67%) | **NO** |
+| Overall correctness pass rate | ≥60% | 20/39 (51%) | **NO** |
+| Paraphrase faithfulness | ≥80% of applicable judgments | 7/8 (88%) | yes |
+| must_include survival after paraphrasing | ≥65% | 12/17 (71%) | yes |
+| Inactive-content gate (hard blocker) | majority from `is_active=false` docs | 17/17 | yes |
+
+**Call counts (real, printed by the script):** 35 embedding + 504 relevance-judge + 17
+paraphrase + 24 faithfulness-judge = **580 Gemini calls**, all flash-lite tier via the
+existing cascade, no escalation. Rough cost: flash-lite is effectively free-tier at this
+volume — well inside the $20/month budget; most of this run's cost was the 504 relevance-
+judge calls (3-vote gate × up to 6 covering rows × up to several covering rows per question),
+higher than the plan's ~224-call estimate because several questions had more covering rows
+above threshold than the 2026-11-02 run did (expected variance — the judge is not
+deterministic run to run).
+
+**`poolActiveState` breakdown:** 7 of the 9 Consulting `DOC_IDS` have chunks, all
+`is_active=false` (3,884 total chunks read); the other 2 (SRCC Guesstimates, FMS 2023-24)
+returned 0 chunk rows for this pool query — worth a follow-up, since SRCC is the one document
+`log.md`/STATE.md record as already `is_active=true` with 62 active rows elsewhere, so either
+those IDs are stale in `DOC_IDS` or the rows were filtered out upstream; not investigated
+further here since it's out of this plan's read-only, no-fix scope. Of the 17 covered,
+answered questions, **17/17 were answered from a document showing `is_active=false`** in this
+pool — the inactive-content gate passes cleanly: this run does demonstrably exercise content
+switch-over is about to activate, not a re-confirmation of already-active SRCC content.
+
+**Named regressions vs `2026-11-02-v2-preview.md` (pass → fail, same question id):** q002
+(Pareto Principle), q005 (Swiggy orders guesstimate), q007 (toll plaza guesstimate), q016
+(Porter's Five Forces), q021 (4-step case approach) — all 5 flipped from `pass` to `fail`.
+Some of this is expected non-determinism in the 3-vote relevance judge rather than a code
+regression, but it is reported in full per the `rag-eval` skill's regression gate regardless.
+
+**Hard-blocker failures (the actual reason this is a FAIL, not a close call):** 4 of 12
+not-covered questions wrongly got a grounded answer instead of the "not covered" label —
+q033 ("day in the life of a first-year consultant at Bain", matched a generic "A Day in
+Consulting" chunk, similarity 0.73), q035 ("stress interview prep", matched generic interview
+DO's/DON'Ts content, similarity 0.70), q039 ("private equity due diligence case", matched a
+real PE due-diligence case-structure chunk, similarity 0.77), and q034 (company feature has no
+grounded route at all, scored fail by design — same convention both preview scripts already
+use). The relevance gate is accepting generic/adjacent casebook content as if it specifically
+answered a narrower question it wasn't about — CLAUDE.md treats a not-covered question ever
+showing a grounded answer as the one non-negotiable failure mode, so this alone would be
+enough to fail the gate even before the 51% overall correctness number.
+
+**Verdict: FAIL — switch-over (R9 plans 2-4) does NOT proceed.** Two bars missed (both listed
+above), including one hard blocker. Per this plan's scope, no attempt was made to fix
+retrieval/paraphrase code — that is a new rag-engineer task, reported to Aalhad, out of this
+plan's scope.
+
+**Files:** `backend/eval/run_eval_r9.js`, `backend/eval/results/2026-11-06-r9-full.json`,
+`backend/eval/results/2026-11-06-r9-full.md`.
+**Proof:** `node eval/run_eval_r9.js` run to completion, real Gemini calls, output above taken
+directly from the script's own printed summary and the written `.json`/`.md` result files.
+
+---
+
+
 ## 2026-11-06 — FIN1.05: Finance eval questions + read-only preview eval (cross-domain leakage check)
 
 **Phase:** FIN1 · **Type:** eval

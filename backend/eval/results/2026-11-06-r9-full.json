@@ -1,0 +1,1738 @@
+{
+  "runAt": "2026-11-07T04:32:57.829Z",
+  "label": "r9-full",
+  "isActiveTouched": false,
+  "enableConsultingRagV2Set": false,
+  "enableAnswerParaphraseSet": false,
+  "scoresSourceAttribution": false,
+  "scopedQuestionIds": [
+    "q001",
+    "q002",
+    "q003",
+    "q004",
+    "q005",
+    "q006",
+    "q007",
+    "q008",
+    "q009",
+    "q010",
+    "q011",
+    "q012",
+    "q013",
+    "q014",
+    "q015",
+    "q016",
+    "q017",
+    "q018",
+    "q019",
+    "q020",
+    "q021",
+    "q022",
+    "q023",
+    "q024",
+    "q025",
+    "q026",
+    "q027",
+    "q028",
+    "q029",
+    "q030",
+    "q031",
+    "q032",
+    "q033",
+    "q034",
+    "q035",
+    "q036",
+    "q037",
+    "q038",
+    "q039"
+  ],
+  "totalQuestionsInFile": 51,
+  "callCounts": {
+    "embedding": 35,
+    "relevanceJudge": 504,
+    "paraphrase": 17,
+    "faithfulnessJudge": 24
+  },
+  "summary": {
+    "totalQuestions": 39,
+    "overallPassRate": 0.5128205128205128,
+    "overallPass": 20,
+    "overallScored": 39,
+    "perCheck": {
+      "faithfulness": {
+        "pass": 17,
+        "fail": 6,
+        "error": 0,
+        "na": 16
+      },
+      "coverage_label": {
+        "pass": 25,
+        "fail": 14,
+        "error": 0,
+        "na": 0
+      },
+      "diagram_intact": {
+        "pass": 0,
+        "fail": 4,
+        "error": 0,
+        "na": 35
+      },
+      "must_include": {
+        "pass": 12,
+        "fail": 16,
+        "error": 0,
+        "na": 11
+      }
+    },
+    "paraPerCheck": {
+      "paraphrase_faithful": {
+        "pass": 7,
+        "fail": 1,
+        "na": 31
+      },
+      "must_include_survives_paraphrase": {
+        "pass": 12,
+        "fail": 5,
+        "na": 22
+      }
+    }
+  },
+  "poolActiveState": [
+    {
+      "document_id": "e9229429-3eec-478b-b54a-7d5a1cdf6de0",
+      "is_active": false,
+      "active_chunk_count": 0,
+      "inactive_chunk_count": 28,
+      "chunk_count": 28
+    },
+    {
+      "document_id": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+      "is_active": false,
+      "active_chunk_count": 0,
+      "inactive_chunk_count": 175,
+      "chunk_count": 175
+    },
+    {
+      "document_id": "17a7c482-5181-423c-b8d5-44f79e90e392",
+      "is_active": false,
+      "active_chunk_count": 0,
+      "inactive_chunk_count": 526,
+      "chunk_count": 526
+    },
+    {
+      "document_id": "6ae47aaa-ad2e-4848-9775-75ac2072f79e",
+      "is_active": false,
+      "active_chunk_count": 0,
+      "inactive_chunk_count": 202,
+      "chunk_count": 202
+    },
+    {
+      "document_id": "ab676b81-3b29-4c35-b288-6dff71756e26",
+      "is_active": null,
+      "active_chunk_count": 0,
+      "inactive_chunk_count": 0,
+      "chunk_count": 0
+    },
+    {
+      "document_id": "fa763d15-dac2-408f-9228-8a5f34785128",
+      "is_active": false,
+      "active_chunk_count": 0,
+      "inactive_chunk_count": 377,
+      "chunk_count": 377
+    },
+    {
+      "document_id": "f2c1333f-b205-46fa-991e-551548dffef7",
+      "is_active": false,
+      "active_chunk_count": 0,
+      "inactive_chunk_count": 927,
+      "chunk_count": 927
+    },
+    {
+      "document_id": "09c41590-6f53-40be-a19c-60fa645610f4",
+      "is_active": false,
+      "active_chunk_count": 0,
+      "inactive_chunk_count": 1649,
+      "chunk_count": 1649
+    },
+    {
+      "document_id": "faa13328-c4bc-4ed7-8172-6ec5ba38c162",
+      "is_active": null,
+      "active_chunk_count": 0,
+      "inactive_chunk_count": 0,
+      "chunk_count": 0
+    }
+  ],
+  "passBar": {
+    "rows": [
+      {
+        "name": "Not-covered coverage_label (hard blocker)",
+        "threshold": "100%",
+        "actual": "8/12 (67%)",
+        "met": false
+      },
+      {
+        "name": "Overall correctness pass rate",
+        "threshold": "≥60%",
+        "actual": "20/39 (51%)",
+        "met": false
+      },
+      {
+        "name": "Paraphrase faithfulness",
+        "threshold": "≥80% of applicable judgments",
+        "actual": "7/8 (88%)",
+        "met": true
+      },
+      {
+        "name": "must_include survival after paraphrasing",
+        "threshold": "≥65%",
+        "actual": "12/17 (71%)",
+        "met": true
+      },
+      {
+        "name": "Inactive-content gate (hard blocker)",
+        "threshold": "Majority of covered, answered questions from an is_active=false document",
+        "actual": "17/17",
+        "met": true
+      }
+    ],
+    "inactiveContentGate": {
+      "pass": true,
+      "detail": "17/17 covered, answered questions were answered from a document that is currently is_active=false. Majority from inactive content - this run proves something switch-over will actually change."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "missedBars": [
+      "Not-covered coverage_label (hard blocker): threshold 100%, actual 8/12 (67%)",
+      "Overall correctness pass rate: threshold ≥60%, actual 20/39 (51%)"
+    ]
+  },
+  "regressions": [
+    {
+      "id": "q002",
+      "detail": "was 'pass' in 2026-11-02-v2-preview.md, now 'fail' in this run."
+    },
+    {
+      "id": "q005",
+      "detail": "was 'pass' in 2026-11-02-v2-preview.md, now 'fail' in this run."
+    },
+    {
+      "id": "q007",
+      "detail": "was 'pass' in 2026-11-02-v2-preview.md, now 'fail' in this run."
+    },
+    {
+      "id": "q016",
+      "detail": "was 'pass' in 2026-11-02-v2-preview.md, now 'fail' in this run."
+    },
+    {
+      "id": "q021",
+      "detail": "was 'pass' in 2026-11-02-v2-preview.md, now 'fail' in this run."
+    }
+  ],
+  "results": [
+    {
+      "id": "q001",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the MECE principle and how is it used in case structuring?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt explicitly defines the MECE principle (Mutually Exclusive, Collectively Exhaustive) and discusses its role in framework structuring, directly answering the user's question. | [vote 2: faithful] The excerpt explicitly defines MECE (Mutually Exclusive, Collectively Exhaustive) and discusses its role in framework structuring and clarity of thought, which directly answers the user's question. | [vote 3: faithful] The excerpt explicitly defines MECE (Mutually Exclusive, Collectively Exhaustive) and explains its application and importance in case structuring, which directly answers the user's question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "pass",
+          "reason": "judgeParaphraseFaithful verdict: faithful."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7664610711768381,
+        "content": "Frameworks provide clarity of thought and helps you structure your arguments better*\n\n**MANTRA:**\n\n**MECE:** Mutually Exclusive, Collectively Exhaustive\n* Ensure your framework is as MECE as possible\n* Detailed but not lost in the weeds\n* Thorough but not wasteful\n* Insightful but not presumptive\n\n**MYTH:**\n* There is one perfect framework for every case\n* Frameworks are not important\n* There is a finite number of frameworks that will provide answers to every case\n\n*Note: Different types of case frameworks have been explained in subsequent sections of this book.\n**Structuring in this manner will help the interviewer understand and assess your thought process. Candidates can chose a format they are comfortable with.\n\n15",
+        "document_id": "f2c1333f-b205-46fa-991e-551548dffef7",
+        "is_active": false
+      },
+      "answeredFromDocId": "f2c1333f-b205-46fa-991e-551548dffef7",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q002",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Explain the Pareto Principle and its application in consulting.",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "6 candidate answer(s) were found but none actually answered the question: [vote 1: unfaithful] The excerpt discusses the general definition of consulting and does not mention or explain the Pareto Principle or its application. | [vote 2: unfaithful] The excerpt discusses the general definition of consulting and does not mention the Pareto Principle or its application. | [vote 3: unfaithful] The excerpt discusses the general definition and overview of consulting rather than explaining the Pareto Principle and its application. | [vote 1: unfaithful] The excerpt is a case prompt about growing a consulting firm's revenue and contains no information explaining the Pareto Principle or its application in consulting. | [vote 2: unfaithful] The excerpt is a case prompt about a consulting firm wanting to grow revenue, which does not explain the Pareto Principle or its application in consulting. | [vote 3: unfaithful] The excerpt is a case prompt about growing a consulting firm's revenue and does not mention or explain the Pareto Principle or its application. | [vote 1: unfaithful] The excerpt is a case prompt about a consulting firm growing its revenue, whereas the question asks for an explanation of the Pareto Principle and its application in consulting. | [vote 2: unfaithful] The excerpt is a case prompt about growing a consulting firm's revenue and does not explain the Pareto Principle or its application in consulting. | [vote 3: unfaithful] The excerpt is a case prompt about growing a consulting firm's revenue, whereas the question asks for an explanation of the Pareto Principle and its consulting applications. | [vote 1: unfaithful] The excerpt is the introduction to a specific case about growing a consulting firm's revenue, whereas the question asks for an explanation and application of the Pareto Principle. | [vote 2: unfaithful] The excerpt is a case prompt about growing a consulting firm's revenue and does not mention or explain the Pareto Principle and its application. | [vote 3: unfaithful] The excerpt is a case prompt about growing a consulting firm's revenue, whereas the question asks for an explanation and application of the Pareto Principle. | [vote 1: unfaithful] The excerpt is a case prompt about growing a consulting firm's revenue, whereas the question asks for an explanation and application of the Pareto Principle. | [vote 2: unfaithful] The excerpt is a case prompt about a consulting firm wanting to grow revenue, which has nothing to do with explaining the Pareto Principle and its application. | [vote 3: unfaithful] The excerpt is a case prompt about growing a consulting firm's revenue and does not explain the Pareto Principle or its application in consulting. | [vote 1: unfaithful] The excerpt is a completely unrelated case prompt about a consulting firm wanting to grow revenue, and does not mention or explain the Pareto Principle at all. | [vote 2: unfaithful] The excerpt is a case prompt about speeding up a consulting firm's revenue growth, whereas the question asks for an explanation of the Pareto Principle and its application in consulting. | [vote 3: unfaithful] The excerpt is a case prompt about growing consulting firm revenue, whereas the question asks for an explanation and application of the Pareto Principle."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No correct answer was found for a question that should have one."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No answer was found, so none of the required terms could be present."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q003",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What are the components of the PESTEL framework?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt explicitly details the components of the PESTEL framework (Political, Economic, Social, Technological, Environmental, Legal) and their descriptions, directly answering the user's question. | [vote 2: faithful] The excerpt explicitly lists and defines the components of the PESTEL framework (Political, Economic, Social, Technological, Environmental, Legal), directly answering the question. | [vote 3: faithful] The excerpt directly lists and defines the exact components of the PESTEL framework as requested by the question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7608894036098458,
+        "content": "```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": \"PESTEL Analysis\",\n  \"source_page\": 13,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"PESTEL Analysis\",\n    \"children\": [\n      {\n        \"label\": \"Political\",\n        \"children\": [\n          {\n            \"label\": \"Extent to which governments and its policies affect an organization and the industry like fiscal policy, trade policies, tax policies, labor laws, corruptions etc.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Economic\",\n        \"children\": [\n          {\n            \"label\": \"Factors affecting the economy of the country directly like interest rates, exchange rates, disposable income, unemployment rate and other micro and macro economic factors\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Social\",\n        \"children\": [\n          {\n            \"label\": \"Factors affecting the social environment and any growing trends like population growth, demographics, age distribution, health standards, career attitudes, employment, etc.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Technological\",\n        \"children\": [\n          {\n            \"label\": \"Factors affecting rate of technological improvements that affect a market such as digital tech, R&D, adoption rates, trends and awareness, new ways of production & distribution\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Environmental\",\n        \"children\": [\n          {\n            \"label\": \"Factors which influence the surrounding environment such as carbon footprint, sustainable business practices, availability of natural sources of raw material, CSR initiatives, ethics, etc.\",\n            \"children\": []\n          }\n        ]\n      },\n      {\n        \"label\": \"Legal\",\n        \"children\": [\n          {\n            \"label\": \"Considers the legal factors of the industry in which organization operates Laws pertaining to health, safety, advertising standards, product labelling, IP, Licenses, permits, industrial regulations\",\n            \"children\": []\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: PESTEL Analysis breaks down external macro-environmental factors into Political, Economic, Social, Technological, Environmental, and Legal categories.\n\nICON, IIM Bangalore | 2025-26 13\n\nContents",
+        "document_id": "17a7c482-5181-423c-b8d5-44f79e90e392",
+        "is_active": false
+      },
+      "answeredFromDocId": "17a7c482-5181-423c-b8d5-44f79e90e392",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q004",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Describe the three types of price discrimination.",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "6 candidate answer(s) were found but none actually answered the question: [vote 1: unfaithful] The excerpt is merely a generic heading (\"Pricing Framework\") and does not contain any of the content explaining the three types of price discrimination. | [vote 2: unfaithful] The excerpt is merely a generic chapter header and does not contain the actual content explaining the three types of price discrimination. | [vote 3: unfaithful] The excerpt is merely a generic chapter header ('Pricing Framework') and does not contain any explanation of the three types of price discrimination. | [vote 1: unfaithful] The excerpt is a generic table of contents and framework overview for pricing cases rather than a direct, substantive explanation of the three types of price discrimination. | [vote 2: unfaithful] The excerpt is a generic table of contents and framework overview for pricing cases rather than providing an explanation or description of the three types of price discrimination. | [vote 3: unfaithful] The excerpt is a generic table of contents and framework overview for pricing cases rather than an explanation describing the three types of price discrimination. | [vote 1: unfaithful] The excerpt discusses product nature and pricing approaches like value-based, cost-plus, and competitor-based pricing, but it does not describe the three types of price discrimination (first, second, and third-degree) asked in the question. | [vote 2: unfaithful] The excerpt discusses product nature and pricing approaches like value-based, cost-plus, and competitor-based pricing, but it does not describe the three types of price discrimination (first, second, and third-degree) asked in the question. | [vote 3: unfaithful] The excerpt discusses product nature and pricing approaches like value-based, cost-plus, and competitor-based pricing, but it does not describe the three types of price discrimination (first, second, and third-degree) asked in the question. | [vote 1: unfaithful] The excerpt discusses product nature and pricing approaches like value-based, cost-plus, and competitor-based pricing, but it does not describe the three types of price discrimination asked in the question. | [vote 2: unfaithful] The excerpt discusses product nature and pricing approaches like value-based, cost-plus, and competitor-based pricing, but it does not describe the three types of price discrimination (first, second, and third-degree) asked in the question. | [vote 3: unfaithful] The excerpt discusses general pricing approaches (Value Based, Cost plus, Competitor Based) rather than describing the three types of price discrimination requested by the question. | [vote 1: unfaithful] The excerpt discusses a specific case study about a Heli Taxi Service and pricing approaches (cost-based, value-based, competitor-based), but does not describe the three types of price discrimination (first, second, and third-degree price discrimination) asked for in the question. | [vote 2: unfaithful] The excerpt discusses a pricing case for a Heli Taxi Service using cost-based, value-based, and competitor-based approaches, but it does not describe the three types of economic price discrimination (first, second, and third-degree). | [vote 3: unfaithful] The excerpt discusses a pricing case for a Heli Taxi Service using cost-based, value-based, and competitor-based approaches, but it does not describe the three types of price discrimination (first, second, and third-degree) as requested. | [vote 1: unfaithful] The excerpt is a framework index and observation page that mentions pricing strategies rather than defining or describing the three types of price discrimination asked about in the question. | [vote 2: unfaithful] The excerpt is a framework index and observation list from a case book rather than an explanation of the three types of price discrimination. | [vote 3: unfaithful] The excerpt is a framework index and observation list from a casebook, not a substantive explanation of the three types of price discrimination."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No correct answer was found for a question that should have one."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No answer was found, so none of the required terms could be present."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q005",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "How would you estimate the number of orders placed on Swiggy in Delhi in a day?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "Nothing was retrieved above the similarity threshold - no answer to judge."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No correct answer was found for a question that should have one."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No answer was found, so none of the required terms could be present."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q006",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "What approach would you use to estimate the number of credit cards in India?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "Nothing was retrieved above the similarity threshold - no answer to judge."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No correct answer was found for a question that should have one."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No answer was found, so none of the required terms could be present."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q007",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "How do you estimate the revenue of a Delhi-Gurgaon toll plaza in a day?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "Nothing was retrieved above the similarity threshold - no answer to judge."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No correct answer was found for a question that should have one."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No answer was found, so none of the required terms could be present."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q008",
+      "feature": "guesstimates",
+      "covered": false,
+      "question": "What is the approach to estimate the number of tennis balls that can fit in a room?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q009",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "How would you estimate the market size of the tyre industry in India?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "Nothing was retrieved above the similarity threshold - no answer to judge."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No correct answer was found for a question that should have one."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No answer was found, so none of the required terms could be present."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q010",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What are the eight types of consulting cases and give an example problem statement for each?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt directly and fully answers the question by listing the eight types of consulting cases along with an example problem statement for each in a table format. | [vote 2: faithful] The excerpt explicitly lists the eight types of consulting cases and provides a specific example problem statement for each one, directly answering the prompt. | [vote 3: faithful] The excerpt explicitly lists eight types of consulting cases along with a description and an example problem statement for each, directly answering the user's question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "fail",
+          "reason": "judgeParaphraseFaithful verdict: unfaithful (rewrite introduced, dropped, or altered a claim)."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.813777438565292,
+        "content": "# Types of Cases\n\n```placewise-diagram\n{\"type\": \"table\", \"title\": null, \"source_page\": 32, \"notes\": [], \"header\": [\"#\", \"Case Topic\", \"Description\", \"Example Problem Statement\"], \"rows\": [[\"1\", \"Profitability\", \"Diagnose declining profits and identify improvement levers.\", \"A premium coffee chain in London has seen its same-store profits decline by 15% over the past six months. Diagnose the reasons and suggest ways to restore profitability.\"], [\"2\", \"Market Entry\", \"Evaluate if the client should enter a new market\", \"A European electric vehicle manufacturer is considering entering the Southeast Asian market. Should they proceed?\"], [\"3\", \"Growth Strategy\", \"Explore ways to grow revenues or market share.\", \"A regional quick-service restaurant chain wants to double its revenues in the next 3 years. How should they achieve this?\"], [\"4\", \"M&A (Merger & Acquisition)\", \"Assess whether acquiring or merging with another company makes sense.\", \"A global consumer goods company is evaluating the acquisition of a niche organic skincare brand. Should they go ahead?\"], [\"5\", \"Pricing Strategy\", \"Determine optimal pricing for a product\", \"A software company is launching a new SaaS product for SMEs. What should be the optimal pricing strategy?\"], [\"6\", \"Operational Efficiency Improvement\", \"Identify cost-reduction or process-optimization opportunities.\", \"A luxury hotel chain is facing rising operating costs despite stable occupancy rates. How can it improve efficiency without compromising guest experience?\"], [\"7\", \"Investment\", \"Evaluate potential investment opportunities and expected returns.\", \"A private equity firm is considering investing $200M in a renewable energy startup. Should they proceed, and what ROI can they expect over five years?\"], [\"8\", \"Capacity Expansion\", \"Decide whether to increase production capacity.\", \"An Indian cement manufacturer is running at 95% capacity utilization. Should they invest in new capacity?\"]]}\n```\n\nDiagram summary: A table outlining eight types of cases with their descriptions and example problem statements.\n\nConsulting is spread across several industries, diverse practice covering all topics and industries is key\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers\n\nClick here for Contents Page\n\nISB | Consulting Prep Casebook\n\n2025\n\n32\n\nISB | Consulting Prep Casebook\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\nScoping\n\n2025",
+        "document_id": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+        "is_active": false
+      },
+      "answeredFromDocId": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q011",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the 3CPOR scoping method used before structuring a case?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The question explicitly asks for the 3CPOR scoping method, and the excerpt directly provides the definitions and components of the 3CPOR scoping framework. | [vote 2: faithful] The question explicitly asks for the 3CPOR scoping method, and the excerpt directly provides the definitions and breakdown of the 3CPOR scoping framework. | [vote 3: faithful] The question explicitly asks for the 3CPOR scoping method, and the provided excerpt details the exact 3CPOR scoping framework with its components (Objectives, Company, Product, Competitors, Context, Regulation) and their guiding questions."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "pass",
+          "reason": "judgeParaphraseFaithful verdict: faithful."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7749483594788033,
+        "content": "# Scoping (3CPOR):\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 33, \"notes\": [], \"root\": {\"label\": \"Scoping (3CPOR)\", \"children\": [{\"label\": \"A. Objectives\", \"children\": [{\"label\": \"Clarify the objective of the case & repeat the case statement\", \"children\": []}, {\"label\": \"Is there a secondary objective?\", \"children\": []}]}, {\"label\": \"B. Company\", \"children\": [{\"label\": \"Current business model\", \"children\": []}, {\"label\": \"Value chain and capabilities\", \"children\": []}, {\"label\": \"Geographies\", \"children\": []}, {\"label\": \"Consumers (Target)- Any specific demographic (\", \"children\": []}, {\"label\": \"Channel of sales/ distribution\", \"children\": []}]}, {\"label\": \"C. Product\", \"children\": [{\"label\": \"Product mix?\", \"children\": []}, {\"label\": \"What is the USP?\", \"children\": []}, {\"label\": \"Any substitutes available?\", \"children\": []}, {\"label\": \"Where is the product in the lifecycle?\", \"children\": []}, {\"label\": \"Is the concern due to cyclicity/ seasonality?\", \"children\": []}]}, {\"label\": \"D. Competitors\", \"children\": [{\"label\": \"Is it an industry wide issue?\", \"children\": []}, {\"label\": \"Market fragmented or concentrated? Our market position?\", \"children\": []}]}, {\"label\": \"E. Context\", \"children\": [{\"label\": \"From how long is the decline seen ?\", \"children\": []}, {\"label\": \"Any specific geography or product seeing the decline?\", \"children\": []}, {\"label\": \"Quantum of decline?\", \"children\": []}]}, {\"label\": \"F. Regulation\", \"children\": [{\"label\": \"Any government regulation/constraint that should be considered?\", \"children\": []}, {\"label\": \"Any impact due to Covid? (depends on the timeline of the issue)\", \"children\": []}]}]}}\n```\nDiagram summary: Scoping breaks down into objectives, company, product, competitors, context, and regulation, each with specific guiding questions.\n\nTip: *The major buckets of the scoping questions mostly falls under the given buckets for almost all the framework, only the type of question changes depending on the problem at hand.*\n\n*E.g. Context for profitability would be to access the period of decline, but for market entry problem, context question would be ‘why do we want to enter the market, what is our target?’*\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\nISB | Consulting Prep Casebook\n\n2025\n\n33\n\nISB | Consulting Prep Casebook 2025\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\n**Problem-Framework Mapping- Profitability**",
+        "document_id": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+        "is_active": false
+      },
+      "answeredFromDocId": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q012",
+      "feature": "qa",
+      "covered": true,
+      "question": "How do you break down a profitability case using the P=R-C framework?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The question asks how to break down a profitability case using the P=R-C framework, and the excerpt provides the exact issue tree framework for Profitability starting with Revenue, Price, Volume, and its sub-components. | [vote 2: faithful] The question asks how to break down a profitability case using the P=R-C framework, and the provided excerpt is an issue tree specifically detailing the Profitability, Revenue, Price, and Volume breakdown for a case framework. | [vote 3: faithful] The question asks how to break down a profitability case using the P=R-C framework, and the excerpt directly provides an issue tree detailing the components of profitability, specifically breaking down Revenue into Price and Volume with detailed branches."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.755410108366419,
+        "content": "Case Frameworks\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": \"Profitability (1/2)\", \"source_page\": 35, \"notes\": [], \"root\": {\"label\": \"PROFITABILITY\", \"children\": [{\"label\": \"Revenue\", \"children\": [{\"label\": \"Price\", \"children\": [{\"label\": \"Price Sensitivity If Inelastic (<1) then P\\u2191 Check response of competitors\", \"children\": []}]}, {\"label\": \"Volume\", \"children\": [{\"label\": \"Market Size\", \"children\": [{\"label\": \"Demand\", \"children\": [{\"label\": \"Product\", \"children\": [{\"label\": \"Customer Behaviour Changed\", \"children\": []}, {\"label\": \"Usage Decreased\", \"children\": []}, {\"label\": \"Demographics\", \"children\": []}]}, {\"label\": \"Industry\", \"children\": [{\"label\": \"Product Life Cycle (mature/decline)\", \"children\": []}, {\"label\": \"Cyclic\", \"children\": []}, {\"label\": \"New competitors\", \"children\": []}, {\"label\": \"New Substitutes\", \"children\": []}]}, {\"label\": \"Macro Factors\", \"children\": [{\"label\": \"Economic\", \"children\": []}, {\"label\": \"PESTEL\", \"children\": []}]}, {\"label\": \"If avg prices decreases\", \"children\": [{\"label\": \"Internal\", \"children\": [{\"label\": \"P \\u2191 to \\u2191 R & it did not work\", \"children\": []}, {\"label\": \"Transfer pricing (internal division transfer)\", \"children\": []}]}, {\"label\": \"External\", \"children\": [{\"label\": \"Price wars\", \"children\": []}, {\"label\": \"Government regulations\", \"children\": []}, {\"label\": \"Change of other margins in value chain\", \"children\": []}, {\"label\": \"Customer preference changed\", \"children\": []}]}]}]}, {\"label\": \"Supply\", \"children\": [{\"label\": \"Supplier Constraints\", \"children\": []}, {\"label\": \"Raw Material\", \"children\": []}, {\"label\": \"Labor union issue\", \"children\": []}, {\"label\": \"PESTEL\", \"children\": []}]}]}, {\"label\": \"Awareness\", \"children\": [{\"label\": \"Ad spent\", \"children\": []}, {\"label\": \"Channels\", \"children\": []}, {\"label\": \"Message (purpose, communicate purchasing behavior)\", \"children\": []}, {\"label\": \"Discounts, cashbacks\", \"children\": []}, {\"label\": \"Types (Paid/ Unpaid social media word of mouth)\", \"children\": []}, {\"label\": \"Brand Perception\", \"children\": []}]}, {\"label\": \"Preference\", \"children\": [{\"label\": \"Product Quality, price for complement, perceived benefits, core attributes packaging, SKU size\", \"children\": []}, {\"label\": \"Service Quality, price\", \"children\": []}, {\"label\": \"Complement/Substitutes\", \"children\": []}, {\"label\": \"Right customer segment?\", \"children\": []}, {\"label\": \"Logistics post purchase\", \"children\": []}, {\"label\": \"Returns & After sales\", \"children\": []}]}, {\"label\": \"Availability\", \"children\": [{\"label\": \"Channels Convenience, Accessibility, feature (stock outs/replenishment, display, shelf spare, % penetration)\", \"children\": []}, {\"label\": \"Operational hours\", \"children\": []}, {\"label\": \"Distributor/Retailer margin\", \"children\": []}, {\"label\": \"Salesforce effectiveness by channel\", \"children\": []}, {\"label\": \"Place features\", \"children\": []}, {\"label\": \"6 senses: ambience, look & feel, design, size, hours, accessibility\", \"children\": []}]}]}, {\"label\": \"Market Share\", \"children\": [{\"label\": \"Demand\", \"children\": []}, {\"label\": \"Supply (find bottleneck in value chain)\", \"children\": []}]}]}, {\"label\": \"Product Mix\", \"children\": []}]}, {\"label\": \"Cost (On next slide)\", \"children\": []}]}}\n```\nDiagram summary: Profitability splits into revenue (price, volume, product mix) and cost. Volume is broken down by market size (demand, supply) and market share (demand, supply). Demand under market size branches into product, industry, macro factors, and if average prices decreases.\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers\n2025\n35\n\nISB | Consulting Prep Casebook\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\nProfitability (2/2)\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 36, \"notes\": [], \"root\": {\"label\": \"PROFITABILITY\", \"children\": [{\"label\": \"Revenue (On previous slide)\", \"children\": []}, {\"label\": \"Cost\", \"children\": [{\"label\": \"Product Mix Changed\", \"children\": [{\"label\": \"Product related problems\", \"children\": [{\"label\": \"Quality\", \"children\": []}, {\"label\": \"Inadequate product width/depth/quantity\", \"children\": []}, {\"label\": \"Network effects (with other products)\", \"children\": []}]}, {\"label\": \"Service related problems\", \"children\": [{\"label\": \"Poor service\", \"children\": []}, {\"label\": \"Costly service\", \"children\": []}, {\"label\": \"Inadequate accessibility or customer service\", \"children\": []}, {\"label\": \"Inadequate training\", \"children\": []}]}, {\"label\": \"Customer Preference\", \"children\": [{\"label\": \"Change in needs\", \"children\": []}]}]}, {\"label\": \"Costs (Fixed vs Variable)\", \"children\": [{\"label\": \"Fixed\", \"children\": [{\"label\": \"Rent\", \"children\": []}, {\"label\": \"Employee salaries\", \"children\": []}, {\"label\": \"SG&A\", \"children\": []}, {\"label\": \"Marketing\", \"children\": []}, {\"label\": \"Equipment\", \"children\": [{\"label\": \"Depreciation\", \"children\": []}, {\"label\": \"Repair and maintenance\", \"children\": []}]}, {\"label\": \"Insurance\", \"children\": []}, {\"label\": \"Interest expense\", \"children\": []}, {\"label\": \"Overhead/Other expenses\", \"children\": []}]}, {\"label\": \"Variable\", \"children\": [{\"label\": \"Contractual salaries\", \"children\": []}, {\"label\": \"Utilities\", \"children\": []}, {\"label\": \"Raw and packaging material\", \"children\": []}, {\"label\": \"Overhead/other expenses\", \"children\": []}]}]}]}]}}\n```\nDiagram summary: Profitability breaks down into revenue and cost, with cost further broken down by product mix changes and fixed versus variable costs.\n\nCosts (value chain) – (at every state it is good to ask the difference wrt competitors",
+        "document_id": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+        "is_active": false
+      },
+      "answeredFromDocId": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q013",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the pricing decision tree for new versus existing products?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt explicitly provides a pricing decision tree specifically addressing both new and existing products as requested by the question. | [vote 2: faithful] The excerpt explicitly provides the requested pricing decision tree branching into new and existing products with relevant sub-components. | [vote 3: unfaithful] The excerpt is merely a structural issue tree diagram and summary that outlines the categories rather than providing the actual decision tree contents or explanations for new versus existing product pricing."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "fail",
+          "reason": "Lost after paraphrasing: Competitor Based"
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing from the paraphrased text shown to the student: Competitor Based"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7960864948608041,
+        "content": "## APPROACH\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 237, \"notes\": [], \"root\": {\"label\": \"Pricing\", \"children\": [{\"label\": \"New product\", \"children\": []}, {\"label\": \"Existing product (innovation)\", \"children\": [{\"label\": \"Competition exists\", \"children\": []}, {\"label\": \"No competition\", \"children\": [{\"label\": \"Value based pricing\", \"children\": [{\"label\": \"Additional revenue generated\", \"children\": []}, {\"label\": \"Extra cost incurred\", \"children\": []}]}, {\"label\": \"Cost based pricing\", \"children\": []}]}]}]}}\n```\nDiagram summary: Pricing breaks down into new product and existing product innovation, with existing product further splitting based on competition into value-based pricing (derived from additional revenue and extra cost) and cost-based pricing.",
+        "document_id": "f2c1333f-b205-46fa-991e-551548dffef7",
+        "is_active": false
+      },
+      "answeredFromDocId": "f2c1333f-b205-46fa-991e-551548dffef7",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q014",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Explain the Go-to-Market Strategy framework including segmentation and channel strategy.",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt explicitly provides the Go-to-Market Strategy framework, including sub-types and frameworks for segmentation and channel strategy as requested. | [vote 2: faithful] The excerpt explicitly provides the Go-to-Market Strategy framework, including sub-types like segmentation/targeting and channel strategy, directly addressing the user's question. | [vote 3: faithful] The excerpt explicitly provides the framework components for a Go-to-Market Strategy, including specific mentions of segmentation, targeting, channel strategy, and related sub-types and frameworks that directly answer the user's request."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7349003894009414,
+        "content": "Consulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers\nISB | Consulting Prep Casebook\n2025\n38\nClick here for Contents Page\n\nISB | Consulting Prep Casebook 2025\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page\n\n39\n\nProblem-Framework Mapping- GTM Strategy (1/2)\n\n```placewise-diagram\n{\n  \"type\": \"flow\",\n  \"title\": null,\n  \"source_page\": 39,\n  \"notes\": [],\n  \"nodes\": [\n    {\n      \"id\": \"a\",\n      \"label\": \"Where to Play?\"\n    },\n    {\n      \"id\": \"b\",\n      \"label\": \"Problem\"\n    },\n    {\n      \"id\": \"c\",\n      \"label\": \"Go-to-Market (GTM) Strategy Design Problem type: “What next once we decide to enter?” Sub-types: • Segmentation / Targeting: Which customers first? • Positioning: Mass-market vs. premium? Differentiation levers? • Channel strategy: Online, offline, omnichannel, distributors • Marketing & sales: Awareness, promotions, salesforce structure • Pricing strategy for launch: Penetration, skimming, freemium, bundle Common prompts: “How should a fintech launch a payments app in India?” “How should a new electric scooter brand go-to-market?”\"\n    },\n    {\n      \"id\": \"d\",\n      \"label\": \"Frameworks\"\n    },\n    {\n      \"id\": \"e\",\n      \"label\": \"Market Segmentation & Targeting\"\n    },\n    {\n      \"id\": \"f\",\n      \"label\": \"STP, & 4Ps of Marketing\"\n    },\n    {\n      \"id\": \"g\",\n      \"label\": \"AARRR Funnel\"\n    },\n    {\n      \"id\": \"h\",\n      \"label\": \"Customer Journey Mapping\"\n    },\n    {\n      \"id\": \"i\",\n      \"label\": \"Positioning & Value Proposition\"\n    },\n    {\n      \"id\": \"j\",\n      \"label\": \"Positioning Map\"\n    },\n    {\n      \"id\": \"k\",\n      \"label\": \"Blue Ocean Strategy\"\n    },\n    {\n      \"id\": \"l\",\n      \"label\": \"4As of Marketing\"\n    },\n    {\n      \"id\": \"m\",\n      \"label\": \"Channel Strategy\"\n    },\n    {\n      \"id\": \"n\",\n      \"label\": \"4Ps (Place)\"\n    },\n    {\n      \"id\": \"o\",\n      \"label\": \"Omnichannel lens\"\n    },\n    {\n      \"id\": \"p\",\n      \"label\": \"CAGE (distance)\"\n    },\n    {\n      \"id\": \"q\",\n      \"label\": \"Marketing & Sales Execution\"\n    },\n    {\n      \"id\": \"r\",\n      \"label\": \"4Ps (Promotion)\"\n    },\n    {\n      \"id\": \"s\",\n      \"label\": \"Customer Journey Mapping\"\n    },\n    {\n      \"id\": \"t\",\n      \"label\": \"Salesforce Design\"\n    },\n    {\n      \"id\": \"u\",\n      \"label\": \"Questions You can ask\"\n    },\n    {\n      \"id\": \"v\",\n      \"label\": \"Objective Alignment (Strategy Lens): Clarify whether the client seeks rapid adoption, sustainable profitability, diversification, or defensive entry, ensuring the GTM aligns with mission, vision, and timeline expectations.\"\n    },\n    {\n      \"id\": \"w\",\n      \"label\": \"Market Quality (Attractiveness Lens): Test if the market’s growth is structural or fad-driven by probing demand stability, customer jobs-to-be-done, and competitive dynamics through Porter’s Diamond.\"\n    },\n    {\n      \"id\": \"x\",\n      \"label\": \"Competitive Positioning (Differentiation Lens): Assess whether the product can occupy a defensible white space on perceptual maps or leverage Blue Ocean opportunities, eliminating me-too strategies that are easy to copy.\"\n    },\n    {\n      \"id\": \"y\",\n      \"label\": \"Financial & Risk Validation (Viability Lens): Challenge assumptions by stress-testing break-even volumes, worst-case downside, and scalability options using real options analysis and risk–impact mapping to discard financially reckless or inflexible strategies.\"\n    }\n  ],\n  \"edges\": [\n    {\n      \"from\": \"a\",\n      \"to\": \"b\",\n      \"label\": null\n    },\n    {\n      \"from\": \"b\",\n      \"to\": \"c\",\n      \"label\": null\n    },\n    {\n      \"from\": \"d\",\n      \"to\": \"e\",\n      \"label\": null\n    },\n    {\n      \"from\": \"e\",\n      \"label\": null,\n      \"to\": \"f\"\n    },\n    {\n      \"from\": \"e\",\n      \"label\": null,\n      \"to\": \"g\"\n    },\n    {\n      \"from\": \"e\",\n      \"label\": null,\n      \"to\": \"h\"\n    },\n    {\n      \"from\": \"d\",\n      \"to\": \"i\",\n      \"label\": null\n    },\n    {\n      \"from\": \"i\",\n      \"label\": null,\n      \"to\": \"j\"\n    },\n    {\n      \"from\": \"i\",\n      \"label\": null,\n      \"to\": \"k\"\n    },\n    {\n      \"from\": \"i\",\n      \"label\": null,\n      \"to\": \"l\"\n    },\n    {\n      \"from\": \"d\",\n      \"to\": \"m\",\n      \"label\": null\n    },\n    {\n      \"from\": \"m\",\n      \"label\": null,\n      \"to\": \"n\"\n    },\n    {\n      \"from\": \"m\",\n      \"label\": null,\n      \"to\": \"o\"\n    },\n    {\n      \"from\": \"m\",\n      \"label\": null,\n      \"to\": \"p\"\n    },\n    {\n      \"from\": \"d\",\n      \"to\": \"q\",\n      \"label\": null\n    },\n    {\n      \"from\": \"q\",\n      \"label\": null,\n      \"to\": \"r\"\n    },\n    {\n      \"from\": \"q\",\n      \"label\": null,\n      \"to\": \"s\"\n    },\n    {\n      \"from\": \"q\",\n      \"label\": null,\n      \"to\": \"t\"\n    },\n    {\n      \"from\": \"u\",\n      \"to\": \"v\",\n      \"label\": null\n    },\n    {\n      \"from\": \"u\",\n      \"to\": \"w\",\n      \"label\": null\n    },\n    {\n      \"from\": \"u\",\n      \"to\": \"x\",\n      \"label\": null\n    },\n    {\n      \"from\": \"u\",\n      \"to\": \"y\",\n      \"label\": null\n    }\n  ]\n}\n```\nDiagram summary: Maps out Go-to-Market (GTM) strategy problems, frameworks including market segmentation, positioning, channel strategy, and execution, along with key questions to ask.\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers\n\nISB | Consulting Prep Casebook\n\n2025\n\n39\n\nISB | Consulting Prep Casebook 2025\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page",
+        "document_id": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+        "is_active": false
+      },
+      "answeredFromDocId": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q015",
+      "feature": "role",
+      "covered": true,
+      "question": "What is the STAR structure used in consulting interviews?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No grounded retrieval route for this feature."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "No grounded retrieval route for this feature."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q016",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What are Porter's Five Forces and what factors increase the bargaining power of suppliers?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: unfaithful] The excerpt only covers barriers to entry and supplier power, failing to cover all five forces of Porter's framework as requested by the question. | [vote 2: faithful] The excerpt directly and relevantly addresses the second part of the user's question by detailing the specific factors that increase the bargaining power of suppliers according to Porter's framework. | [vote 3: faithful] The excerpt directly addresses the second part of the question by listing the specific factors that increase the bargaining power of suppliers according to Porter's Five Forces."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "fail",
+          "reason": "Lost after paraphrasing: Bargaining Power"
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing from the paraphrased text shown to the student: Bargaining Power"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7385845406274774,
+        "content": "# PORTER’S FIVE FORCES\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Barriers to Entry: There are a number of factors that determine the degree of difficulty to enter an industry:\",\n    \"children\": [\n      {\"label\": \"Economies of Scale\", \"children\": []},\n      {\"label\": \"Product differentiation\", \"children\": []},\n      {\"label\": \"Capital requirements\", \"children\": []},\n      {\"label\": \"Access to distribution channels\", \"children\": []},\n      {\"label\": \"Cost advantages independent of scale\", \"children\": []},\n      {\"label\": \"Propriety technologies\", \"children\": []},\n      {\"label\": \"Relationship with suppliers of raw materials\", \"children\": []},\n      {\"label\": \"Geographical presence\", \"children\": []},\n      {\"label\": \"Time compression diseconomies\", \"children\": []},\n      {\"label\": \"Government regulations\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Factors that determine the degree of difficulty to enter an industry include economies of scale, product differentiation, capital requirements, and government regulations.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Relationship with Suppliers: A supplier group is powerful if:\",\n    \"children\": [\n      {\"label\": \"There are fewer substitutable products\", \"children\": []},\n      {\"label\": \"The industry is not an important customer of the supplier group\", \"children\": []},\n      {\"label\": \"The supplier group is an import input to the buyer’s business\", \"children\": []},\n      {\"label\": \"The supplier’s products are differentiated and have high associated switching costs\", \"children\": []},\n      {\"label\": \"The supplier group poses a credible threat of forward integration\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Conditions under which a supplier group is powerful, such as having fewer substitutable products and high switching costs.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Substitute Products: Substitute products that deserve the most attention are those that:\",\n    \"children\": [\n      {\"label\": \"Compete in price with the industry’s products\", \"children\": []},\n      {\"label\": \"Are produced by industries earning higher products\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Substitute products deserving the most attention compete in price or are produced by industries earning higher products.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Relationship with Buyers: A buyer group is powerful if:\",\n    \"children\": [\n      {\"label\": \"It is concentrated or purchase large volumes as a % of seller’s sales\", \"children\": []},\n      {\"label\": \"Undifferentiated products\", \"children\": []},\n      {\"label\": \"Low switching costs\", \"children\": []},\n      {\"label\": \"Buyers pose a credible threat of backward integration\", \"children\": []},\n      {\"label\": \"The industry's product is unimportant to the quality of the buyer's products or services\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Conditions determining buyer power, including concentration, undifferentiated products, and low switching costs.\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": null,\n  \"source_page\": 37,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"Rivalry: Rivalry among existing competitors increases if:\",\n    \"children\": [\n      {\"label\": \"Numerous or equally balanced competitors exist\", \"children\": []},\n      {\"label\": \"Industry growth is slow\", \"children\": []},\n      {\"label\": \"Fixed costs are high\", \"children\": []},\n      {\"label\": \"Undifferentiated products and low switching costs\", \"children\": []}\n    ]\n  }\n}\n```\nDiagram summary: Factors increasing rivalry among existing competitors, such as numerous competitors and slow industry growth.\n\nSource: Michael E. Porter, Competitive Strategy: Techniques for Analysing Industries and Competitors\n\nIM CALCUTTA CONSULT CLUB",
+        "document_id": "f2c1333f-b205-46fa-991e-551548dffef7",
+        "is_active": false
+      },
+      "answeredFromDocId": "f2c1333f-b205-46fa-991e-551548dffef7",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q017",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "Explain the BCG Growth Share Matrix including all four quadrants.",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt explicitly provides the definition, purpose, and all four quadrants (Star, Question Mark, Cash Cow, Dog) of the BCG Growth Share Matrix as requested. | [vote 2: faithful] The excerpt explicitly provides the definition, purpose, and detailed descriptions of all four quadrants (Star, Question Mark, Cash Cow, and Dog) of the BCG Growth Share Matrix as requested by the question. | [vote 3: faithful] The excerpt explicitly provides a detailed breakdown of the BCG Growth Share Matrix including all four quadrants (Stars, Question Marks, Cash Cows, and Dogs) with their characteristics."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7896455311974173,
+        "content": "## BCG Growth Share Matrix\n*BCG matrix can be used as a portfolio management tool to decide among different business opportunities, depending on their profitability*\n\n```placewise-diagram\n{\"type\": \"matrix\", \"title\": \"BCG Growth Share Matrix\", \"source_page\": 17, \"notes\": [], \"xAxis\": null, \"yAxis\": null, \"cols\": [\"High Market Share\", \"Low Market Share\"], \"rows\": [\"High Growth Rate\", \"Low Growth Rate\"], \"cells\": [[\"STAR\\n\\n• Growth stage of product lifecycle, significant market share\\n• High future potential, make significant investment\\n• High profits, high costs, high competition\\n• These can be turned into Cash Cows\", \"QUESTION MARK\\n\\n• New business venture, low market share, high growth rate\\n• Continued growth can help them become Star, and reduced growth can lead to Dog\\n• Invest/discard based on their chances of becoming a Star\"], [\"CASH COW\\n\\n• Mature state of product lifecycle, low growth rate\\n• Huge market share, businesses should take maximum profit by delivering the product, to reinvest\\n• Included under Dog category, once product in decline phase\", \"DOG\\n\\n• Low market share, and are growing at a very low rate\\n• Products in declining phase, generating little to no profits\\n• These must be liquidated, repositioned, or divested, the resources used for these products must be reallocated\"]]}\n```\nDiagram summary: A 2x2 BCG growth share matrix categorizing business opportunities into Star, Question Mark, Cash Cow, and Dog based on market share and growth rate.\n\nICON, IIM Bangalore | 2025-26 | 17\n\nContents",
+        "document_id": "17a7c482-5181-423c-b8d5-44f79e90e392",
+        "is_active": false
+      },
+      "answeredFromDocId": "17a7c482-5181-423c-b8d5-44f79e90e392",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q018",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the Ansoff Matrix and what are its four strategic options?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt explicitly defines the Ansoff Matrix and names its four strategic growth options, directly answering the specific question asked. | [vote 2: faithful] The excerpt explicitly defines the Ansoff Matrix and directly names and outlines its four strategic options: Market Penetration, Product Development, Market Development, and Diversification. | [vote 3: faithful] The excerpt explicitly defines the Ansoff Matrix and names its four strategic growth options, directly answering the user's question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "pass",
+          "reason": "judgeParaphraseFaithful verdict: faithful."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7594364373054898,
+        "content": "# IMPORTANT MATRICES\n\n```placewise-diagram\n{\"type\": \"matrix\", \"title\": \"ANSOFF MATRIX\", \"source_page\": 39, \"notes\": [], \"xAxis\": \"Existing Markets\", \"yAxis\": \"Existing Products\", \"cols\": [\"Existing Markets\", \"New Markets\"], \"rows\": [\"Existing Products\", \"New Products\"], \"cells\": [[\"Market Penetration\", \"Product Development\"], [\"Market Development\", \"Diversification\"]]}\n```\nDiagram summary: Ansoff Matrix showing four growth strategies: Market Penetration, Product Development, Market Development, and Diversification across existing and new markets and products.\n\n```placewise-diagram\n{\"type\": \"matrix\", \"title\": \"PORTER’S GENERIC STRATEGIES\", \"source_page\": 39, \"notes\": [], \"xAxis\": \"Cost Leadership\", \"yAxis\": \"Broad Market\", \"cols\": [\"Cost Leadership\", \"Differentiation\"], \"rows\": [\"Broad Market\", \"Focused Market\"], \"cells\": [[\"Mass Market, Economies of Scale\", \"Regional Player, Little Market Power\"], [\"Constant Cycle of Innovation\", \"Niche Technology Product\"]]}\n```\nDiagram summary: Porter's Generic Strategies mapping cost leadership and differentiation against broad and focused markets.\n\nThe Ansoff Matrix, also called the Product/Market Expansion Grid, is a tool used by firms to analyze and plan their strategies for growth. The matrix shows four strategies that can be used to help a firm grow and also analyzes the risk associated with each strategy. .\n\nPorter's generic strategies describe how a company pursues competitive advantage across its chosen market scope. The generic strategy reflects the choices made regarding both the type of competitive advantage and the scope.\n\n39",
+        "document_id": "f2c1333f-b205-46fa-991e-551548dffef7",
+        "is_active": false
+      },
+      "answeredFromDocId": "f2c1333f-b205-46fa-991e-551548dffef7",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q019",
+      "feature": "frameworks",
+      "covered": true,
+      "question": "What is the difference between TAM, SAM, and SOM?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt explicitly defines and contrasts TAM, SAM, and SOM, directly answering the user's question about the difference between them. | [vote 2: faithful] The excerpt explicitly defines and contrasts TAM, SAM, and SOM with their definitions, characteristics, and calculation methods, directly answering the question. | [vote 3: faithful] The excerpt explicitly defines and contrasts TAM, SAM, and SOM with their definitions, calculation methods, and distinct market scopes, directly answering the user's question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7224852303123668,
+        "content": "## Addressable & Obtainable Markets\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 19, \"notes\": [], \"root\": {\"label\": \"Addressable & Obtainable Markets\", \"children\": [{\"label\": \"TAM = The market that exists\", \"children\": [{\"label\": \"Total Addressable Market\", \"children\": [{\"label\": \"The total demand for a product or service across all geographies, segments, and use cases, assuming no constraints on distribution or competition.\", \"children\": []}, {\"label\": \"Helps size the maximum opportunity\", \"children\": []}, {\"label\": \"Typically calculated top-down using industry data, population stats, or macro indicators.\", \"children\": []}]}]}, {\"label\": \"SAM = The market that is accessible\", \"children\": [{\"label\": \"Serviceable Addressable Market\", \"children\": [{\"label\": \"The portion of TAM that a company can realistically target based on its current offerings, regulatory access, and distribution reach.\", \"children\": []}, {\"label\": \"Accounts for what fits your current capability and market coverage.\", \"children\": []}, {\"label\": \"Given by (TAM) * Market Penetration Percentage\", \"children\": []}]}]}, {\"label\": \"SOM = The market that is winnable\", \"children\": [{\"label\": \"Serviceable Obtainable Market\", \"children\": [{\"label\": \"The share of SAM that a company can actually capture in the near term, based on salesforce strength, brand equity, pricing, and competitive intensity.\", \"children\": []}, {\"label\": \"Calculated bottom-up using internal data (e.g., conversion rates, sales pipeline)\", \"children\": []}, {\"label\": \"Given by (SAM) * Market Share Percentage\", \"children\": []}]}]}]}}\n```\nDiagram summary: TAM, SAM, and SOM break down addressable and obtainable markets with definitions and calculation methods.\n\nICON, IIM Bangalore | 2025-26",
+        "document_id": "17a7c482-5181-423c-b8d5-44f79e90e392",
+        "is_active": false
+      },
+      "answeredFromDocId": "17a7c482-5181-423c-b8d5-44f79e90e392",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q020",
+      "feature": "qa",
+      "covered": true,
+      "question": "What are the five stages of a case interview discussion?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt explicitly details the five stages of a case interview discussion in the provided table along with expectations and skills tested for each stage. | [vote 2: faithful] The excerpt explicitly details the five stages of a case interview discussion in the provided table along with expectations and skills tested for each stage. | [vote 3: faithful] The excerpt explicitly details the five stages of a case interview discussion in the table, directly answering the question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "pass",
+          "reason": "judgeParaphraseFaithful verdict: faithful."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.754863395891279,
+        "content": "# Case Discussion Approach\n\n| Interview Stage | What to expect? | Skills Tested |\n| :--- | :--- | :--- |\n| Case Interview Question | • Interviewer shares the **case statement**, restate to confirm alignment<br>• Clarify the **business objective**, target metric, and constraints upfront<br>• Identify **case type** (profitability, growth etc.) to guide your approach | • Active listening<br>• Comprehension & synthesis<br>• Business context understanding |\n| Developing the structure | • Request a moment to **organize your thoughts** before answering<br>• Build a **MECE framework** that covers all possible drivers logically<br>• Explain your structure clearly, navigate the problem **step-by-step** | • Structured thinking<br>• Logical reasoning<br>• Communication clarity |\n| Case Analysis | • Prioritize key branches, use **80/20 rule** & eliminate low-impact areas<br>• Ask for data & **refine hypotheses** as you progress through the case<br>• Be comfortable with **number crunching**, estimations & sanity checks | • Problem solving<br>• Analytical thinking<br>• Data interpretation |\n| Summary / Recommendation | • Deliver a **clear, concise recommendation** based on your findings<br>• Back up your suggestion with **2–3 supporting** insights/assumptions<br>• Break down recommendations into **short** and **long-term actions** | • Insight synthesis<br>• Strategic thinking<br>• Clarity and conciseness |\n| Questions for Interviewer | • Ask a question that **shows curiosity** about the firm's work or culture<br>• Avoid generic queries—tailor it to the **firm, interviewer, or case**<br>• Use it as a chance to **demonstrate interest** and consulting mindset | • Consulting mindset<br>• Cultural alignment<br>• Curiosity and engagement |\n\nICON, IIM Bangalore | 2025-26 11\n\n12\n\nCommonly Used Frameworks\n\nContents\n\nCommonly Used Frameworks (1/7)\n\n```placewise-diagram\n{\n  \"type\": \"issue_tree\",\n  \"title\": \"SWOT Framework\",\n  \"source_page\": 13,\n  \"notes\": [],\n  \"root\": {\n    \"label\": \"SWOT Framework\",\n    \"children\": [\n      {\n        \"label\": \"Internal\",\n        \"children\": [\n          {\n            \"label\": \"STRENGTHS\",\n            \"children\": [\n              {\n                \"label\": \"Positive tangible and intangible attributes providing competitive edge to an organization over its competitors\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What aspects of people, products, processes sets you apart?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is your USP and value proposition?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Proprietary systems, employees, brand image\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"WEAKNESSES\",\n            \"children\": [\n              {\n                \"label\": \"Factors that detract and organization from achieving its desired goals, that need further improvement\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What are the vulnerabilities & what changes are needed?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What is obstructing progress and needs to be eliminated?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Weak brand, inadequate supply chain, lack of Cap.\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"label\": \"External\",\n        \"children\": [\n          {\n            \"label\": \"OPPORTUNITIES\",\n            \"children\": [\n              {\n                \"label\": \"Factors representing why an organization exists, which can provide it a competitive advantage\",\n                \"children\": []\n              },\n              {\n                \"label\": \"These factors need to be identified w.r.t. a given Time Frame\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What trends, changes could strengthen the brand, markets?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Reduced Tariffs, Tech Advancements\",\n                \"children\": []\n              }\n            ]\n          },\n          {\n            \"label\": \"THREATS\",\n            \"children\": [\n              {\n                \"label\": \"Factors that have the potential to harm the organization, and put its goals and mission at a risk\",\n                \"children\": []\n              },\n              {\n                \"label\": \"Answers questions:\",\n                \"children\": [\n                  {\n                    \"label\": \"What external risks could impact performance?\",\n                    \"children\": []\n                  },\n                  {\n                    \"label\": \"What market shifts could disrupt the firm?\",\n                    \"children\": []\n                  }\n                ]\n              },\n              {\n                \"label\": \"Example: Rising cost of production, increasing competition, tight labor supply\",\n                \"children\": []\n              }\n            ]\n          }\n        ]\n      }\n    ]\n  }\n}\n```\nDiagram summary: The SWOT framework categorizes factors into internal (Strengths, Weaknesses) and external (Opportunities, Threats) dimensions with descriptions, prompting questions, and examples.",
+        "document_id": "17a7c482-5181-423c-b8d5-44f79e90e392",
+        "is_active": false
+      },
+      "answeredFromDocId": "17a7c482-5181-423c-b8d5-44f79e90e392",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q021",
+      "feature": "qa",
+      "covered": true,
+      "question": "What are the four steps to approach a consulting case interview?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The question asks for the four steps to approach a consulting case interview, and the excerpt directly details the steps involved in approaching a case interview, starting with understanding the problem, structuring it, and analyzing it. | [vote 2: faithful] The question asks for the four steps to approach a consulting case interview, and the excerpt provides the direct methodological steps for approaching a case interview. | [vote 3: faithful] The question asks for the four steps to approach a consulting case interview, and the excerpt provides the direct methodological steps (understanding/clarifying, structuring, and analyzing) addressing that exact topic."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "pass",
+          "reason": "judgeParaphraseFaithful verdict: faithful."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "fail",
+          "reason": "Lost after paraphrasing: Analyse"
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing from the paraphrased text shown to the student: Analyse"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.777887005985455,
+        "content": "# How to Approach a Case Interview\n\nUnderstand & clarify the problem statement\n- Right at the beginning, ensure that you have **correctly understood** the problem statement, a mistake here has the **biggest potential to ruin** the interview.\n- Ask clarifying questions in the beginning; someone who asks the **right questions** is **better able to understand** the complete problem and has a higher chance to come up with an effective solution.\n- Interviewers will often **not divulge all the relevant information** until specifically sought by the candidate, because they also test the candidates’ ability to identify what data points are relevant and extract this information; this is to see how well the candidate may be able to do the same while interacting with clients.\n- Do not make **assumptions** unless necessary; when making any, always **communicate them to the interviewer, have a clear rationale and validate them.**\n\nStructure the problem\n- This involves **putting all the data together** and **making sense** out of it. Noting case facts & drawing an issue tree on paper is one of the best ways to do this.\n- Candidates should try to keep their **structure as clean (and preferably as simple) as possible** because in some cases, the interviewer may ask for the working sheet, and accordingly should be able to **understand the approach followed by just glancing** at the sheet at once.\n- Frameworks can be used for structuring the analysis; however, **do not try to force fit any framework** just for the sake of using it. Always **communicate their approach of reaching the solution** to the interviewer rather than saying that “I’m using market entry framework”.\n- Always remember: interviewers are **testing your ability to develop structured analysis, not memorise ready-made frameworks.**\n\nAnalyze the case\n- This is the **main stage of the problem-solving process** wherein the candidates are required to draw inferences from the gathered information. The process is aided by the structure they decide to follow using the chosen framework, if any.\n- Candidates should ask **two questions** to themselves: a) How did this data point look like earlier for us?, and b) How does this data point look like for the competitors?\n- It is suggested that candidates **develop hypotheses** of likely answers as they solve through each layer of the issue tree, based on inferences from information received. They should **ask leading questions to validate** their hypothesis, and **keep on narrowing** their set based on the discussion. **Continuously communicate** with the interviewer to let them know of **your thought process**. More often than not, the interviewers will help the candidate get back on track if they see that the person is thinking in the wrong direction.\n- In case the candidate realizes that **some data is still missing, do not hesitate to ask questions later in the interview too.**\n\nArrive at a conclusion\n- This is the **last stage of problem-solving** and perhaps the determinant of a candidate’s success in getting through the interview. All efforts put in thus far are of little use if the candidate is unable to come up with a proper conclusion backed by a logical implementation plan.\n- Try to ensure that the **recommendations are close to reality** since it increases their chances of being implementable in real life scenarios. Remember, **concrete solutions fetch more marks than broad vague answers.**\n- Before finally communicating the solution, **do a quick “sanity check”**, that is, evaluate if the proposed solution, particularly if its quantitative in nature, makes sense or not. This can be done by using bottom-up strategy if the original answer was derived following top-down approach or vice-versa.\n\n© Consult Club, IIM Ahmedabad 2025-26 12\n\n© Consult Club, IIM Ahmedabad 2025-26 13",
+        "document_id": "09c41590-6f53-40be-a19c-60fa645610f4",
+        "is_active": false
+      },
+      "answeredFromDocId": "09c41590-6f53-40be-a19c-60fa645610f4",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q022",
+      "feature": "role",
+      "covered": true,
+      "question": "What is the typical career progression in management consulting from entry level to partner?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"role\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No grounded retrieval route for this feature."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "No grounded retrieval route for this feature."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q023",
+      "feature": "company",
+      "covered": true,
+      "question": "What are the four key service areas of management consulting?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No grounded retrieval route for this feature."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "No grounded retrieval route for this feature."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q024",
+      "feature": "guesstimates",
+      "covered": true,
+      "question": "What is the difference between top-down and bottom-up approaches in guesstimates?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "Nothing was retrieved above the similarity threshold - no answer to judge."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No correct answer was found for a question that should have one."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No answer was found, so none of the required terms could be present."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q025",
+      "feature": "qa",
+      "covered": true,
+      "question": "What are the fixed and variable cost categories in a profitability analysis?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt directly provides specific examples of both variable and fixed cost categories within the context of a profitability analysis dialogue. | [vote 2: faithful] The excerpt directly provides specific fixed and variable cost categories within a profitability analysis case solution. | [vote 3: faithful] The excerpt explicitly provides specific fixed and variable cost categories within a profitability analysis case solution."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "fail",
+          "reason": "Lost after paraphrasing: raw materials"
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing from the paraphrased text shown to the student: raw materials"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7248800051398704,
+        "content": "## SOLUTION\n\n```placewise-diagram\n{\n  \"type\": \"flow\",\n  \"title\": null,\n  \"source_page\": 58,\n  \"notes\": [],\n  \"nodes\": [\n    {\n      \"id\": \"a\",\n      \"label\": \"That’s right. The number of couples/smaller groups has declined sharply.\"\n    },\n    {\n      \"id\": \"b\",\n      \"label\": \"I think we have arrived at the root-cause for the revenue decline\"\n    },\n    {\n      \"id\": \"c\",\n      \"label\": \"Yes, Let’s analyse costs next.\"\n    },\n    {\n      \"id\": \"d\",\n      \"label\": \"Costs can be divided into the following:\\nVariable costs:\\n• Raw material costs\\n• Cooking costs\\n• Servicing costs\\n• Billing costs\\nFixed costs:\\n• Rent\\n• Utilities\\n• Salaries\\nDo we have any information on what has increased?\"\n    },\n    {\n      \"id\": \"e\",\n      \"label\": \"The raw material costs have increased.\"\n    },\n    {\n      \"id\": \"f\",\n      \"label\": \"Despite a lower raw material consumption, our costs have increased. Have we changed the supplier? What is our arrangement with the supplier?\"\n    },\n    {\n      \"id\": \"g\",\n      \"label\": \"No, we haven’t changed the supplier. Our supplier provides all raw material every morning. He offers additional discount for larger orders.\"\n    },\n    {\n      \"id\": \"h\",\n      \"label\": \"Alright. Since our orders would have become smaller due to falling demand, the discounts would have reduced. Hence higher costs. Is it the reason?\"\n    },\n    {\n      \"id\": \"i\",\n      \"label\": \"Right. We can close the case here.\"\n    }\n  ],\n  \"edges\": [\n    {\n      \"from\": \"a\",\n      \"to\": \"b\",\n      \"label\": null\n    },\n    {\n      \"from\": \"b\",\n      \"to\": \"c\",\n      \"label\": null\n    },\n    {\n      \"from\": \"c\",\n      \"to\": \"d\",\n      \"label\": null\n    },\n    {\n      \"from\": \"d\",\n      \"to\": \"e\",\n      \"label\": null\n    },\n    {\n      \"from\": \"e\",\n      \"to\": \"f\",\n      \"label\": null\n    },\n    {\n      \"from\": \"f\",\n      \"to\": \"g\",\n      \"label\": null\n    },\n    {\n      \"from\": \"g\",\n      \"to\": \"h\",\n      \"label\": null\n    },\n    {\n      \"from\": \"h\",\n      \"to\": \"i\",\n      \"label\": null\n    }\n  ]\n}\n```\nDiagram summary: A sequential dialogue flow traces the analysis from declining customer groups to revenue decline, cost breakdown, raw material cost increases, and supplier discount analysis to conclude the case.\n\n58\n\nProfitability | Hospitality | Easy",
+        "document_id": "f2c1333f-b205-46fa-991e-551548dffef7",
+        "is_active": false
+      },
+      "answeredFromDocId": "f2c1333f-b205-46fa-991e-551548dffef7",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q026",
+      "feature": "qa",
+      "covered": true,
+      "question": "How do you solve an airline profitability case where margins have been eroding due to maintenance issues?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt directly and relevantly addresses the specific causes and dynamics of an airline profitability case involving margin erosion due to maintenance issues. | [vote 2: faithful] The excerpt directly addresses how to diagnose and frame an airline profitability case where margins are eroding due to maintenance issues, covering both cost and revenue impacts. | [vote 3: faithful] The excerpt directly addresses how to solve an airline profitability case involving margin erosion due to maintenance issues, breaking down the impact on both costs and revenues."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "pass",
+          "reason": "judgeParaphraseFaithful verdict: faithful."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "fail",
+          "reason": "Lost after paraphrasing: value chain"
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "Missing from the paraphrased text shown to the student: value chain"
+        }
+      },
+      "retrieved": {
+        "similarity": 0.8434132287697084,
+        "content": "# CASE SUMMARY:\n\nThe airline’s margin erosion is driven by maintenance inefficiency that\naffects both cost and demand.\n- Costs: Higher due to frequent repairs and low technical capability.\n- Revenues: Lower due to fewer flights, weaker reliability, and declining\ncustomer preference.\nIt’s an internal, fixable issue - improving fleet management and reliability\ncan help margins recover.",
+        "document_id": "6ae47aaa-ad2e-4848-9775-75ac2072f79e",
+        "is_active": false
+      },
+      "answeredFromDocId": "6ae47aaa-ad2e-4848-9775-75ac2072f79e",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q027",
+      "feature": "qa",
+      "covered": true,
+      "question": "What is the 4M Framework used for root cause analysis in operations?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt explicitly provides the definition, notes, and components of the 4M Framework (Man, Machine) used for root cause analysis as asked by the question. | [vote 2: faithful] The excerpt explicitly provides the definition, notes, and components (Man, Machine) of the 4M Framework used for root cause analysis in operations, directly answering the question. | [vote 3: faithful] The excerpt explicitly provides the definition, notes, and components of the 4M Framework (Man, Machine) used for root cause analysis in operations as requested by the question."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.6969602376151106,
+        "content": "# Commonly Used Frameworks (4/7)\n\n```placewise-diagram\n{\"type\": \"other\", \"title\": \"7S Framework\", \"source_page\": 16, \"notes\": [\"Used to analyze and improve organizational effectiveness\"], \"labels\": [\"Shared Values\", \"Style\", \"Leadership & Management style used\", \"Skills\", \"Employee capabilities\", \"System\", \"Daily activities and process\", \"Structure\", \"Organization of the company\", \"Staff\", \"Hired employees of the company\", \"Strategy\", \"Plan to grow and outcompete competitors\", \"Core beliefs, values, & mission\"]}\n```\nDiagram summary: The 7S Framework consists of Shared Values, Style, Skills, System, Structure, Staff, and Strategy, each connected to specific organizational descriptions.\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": \"AMO Framework\", \"source_page\": 16, \"notes\": [\"Used to assess employee productivity due to HR practices\"], \"root\": {\"label\": \"AMO Framework\", \"children\": [{\"label\": \"Ability\", \"children\": [{\"label\": \"Selective recruitment, hire able & qualified employees, training and development\", \"children\": []}]}, {\"label\": \"Motivation\", \"children\": [{\"label\": \"Compensation, work life balance, performance-based incentives, clarity of goals, conflict mgt.\", \"children\": []}]}, {\"label\": \"Opportunity\", \"children\": [{\"label\": \"Career planning, high performing work culture, recognition, fair appraisal\", \"children\": []}]}]}}\n```\nDiagram summary: The AMO Framework breaks down employee productivity into Ability, Motivation, and Opportunity with corresponding HR practices.\n\n```placewise-diagram\n{\"type\": \"flow\", \"title\": \"4M Framework\", \"source_page\": 16, \"notes\": [\"Establish cause-effect relationship and root cause of process variation\"], \"nodes\": [{\"id\": \"man\", \"label\": \"Man\"}, {\"id\": \"man_desc\", \"label\": \"Human-related factors—skills, training, productivity, availability, and workforce efficiency\"}, {\"id\": \"machine\", \"label\": \"Machine\"}, {\"id\": \"machine_desc\", \"label\": \"Equipment and tech includes availability, reliability, capacity, maintenance and automation level\"}, {\"id\": \"material\", \"label\": \"Material\"}, {\"id\": \"material_desc\", \"label\": \"Input resources incl. quality, availability, lead times, sourcing reliability and inventory management\"}, {\"id\": \"method\", \"label\": \"Method\"}, {\"id\": \"method_desc\", \"label\": \"Processes and workflows includes SOPs, efficiency, compliance and best practice adherence\"}], \"edges\": [{\"from\": \"man\", \"to\": \"man_desc\", \"label\": null}, {\"from\": \"machine\", \"to\": \"machine_desc\", \"label\": null}, {\"from\": \"material\", \"to\": \"material_desc\", \"label\": null}, {\"from\": \"method\", \"to\": \"method_desc\", \"label\": null}]}\n```\nDiagram summary: The 4M Framework connects Man, Machine, Material, and Method to their respective factor descriptions to establish cause-effect relationships.\n\nICON, IIM Bangalore | 2025-26 16\n\nContents",
+        "document_id": "17a7c482-5181-423c-b8d5-44f79e90e392",
+        "is_active": false
+      },
+      "answeredFromDocId": "17a7c482-5181-423c-b8d5-44f79e90e392",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q028",
+      "feature": "qa",
+      "covered": false,
+      "question": "Walk me through how to estimate the daily revenue of Delhi Metro.",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q029",
+      "feature": "qa",
+      "covered": true,
+      "question": "What does the ISB casebook describe as the 4Ss framework for case solving?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "pass",
+          "reason": "[vote 1: faithful] The excerpt directly and explicitly describes the 4Ss framework (Scope, Structure, Solve, Synthesize) as asked by the user's question. | [vote 2: faithful] The excerpt explicitly defines and describes the 4Ss framework (Scope, Structure, Solve, Synthesize) as requested by the question. | [vote 3: faithful] The excerpt directly and specifically defines the 4Ss framework (Scope, Structure, Solve, Synthesize) as described in the ISB casebook, providing detailed explanations for each component."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "A correct, relevant answer was found."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "pass",
+          "reason": "judgeParaphraseFaithful verdict: faithful."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "pass",
+          "reason": "All required terms were still present (as substrings) in the paraphrased text."
+        },
+        "must_include": {
+          "verdict": "pass",
+          "reason": "All required terms were present in the paraphrased text shown to the student."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.8079143211612203,
+        "content": "## How to use these frameworks?\n\nUse these frameworks as a guiding tool for you to create your own notes based on daily practice and keep improving upon them with time. 4Ss are pertinent to every case: **Scope, Structure, Solve, Synthesize**. Frameworks generally form the structure and solving part of any case. Scoping and Synthesis more or less remains the same.\n\n* **Scope:** Scoping a problem statement is clarifying the and then asking relevant questions that will narrow down the scope of the problem statement for you. There are various aspects of scoping but **3CPR** is the most common way of scoping. (Do not spend a lot of time here)\n* **Structure:** Structuring the problem statement by ensuring MECE is very relevant to make sure you are taking the correct approach and the interviewer is following your approach properly. There are many ways to ensure MECE structuring. (Main portion of the case)\n* **Solve:** Solving the problem might mean drilling down to the Root Cause or solving guesstimates. (Make sure you don't make silly mistakes)\n* **Synthesize:** Synthesize does not mean summarize so do not go on summarizing everything. Synthesis should be of 1 minute and crisp and to the point. (You want to ideally cover everything in 3 points taking a top-down approach and **mentioning the hook of the case**)\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers | Click here for Contents Page\n\nISB | Consulting Prep Casebook | 2025 | 31\n\nISB | Consulting Prep Casebook 2025\n\nConsulting 101 | Case Frameworks | Case Examples | Guesstimates | Industry Primers Click here for Contents Page Click here for Contents Page\n\n32\n\nSource: Being Consultant",
+        "document_id": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+        "is_active": false
+      },
+      "answeredFromDocId": "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q030",
+      "feature": "qa",
+      "covered": false,
+      "question": "How should I prepare for a McKinsey PEI (Personal Experience Interview)?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q031",
+      "feature": "qa",
+      "covered": false,
+      "question": "What is the Victor Cheng LOMS framework for case interviews?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q032",
+      "feature": "frameworks",
+      "covered": false,
+      "question": "Explain the RICE prioritization framework used by product managers.",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q033",
+      "feature": "qa",
+      "covered": false,
+      "question": "What is the typical day-in-the-life of a first-year consultant at Bain?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7258387331899363,
+        "content": "## A Day in Consulting\n\n- *Check emails* – respond to urgent requests, plan\n- *Team sync* – align on goals, priorities, and blockers\n- *Client call* – discuss progress, validate hypotheses\n- *Individual work* – build slides, analyze data, refine story\n- *Manager/Partner check-in* – review, iterate\n- *Brainstorm* – whiteboard steps, draft recommendations\n- *Refine* – polish for client, align story with insights\n- *Prep* – for next day/client review\n\n*Each day in consulting is different – the challenge is to balance problem-solving and adaptability*",
+        "document_id": "09c41590-6f53-40be-a19c-60fa645610f4",
+        "is_active": false
+      },
+      "answeredFromDocId": "09c41590-6f53-40be-a19c-60fa645610f4",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q034",
+      "feature": "company",
+      "covered": false,
+      "question": "What are the differences between McKinsey, BCG, and Bain interview formats?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "diagram_intact": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "must_include": {
+          "verdict": "fail",
+          "reason": "No grounded retrieval route exists for the \"company\" feature in EITHER pipeline (same finding as R4 - chat.js is an ungrounded passthrough, unaffected by is_active)."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "No grounded retrieval route for this feature."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "No grounded retrieval route for this feature."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q035",
+      "feature": "qa",
+      "covered": false,
+      "question": "How do you prepare for a stress interview at a consulting firm?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.6953384663649745,
+        "content": "## DO’s\n\n* **Build rapport:** It plays a crucial role in how the interview pans out eventually. The opening interaction, continuous communication and patient-listening skills contribute to building rapport and thus, strengthening the candidature from the communication aspect of the interview.\n* **Be confident:** Remain confident throughout the interview even if there’s a feeling that things aren’t going as expected. This exhibits an important trait of being able to maintain composure and handle critical situations, which are part and parcel of a consultant’s life. Also, it has been seen that the interviewers more likely than not drop hints to help the candidate get back on track, hence, watch out for those in case there’s a feeling of getting stuck\n* **Drive the interview towards your strong zone:** The candidates can try to drive the interview towards the areas they are comfortable talking on. This can be done by using examples related to their domain area while answering the questions put forward by the interviewers. However, be mindful of not making it an irrelevant reference or overdoing it if the interviewer isn’t interested in talking about that.\n* **Positive body-language:** Try to be positive and cheerful throughout the interaction as it may help to cover a small mistake, if any, the candidate might have committed while solving the case. Further, candidates are evaluated on their overall presentation, that includes body language and communication skills apart from the most sought-after problem-solving skills.\n* **Closing note:** The candidate should end the interview with a smile even if it wasn’t the best of the interviews; sometimes even the candidate’s positive approach may work in the favour and overshadow a mediocre interview.",
+        "document_id": "09c41590-6f53-40be-a19c-60fa645610f4",
+        "is_active": false
+      },
+      "answeredFromDocId": "09c41590-6f53-40be-a19c-60fa645610f4",
+      "answeredFromInactive": true
+    },
+    {
+      "id": "q036",
+      "feature": "frameworks",
+      "covered": false,
+      "question": "Explain the Jobs-to-be-Done framework and how it applies to product strategy.",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q037",
+      "feature": "guesstimates",
+      "covered": false,
+      "question": "How would you estimate the number of Uber rides in New York City per day?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q038",
+      "feature": "qa",
+      "covered": false,
+      "question": "What are the key differences between consulting and investment banking as career paths?",
+      "overall": "pass",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "pass",
+          "reason": "Correctly returned nothing (would show the label \"General guidance — not from the casebooks\")."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "No diagram-bearing answer was retrieved for this question."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": null,
+      "answeredFromDocId": null,
+      "answeredFromInactive": null
+    },
+    {
+      "id": "q039",
+      "feature": "qa",
+      "covered": false,
+      "question": "How do you solve a private equity due diligence case?",
+      "overall": "fail",
+      "checks": {
+        "faithfulness": {
+          "verdict": "n/a",
+          "reason": "This question shouldn't be covered - see coverage_label, not faithfulness, for correctness here."
+        },
+        "coverage_label": {
+          "verdict": "fail",
+          "reason": "An answer was shown for a question that should have returned 'not covered'."
+        },
+        "diagram_intact": {
+          "verdict": "n/a",
+          "reason": "A diagram-bearing chunk matched, but this script does not render the diagram block - nothing to check here."
+        },
+        "paraphrase_faithful": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include_survives_paraphrase": {
+          "verdict": "n/a",
+          "reason": "Not applicable - question not covered or shouldn't be."
+        },
+        "must_include": {
+          "verdict": "n/a",
+          "reason": "No required terms specified for this question."
+        }
+      },
+      "retrieved": {
+        "similarity": 0.7747171147728282,
+        "content": "# Due Diligence - Case Structure\n\nYour client is a PE Firm. It wants to take up a stake in a chain of restaurants. Diagnose and recommend if they should acquire.\n\n| Qualitative Information | Case Framework | Quantitative Data & Analysis |\n| :--- | :--- | :--- |\n| **Case background:**<br><br>The client specifically looking to invest in a restaurant chain<br><br>**Case facts:**<br><br>•Investment fund – 30% growth rate in 4-5 years<br><br>•Explore viability by estimating revenues (demand side, supply side)<br><br>• Identify risks associated with the investment<br><br>• Explore potential due diligence steps | | Population of Delhi = 20 MN<br>Target customer segment (20-50 years) = 50%<br>Middle and higher income segment = 60%<br>Population employed in service sector = 70%<br>Potential market =<br><br>50%*60%*70%<br>= 21% (~20%) of population<br><br>Visit frequency = 20%*10 + 40%*5 + 40%*1 = 4.4 visits/month<br><br>Total market potential = 250*4.4*(20%*20 MN) = 2,640 MN/month = INR 2.6 bn/month<br><br>Italian/Spanish cuisine = 2-3% of market potential = INR 66 MN/month |\n\n```placewise-diagram\n{\"type\": \"issue_tree\", \"title\": null, \"source_page\": 58, \"notes\": [], \"root\": {\"label\": \"Revenue\", \"children\": [{\"label\": \"Supply Side\", \"children\": [{\"label\": \"No. of cities\", \"children\": []}, {\"label\": \"Restaurant/city\", \"children\": []}, {\"label\": \"Growth rate\", \"children\": []}]}, {\"label\": \"Demand Side\", \"children\": [{\"label\": \"Price per meal\", \"children\": []}, {\"label\": \"Potential Market\", \"children\": []}, {\"label\": \"Visit Frequency\", \"children\": []}]}]}}\n```\nDiagram summary: Revenue breaks down into supply side (no. of cities, restaurant/city, and growth rate) and demand side (price per meal, potential market, and visit frequency).\n\n| Problems and recommendations | Interviewee feedback |\n| :--- | :--- |\n| Identified the valuation of the company using Supply and Demand approaches. Identify indirect competition while exploring risks associated with the investment by specifically looking at long term and short term consumer behaviour. Always remember the original motive of the client (in this case, 30% growth rate) while identifying risks, synergies and different levers for Due diligence. | The case had a wide number of things that could be analysed; key was in understanding the interviewer’s questions one at a time and focusing on the available information for that question. |\n\nThe Consulting and Strategy Club, IIM Lucknow\nGo to index | 58",
+        "document_id": "fa763d15-dac2-408f-9228-8a5f34785128",
+        "is_active": false
+      },
+      "answeredFromDocId": "fa763d15-dac2-408f-9228-8a5f34785128",
+      "answeredFromInactive": true
+    }
+  ]
+}

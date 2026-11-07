@@ -71,31 +71,33 @@ test("restoreDiagramBlocks: no blocks to restore always succeeds unchanged", () 
 });
 
 // --- faithfulMajority (the faithfulness judge's pure vote-counting decision) ---
+// Bumped from 3 votes (>=2/3) to 5 votes (>=3/5) 2026-11-07 for stability against judge
+// non-determinism - see consultingRetrieval.js's comment above faithfulMajority.
 
-test("faithfulMajority: 3/3 faithful votes is faithful", () => {
-  assert.equal(faithfulMajority([true, true, true]), true);
+test("faithfulMajority: 5/5 faithful votes is faithful", () => {
+  assert.equal(faithfulMajority([true, true, true, true, true]), true);
 });
 
-test("faithfulMajority: 2/3 faithful votes is faithful (majority, not unanimity)", () => {
-  assert.equal(faithfulMajority([true, true, false]), true);
+test("faithfulMajority: 3/5 faithful votes is faithful (majority, not unanimity)", () => {
+  assert.equal(faithfulMajority([true, true, true, false, false]), true);
 });
 
-test("faithfulMajority: 1/3 faithful votes is NOT faithful", () => {
-  assert.equal(faithfulMajority([true, false, false]), false);
+test("faithfulMajority: 2/5 faithful votes is NOT faithful", () => {
+  assert.equal(faithfulMajority([true, true, false, false, false]), false);
 });
 
-test("faithfulMajority: 0/3 faithful votes is not faithful", () => {
-  assert.equal(faithfulMajority([false, false, false]), false);
+test("faithfulMajority: 0/5 faithful votes is not faithful", () => {
+  assert.equal(faithfulMajority([false, false, false, false, false]), false);
 });
 
-test("faithfulMajority: a single failed call (counted as false, fail-closed) can't flip a true majority on its own", () => {
-  // Two real "faithful" verdicts plus one call that errored out and was already converted
-  // to `false` upstream (judgeParaphraseFaithful's .catch) - still faithful overall.
-  assert.equal(faithfulMajority([true, true, false]), true);
+test("faithfulMajority: two failed calls (counted as false, fail-closed) can't flip a true majority on their own", () => {
+  // Three real "faithful" verdicts plus two calls that errored out and were already
+  // converted to `false` upstream (judgeParaphraseFaithful's .catch) - still faithful.
+  assert.equal(faithfulMajority([true, true, true, false, false]), true);
 });
 
-test("faithfulMajority: two failed calls (both counted as false) correctly block a lone faithful vote", () => {
-  assert.equal(faithfulMajority([true, false, false]), false);
+test("faithfulMajority: three failed calls (all counted as false) correctly block a minority of faithful votes", () => {
+  assert.equal(faithfulMajority([true, true, false, false, false]), false);
 });
 
 test("faithfulMajority: empty vote list (shouldn't happen, but must not throw) is not faithful", () => {

@@ -180,7 +180,7 @@ async function evalQuestion(q, pool) {
     // must_include trivially survives (it's the same text).
     checks.paraphrase_faithful = { verdict: "n/a", reason: "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged." };
   } else {
-    callCounts.faithfulnessJudge += 3; // judgeParaphraseFaithful does its own 3-vote internally
+    callCounts.faithfulnessJudge += 5; // judgeParaphraseFaithful does its own 5-vote internally
     const faithful = await judgeParaphraseFaithful(top.content, paraphraseText);
     checks.paraphrase_faithful = {
       verdict: faithful ? "pass" : "fail",

@@ -1,7 +1,48 @@
 # STATE
 
-**Position:** ▶ R9 (rag-evaluator → qa-tester: eval new vs baseline, switch Consulting
-live, QA on live site).
+**Position:** ▶ R9 (qa-tester / Aalhad sign-off → switch Consulting live, QA on live site).
+R9.4 done 2026-11-07: bumped `judgeParaphraseFaithful`'s vote count 3→5 (`faithfulMajority`
+now needs ≥3/5, same simple-majority rule, just less noisy) in `consultingRetrieval.js`, to
+fix the judge non-determinism R9.3 flagged (83%→58% faithfulness swing on identical code).
+Ran `node backend/eval/run_eval_r9.js` 3 times back-to-back, no code changes between runs:
+faithfulness landed at 90%/100%/91% all three times (vs. the old 25-point swing), and every
+other bar (100% not-covered hard blocker, 74% overall, 86% must_include survival, 22/22
+inactive-content gate) passed identically in all three. **R9's full eval gate now PASSES,
+consistently** — results: `backend/eval/results/2026-11-07-r9-5vote-run{1,2,3}.{json,md}`,
+log.md's 2026-11-07 R9.4 entry. `npm test`: 180/181 (1 pre-existing sandbox failure, unrelated).
+Switch-over (plans 2-4) is cleared on eval evidence; still needs Aalhad's sign-off + a live QA
+pass before `is_active` is flipped, per the roadmap step - not done in this task (eval-only,
+no `is_active` changes made).
+R9.3 done 2026-11-07: added a metric-type specificity rule (revenue vs. ridership/passenger
+count) and a named-interview-sub-type specificity rule (stress interview vs. generic
+interview advice) to `consultingRetrieval.js`'s `RELEVANCE_SYSTEM_PROMPT`, same pattern as
+R9.2's firm-name rule — fixes q028 and q035. The not-covered hard blocker is now **10/10
+(100%)**, met. Overall verdict is still **FAIL**: paraphrase faithfulness dropped to 7/12
+(58%, needs ≥80%) on a fresh run, on 5 questions (q001, q005, q021, q027, q039) unrelated to
+this session's change (that prompt was untouched) — looks like the same faithfulness-judge
+run-to-run variance R9.2's log entry already flagged as unresolved, not a new regression, but
+not investigated or fixed here (out of this task's scope). q004/q006/q009/q024/q026 confirmed
+still failing, unchanged, also out of scope. A follow-up rag-engineer pass is needed on the
+paraphrase-faithfulness variance and the 5 non-hard-blocker misses before switch-over can
+proceed. Results: `backend/eval/results/2026-11-07-r9-fixed-v2.{json,md}` (also duplicated at
+the non-"-v2" filename since the script has no label override and this day's R9.2 run was
+overwritten — see log.md's 2026-11-07 R9.3 entry for the caveat), log.md's 2026-11-07 R9.3 entry.
+R9.2 done 2026-11-07: fixed the eval-script pagination bug (`loadChunkPool` lacked
+`.order("id")`), split dark-feature (role/company) questions out of the not-covered
+hard-blocker bucket (still scored, just not a hard blocker), added a named-firm specificity
+rule to `consultingRetrieval.js`'s `RELEVANCE_SYSTEM_PROMPT` (fixes q033), fixed 4
+test-data mismatches in `questions.jsonl` (q013, q025, q021 UK/US normalization, q026
+must_include-checking depth), and relabeled q039 to `covered:true` (reversible judgment
+call, flagged in log.md). Re-run: 9 of the original 19 failures now fixed, but still
+**FAIL** — the not-covered hard blocker is 8/10 (80%, needs 100%): q028 (Delhi Metro
+revenue, a NEW miss exposed by the pagination fix — matched a passengers chunk, not
+revenue) and q035 (stress interview, a pre-existing generic-content miss, same failure
+class as q033 but about interview-type specificity, not firm name) still show a grounded
+answer when none should appear. q004/q006/q009/q024/q026 also still fail (non-hard-blocker).
+None of these remaining 6 were in this task's authorized fix list; a follow-up rag-engineer
+pass is needed before switch-over can proceed. Results:
+`backend/eval/results/2026-11-07-r9-fixed.{json,md}` (superseded by R9.3's run above), log.md's
+2026-11-07 R9.2 entry.
 Updated 2026-11-06. R8 done: FrameworksPage migrated onto the shared `PlacewiseDiagram`
 component, a live diagram-privacy bug (raw admin Storage URL rendered via `<img>`) fixed,
 `grounded_example`/`grounded_image` now actually render (previously fetched and dropped);
