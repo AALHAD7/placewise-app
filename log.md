@@ -5,6 +5,260 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — Live incident: SRCC Guesstimates chunk-bleed, 8 more `ingest_chunks` rows deactivated
+
+**Phase:** R9.4 follow-up (direct incident fix, no gstack review — data-only `is_active` toggle)
+**Type:** fix
+
+**What changed:** Audited all 67 then-active `ingest_chunks` rows for the SRCC Guesstimates
+book (`document_id ab676b81-3b29-4c35-b288-6dff71756e26`) by reading full content, not just
+grepping a keyword — the R9.3/R9.4 QA finding (4/30 live `/api/guesstimates/random` pulls
+returning two or three unrelated problems concatenated, often truncated mid-sentence) was
+confirmed as a real, separate bug from the already-fixed cheat-sheet-dump symptom. Found and
+deactivated (`is_active=false`) 8 rows in two batches, both single `.update().in()` calls:
+- **6 true concatenation/truncation chunks** (2+ "ASSUMPTIONS" sections or a truncated 2nd
+  problem bled into one chunk): `eb4272dc` (p26-28, Bollywood movies + Tyre industry),
+  `912ed1ed` (p35-36, Delhi commute time + Lok Sabha election expenditure — the exact example
+  from the QA report), `06d23f19` (p44-45, India Gate visitors + Metro students to DU),
+  `f55ca214` (p47-50, Sarvana Bhavan revenue + Quick Commerce market, 2nd problem truncated
+  mid-assumption), `efe311a9` (p51-52, Ad market size + Animation/VFX market, 2nd problem
+  truncated mid-assumption), `661a8e35` (p55-57, Milk-for-coffee-shop problem, truncated to a
+  bare "ASSUMPTIONS" header with nothing after it — its real continuation lives in a separate,
+  still-active chunk `1952547e`, so the problem itself isn't lost, just this one duplicate/
+  truncated copy of it).
+- **2 orphan fragments matching the QA report's 4th example** ("BOSTON CONSULTING GROUP /
+  loans problem... truncates after 4 assumptions with no diagram or continuation"): `84e55de3`
+  (p28-29, title + "ASSUMPTIONS" + 4 items, no diagram, no final answer at all) and `df90c84b`
+  (p29, a duplicate of the same orphaned assumptions-only text, no title either). Both are
+  leftover fragments of one "Number of Outstanding Education Loans in India" problem that got
+  split into several small overlapping micro-chunks around page 29 — these two were the only
+  fragments that contain the literal word "assumptions" and could therefore pass
+  `looksLikeWorkedProblem`'s regex gate and be served standalone; the real split problem
+  (its diagram + final answer) survives intact in a separate active chunk (`5572cc3b`).
+
+**Why:** confirmed by reading every flagged row's full text (not a single-keyword scan, per
+instruction) that each of these 8 rows is internally incoherent on its own — either two
+unrelated problems' titles/assumptions/diagrams genuinely appended together, or a
+problem/fragment cut off mid-sentence with no diagram or solution. Chose deactivation over
+re-splitting for all 8: this is a live-incident mitigation, the correct boundary wasn't always
+unambiguous (e.g. the page-29 cluster has several near-duplicate fragments from what looks like
+an overlap-split mechanism), and every one of the underlying real problems already has a
+clean, complete copy in another still-active chunk — so no content is actually lost by turning
+these off, only the broken/duplicate copies are removed.
+
+**Files:** none (data-only). Audit/fix scripts were temporary, run from `backend/` against
+Supabase directly via `@supabase/supabase-js`, deleted after use — not committed.
+
+**Proof:**
+- Before: 69 total rows / 67 active / 2 inactive (the 2 already off from the earlier
+  cheat-sheet fix, left untouched as instructed).
+- Batch 1 (6 rows): before `is_active=true` for all 6 confirmed by direct select; update via
+  one `.update({is_active:false}).in('id',[...6 ids])` call; after-select confirmed all 6
+  `is_active=false`. Running total: 61 active / 8 inactive.
+- Batch 2 (2 rows): same pattern, one `.update().in()` call for the 2 orphan-fragment ids;
+  running total: **59 active / 10 inactive / 69 total** (unchanged row count, no rows deleted).
+- Fresh production verification (real API, not local): 24 pulls immediately after batch 1,
+  then 25 more after batch 2 — **49/49 fresh `GET /api/guesstimates/random` responses from
+  `https://placement-mastery-hub-api.onrender.com`** showed exactly one "ASSUMPTIONS" section
+  and a diagram block in every `problem` field; **0/49 showed the 2+-ASSUMPTIONS bleed pattern
+  and 0/49 came back with no diagram/no answer at all**. 4 of the first 24 pulls did end with a
+  bare page number + the next problem's firm-name line (e.g. "...Final Projected Expenditure in
+  Crores... 50\n\nTrinity Life Sciences | ...") — read in full, these are a single complete
+  problem with a harmless trailing header fragment from chunk boundaries (no second
+  ASSUMPTIONS, no second body), not the reported bug, so left untouched.
+
+**Cost:** 0 Gemini calls (pure read + direct DB update + API verification, no model calls).
+
+**Undo:** `UPDATE ingest_chunks SET is_active = true WHERE id IN (eb4272dc, 912ed1ed,
+06d23f19, f55ca214, efe311a9, 661a8e35, 84e55de3, df90c84b)` (full UUIDs in this entry above)
+restores the prior (buggy) state; do not do this without re-splitting those rows first.
+
+**Open issues / flagged for Aalhad to spot-check:**
+- **Not fully confident:** the page-29 "Outstanding Education Loans" cluster has several more
+  near-duplicate/overlapping fragments (`5572cc3b`, `c88daec7`, `3544b36c`, `b621a90e`,
+  `c6f23779`) that don't contain the literal word "assumptions" so can't currently be served
+  by `getRandomGuesstimateProblem`'s regex gate — left active since they're unreachable via
+  this bug, but this cluster looks like a genuine ingestion/chunking defect (the same problem
+  split into too many overlapping pieces) worth a real re-chunk later, separate from this fix.
+- `1952547e` (p56-58, the real continuation of the milk/coffee problem whose truncated
+  duplicate was deactivated) starts with a bare "ASSUMPTIONS" heading but no assumption items
+  under it before jumping straight to a diagram — the textual assumptions list for that part of
+  the problem appears to be missing entirely from `ingest_chunks` (not merely mis-chunked). Left
+  active since it's still one coherent problem with a diagram and final answer, not a bleed, but
+  worth Aalhad's look.
+- `762205ae` (p12-13, a conversion-factors/formulae/misc reference page) ends with a bare page
+  number into the next section's heading — same boundary-fragment pattern as the harmless ones
+  above, and it has no "assumptions" text so it can't be served by the random-pick endpoint
+  either; flagged only informationally, no action taken.
+
+---
+
+## 2026-11-07 — R9.4 QA: live site tested, two High-severity bugs found, rollback NOT exercised
+
+**Phase:** R9.4 · **Type:** QA (report-only) on production
+
+**What was tested:** `https://placewise-io.vercel.app` (frontend) and
+`https://placement-mastery-hub-api.onrender.com` (backend), as a student, per
+`.gsd/phases/R9/04-PLAN.md` Task 1. Guesstimates: 30 fresh `/api/guesstimates/random`
+pulls. Frameworks: expanded Porter's Five Forces, Market Entry, MECE on live Consulting
+domain. Q&A: attempted guest sign-in + MECE question via `/browse` (gstack headless
+browser, Aside unavailable on this machine). Checked page HTML/bundle and API JSON for
+`storage/v1`/`supabase.co` leaks. Phone-width (375px) screenshots taken for Guesstimates
+and Frameworks.
+
+**Finding 1 (High) — Guesstimates chunk-boundary bug is broader than the 2 chunks fixed
+in R9.3.** 4 of 30 sampled `/api/guesstimates/random` responses (~13%) return a single
+`problem` string containing **two unrelated guesstimate problems concatenated**, the
+second one often cut off mid-sentence or mid-assumption-list. Examples: a commute-time
+problem followed immediately by an unrelated Lok Sabha election-expenditure problem
+(no separator beyond a bare page number "31"); an India-Gate problem followed by a
+North-Campus-metro problem, truncated after "...Colleges of Delhi University is
+10,540.\n\n41"; three problems chained in one response ending mid-assumptions ("...The
+population of India is 1.4 billion." with no diagram or continuation). One further
+response ("BOSTON CONSULTING GROUP" / loans problem) truncates after 4 assumptions with
+no diagram or solution at all — reads as a cut chunk, not a complete problem. No
+cheat-sheet dump recurred and no raw Storage URL leaked in any of the 30 samples, so the
+specific R9.3 incident is still fixed, but the underlying SRCC chunking-at-problem-
+boundaries issue was not fully resolved by deactivating only 2 chunks — more active SRCC
+chunks span multiple problems. Evidence: `/tmp/g*.json` and `/tmp/g2/g*.json` (30 raw API
+responses), full text of the 4 bad ones captured in this session's transcript.
+
+**Finding 2 (High) — the live Vercel frontend is running a build from before R8
+(`fcb74b8`), not today's main.** `/qa` 404s outright (`Unexpected Application Error! 404
+Not Found` — React Router's own dev error screen, visible to any real visitor, not just
+QA). The "Ask" nav item is absent from the rendered nav and from the deployed JS bundle
+(`grep` for `/qa` and `QaPage` in `/assets/index-Bi1PRFP_.js` finds nothing). Frameworks
+and Guesstimates both still render via the **old static ASCII-art diagram path**
+(hand-authored "ASCII Visual Model" boxes, same generic MECE diagram regardless of
+casebook page) instead of R8's shared `PlacewiseDiagram` component — confirmed by
+comparing rendered output against `fcb74b8`'s commit message, which specifically names
+this component and the Q&A page as what it shipped. Practical effect: **Q&A (Task 3 of
+this plan) could not be tested at all** — guest sign-in worked fine (`Continue as guest
+(3-hour session)` on `/login`), but there is no reachable Q&A surface on production.
+Backend `/api/qa/ask` itself is live and correctly gated (`401 Missing Authorization`
+with no token). No raw Storage URL leaked in the Frameworks API response actually probed
+(`grounded_image.url` is `null` on every framework checked) and no raw JSON/`placewise-
+diagram` block rendered on screen, so the specific R8 privacy bug (raw Storage URL to
+students) is not currently exploitable in practice — but only because the backend never
+sends a URL right now, not because the old frontend code protects against it.
+
+**Not tested as a result:** Q&A grounded-answer content, Q&A "not from the casebooks"
+label, Q&A markdown rendering, and the Role/Company blast-radius smoke-check (deferred —
+stopped per the plan's own instruction: "If any High-severity bug is found... stop and
+report it rather than proceeding to Task 2").
+
+**Rollback (Task 2/3): NOT executed.** Per the plan and this session's explicit
+instruction, flipping Render's live flags off/on a second time is Aalhad's call, and the
+plan says to stop on a High-severity finding rather than proceed. Reported back instead
+of flipping anything.
+
+**Proof:**
+- `curl .../api/guesstimates/random` x30, saved to `/tmp/g*.json` + `/tmp/g2/g*.json`.
+  `ASSUMPTIONS` count per response: 26 had 1 (clean), 4 had 2+ (merged/truncated).
+  `grep -i "storage/v1\|supabase.co/storage"` across all 30: no match (exit 1).
+- `curl https://placewise-io.vercel.app/` → `/assets/index-Bi1PRFP_.js`; `grep -o
+  '"/qa"'` and `grep -o 'QaPage'`: zero matches. `grep -o 'General guidance'` /
+  `'not from the casebooks'`: present (so *some* GroundingNote-era string exists in this
+  bundle, but not wired to a reachable route — likely from the earlier "Ask about this
+  framework" feature, not the R8 Q&A page).
+- `/browse` (gstack headless browser, fallback since Aside isn't installed on this
+  machine) screenshots: `frameworks-mece-desktop.jpg` (ASCII diagram, no raw JSON/URL),
+  `guesstimates-mobile.png` (375px, readable, real casebook content, no overflow),
+  `qa-404.jpg` (the React Router crash screen on `/qa`). Saved under this session's
+  scratchpad, not the repo.
+- `curl -s -X POST .../api/qa/ask` with no auth → `401 {"error":"Missing Authorization:
+  Bearer <token> header."}` (correctly gated).
+- Console errors on `/frameworks`: only font-preload warnings + the one expected React
+  Router 404 boundary error when `/qa` was hit directly; no other JS errors seen.
+
+**Open issues for the next session (not fixed here, report-only):**
+1. Re-run the SRCC chunk audit from R9.3 across all 69 active chunks, not just the 2 that
+   were caught by the cheat-sheet-dump symptom — the chunk-boundary bug clearly affects
+   more chunks than that symptom alone surfaces (concatenation without a cheat-sheet
+   dump is textually silent — no single marker string to grep for, which is how 4/30
+   slipped past the earlier "5 fresh curl checks" spot-check).
+2. Find out why Vercel's production deployment is behind `fcb74b8`/main — check Vercel's
+   deployment dashboard for the commit it actually built, and whether a redeploy was
+   simply never triggered after R8, or a bad deploy was rolled back and nobody re-pushed.
+   Until this is fixed, Q&A is unreachable to real students and R9/R8's frontend-facing
+   done-whens (diagram component, Q&A page, markdown fix, paraphrased Frameworks/
+   Guesstimates UI) are not actually live, even though the backend flags are.
+3. R9's roadmap row should not move to `done` until both of the above are resolved and
+   re-verified — this session intentionally left `.gsd/ROADMAP.md` and `.gsd/STATE.md`
+   untouched.
+
+**Cost:** 0 new Gemini calls (QA only hit already-cached/paraphrased endpoints and one
+unauthenticated 401 probe).
+**Undo:** N/A — report-only session, nothing in the app or data was changed.
+
+---
+
+## 2026-11-07 — R9.3: flags live on production; found and fixed a live content-quality bug
+
+**Phase:** R9.3 · **Type:** production switch-over + live incident fix
+
+**What changed:** Aalhad set `ENABLE_CONSULTING_RAG_V2=true` and `ENABLE_ANSWER_PARAPHRASE=true`
+on the live Render service (`placewise-api`, service id `srv-danfsurm8hqs73b6gv70`), per R9
+plan 3's human-action checkpoint. Confirmed via the read-only `RENDER_API_KEY` (env-vars +
+deploy-status endpoints only, no write calls) that both vars show `true` and the deploy is
+`live` (finished `2026-11-07T08:43:55Z`).
+
+**Live incident found immediately after, same session:** hitting the real production
+Guesstimates endpoint (`curl https://placement-mastery-hub-api.onrender.com/api/guesstimates/random`)
+returned `available:true` with raw, unparaphrased, garbled content — the R9 plan only
+anticipated Consulting Q&A/Frameworks going live, but SRCC (one of the 9 documents just
+activated in R9.2) is also Guesstimates' sole source, so Guesstimates silently became
+reachable as a side effect. Two problems stacked:
+1. `ENABLE_GUESSTIMATE_PARAPHRASE` (a separate flag from `ENABLE_ANSWER_PARAPHRASE`, built
+   and committed in an earlier session) was not set on Render at all — added `=true` by
+   Aalhad, confirmed live (deploy finished `2026-11-07T08:47:48Z`).
+2. Even with paraphrase on, 2 of SRCC v2's 69 active chunks
+   (`2da998b5-2055-4c48-bf36-2cab37435591`, pages 1-4; `f4185c4a-321c-423a-bb2a-617d270a98e1`,
+   pages 9-12) contained a malformed ingestion artifact: a real worked problem followed by
+   the entire book's "GUESSTIMATES CHEAT SHEET" reference appendix (demographics, GDP/
+   household-expenditure charts, several `placewise-diagram` blocks) concatenated into one
+   oversized chunk (5,872 / 5,630 chars vs a 2,279-char median across the other 67). The
+   paraphrase layer correctly fail-closed on this (no `paraphrased`/`rawProblem` key in the
+   response — it declined rather than risk rewriting a dump this messy), so the *garbled raw
+   text itself*, not a bad rewrite, is what reached the live endpoint for however many
+   requests landed on either chunk before the fix below.
+
+**Fix:** deactivated just those 2 rows (`is_active=false`, surgical — the other 67 SRCC
+chunks and the full Consulting switch were untouched). Verified via 5 fresh live requests
+post-fix: 0/5 contain the cheat-sheet dump, all return reasonably-sized, clean problem text.
+
+**Scope confirmed isolated, not systemic:** queried all 69 active SRCC v2 rows directly —
+only these 2 have the merged-cheatsheet pattern. Not investigated further in this session
+(a proper re-chunking pass for SRCC's front-matter/cheat-sheet boundary is a follow-up for
+`ingestion-engineer`, not done here) — flagged as a known, open, low-priority item since the
+immediate live exposure is closed.
+
+**Proof:**
+- Render env vars (read-only check): `ENABLE_CONSULTING_RAG_V2=true`,
+  `ENABLE_ANSWER_PARAPHRASE=true`, `ENABLE_GUESSTIMATE_PARAPHRASE=true`, deploy status `live`.
+- `curl https://placement-mastery-hub-api.onrender.com/api/guesstimates/random` — pre-fix:
+  returned the cheatsheet dump (verbatim, ~length >8000 chars incl. diagram blocks) on the
+  request that surfaced this. Post-fix: 5/5 fresh requests clean, no `CHEATSHEET` marker,
+  lengths 2,612-5,091 chars, all `available:true`.
+- `HTTP 200` on the production Guesstimates endpoint throughout — service never went down.
+
+**What's NOT yet verified in this entry:** Q&A (`/api/qa/ask`) requires an authenticated
+session — could not curl it directly without test credentials. A browser-based QA pass
+against the real production site (Frameworks, Guesstimates, Q&A, citation/storage-URL leak
+checks) is the next step (R9 plan 4), not yet run as of this entry.
+
+**Rollback (unchanged from plan 3, still accurate):** Render dashboard → `placewise-api` →
+Environment → set `ENABLE_CONSULTING_RAG_V2`, `ENABLE_ANSWER_PARAPHRASE`,
+`ENABLE_GUESSTIMATE_PARAPHRASE` to `false` (or delete them) → redeploy. The 2 deactivated
+chunk rows can be reactivated independently via a direct `is_active=true` update on those 2
+ids if the re-chunking fix is ever applied and confirmed clean — not assumed as part of any
+flag rollback.
+
+**Files:** `ingest_chunks` — 2 rows deactivated (surgical fix, not part of the R9.2 switch
+script). No code changed in this entry.
+
+---
+
 ## 2026-11-07 — R9.2: Consulting switch-over applied — 9 eval-tested documents now `is_active=true`, v7 SRCC deactivated
 
 **Phase:** R9.2 · **Type:** script build + production-data investigation (no `is_active` write made yet)
