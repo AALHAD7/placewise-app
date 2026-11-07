@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { apiFetch } from "../lib/apiClient";
 
 export interface PracticeModalProps {
@@ -68,13 +69,22 @@ export default function PracticeModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, evaluating, onClose]);
 
-  // Lock body scroll when modal is open
+  // Lock body & app-shell scroll and notify Lenis when modal is open
   useEffect(() => {
     if (isOpen) {
-      const originalStyle = window.getComputedStyle(document.body).overflow;
+      const shell = document.querySelector<HTMLElement>(".app-shell");
+      if (shell) shell.dataset.modal = "true";
+      document.body.dataset.modal = "true";
+      const origBodyOverflow = document.body.style.overflow;
+      const origHtmlOverflow = document.documentElement.style.overflow;
       document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+
       return () => {
-        document.body.style.overflow = originalStyle;
+        if (shell) shell.dataset.modal = "false";
+        document.body.dataset.modal = "false";
+        document.body.style.overflow = origBodyOverflow;
+        document.documentElement.style.overflow = origHtmlOverflow;
       };
     }
   }, [isOpen]);
@@ -143,8 +153,9 @@ export default function PracticeModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
+      data-lenis-prevent
       style={{
         position: "fixed",
         inset: 0,
@@ -156,7 +167,7 @@ export default function PracticeModal({
         alignItems: "center",
         justifyContent: "center",
         padding: "16px",
-        overflowY: "auto"
+        overflow: "hidden"
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget && !evaluating) {
@@ -168,6 +179,7 @@ export default function PracticeModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="practice-modal-title"
+        data-lenis-prevent
         style={{
           position: "relative",
           width: "100%",
@@ -191,7 +203,8 @@ export default function PracticeModal({
             justifyContent: "space-between",
             padding: "16px 20px",
             background: "rgba(18, 23, 33, 0.95)",
-            borderBottom: "1px solid rgba(59, 130, 246, 0.2)"
+            borderBottom: "1px solid rgba(59, 130, 246, 0.2)",
+            flex: "none"
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", minWidth: 0 }}>
@@ -247,7 +260,20 @@ export default function PracticeModal({
         </div>
 
         {/* Scrollable Content Body */}
-        <div style={{ padding: "20px 22px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 18 }}>
+        <div
+          data-lenis-prevent
+          style={{
+            padding: "20px 22px",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+            overscrollBehavior: "contain",
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+            gap: 18
+          }}
+        >
           {/* Question Card */}
           <div
             style={{
@@ -303,6 +329,7 @@ export default function PracticeModal({
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value)}
               disabled={evaluating}
+              data-lenis-prevent
               placeholder="Structure your answer here... (e.g., breakdown into MECE drivers, top-down vs bottom-up hypotheses, key levers, or recommended actions)"
               style={{
                 width: "100%",
@@ -611,7 +638,8 @@ export default function PracticeModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
