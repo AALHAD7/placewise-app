@@ -392,7 +392,7 @@ export async function judgeParaphraseFaithful(original, paraphrase) {
 // folded into the cache key below so a prompt change invalidates old cached paraphrases
 // instead of serving them forever (the exact unbounded-cache bug fixed 2026-11-02 in
 // frameworksGrounding.js's withGroundedExamples - see isStale there).
-const PARAPHRASE_PROMPT_VERSION = "1";
+const PARAPHRASE_PROMPT_VERSION = "2";
 // Same 7-day window as frameworksGrounding.js's GROUNDED_STALE_AFTER_MS - long enough to
 // save almost every repeat request from re-paying the paraphrase + 3 judge calls, short
 // enough that a prompt fix still reaches users within days.
@@ -415,7 +415,17 @@ async function computeParaphraseResult(queryText, chunkContent) {
       // faithfulness call needed.
       return { content: chunkContent, rawContent: chunkContent, paraphrased: false };
     }
-    const faithful = await judgeParaphraseFaithful(chunkContent, paraphrase);
+    // Judge prose only, with diagram blocks reduced to their short placeholder tokens
+    // (same protectDiagramBlocks used by paraphraseChunk) - the diagram itself is already
+    // guaranteed byte-identical by restoreDiagramBlocks, so showing the judge the actual
+    // diagram JSON is redundant and, found 2026-11-07, actively harmful: both excerpts get
+    // truncated at a fixed char limit before judging, and a longer/shorter rewritten prose
+    // intro shifts where that cutoff lands inside the (otherwise identical) diagram tree,
+    // making the judge see two different partial views of the same diagram and mistake the
+    // mismatch for an edit - a false "unfaithful" that had nothing to do with the prose.
+    const { placeheld: originalProse } = protectDiagramBlocks(chunkContent);
+    const { placeheld: paraphraseProse } = protectDiagramBlocks(paraphrase);
+    const faithful = await judgeParaphraseFaithful(originalProse, paraphraseProse);
     return faithful
       ? { content: paraphrase, rawContent: chunkContent, paraphrased: true }
       : { content: chunkContent, rawContent: chunkContent, paraphrased: false };
