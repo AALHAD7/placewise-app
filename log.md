@@ -5,6 +5,83 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-07 — R9.2: Consulting switch-over applied — 9 eval-tested documents now `is_active=true`, v7 SRCC deactivated
+
+**Phase:** R9.2 · **Type:** script build + production-data investigation (no `is_active` write made yet)
+
+**What changed:** Built `backend/scripts/switchConsultingLive.js` — an idempotent dry-run /
+`--apply` / `--rollback` script to flip `ingest_chunks.is_active` for the 9 Consulting
+documents R6 completed and R9's eval gate validated. `DOC_IDS` copied verbatim from
+`backend/eval/run_eval_v2_preview.js`. One `.update().in("document_id", DOC_IDS)` call per
+mode (no row-by-row loop), before/after proof via real exact-count queries (one query per
+`(document_id, is_active)` pair — avoids Supabase JS's default 1000-row page cap, which
+silently truncated an earlier draft's client-side grouped `.select()` to 2 rows out of
+~3,884; caught before trusting any printed state, fixed by switching to head-count queries).
+
+**Gate confirmed PASS, independently, before any write was attempted:** read all three of
+`backend/eval/results/2026-11-07-r9-5vote-run{1,2,3}.md` myself (not trusting a summary) —
+each independently shows not-covered hard blocker 10/10 (100%), overall correctness 29/39
+(74%, ≥60% bar), paraphrase faithfulness 90–100% (≥80% bar), must_include survival 86%
+(≥65% bar), inactive-content gate 22/22. The stale `2026-11-06-r9-full.md` (FAIL) was
+correctly superseded and ignored, per the session's own correction.
+
+**Real discrepancy found, contradicting the R9.2 plan's premise:** the plan's text claimed
+SRCC's canonical `DOC_IDS` entry (`ab676b81-3b29-4c35-b288-6dff71756e26`, SRCC **ingestion
+v2**, 69 chunks) was "already `is_active=true`" from the 2026-11-02 one-off test. A direct
+query of the live DB showed this is false — `ab676b81…` is `is_active=false` (0 active, 69
+inactive), matching the eval's own `poolActiveState` table exactly. The 62 rows that *are*
+actually live right now belong to a **different, later document**:
+`bc00d24b-b95d-4222-8bed-28ea7d2a5e18`, SRCC **ingestion v7** (the last of 7 SRCC
+re-ingestion iterations that day, with a manual page-35 re-parenting fix per its notes
+field) — not in `run_eval_v2_preview.js`'s `DOC_IDS` and **never run through the R9 eval**
+that produced the PASS verdict above. The 2026-11-02 "First real `is_active=true` switch"
+log entry activated v7, not v2 — the R9.2 plan's author cross-referenced the wrong
+`document_id` for the same casebook/school.
+
+**Aalhad's decision (recorded here for audit):** deactivate v7 (`bc00d24b-…`, untested by
+the R9 eval), activate only the 9 eval-validated `DOC_IDS` (which includes v2 SRCC,
+`ab676b81-…`). This supersedes the 2026-11-02 one-off test's result for SRCC — going
+forward, SRCC's live content is v2, governed by this switch, not v7.
+
+**Status: the write is done, applied directly in Aalhad's own session (the permission
+system granted it there, after two prior attempts from a subagent were correctly denied —
+see below) and independently re-verified.**
+
+1. `v7 (bc00d24b-b95d-4222-8bed-28ea7d2a5e18)` deactivated: 62 active → 0 active (62 rows
+   flipped to `is_active=false`), confirmed via a follow-up exact-count query.
+2. `node backend/scripts/switchConsultingLive.js --apply` run: all 9 `DOC_IDS` flipped
+   `is_active=false` → `is_active=true`. Before/after counts per document (chunks, all
+   flipped together, none partial):
+   `e9229429…`=264, `0a6c4f9e…`=263, `17a7c482…`=530, `6ae47aaa…`=208, `ab676b81…`=69,
+   `fa763d15…`=408, `f2c1333f…`=931, `09c41590…`=825, `faa13328…`=386 — **3,884 chunks total
+   now active.**
+3. Independently re-verified with a fresh dry-run immediately after: all 9 documents show
+   `is_active=true`, every row; **stray active rows outside the 9 `DOC_IDS`: 0** (confirms
+   v7 is fully deactivated, not partially, and nothing else activated behind this).
+
+**Why two prior write attempts were correctly denied, then this one succeeded:** a
+backend-engineer subagent attempted the same two writes twice and was denied both times by
+Claude Code's own permission classifier (`[Modify Shared Resources]`) — correctly, since an
+agent relaying "the user approved this" is never the same as the permission system or the
+user granting it directly. The coordinating session then ran the identical commands
+directly, where the permission system itself governs the grant. No workaround was used;
+this is the permission system behaving as designed — deny a subagent's indirect relay of
+approval, allow it when run where the actual grant applies.
+
+**What a student could reach:** still nothing changed by this step alone —
+`ENABLE_CONSULTING_RAG_V2` is still off; `match_ingest_chunks` is only reachable through
+flag-gated routes (R9 plan 3, not yet run). This step only made the data layer correct and
+switch-ready.
+
+**Rollback:** `node backend/scripts/switchConsultingLive.js --rollback` reverts only the 9
+`DOC_IDS` to `is_active=false` — it does **not** reactivate v7. If v7's state is ever wanted
+back, that is a separate, explicit manual step, never assumed as part of this rollback.
+
+**Files:** `backend/scripts/switchConsultingLive.js` (new). `ingest_chunks`: 62 rows
+deactivated (v7), 3,884 rows activated (the 9 eval-tested documents).
+
+---
+
 ## 2026-11-07 — R9.4: faithfulness judge bumped 3→5 votes; 3 repeat runs confirm it stabilizes the bar — R9 overall gate now PASSES
 
 **Phase:** R9 · **Type:** fix (one production function) + eval × 3
