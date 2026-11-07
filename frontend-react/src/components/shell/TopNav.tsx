@@ -4,7 +4,6 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme, type ThemeMode } from "../../hooks/useTheme";
-import { buildSearchIndex, searchEntries, type SearchEntry, type SearchResultGroup } from "../../lib/searchIndex";
 
 // Ported from frontend/index.html lines 226-292. Active-state styling uses
 // NavLink's isActive instead of the old item() method's per-item JS-computed
@@ -218,61 +217,6 @@ export default function TopNav() {
     reload();
   };
 
-  // --- Search: keyword-only, no LLM call (see searchIndex.ts). Opens as an
-  // icon button rather than a persistent text box - the nav row is already
-  // full-width with 9 items + the rest of this bar, and a permanently-open
-  // ~260px input would force it back into the exact multi-line wrap the
-  // single-line nav was just rebuilt to avoid. ------------------------------
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFullIndex, setSearchFullIndex] = useState<SearchEntry[] | null>(null);
-  const [searchGroups, setSearchGroups] = useState<SearchResultGroup[]>([]);
-  const [searchActive, setSearchActive] = useState(0);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const flatResults = searchGroups.flatMap((g) => g.items);
-
-  useEffect(() => {
-    if (!searchOpen) return;
-    buildSearchIndex().then(setSearchFullIndex);
-    const id = requestAnimationFrame(() => searchInputRef.current?.focus());
-    return () => cancelAnimationFrame(id);
-  }, [searchOpen]);
-
-  useEffect(() => {
-    if (!searchFullIndex) return;
-    setSearchGroups(searchEntries(searchQuery, searchFullIndex));
-    setSearchActive(0);
-  }, [searchQuery, searchFullIndex]);
-
-  const closeSearch = () => {
-    setSearchOpen(false);
-    setSearchQuery("");
-    setSearchGroups([]);
-  };
-  const goToResult = (entry: SearchEntry) => {
-    closeSearch();
-    navigate(entry.to);
-  };
-  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") {
-      closeSearch();
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSearchActive((i) => Math.min(i + 1, flatResults.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSearchActive((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter" && flatResults[searchActive]) {
-      e.preventDefault();
-      goToResult(flatResults[searchActive]);
-    }
-  };
-
-  // --- Notifications: dropdown toggle only - there is no notification-
-  // generating system anywhere in this app yet, so the only honest state is
-  // the empty one (never a fabricated unread dot). -------------------------
-  const [notifOpen, setNotifOpen] = useState(false);
-
   // --- Avatar menu: identity + Theme (Light/Dark/System) + Sign out/in. No
   // "Profile" page exists in this app (grep of router.tsx), so rather than
   // link to a 404 the menu's header row IS the profile summary (name +
@@ -297,20 +241,16 @@ export default function TopNav() {
   // for 4 independent popovers that never overlap).
   const headerRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    const anyOpen = searchOpen || notifOpen || avatarOpen || confirmOpen || mobileNavOpen;
+    const anyOpen = avatarOpen || confirmOpen || mobileNavOpen;
     if (!anyOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (confirmOpen) setConfirmOpen(false);
-      else if (searchOpen) closeSearch();
-      else if (notifOpen) setNotifOpen(false);
       else if (avatarOpen) setAvatarOpen(false);
       else if (mobileNavOpen) setMobileNavOpen(false);
     };
     const onClick = (e: MouseEvent) => {
       if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
-        setSearchOpen(false);
-        setNotifOpen(false);
         setAvatarOpen(false);
         setConfirmOpen(false);
         setMobileNavOpen(false);
@@ -322,7 +262,7 @@ export default function TopNav() {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("mousedown", onClick);
     };
-  }, [searchOpen, notifOpen, avatarOpen, confirmOpen, mobileNavOpen]);
+  }, [avatarOpen, confirmOpen, mobileNavOpen]);
 
   return (
     <header className="topnav" ref={headerRef}>
@@ -407,91 +347,6 @@ export default function TopNav() {
               </button>
             </div>
           )}
-
-          <div style={{ position: "relative", flex: "none" }}>
-            <button
-              type="button"
-              onClick={() => setSearchOpen((v) => !v)}
-              title="Search"
-              aria-label="Search"
-              aria-expanded={searchOpen}
-              className={"unbutton bell-btn" + (searchOpen ? " active" : "")}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-            </button>
-            {searchOpen && (
-              <div className="search-panel glass-panel" role="search">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={onSearchKeyDown}
-                  placeholder="Search anything…"
-                  className="search-input"
-                  aria-label="Search anything"
-                  role="combobox"
-                  aria-expanded={searchGroups.length > 0}
-                />
-                {searchQuery.trim() && (
-                  <div className="search-results" role="listbox">
-                    {flatResults.length === 0 ? (
-                      <div className="search-empty">No matches. Try a company, role or framework name.</div>
-                    ) : (
-                      searchGroups.map((group) => (
-                        <div key={group.section} className="search-group">
-                          <div className="search-group-label">{group.section}</div>
-                          {group.items.map((item) => {
-                            const flatIdx = flatResults.indexOf(item);
-                            return (
-                              <button
-                                key={item.section + item.title + flatIdx}
-                                type="button"
-                                role="option"
-                                aria-selected={flatIdx === searchActive}
-                                className={"search-result" + (flatIdx === searchActive ? " active" : "")}
-                                onMouseEnter={() => setSearchActive(flatIdx)}
-                                onClick={() => goToResult(item)}
-                              >
-                                {item.title}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div style={{ position: "relative", flex: "none" }}>
-            <button
-              type="button"
-              onClick={() => setNotifOpen((v) => !v)}
-              title="Notifications"
-              aria-label="Notifications"
-              aria-expanded={notifOpen}
-              className="unbutton bell-btn"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-              </svg>
-              {/* No unread dot: nothing in this app generates a notification
-                  yet, so real state is always "none unread" - never faked. */}
-            </button>
-            {notifOpen && (
-              <div className={"t-pop-in glass-panel"} style={{ ["--pop-origin" as string]: "top right", position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 30, width: 260, borderRadius: "var(--r-md)", padding: 14 }}>
-                <div style={{ fontSize: "0.84375rem", fontWeight: 700, color: "var(--text-900)", marginBottom: 4 }}>Notifications</div>
-                <div style={{ fontSize: "0.8125rem", color: "var(--text-gray2)" }}>No notifications yet.</div>
-              </div>
-            )}
-          </div>
 
           <div style={{ position: "relative", flex: "none" }}>
             <button

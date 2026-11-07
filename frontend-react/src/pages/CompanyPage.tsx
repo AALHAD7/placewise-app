@@ -68,27 +68,8 @@ function parseBullets(text: string): string[] {
 // Horizontal, wrapping source chips (was a vertical list) - saves space and
 // the pill/underline treatment makes it visually obvious these are links,
 // not just labels.
-function SourceLinks({ sources }: { sources: { title: string; uri: string }[] }) {
-  if (!sources.length) return null;
-  return (
-    <div style={{ marginTop: 18 }}>
-      <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Sources</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 9 }}>
-        {sources.map((src, i) => (
-          <a
-            key={i}
-            href={src.uri}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={src.title || src.uri}
-            style={{ display: "inline-flex", alignItems: "center", gap: 5, maxWidth: 280, padding: "6px 12px", borderRadius: "var(--r-pill)", background: "var(--surface-sunken)", border: "1px solid var(--card-border)", color: "var(--indigo)", fontSize: "0.78125rem", fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-          >
-            {src.title || src.uri} <span aria-hidden="true">↗</span>
-          </a>
-        ))}
-      </div>
-    </div>
-  );
+function SourceLinks(_props: { sources: { title: string; uri: string }[] }) {
+  return null;
 }
 
 // Rounds to the nearest half-star for display - the underlying number (e.g.
@@ -940,14 +921,9 @@ export default function CompanyPage() {
                   <div key={i} style={{ display: "flex", gap: 10 }}>
                     <span style={{ flex: "none", width: 5, height: 5, borderRadius: "50%", background: "var(--green)", marginTop: 7 }}></span>
                     <div>
-                      <a href={iv.url} target="_blank" rel="noopener" className="company-link" style={{ display: "block", fontSize: "0.90625rem", fontWeight: 600, lineHeight: 1.4, color: "var(--text-900)", textDecoration: "none", borderBottom: "1px solid transparent" }}>
-                        {iv.t}{" "}
-                        <svg width="10.5" height="10.5" viewBox="0 0 24 24" fill="none" stroke="var(--text-lightgray)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline", verticalAlign: 1 }}>
-                          <path d="M15 3h6v6" />
-                          <path d="M10 14 21 3" />
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        </svg>
-                      </a>
+                      <div style={{ fontSize: "0.90625rem", fontWeight: 600, lineHeight: 1.4, color: "var(--text-900)" }}>
+                        {iv.t}
+                      </div>
                       <div style={{ marginTop: 3, color: "var(--text-gray2)", fontSize: "0.84375rem", lineHeight: 1.45 }}>{iv.d}</div>
                     </div>
                   </div>
@@ -1036,11 +1012,6 @@ export default function CompanyPage() {
                     ) : (
                       <p style={{ margin: 0, fontSize: "0.9375rem", lineHeight: 1.65, color: "var(--text-900)" }}>{sd.detail}</p>
                     )}
-                    {!sd.grounded && (
-                      <div style={{ marginTop: 14, padding: "10px 12px", background: "var(--surface-sunken)", borderRadius: "var(--r-sm)", color: "var(--text-gray2)", fontSize: "0.78125rem", lineHeight: 1.5 }}>
-                        Live web search wasn't available for this one, so this is general knowledge rather than a sourced answer - treat it as a starting point, not verified fact.
-                      </div>
-                    )}
                     <SourceLinks sources={sd.sources} />
                   </>
                 );
@@ -1086,12 +1057,6 @@ export default function CompanyPage() {
 
                     <div style={{ marginTop: 20, color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>How this actually works, end to end</div>
                     <p style={{ margin: "9px 0 0", fontSize: "0.9375rem", lineHeight: 1.65, color: "var(--text-900)" }}>{bm.howItWorks}</p>
-
-                    {!bm.grounded && (
-                      <div style={{ marginTop: 14, padding: "10px 12px", background: "var(--surface-sunken)", borderRadius: "var(--r-sm)", color: "var(--text-gray2)", fontSize: "0.78125rem", lineHeight: 1.5 }}>
-                        Live web search wasn't available for this one, so this is general knowledge rather than a sourced answer - treat it as a starting point, not verified fact.
-                      </div>
-                    )}
                     <SourceLinks sources={bm.sources} />
                   </>
                 );

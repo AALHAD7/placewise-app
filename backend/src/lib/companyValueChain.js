@@ -82,29 +82,16 @@ async function fetchCompanyValueChain(companyName, cacheKey) {
     };
   }
 
-  const grounding = CONSULTING_RAG_V2_ENABLED
-    ? await groundValueChain(companyName)
-    : { groundedInCasebooks: false, citation: null, excerpt: null };
-
-  let result;
-  if (grounding.groundedInCasebooks) {
-    // Casebook covers this - extract from the cited excerpt only, same
-    // "never blend with outside knowledge" rule as chipPanel.js's
-    // groundedPrompt. No web research call at all in this branch.
-    const prompt = `COMPANY: ${companyName}\n\nCASEBOOK EXCERPT (real, cited - extract the value chain from this excerpt; don't add outside knowledge or blend in general claims):\n${grounding.excerpt}\n\nExtract the value chain JSON as specified.`;
-    result = await generateJSON({ system: FORMAT_SYSTEM_PROMPT, prompt, maxTokens: 1200 });
-  } else {
-    const research = await researchCompanyValueChain(companyName);
-    const prompt = research.grounded
-      ? `COMPANY: ${companyName}\n\nRESEARCH:\n${research.text}\n\nExtract the value chain JSON as specified.`
-      : `COMPANY: ${companyName}\n\n(Web search was unavailable this time - use general knowledge of this company's actual business model, and only include stages you're genuinely confident about; return fewer items rather than guessing.)\n\nExtract the value chain JSON as specified.`;
-    result = await generateJSON({ system: FORMAT_SYSTEM_PROMPT, prompt, maxTokens: 1200 });
-  }
+  const research = await researchCompanyValueChain(companyName);
+  const prompt = research.grounded
+    ? `COMPANY: ${companyName}\n\nRESEARCH:\n${research.text}\n\nExtract the value chain JSON as specified.`
+    : `COMPANY: ${companyName}\n\n(Web search was unavailable this time - use general knowledge of this company's actual business model, and only include stages you're genuinely confident about; return fewer items rather than guessing.)\n\nExtract the value chain JSON as specified.`;
+  const result = await generateJSON({ system: FORMAT_SYSTEM_PROMPT, prompt, maxTokens: 1200 });
   const stages = Array.isArray(result.stages) ? result.stages : [];
 
   const row = {
     company_name: cacheKey, stages,
-    grounded_in_casebooks: grounding.groundedInCasebooks, citation: grounding.citation,
+    grounded_in_casebooks: false, citation: null,
     fetched_at: new Date().toISOString()
   };
   const { error: upsertError } = await supabase

@@ -7,5 +7,6 @@
 // company-grounding removed from the What/Why/How chip prompts). Bumped to
 // "3" for Phase 1.5 (rules 2/4/8 generalized across all 10 domains, the
 // 5-flag content check, career progression/exit opportunities split,
-// source-quality tiers).
-export const CONTENT_VERSION = "3";
+// source-quality tiers). Bumped to "4" for web-research-first role and
+// company overviews (removing casebook gating and "no casebook data" fallback).
+export const CONTENT_VERSION = "4";

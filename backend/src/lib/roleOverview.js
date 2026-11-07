@@ -117,7 +117,9 @@ async function fetchRoleOverview(roleName, cacheKey) {
     .maybeSingle();
   if (cacheError) throw cacheError;
 
-  const isFresh = cached && cached.content_version === CONTENT_VERSION && Date.now() - new Date(cached.fetched_at).getTime() < CACHE_TTL_MS;
+  const isFresh = cached && cached.content_version === CONTENT_VERSION &&
+    !cached.what?.toLowerCase().includes("no casebook data") &&
+    Date.now() - new Date(cached.fetched_at).getTime() < CACHE_TTL_MS;
   if (isFresh) {
     return {
       what: cached.what, companies: cached.companies, salary: cached.salary,
@@ -184,25 +186,33 @@ async function fetchRoleOverview(roleName, cacheKey) {
 // candidate reports" rather than carrying a full source badge.
 // ---------------------------------------------------------------------------
 
-const RESEARCH_AT_COMPANY_SYSTEM_PROMPT = `Research the given job role specifically AT the given company, for a student preparing for an MBA campus placement interview in India. Actively search multiple reliable sources before answering - do not rely on memory alone. Prefer official Indian B-school final placement reports and AmbitionBox/Glassdoor India over generic forum or Q&A sites; candidate-report sites (e.g. igotanoffer, WallStreetOasis, PrepLounge) are acceptable supporting detail for interview process specifically. Report, specific to this exact company where you can find it (say plainly when something is a general estimate instead, e.g. "not company-specific data found, industry-typical range shown"): (1) campus hiring compensation in INR LPA for MBA graduates at this role's level at this company, (2) this company's typical interview process/rounds for this role (e.g. number of rounds, what each round tests), (3) 2-3 realistic INTERNAL PROMOTION paths within this company/function (career progression), (4) 2-3 realistic EXIT paths to a genuinely different function, firm type or industry (not just a more senior title in the same job), (5) 4-5 concrete skills this company's own job postings/interview reports for this role actually mention. Plain prose, under 220 words, organized as five short labeled parts.`;
+const RESEARCH_AT_COMPANY_SYSTEM_PROMPT = `Research the given job role specifically AT the given company, for a student preparing for an MBA campus placement interview in India. Actively search multiple reliable sources on the internet (company career portals, official Indian B-school final placement reports, AmbitionBox, Glassdoor India, WallStreetOasis, and interview report sites) before answering - do not rely on memory alone.
+Report, specific to this exact company and role:
+(1) what this role actually does at this company (its core function, day-to-day focus, how it fits into the business model, and how performance is judged),
+(2) campus hiring compensation in INR LPA for MBA graduates at this role's level at this company (or realistic industry-standard benchmarks for this company's tier/sector if not publicly disclosed),
+(3) this company's typical interview process and rounds for this role (e.g. screening, analytical/technical rounds, leadership/fit round),
+(4) 2-3 realistic INTERNAL PROMOTION paths within this company/function (career progression),
+(5) 2-3 realistic EXIT paths to a genuinely different function, firm type or industry,
+(6) 4-5 concrete skills this company's postings or process for this role actually emphasize.
+Plain prose, under 300 words, organized as six short labeled parts.`;
 
 const AT_COMPANY_SYSTEM_PROMPT = `${ROLE_CONTENT_RULES}
 
-You are writing a role-overview card for a student preparing for a campus placement interview for a specific role AT a specific company, in India. You will be given the role, the company, and usually real research already gathered by web search covering salary, interview process, promotion paths, exit opportunities, and required skills at that company.
+You are writing a role-overview card for a student preparing for a campus placement interview for a specific role AT a specific company in India. You will be given the role, the company, and research gathered from the internet covering what this role does, interview process, salary, promotion paths, exit opportunities, and required skills.
 
-If research is provided below, base "salary", "salaryNote", "process", "careerProgression", "exitOpportunities", and "skills" directly on it - do not override it with your own guess or add items it didn't mention. Never assert a precise, confident claim about this exact company's current process/numbers beyond what the research supports - approximate with "~" or frame as "typically" rather than stating an unverified specific as fact. If no research is provided (a search failure), fall back to realistic estimates using your general knowledge and say so explicitly in salaryNote.
+Base "what", "process", "salary", "salaryNote", "careerProgression", "exitOpportunities", and "skills" on the research and realistic industry benchmarks. NEVER output "No casebook data yet for this company" - always describe what the role does at or in relation to this company. If company-specific figures are not published, give realistic industry estimates for this company's tier and domain, and state that in salaryNote.
 
 "careerProgression" is the internal promotion ladder within this company/function. "exitOpportunities" is a move to a genuinely DIFFERENT function, firm type or industry - never just a more senior title in the same job.
 
 Respond with ONLY a JSON object, no markdown fences, no commentary, in exactly this shape:
 {
-  "what": "2-3 sentence plain-language description of what this role does at this company specifically - how it's judged there, what's distinctive about it at this employer if anything is",
-  "process": ["...", ... 3-5 short steps/rounds describing this company's typical interview process for this role, from the research if provided],
+  "what": "2-3 sentence plain-language description of what this role does at this company specifically (or in its business model), what teams/products it works on, and how performance is judged",
+  "process": ["...", ... 3-5 short steps/rounds describing this company's typical interview process for this role],
   "salary": "₹X-Y LPA",
-  "salaryNote": "one short line grounding the range to this company specifically (or noting it's an industry-typical estimate if company-specific data wasn't found)",
-  "skills": ["...", ... 4-5 concrete skills this company's own postings/process for this role actually emphasize, from the research if provided],
-  "careerProgression": ["...", ... 2-3 internal promotion steps at this company, from the research if provided],
-  "exitOpportunities": ["...", ... 2-3 moves to a different function/firm type/industry, from the research if provided]
+  "salaryNote": "one short line grounding the range (e.g. company-specific data or industry-typical benchmark for this company's tier/sector)",
+  "skills": ["...", ... 4-5 concrete skills this company's postings/process for this role actually emphasize],
+  "careerProgression": ["...", ... 2-3 internal promotion steps at this company],
+  "exitOpportunities": ["...", ... 2-3 moves to a different function/firm type/industry]
 }`;
 
 async function researchRoleAtCompany(roleName, companyName) {
@@ -241,7 +251,9 @@ async function fetchRoleOverviewAtCompany(roleName, companyName, roleKey, compan
     .maybeSingle();
   if (cacheError) throw cacheError;
 
-  const isFresh = cached && cached.content_version === CONTENT_VERSION && Date.now() - new Date(cached.fetched_at).getTime() < CACHE_TTL_MS;
+  const isFresh = cached && cached.content_version === CONTENT_VERSION &&
+    !cached.what?.toLowerCase().includes("no casebook data") &&
+    Date.now() - new Date(cached.fetched_at).getTime() < CACHE_TTL_MS;
   if (isFresh) {
     return {
       what: cached.what, process: cached.process, salary: cached.salary,

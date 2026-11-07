@@ -11,7 +11,6 @@ import Selector, { type SelectorOption } from "../components/Selector";
 import ProbeChat from "../components/ProbeChat";
 import PracticeModal from "../components/PracticeModal";
 import PageHeader from "../components/PageHeader";
-import GroundingNote from "../components/GroundingNote";
 import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import type { RoleCompanyNotesResponse, RoleOverview, RoleOverviewResponse, RoleTopic, RoleTopicsResponse } from "../types/api";
 
@@ -38,34 +37,6 @@ const topicsCache: Record<string, TopicsState> = {};
 // depend on company, so topicsCache stays keyed by role title alone.
 function overviewKey(title: string, company: string) {
   return company ? `${title}@@${company}` : title;
-}
-
-// "as of Oct 2026" - Phase 1 amendment B's source badge. Month/year only
-// (not a full date): these are a salary-range/process-shape snapshot, not
-// something a reader needs to the day.
-function asOf(fetchedAt: string): string {
-  if (!fetchedAt) return "";
-  const d = new Date(fetchedAt);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-}
-
-function SourceBadge({ sources, fetchedAt }: { sources: { title: string; uri: string }[]; fetchedAt: string }) {
-  if (!sources.length) return null;
-  return (
-    <div style={{ marginTop: 8, color: "var(--text-lightgray)", fontSize: "0.65625rem", lineHeight: 1.6 }}>
-      Sources:{" "}
-      {sources.map((s, i) => (
-        <span key={i}>
-          <a href={s.uri} target="_blank" rel="noreferrer" style={{ color: "var(--text-lightgray)", textDecoration: "underline" }}>
-            {s.title || "source"}
-          </a>
-          {i < sources.length - 1 ? ", " : ""}
-        </span>
-      ))}
-      {asOf(fetchedAt) ? " · as of " + asOf(fetchedAt) : ""}
-    </div>
-  );
 }
 
 const DIFFICULTY_TAG_STYLE: Record<string, React.CSSProperties> = {
@@ -453,14 +424,6 @@ export default function RolePage() {
 
                 {current && (
                   <>
-                    {/* R8: whether this topic's content is grounded in a real casebook
-                        citation, or general AI guidance - set once per topics load,
-                        not per topic, since groundedInCasebooks/citations are a
-                        response-level decision (see consultingRetrieval.js). */}
-                    <GroundingNote groundedInCasebooks={td.groundedInCasebooks} />
-                    {/* Phase 1.5 item 8: no .toLowerCase() on the topic name (it used
-                        to mangle acronyms - "M&A Synergies" read as "m&a synergies") and
-                        a real a/an check on the role instead of a hardcoded "a". */}
                     <p style={{ margin: "16px 0 0", fontSize: "0.90625rem", lineHeight: 1.6, color: "var(--text-900)" }}>
                       What interviewers are testing when they open {current.name} for {aOrAn(role)} {role}.
                     </p>
@@ -590,7 +553,7 @@ export default function RolePage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
                 {company ? (
-                  roleInfo.hasTrustedSource || roleInfo.hasSupportingSource ? (
+                  roleInfo.process && roleInfo.process.length > 0 ? (
                     <>
                       <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Interview process at {company}</div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
@@ -601,14 +564,6 @@ export default function RolePage() {
                           </div>
                         ))}
                       </div>
-                      {/* Phase 1.5 item 3: process accepts a SUPPORTING-only source
-                          (unlike salary below, TRUSTED-only) - but when that's all it
-                          has, it's labeled rather than given a full source badge. */}
-                      {roleInfo.hasTrustedSource ? (
-                        <SourceBadge sources={roleInfo.sources} fetchedAt={roleInfo.fetchedAt} />
-                      ) : (
-                        <div style={{ marginTop: 8, color: "var(--text-lightgray)", fontSize: "0.65625rem" }}>Based on candidate reports</div>
-                      )}
                     </>
                   ) : (
                     <>
@@ -630,21 +585,12 @@ export default function RolePage() {
 
               <div style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
                 <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Salary range</div>
-                {/* Phase 1.7 item 3: 3-tier display - trusted shows plainly,
-                    supporting-only still shows the figure but labeled
-                    indicative, neither hides it entirely. */}
-                {roleInfo.hasTrustedSource ? (
+                {roleInfo.salary ? (
                   <>
                     <div style={{ marginTop: 11, fontSize: "1.625rem", fontWeight: 700, letterSpacing: "-.02em", color: "var(--text-900)" }}>{roleInfo.salary}</div>
-                    <div style={{ marginTop: 6, color: "var(--text-gray2)", fontSize: "0.84375rem" }}>{roleInfo.salaryNote}</div>
-                    <SourceBadge sources={roleInfo.sources} fetchedAt={roleInfo.fetchedAt} />
-                  </>
-                ) : roleInfo.hasSupportingSource ? (
-                  <>
-                    <div style={{ marginTop: 11, fontSize: "1.625rem", fontWeight: 700, letterSpacing: "-.02em", color: "var(--text-900)" }}>{roleInfo.salary}</div>
-                    <div style={{ marginTop: 6, color: "var(--text-gray2)", fontSize: "0.78125rem", fontWeight: 600 }}>Indicative · based on candidate-reported data</div>
-                    <div style={{ marginTop: 4, color: "var(--text-gray2)", fontSize: "0.84375rem" }}>{roleInfo.salaryNote}</div>
-                    <SourceBadge sources={roleInfo.sources} fetchedAt={roleInfo.fetchedAt} />
+                    {roleInfo.salaryNote && (
+                      <div style={{ marginTop: 6, color: "var(--text-gray2)", fontSize: "0.84375rem" }}>{roleInfo.salaryNote}</div>
+                    )}
                   </>
                 ) : (
                   <p style={{ margin: "11px 0 0", fontSize: "0.84375rem", color: "var(--text-lightgray)" }}>Salary data not available for this role yet.</p>

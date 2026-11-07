@@ -73,26 +73,16 @@ async function fetchCompanyTimeline(companyName, cacheKey) {
     };
   }
 
-  const grounding = CONSULTING_RAG_V2_ENABLED
-    ? await groundTimeline(companyName)
-    : { groundedInCasebooks: false, citation: null, excerpt: null };
-
-  let result;
-  if (grounding.groundedInCasebooks) {
-    const prompt = `COMPANY: ${companyName}\n\nCASEBOOK EXCERPT (real, cited - extract milestones from this excerpt only; don't add outside knowledge or blend in general claims):\n${grounding.excerpt}\n\nExtract the timeline JSON as specified.`;
-    result = await generateJSON({ system: FORMAT_SYSTEM_PROMPT, prompt, maxTokens: 1200 });
-  } else {
-    const research = await researchCompanyTimeline(companyName);
-    const prompt = research.grounded
-      ? `COMPANY: ${companyName}\n\nRESEARCH:\n${research.text}\n\nExtract the timeline JSON as specified.`
-      : `COMPANY: ${companyName}\n\n(Web search was unavailable this time - use general knowledge, and only include milestones you're genuinely confident about; return fewer items rather than guessing dates.)\n\nExtract the timeline JSON as specified.`;
-    result = await generateJSON({ system: FORMAT_SYSTEM_PROMPT, prompt, maxTokens: 1200 });
-  }
+  const research = await researchCompanyTimeline(companyName);
+  const prompt = research.grounded
+    ? `COMPANY: ${companyName}\n\nRESEARCH:\n${research.text}\n\nExtract the timeline JSON as specified.`
+    : `COMPANY: ${companyName}\n\n(Web search was unavailable this time - use general knowledge, and only include milestones you're genuinely confident about; return fewer items rather than guessing dates.)\n\nExtract the timeline JSON as specified.`;
+  const result = await generateJSON({ system: FORMAT_SYSTEM_PROMPT, prompt, maxTokens: 1200 });
   const events = Array.isArray(result.events) ? result.events : [];
 
   const row = {
     company_name: cacheKey, events,
-    grounded_in_casebooks: grounding.groundedInCasebooks, citation: grounding.citation,
+    grounded_in_casebooks: false, citation: null,
     fetched_at: new Date().toISOString()
   };
   const { error: upsertError } = await supabase
