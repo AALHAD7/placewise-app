@@ -44,6 +44,11 @@ const allowedOrigins = (process.env.FRONTEND_ORIGIN || "")
 
 const app = express();
 
+// Lightweight health check endpoint for Render/uptime monitors. Placed
+// before rate limiters, auth, or JSON parsing so health pings are instant,
+// zero-cost, and never throttled by rate limiters.
+app.get("/health", (req, res) => res.json({ ok: true }));
+
 // Render/Vercel/most PaaS terminate TLS at a proxy in front of this process
 // and forward the original scheme via X-Forwarded-Proto — trust that so
 // secure-cookie/HTTPS-redirect logic below sees the real protocol.
@@ -71,7 +76,6 @@ app.use(cors(
 app.use(generalLimiter);
 app.use(express.json({ limit: "1mb" }));
 
-app.get("/health", (req, res) => res.json({ ok: true }));
 app.use("/api/resume", resumeRouter);
 app.use("/api/story", storyRouter);
 app.use("/api/tone", toneRouter);
@@ -108,4 +112,5 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Placewise backend listening on http://localhost:${PORT}`));
+const HOST = "0.0.0.0";
+app.listen(PORT, HOST, () => console.log(`Placewise backend listening on http://${HOST}:${PORT}`));
