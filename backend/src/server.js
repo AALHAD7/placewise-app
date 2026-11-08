@@ -46,8 +46,9 @@ const app = express();
 
 // Lightweight health check endpoint for Render/uptime monitors. Placed
 // before rate limiters, auth, or JSON parsing so health pings are instant,
-// zero-cost, and never throttled by rate limiters.
-app.get("/health", (req, res) => res.json({ ok: true }));
+// zero-cost, and never throttled by rate limiters. Responds on both / and
+// /health so uptime monitors configured with either URL get a 200 OK.
+app.get(["/", "/health"], (req, res) => res.json({ ok: true, service: "placewise-api" }));
 
 // Render/Vercel/most PaaS terminate TLS at a proxy in front of this process
 // and forward the original scheme via X-Forwarded-Proto — trust that so
