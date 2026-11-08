@@ -394,13 +394,13 @@ export default function GuesstimatesPage() {
     // timeout so a single fetch survives the full boot. After 15 s of waiting
     // we flip `wakingUp` to show a friendly banner — the fetch itself keeps
     // running and the banner disappears the moment the question arrives.
-    const wakeUpTimerId = setTimeout(() => setWakingUp(true), 15_000);
+    const wakeUpTimerId = setTimeout(() => setWakingUp(true), 15_000); // show banner after 15 s
 
     apiFetch<GuesstimateResponse>(
       `/api/guesstimates/random${query}`,
       {},
       "Failed to load a guesstimate.",
-      90_000  // 90 s timeout — covers the full Render cold-start window
+      90_000 // 90 s timeout – covers full Render cold‑start window
     )
       .then((data) => {
         clearTimeout(wakeUpTimerId);
