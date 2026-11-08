@@ -143,22 +143,53 @@ export async function logActivity(type: string, label: string): Promise<void> {
 // app. Pass `fallbackError` to preserve a call-site-specific message (the old
 // app's error copy is fairly specific per failure, e.g. "Could not load
 // activity." - keep that specificity rather than a generic message).
+//
+// timeoutMs defaults to 25 s — Render's free tier cold start can take 30–60 s,
+// but most requests that are going to succeed respond in < 5 s once the
+// server is warm. Without a timeout, fetch() on a cold Render server hangs
+// indefinitely (browser default is no timeout), keeping the UI stuck on the
+// loading spinner forever. 25 s lets a warm request succeed easily while
+// failing fast enough to show a "retrying" message to the user. Callers that
+// need a longer budget (e.g. streaming) should pass a larger value or 0 for
+// no timeout.
 export async function apiFetch<T>(
   path: string,
   opts: RequestInit = {},
-  fallbackError = "Request failed."
+  fallbackError = "Request failed.",
+  timeoutMs = 25_000
 ): Promise<T> {
   // No session is not an error here: most reads are public on the backend.
   // Sign-in-only routes answer 401, mapped to a clear message below.
   const token = await getOptionalAuthToken();
-  const res = await fetch(API_BASE + path, {
-    ...opts,
-    headers: {
-      ...(opts.body && !(opts.body instanceof FormData) ? { "Content-Type": "application/json" } : {}),
-      ...(token ? { Authorization: "Bearer " + token } : {}),
-      ...(opts.headers || {})
+
+  const controller = timeoutMs > 0 ? new AbortController() : null;
+  const timeoutId = controller
+    ? setTimeout(() => controller.abort(), timeoutMs)
+    : null;
+
+  let res: Response;
+  try {
+    res = await fetch(API_BASE + path, {
+      ...opts,
+      signal: controller?.signal ?? opts.signal ?? null,
+      headers: {
+        ...(opts.body && !(opts.body instanceof FormData) ? { "Content-Type": "application/json" } : {}),
+        ...(token ? { Authorization: "Bearer " + token } : {}),
+        ...(opts.headers || {})
+      }
+    });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new ApiError(
+        "The server is waking up — please try again in a moment.",
+        0
+      );
     }
-  });
+    throw err;
+  } finally {
+    if (timeoutId !== null) clearTimeout(timeoutId);
+  }
+
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && !token) throw new AuthUnavailableError();
   if (!res.ok || data.success === false) {

@@ -120,6 +120,11 @@ function formatTimerSeconds(totalSeconds: number): string {
 
 export default function GuesstimatesPage() {
   const [state, setState] = useState<LoadState>({ loading: true, error: "", data: null });
+  // wakingUp: shown while the Render backend is cold-starting (apiFetch
+  // timed out at 25 s and auto-retried). Instead of showing a hard error we
+  // display a friendly "server is waking up" banner and keep loading = true
+  // until the retry succeeds or fails for a different reason.
+  const [wakingUp, setWakingUp] = useState(false);
   const [practicedIds, setPracticedIds] = useState<string[]>(() => getStoredPracticedIds());
   const sessionSeenRef = useRef<string[]>([]);
   const [attempt, setAttempt] = useState("");
@@ -355,6 +360,7 @@ export default function GuesstimatesPage() {
 
   const load = useCallback((targetChunkId?: string) => {
     setState((s) => ({ ...s, loading: true, error: "" }));
+    setWakingUp(false);
     setAttempt("");
     setRevealed(false);
     setEvaluation(null);
@@ -384,8 +390,15 @@ export default function GuesstimatesPage() {
       query = `?exclude=${encodeURIComponent(currentSeen.join(","))}`;
     }
 
-    apiFetch<GuesstimateResponse>(`/api/guesstimates/random${query}`, {}, "Failed to load a guesstimate.")
+    const fetchOnce = () =>
+      apiFetch<GuesstimateResponse>(`/api/guesstimates/random${query}`, {}, "Failed to load a guesstimate.");
+
+    // On a cold Render start apiFetch times out at 25 s and throws an
+    // AbortError-based ApiError with status 0. Auto-retry once after a short
+    // delay so the student sees "waking up" instead of a hard error.
+    fetchOnce()
       .then((data) => {
+        setWakingUp(false);
         setState({ loading: false, error: "", data });
         if (data.available && data.chunkId) {
           const newId = data.chunkId;
@@ -394,7 +407,38 @@ export default function GuesstimatesPage() {
             : Array.from(new Set([...sessionSeenRef.current, newId]));
         }
       })
-      .catch((e) => setState({ loading: false, error: e instanceof Error ? e.message : "Could not load a guesstimate.", data: null }));
+      .catch((e) => {
+        const isWakeUp =
+          e instanceof Error &&
+          (e.message.includes("waking up") || (e as { status?: number }).status === 0);
+        if (isWakeUp) {
+          // Show "waking up" banner but keep loading=true and retry once
+          setWakingUp(true);
+          setTimeout(() => {
+            fetchOnce()
+              .then((data) => {
+                setWakingUp(false);
+                setState({ loading: false, error: "", data });
+                if (data.available && data.chunkId) {
+                  const newId = data.chunkId;
+                  sessionSeenRef.current = data.cycleReset
+                    ? [newId]
+                    : Array.from(new Set([...sessionSeenRef.current, newId]));
+                }
+              })
+              .catch((e2) => {
+                setWakingUp(false);
+                setState({
+                  loading: false,
+                  error: e2 instanceof Error ? e2.message : "Could not load a guesstimate.",
+                  data: null
+                });
+              });
+          }, 5_000);
+        } else {
+          setState({ loading: false, error: e instanceof Error ? e.message : "Could not load a guesstimate.", data: null });
+        }
+      });
   }, []);
 
   useEffect(() => {
@@ -478,7 +522,11 @@ export default function GuesstimatesPage() {
         <div style={{ minWidth: 0 }}>
           {state.loading && (
             <div role="status" aria-live="polite" style={{ maxWidth: 420 }}>
-              <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Loading a problem…</div>
+              <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>
+                {wakingUp
+                  ? "⏳ The server is waking up — this takes about 30 seconds on the first visit of the day. Retrying…"
+                  : "Loading a problem…"}
+              </div>
               <IndeterminateProgressBar />
             </div>
           )}
