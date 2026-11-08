@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import AppShell from "./components/shell/AppShell";
 import RequireAuth from "./components/shell/RequireAuth";
 import LoginPage from "./pages/LoginPage";
@@ -40,6 +40,7 @@ export const router = createBrowserRouter([
           { path: "/skill", element: <SkillPage /> },
           { path: "/resume", element: <ResumePage /> },
           { path: "/tone-shifter", element: <ToneShifterPage /> },
+          { path: "/tone", element: <Navigate to="/tone-shifter" replace /> },
           { path: "/community", element: <CommunityPage /> },
           { path: "/admin", element: <Suspense fallback={null}><AdminPage /></Suspense> }
         ]

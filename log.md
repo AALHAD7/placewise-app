@@ -5,6 +5,22 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Audit: full-surface gstack audit of live site and added /tone redirect
+
+**Phase:** M1 (Consulting RAG) · **Type:** QA audit / routing fix
+
+**What changed:** Comprehensive live site audit using gstack headless browser suite (`$B` / browse):
+1. User Flow & Route Verification:
+   - Verified Guest Auth (redirects unauthenticated users cleanly to `/login`, generates 3h guest JWT session).
+   - Audited Frameworks RAG (retrieval + Gemini paraphrase + faithfulness judge, interactive topic filtering, diagram rendering).
+   - Audited Guesstimates (timer controls, problem list, assumption inputs, zero JS errors).
+   - Audited Company & Role Dossiers (dynamic leadership, timeline, value chain, recruitment cards load smoothly).
+   - Verified that account menu theme picker was completely removed in production.
+2. Route Redirect:
+   - Added `{ path: "/tone", element: <Navigate to="/tone-shifter" replace /> }` in `router.tsx` to handle direct navigation gracefully without 404s.
+
+---
+
 ## 2026-11-08 — UI Polish: removed theme switcher and locked design permanently to Obsidian Dark mode
 
 **Phase:** M1 (Consulting RAG) · **Type:** design / UX polish
