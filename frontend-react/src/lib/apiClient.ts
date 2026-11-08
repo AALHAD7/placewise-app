@@ -144,19 +144,16 @@ export async function logActivity(type: string, label: string): Promise<void> {
 // app's error copy is fairly specific per failure, e.g. "Could not load
 // activity." - keep that specificity rather than a generic message).
 //
-// timeoutMs defaults to 25 s — Render's free tier cold start can take 30–60 s,
-// but most requests that are going to succeed respond in < 5 s once the
-// server is warm. Without a timeout, fetch() on a cold Render server hangs
-// indefinitely (browser default is no timeout), keeping the UI stuck on the
-// loading spinner forever. 25 s lets a warm request succeed easily while
-// failing fast enough to show a "retrying" message to the user. Callers that
-// need a longer budget (e.g. streaming) should pass a larger value or 0 for
-// no timeout.
+// timeoutMs defaults to 120 s (2 minutes) to safely accommodate Render's
+// free-tier cold starts (45–75 s) plus multi-step Gemini AI generation calls
+// (role curriculum generation, company notes, casebook grounding) without
+// prematurely aborting legitimate in-flight requests. Callers can override
+// with a custom timeout or pass 0 to disable.
 export async function apiFetch<T>(
   path: string,
   opts: RequestInit = {},
   fallbackError = "Request failed.",
-  timeoutMs = 25_000
+  timeoutMs = 120_000
 ): Promise<T> {
   // No session is not an error here: most reads are public on the backend.
   // Sign-in-only routes answer 401, mapped to a clear message below.
@@ -181,7 +178,7 @@ export async function apiFetch<T>(
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
       throw new ApiError(
-        "The server is waking up — please try again in a moment.",
+        "Request timed out. The server took too long to respond — please try again.",
         0
       );
     }

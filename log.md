@@ -5,6 +5,22 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Fix global apiFetch timeout killing AI routes across all pages
+
+**Phase:** M1 · **Type:** bug fix / reliability · **Commit:** pending
+
+**Root cause:** The earlier commit `f70ef91` added a default `timeoutMs = 25_000` (25 seconds) to `apiFetch` in `apiClient.ts`. While intended for Guesstimates cold starts, it became the default for every page in the app (`RolePage`, `CompanyPage`, `FrameworksPage`, etc.). Gemini AI-powered routes (such as `/api/roles/:title` and `/api/roles/:title/topics` which perform Vertex AI search grounding and multi-step validation) routinely take 15–35 seconds. Combined with any network or Render cold-start latency, the 25-second limit was cutting off requests mid-generation, showing `"The server is waking up — please try again in a moment."` on the Role and Company pages.
+
+**What changed:**
+1. `apiClient.ts` — increased default `timeoutMs` to 120,000 ms (2 minutes). This gives enough headroom for Render cold-starts + deep Gemini AI generation passes without killing legitimate requests.
+2. Updated the timeout abort message to `"Request timed out. The server took too long to respond — please try again."`.
+
+**How to verify:** Select a role (e.g. Business Analyst) on `/role` — overview and topics load cleanly without hitting a premature 25s client-side abort.
+
+**Cost:** 0 (pure frontend config change).
+
+---
+
 ## 2026-11-08 — Render deployment sync & live guesstimates verification
 
 **Phase:** M1 · **Type:** deployment / ops & live verification · **Deploy ID:** `dep-dbo62utg1s2s73ea54og`
