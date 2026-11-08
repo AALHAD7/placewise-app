@@ -390,14 +390,20 @@ export default function GuesstimatesPage() {
       query = `?exclude=${encodeURIComponent(currentSeen.join(","))}`;
     }
 
-    const fetchOnce = () =>
-      apiFetch<GuesstimateResponse>(`/api/guesstimates/random${query}`, {}, "Failed to load a guesstimate.");
+    // Render free tier cold start can take up to 90 s. Use a generous 90 s
+    // timeout so a single fetch survives the full boot. After 15 s of waiting
+    // we flip `wakingUp` to show a friendly banner — the fetch itself keeps
+    // running and the banner disappears the moment the question arrives.
+    const wakeUpTimerId = setTimeout(() => setWakingUp(true), 15_000);
 
-    // On a cold Render start apiFetch times out at 25 s and throws an
-    // AbortError-based ApiError with status 0. Auto-retry once after a short
-    // delay so the student sees "waking up" instead of a hard error.
-    fetchOnce()
+    apiFetch<GuesstimateResponse>(
+      `/api/guesstimates/random${query}`,
+      {},
+      "Failed to load a guesstimate.",
+      90_000  // 90 s timeout — covers the full Render cold-start window
+    )
       .then((data) => {
+        clearTimeout(wakeUpTimerId);
         setWakingUp(false);
         setState({ loading: false, error: "", data });
         if (data.available && data.chunkId) {
@@ -408,36 +414,13 @@ export default function GuesstimatesPage() {
         }
       })
       .catch((e) => {
-        const isWakeUp =
-          e instanceof Error &&
-          (e.message.includes("waking up") || (e as { status?: number }).status === 0);
-        if (isWakeUp) {
-          // Show "waking up" banner but keep loading=true and retry once
-          setWakingUp(true);
-          setTimeout(() => {
-            fetchOnce()
-              .then((data) => {
-                setWakingUp(false);
-                setState({ loading: false, error: "", data });
-                if (data.available && data.chunkId) {
-                  const newId = data.chunkId;
-                  sessionSeenRef.current = data.cycleReset
-                    ? [newId]
-                    : Array.from(new Set([...sessionSeenRef.current, newId]));
-                }
-              })
-              .catch((e2) => {
-                setWakingUp(false);
-                setState({
-                  loading: false,
-                  error: e2 instanceof Error ? e2.message : "Could not load a guesstimate.",
-                  data: null
-                });
-              });
-          }, 5_000);
-        } else {
-          setState({ loading: false, error: e instanceof Error ? e.message : "Could not load a guesstimate.", data: null });
-        }
+        clearTimeout(wakeUpTimerId);
+        setWakingUp(false);
+        setState({
+          loading: false,
+          error: e instanceof Error ? e.message : "Could not load a guesstimate.",
+          data: null
+        });
       });
   }, []);
 
