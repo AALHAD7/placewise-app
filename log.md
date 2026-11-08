@@ -5,6 +5,22 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Bug fix: Guesstimates page stuck loading on cold Render start
+
+**Phase:** M1 · **Type:** bug fix / reliability · **Commit:** `f70ef91`
+
+**Root cause:** `apiFetch()` used plain `fetch()` with no timeout. Render's free tier spins down after 15 min idle; a cold start takes 30–90 s with no bytes sent. The browser hangs the `fetch()` indefinitely, so the page showed "Loading a problem…" forever with no error and no way to recover without a hard refresh.
+
+**What changed:**
+1. `apiClient.ts` — added a 25 s `AbortController` timeout to `apiFetch()`. On abort it throws `ApiError(status=0, "The server is waking up — please try again in a moment.")`. Callers that need a longer budget (streaming) can pass `timeoutMs=0`.
+2. `GuesstimatesPage.tsx` — `load()` catches `status === 0` errors, sets `wakingUp=true`, shows "⏳ The server is waking up…" in the loading banner, then auto-retries the fetch once after 5 s. If the retry also fails, the standard error state is shown with "Try another".
+
+**How to verify:** Visit `/guesstimates` immediately after the backend has been idle > 15 min. Instead of an infinite spinner the page shows the waking-up message, waits 5 s, retries, and loads a problem automatically.
+
+**Cost:** 0 (pure frontend change, no Gemini or Supabase calls).
+
+---
+
 ## 2026-11-08 — Guesstimates: added step-by-step plain text calculation breakdown alongside diagrams
 
 **Phase:** M1 (Consulting RAG) · **Type:** feature / accessibility & pedagogy polish
