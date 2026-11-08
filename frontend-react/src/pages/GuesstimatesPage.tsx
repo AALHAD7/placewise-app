@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "../lib/apiClient";
 import PageHeader from "../components/PageHeader";
 import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
+import GuesstimateCalculationView from "../components/GuesstimateCalculationView";
 import IndeterminateProgressBar from "../components/IndeterminateProgressBar";
 import VoiceRecordButton from "../components/VoiceRecordButton";
 import { useVoiceRecording } from "../hooks/useVoiceRecording";
@@ -123,6 +124,7 @@ export default function GuesstimatesPage() {
   const sessionSeenRef = useRef<string[]>([]);
   const [attempt, setAttempt] = useState("");
   const [revealed, setRevealed] = useState(false);
+  const [solutionViewMode, setSolutionViewMode] = useState<"both" | "text" | "diagram">("both");
   const { recording, micError, startRecording, stopRecording } = useVoiceRecording();
 
   // Questions catalog state
@@ -1054,12 +1056,89 @@ export default function GuesstimatesPage() {
 
               {revealed && state.data.problem && (
                 <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--divider)" }}>
-                  <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
-                    Diagram &amp; worked solution
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                    <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>
+                      Diagram &amp; worked solution
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        background: "rgba(255, 255, 255, 0.05)",
+                        border: "1px solid var(--border-soft)",
+                        borderRadius: "var(--r-pill)",
+                        padding: "3px 4px",
+                        flexWrap: "wrap"
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setSolutionViewMode("both")}
+                        style={{
+                          fontSize: "0.6875rem",
+                          fontWeight: 600,
+                          padding: "3px 10px",
+                          borderRadius: "var(--r-pill)",
+                          border: "none",
+                          cursor: "pointer",
+                          background: solutionViewMode === "both" ? "rgba(59, 130, 246, 0.35)" : "transparent",
+                          color: solutionViewMode === "both" ? "#93c5fd" : "var(--text-lightgray)",
+                          transition: "all 0.15s ease"
+                        }}
+                      >
+                        📊 Diagram + 🔢 Math Steps
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSolutionViewMode("text")}
+                        style={{
+                          fontSize: "0.6875rem",
+                          fontWeight: 600,
+                          padding: "3px 10px",
+                          borderRadius: "var(--r-pill)",
+                          border: "none",
+                          cursor: "pointer",
+                          background: solutionViewMode === "text" ? "rgba(59, 130, 246, 0.35)" : "transparent",
+                          color: solutionViewMode === "text" ? "#93c5fd" : "var(--text-lightgray)",
+                          transition: "all 0.15s ease"
+                        }}
+                      >
+                        🔢 Simple Text Calculation
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSolutionViewMode("diagram")}
+                        style={{
+                          fontSize: "0.6875rem",
+                          fontWeight: 600,
+                          padding: "3px 10px",
+                          borderRadius: "var(--r-pill)",
+                          border: "none",
+                          cursor: "pointer",
+                          background: solutionViewMode === "diagram" ? "rgba(59, 130, 246, 0.35)" : "transparent",
+                          color: solutionViewMode === "diagram" ? "#93c5fd" : "var(--text-lightgray)",
+                          transition: "all 0.15s ease"
+                        }}
+                      >
+                        📊 Diagram only
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
-                    <MarkdownWithDiagrams markdown={state.data.problem} />
-                  </div>
+
+                  {(solutionViewMode === "both" || solutionViewMode === "diagram") && (
+                    <div style={{ marginTop: 16, fontSize: "1.0625rem", lineHeight: 1.7 }}>
+                      <MarkdownWithDiagrams markdown={state.data.problem} />
+                    </div>
+                  )}
+
+                  {(solutionViewMode === "both" || solutionViewMode === "text") && (
+                    <GuesstimateCalculationView
+                      markdown={state.data.problem}
+                      rawProblem={state.data.rawProblem}
+                    />
+                  )}
                 </div>
               )}
             </div>

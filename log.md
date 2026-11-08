@@ -5,6 +5,26 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Guesstimates: added step-by-step plain text calculation breakdown alongside diagrams
+
+**Phase:** M1 (Consulting RAG) · **Type:** feature / accessibility & pedagogy polish
+
+**What changed:** Aalhad requested that on the Guesstimates page, apart from the diagram, the calculations should also be shown in simple text format so students who find diagrams hard to follow can read through the arithmetic cleanly:
+1. Pure calculation parser (`guesstimateCalculation.ts`):
+   - Extracts underlying assumptions, tree paths / demographic segmentation steps, flow equations, and final answer lines directly from problem markdown and casebook chunks.
+   - Converts nested issue tree branches into sequential linear tracks (Base Pool → Filter/Split percentages → Computed Pool).
+   - Normalizes flow operations into clean arithmetic equations (`f(x)` multipliers, units, and final revenues).
+2. Calculation View component (`GuesstimateCalculationView.tsx`):
+   - Renders a dedicated "Step-by-Step Calculation (Plain Text)" card with interactive track selector pills, numbered step badges, arithmetic formulas, and verified conclusion cards.
+   - Includes a one-click "Copy calculation text" button for easy student notes.
+3. Solution View Mode selector (`GuesstimatesPage.tsx`):
+   - Added view mode pills above the revealed answer:
+     - `📊 Diagram + 🔢 Math Steps` (default, shows both side-by-side/stacked)
+     - `🔢 Simple Text Calculation` (pure readable arithmetic without diagram clutter)
+     - `📊 Diagram only`
+
+---
+
 ## 2026-11-08 — Audit: full-surface gstack audit of live site and added /tone redirect
 
 **Phase:** M1 (Consulting RAG) · **Type:** QA audit / routing fix
