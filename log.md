@@ -5,6 +5,23 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Render deployment sync & live guesstimates verification
+
+**Phase:** M1 · **Type:** deployment / ops & live verification · **Deploy ID:** `dep-dbo62utg1s2s73ea54og`
+
+**Root cause:** While frontend fixes (`f70ef91`, `58fe236`, `2efe434`) were pushed to `main` and deployed to Vercel, Render only triggers auto-deploys when files in `backend/` are modified. Render was still running an older container build (`114ec5d`) from 5 hours prior. In addition, after 5 hours of inactivity, the Render free-tier container had locked up at the proxy layer, causing incoming TLS requests to hang with 0 bytes returned and timing out on the client.
+
+**What changed:**
+1. Triggered a manual fresh cache-cleared deployment on Render via API (`dep-dbo62utg1s2s73ea54og`), building `origin/main` commit `2efe434`.
+2. Verified deployment went `status: live` and tested the live endpoint (`/health` returned HTTP 200 in 0.2s; `/api/guesstimates/random` returned HTTP 200 with active casebook problem).
+3. Verified the live production site `https://placewise-io.vercel.app/guesstimates` via headless browser (`gstack browse`): authenticated guest session, verified problem loading ("NUMBER OF WINE BOTTLES SOLD IN INDIA"), clicked "Show answer", and confirmed the step-by-step plain text calculation breakdown, assumptions, and formulas render cleanly.
+
+**How to verify:** Navigate to `https://placewise-io.vercel.app/guesstimates` — question loads cleanly and "Show answer" displays the calculation breakdown.
+
+**Cost:** 0 (no billable LLM calls).
+
+---
+
 ## 2026-11-08 — Bug fix: Guesstimates page stuck loading on cold Render start
 
 **Phase:** M1 · **Type:** bug fix / reliability · **Commit:** `f70ef91`
