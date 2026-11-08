@@ -5,9 +5,29 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-08 — Fix Render host binding to 0.0.0.0, hoist /health probe, and verify Company page live
+
+**Phase:** M1 · **Type:** bug fix / reliability · **Commit:** `8064122`
+
+**Root cause:** Node.js 22 Express `app.listen(PORT)` without an explicit host bound to `localhost` (127.0.0.1/::1). Render's reverse proxy container infrastructure requires all incoming web traffic to bind to `0.0.0.0`. When Render spun down idle free containers and attempted to wake them up on incoming requests, the port scanner failed or lost connection, causing requests to hang with 0 bytes or time out after 90 seconds. Additionally, when a user selected a company on `/company`, 9 concurrent requests (`/news`, `/:company`, `/roles`, `/timeline`, `/value-chain`, `/rating`, `/leadership`, `/logo`, `/subsidiaries`) were dispatched, compounding timeouts while the container port was unreachable.
+
+**What changed:**
+1. `backend/src/server.js` — explicitly bound the server to `0.0.0.0`: `app.listen(PORT, "0.0.0.0", ...)`.
+2. `backend/src/server.js` — hoisted the `/health` endpoint to the very top (above `generalLimiter`, CORS, and `express.json`) so health checks, readiness probes, and keep-alive pings can never be rate-limited or blocked.
+3. Updated Render web service `srv-danfsurm8hqs73b6gv70` `healthCheckPath` from `""` to `"/health"` via Render API.
+4. Auto-deployed on Render (`dep-dbo83i5g1s2s7387mrkg`) and verified `status: "live"`.
+5. Tested all 9 company API endpoints for "Manchester United" — all returned HTTP 200 with full data in under 5 seconds.
+6. Verified live production frontend (`https://placewise-io.vercel.app/company`) using browser automation: selected "Manchester United", and confirmed that Overview, Leadership, Financials, Glassdoor Rating, Timeline (10 events), Value Chain (5 stages), Live News (6 articles), Investments, Recruitment Process, and Subsidiaries (8 items) all load and render cleanly.
+
+**How to verify:** Navigate to `https://placewise-io.vercel.app/company`, select "Manchester United" (or any company) — all overview, leadership, financials, timeline, and value chain cards load properly.
+
+**Cost:** 0 (pure infrastructure and routing fix).
+
+---
+
 ## 2026-11-08 — Fix global apiFetch timeout killing AI routes across all pages
 
-**Phase:** M1 · **Type:** bug fix / reliability · **Commit:** pending
+**Phase:** M1 · **Type:** bug fix / reliability · **Commit:** `a9e1cc7`
 
 **Root cause:** The earlier commit `f70ef91` added a default `timeoutMs = 25_000` (25 seconds) to `apiFetch` in `apiClient.ts`. While intended for Guesstimates cold starts, it became the default for every page in the app (`RolePage`, `CompanyPage`, `FrameworksPage`, etc.). Gemini AI-powered routes (such as `/api/roles/:title` and `/api/roles/:title/topics` which perform Vertex AI search grounding and multi-step validation) routinely take 15–35 seconds. Combined with any network or Render cold-start latency, the 25-second limit was cutting off requests mid-generation, showing `"The server is waking up — please try again in a moment."` on the Role and Company pages.
 
