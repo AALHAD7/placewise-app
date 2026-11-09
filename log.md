@@ -5,6 +5,26 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-09 — Live Google Sheets analytics integration via Apps Script webhook
+
+**Phase:** M1 · **Type:** analytics / ops & monitoring
+
+**Context:** Aalhad requested live tracking of student usage across PlaceWise in a Google Sheet, organizing activity into separate sheets so usage trends (popular companies, frameworks, guesstimates, resume drills, mock interviews) can be tracked in real-time.
+
+**What changed:**
+1. `backend/src/lib/sheetsLogger.js` — created fire-and-forget asynchronous Google Sheets logger sending events to the Apps Script webhook URL (`https://script.google.com/macros/s/AKfycbyM1Q_a6saGhAaLLCktOSwjnmsgm4MdYOS4gzz2dC1GONy0oNJvzE6TIbOcDFkIVUFZxQ/exec`). Appends to unified chronological feed `All Activity` and auto-creates/appends to category tabs (`Companies`, `Frameworks`, `Resume Drills`, `Guesstimates`, `Mock Interviews`, `Tone Shifter`).
+2. `backend/src/lib/activity.js` — integrated `logToGoogleSheet` into `logActivity` for framework practice, mock interviews, tone shifting, and resume interrogation.
+3. `backend/src/routes/companies.js` — added automatic logging whenever a student looks up a company, recording the resolved company name, sector, and student/guest identifier.
+4. `backend/src/routes/guesstimates.js` — added logging when random or catalog guesstimates are loaded.
+5. `backend/src/routes/resume.js` — added logging for parsed resume uploads.
+6. Backfilled historical database records into the Google Sheet so historical trends are immediately available.
+
+**How to verify:** Open the Google Sheet; check that "All Activity", "Companies", "Frameworks", and other category tabs receive live rows when navigating the site.
+
+**Cost:** 0 (free Google Apps Script webhook, zero billable API calls).
+
+---
+
 ## 2026-11-08 — Fix Render host binding to 0.0.0.0, hoist /health probe, and verify Company page live
 
 **Phase:** M1 · **Type:** bug fix / reliability · **Commit:** `8064122`

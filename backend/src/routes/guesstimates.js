@@ -2,6 +2,7 @@ import { Router } from "express";
 import { optionalAuth, requireAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
+import { logToGoogleSheet } from "../lib/sheetsLogger.js";
 import {
   getRandomGuesstimateProblem,
   groundedGuesstimateLookup,
@@ -77,6 +78,17 @@ router.get("/problem/:chunkId", optionalAuth, async (req, res) => {
     if (!result.available) {
       return res.status(404).json({ success: false, error: "Guesstimate problem not found." });
     }
+    if (result.available && result.question) {
+      const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
+      logToGoogleSheet({
+        sheet: "Guesstimates",
+        user: userLabel,
+        action: "Guesstimate Loaded",
+        item: result.question,
+        details: result.citation?.casebook || "Casebook practice"
+      });
+    }
+
     res.json({ success: true, ...result });
   } catch (err) {
     console.error("[guesstimates/problem/:chunkId]", err);
@@ -124,6 +136,17 @@ router.get("/random", optionalAuth, async (req, res) => {
         const oldest = recentServedByClient.keys().next().value;
         recentServedByClient.delete(oldest);
       }
+    }
+
+    if (result.available && result.question) {
+      const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
+      logToGoogleSheet({
+        sheet: "Guesstimates",
+        user: userLabel,
+        action: "Guesstimate Loaded",
+        item: result.question,
+        details: result.citation?.casebook || "Casebook practice"
+      });
     }
 
     res.json({ success: true, ...result });

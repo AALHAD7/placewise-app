@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { logToGoogleSheet } from "./sheetsLogger.js";
 
 // Every "did the user do something today" signal on the home dashboard
 // (streak, today's plan, recent activity) traces back to a real row in
@@ -25,15 +26,40 @@ export function isValidActivityType(type) {
   return Object.prototype.hasOwnProperty.call(ACTIVITY_TYPES, type);
 }
 
+const TYPE_TO_SHEET = {
+  framework_review: "Frameworks",
+  resume_interrogation: "Resume Drills",
+  tone_shift: "Tone Shifter",
+  mock_interview: "Mock Interviews",
+  story_builder: "Story Builder"
+};
+
 export async function logActivity(userId, type, label) {
   if (!userId || !isValidActivityType(type)) return;
+  const itemLabel = (label || ACTIVITY_TYPES[type].label).slice(0, 200);
+
+  // 1. Supabase database log
   try {
     const { error } = await supabase
       .from("user_activity")
-      .insert({ user_id: userId, type, label: (label || ACTIVITY_TYPES[type].label).slice(0, 200) });
+      .insert({ user_id: userId, type, label: itemLabel });
     if (error) console.warn(`[activity] log failed: ${error.message}`);
   } catch (err) {
     console.warn(`[activity] log failed: ${err.message}`);
+  }
+
+  // 2. Live Google Sheets log
+  try {
+    const sheet = TYPE_TO_SHEET[type] || "All Activity";
+    logToGoogleSheet({
+      sheet,
+      user: userId ? `User (${userId.slice(0, 8)})` : "Guest",
+      action: ACTIVITY_TYPES[type]?.label || type.replace(/_/g, " "),
+      item: itemLabel,
+      details: `${ACTIVITY_TYPES[type]?.minutes || 10} min activity`
+    });
+  } catch {
+    // Non-blocking
   }
 }
 

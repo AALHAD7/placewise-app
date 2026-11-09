@@ -14,6 +14,7 @@ import { getCompanySubsidiaries } from "../lib/companySubsidiaries.js";
 import { optionalAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
+import { logToGoogleSheet } from "../lib/sheetsLogger.js";
 
 const router = Router();
 
@@ -69,13 +70,23 @@ router.get("/:companyName", optionalAuth, aiLimiter, async (req, res) => {
       .limit(5);
     if (contribError) throw contribError;
 
+    const resolvedName = company?.name || overview.canonicalName || companyName;
+    const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
+    logToGoogleSheet({
+      sheet: "Companies",
+      user: userLabel,
+      action: "Company Search",
+      item: resolvedName,
+      details: overview.sector ? `Sector: ${overview.sector}` : ""
+    });
+
     res.json({
       success: true,
       company: {
         // A real `companies` row's name wins (hand-curated, trusted); otherwise
         // prefer the Gemini-resolved full name (e.g. "JPMC" -> "JPMorgan Chase
         // & Co.") over echoing back whatever abbreviation the student typed.
-        name: company?.name || overview.canonicalName || companyName,
+        name: resolvedName,
         industry: company?.industry || null,
         culture: company?.culture || [],
         hiringBar: company?.hiring_bar || null,

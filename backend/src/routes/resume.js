@@ -8,6 +8,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { aiLimiter, heavyAiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
 import { logActivity } from "../lib/activity.js";
+import { logToGoogleSheet } from "../lib/sheetsLogger.js";
 
 const router = Router();
 // Extension is re-checked below (it's what actually selects the parser), but
@@ -159,6 +160,15 @@ router.post("/upload", requireAuth, upload.single("resume"), async (req, res) =>
     }
     const truncated = resumeText.length > MAX_RESUME_CHARS;
     if (truncated) resumeText = resumeText.slice(0, MAX_RESUME_CHARS);
+
+    const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
+    logToGoogleSheet({
+      sheet: "Resume Drills",
+      user: userLabel,
+      action: "Resume Uploaded",
+      item: req.file.originalname,
+      details: `${resumeText.length} characters parsed${truncated ? " (truncated)" : ""}`
+    });
 
     res.json({ success: true, resumeText, fileName: req.file.originalname, truncated });
   } catch (err) {
