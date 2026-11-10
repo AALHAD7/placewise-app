@@ -3,6 +3,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
 import { groundedQaAnswer } from "../lib/qaRetrieval.js";
+import { logToGoogleSheet } from "../lib/sheetsLogger.js";
 
 const router = Router();
 
@@ -26,6 +27,18 @@ router.post("/ask", requireAuth, aiLimiter, async (req, res) => {
   }
   try {
     const result = await groundedQaAnswer(question.trim());
+
+    const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
+    logToGoogleSheet({
+      sheet: "Questions Asked",
+      user: userLabel,
+      action: "Ask Page (Q&A)",
+      item: question.trim(),
+      details: result.groundedInCasebooks
+        ? `Grounded in Casebooks (${result.citation?.school || "Casebook"} p.${result.citation?.pages?.join(",") || ""})`
+        : "General Knowledge Answer"
+    });
+
     res.json({ success: true, available: true, ...result });
   } catch (err) {
     console.error("[qa/ask]", err);

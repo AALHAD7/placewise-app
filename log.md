@@ -5,6 +5,25 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-10 — Track student questions in Google Sheets ("Questions Asked" tab)
+
+**Phase:** M1 · **Type:** analytics / ops & monitoring
+
+**Context:** Aalhad requested visibility into what students are asking on PlaceWise so he can review student inquiries, casebook gaps, and common interview questions.
+
+**What changed:**
+1. Created a dedicated **`Questions Asked`** tab in the Google Sheet via the Apps Script webhook.
+2. `backend/src/routes/qa.js` — wired `logToGoogleSheet` to log every question asked in the main Ask section (`/qa`), recording the student/guest ID, exact question text, and whether the answer was grounded in casebooks or general guidance.
+3. `backend/src/routes/frameworks.js` — wired `logToGoogleSheet` to log follow-up questions asked inside specific framework cards (e.g. asking about MECE or Porter's 5 Forces).
+4. `backend/src/routes/resume.js` — wired `logToGoogleSheet` to log clarifying questions asked by students during interview practice.
+5. `backend/src/routes/guesstimates.js` — wired `logToGoogleSheet` to log assumption clarifying questions during guesstimates.
+
+**How to verify:** Open the Google Sheet; verify the `Questions Asked` tab is present and receives questions in real time.
+
+**Cost:** 0 (fire-and-forget webhook).
+
+---
+
 ## 2026-11-09 — Live Google Sheets analytics integration via Apps Script webhook
 
 **Phase:** M1 · **Type:** analytics / ops & monitoring

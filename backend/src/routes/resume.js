@@ -333,6 +333,16 @@ router.post("/questions/clarify", requireAuth, aiLimiter, async (req, res) => {
     const prompt = `ORIGINAL INTERVIEW QUESTION YOU ASKED:\n${question.trim()}\n\nCANDIDATE'S CLARIFYING QUESTION:\n${followUp.trim().slice(0, 500)}\n\nRespond as the interviewer, as specified.`;
     const result = await generateJSON({ system: CLARIFY_SYSTEM_PROMPT, prompt, maxTokens: 1000 });
     if (!result.answer || !result.answer.trim()) throw new Error("Empty response from model.");
+
+    const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
+    logToGoogleSheet({
+      sheet: "Questions Asked",
+      user: userLabel,
+      action: "Clarifying Question",
+      item: followUp.trim(),
+      details: `On question: "${question.trim().slice(0, 90)}..."`
+    });
+
     res.json({ success: true, understood: result.understood !== false, answer: result.answer.trim() });
   } catch (err) {
     console.error("[resume/questions/clarify]", err);

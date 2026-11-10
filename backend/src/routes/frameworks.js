@@ -6,6 +6,7 @@ import { errorDetail } from "../lib/errors.js";
 import { withGroundedExamples } from "../lib/frameworksGrounding.js";
 import { buildConsultingFrameworkCatalog } from "../lib/frameworkCatalog.js";
 import { answerFrameworkQuestion } from "../lib/frameworkQa.js";
+import { logToGoogleSheet } from "../lib/sheetsLogger.js";
 
 const router = Router();
 
@@ -108,6 +109,16 @@ router.post("/ask", requireAuth, aiLimiter, async (req, res) => {
     if (error || !fw) return res.status(404).json({ success: false, error: "Framework not found." });
 
     const result = await answerFrameworkQuestion(fw, question.trim());
+
+    const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
+    logToGoogleSheet({
+      sheet: "Questions Asked",
+      user: userLabel,
+      action: `Framework Q&A (${fw.name})`,
+      item: question.trim(),
+      details: result.grounded ? "Grounded in Framework" : "General Guidance"
+    });
+
     res.json({ success: true, ...result });
   } catch (err) {
     console.error("[frameworks/ask]", err);

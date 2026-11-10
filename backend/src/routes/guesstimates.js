@@ -168,6 +168,16 @@ router.get("/ask", optionalAuth, async (req, res) => {
   }
   try {
     const result = await groundedGuesstimateLookup(topic);
+
+    const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
+    logToGoogleSheet({
+      sheet: "Questions Asked",
+      user: userLabel,
+      action: "Guesstimate Topic Lookup",
+      item: topic.trim(),
+      details: result.covered ? "Grounded in Casebooks" : "General Knowledge"
+    });
+
     res.json({ success: true, available: true, ...result });
   } catch (err) {
     console.error("[guesstimates/ask]", err);
@@ -196,6 +206,16 @@ router.post("/clarify", requireAuth, aiLimiter, async (req, res) => {
     if (!result.found) {
       return res.status(404).json({ success: false, error: "Guesstimate problem not found." });
     }
+
+    const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
+    logToGoogleSheet({
+      sheet: "Questions Asked",
+      user: userLabel,
+      action: "Guesstimate Clarifying Question",
+      item: validated.question,
+      details: "Assumption Clarification"
+    });
+
     res.json({ success: true, answer: result.answer });
   } catch (err) {
     console.error("[guesstimates/clarify]", err);
