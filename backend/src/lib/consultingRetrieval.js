@@ -317,6 +317,37 @@ const RELEVANCE_SYSTEM_PROMPT =
   "advice that could apply to any interview of any type. Generic do's/don'ts, generic rapport-" +
   "building tips, or generic case-interview-cracking advice do not answer a question about a " +
   "specific, different named sub-type, even though both are \"about interviews\".\n\n" +
+  "A chunk that only NAMES or INTRODUCES a framework/method, without actually walking " +
+  "through its criteria, steps, or sub-components, is a close relative of the TOC/index " +
+  "failure mode above, and is equally NOT faithful (found 2026-11-11: a 'Premise:' section " +
+  "that just states the two sub-questions a market-entry case must answer - 'should we " +
+  "enter, and how should we enter' - was wrongly accepted for a question asking HOW to " +
+  "structure that decision, even though it never mentions VRIN, SWOT, joint venture, or " +
+  "first-mover advantage; similarly, a bare one-line definition of MECE was wrongly accepted " +
+  "for a question asking what to do BEFORE calculating a market-sizing guesstimate, even " +
+  "though it never mentions rounding aggressively, sense-checking, or the supply side). If " +
+  "the question asks HOW to do something, or what specific criteria/steps/checklist to " +
+  "follow, a scoping statement that a sub-question exists, or a bare definition of a term, " +
+  "is NOT a faithful answer - the excerpt must contain the actual criteria, steps, or " +
+  "checklist content, not just introduce or name the topic. This rule is about content " +
+  "depth, not domain or source - it applies identically no matter which casebook or domain " +
+  "the excerpt comes from, and a sufficiently specific excerpt from any domain still passes.\n\n" +
+  "A request to QUOTE/REPRODUCE a named external author or book's EXACT WORDS is ALSO a " +
+  "specificity trigger, a different kind from the ones above (found 2026-11-11, pm040-042: " +
+  "a question asking for Matt LeMay's verbatim wording from 'Product Management in Practice' " +
+  "was wrongly matched to a compendium chunk that discusses the same general idea in the " +
+  "compendium's OWN words). If the question explicitly asks to quote, reproduce, or give the " +
+  "'verbatim'/'exact'/'word for word' text attributed to a NAMED external author or book " +
+  "title, the excerpt is faithful ONLY if it actually contains that book's own original " +
+  "wording. An excerpt that merely discusses, paraphrases, summarizes, or independently " +
+  "describes the same author's idea or concept - even correctly, even citing the author/book " +
+  "by name, even on the exact same topic - is NOT faithful to a verbatim-quote request. " +
+  "'The compendium explains this author's idea' is categorically different from 'the " +
+  "compendium contains this author's exact words,' and only the second satisfies a " +
+  "verbatim-quote question. This trigger applies ONLY when the question itself demands exact/" +
+  "verbatim/word-for-word reproduction attributed to a specific named source - a question " +
+  "that just asks what a concept means, with no demand for someone else's exact wording, is " +
+  "unaffected by this rule.\n\n" +
   'Respond with ONLY a JSON object, no markdown fences: {"verdict": "faithful" or ' +
   '"unfaithful", "reasoning": "one sentence explaining your judgment"}';
 

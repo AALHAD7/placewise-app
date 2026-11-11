@@ -5,6 +5,86 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-11 — D1 follow-up: both found gaps addressed (prompt fix + investigation); live eval re-run blocked by Gemini billing
+
+**Phase:** D1 follow-up · **Type:** prompt fix + test + (blocked) eval re-run
+
+**Context:** the prior same-day D1 follow-up entry found 2 real gaps in `run_eval_pm_preview.js`'s
+read-only run against the still-inactive PM pool: 3 false positives on verbatim-quote
+questions (pm040-042) and 2 of 6 cross-domain probes leaking Prodman questions (pm036,
+pm037) to Consulting content. Nothing live is affected either way (`is_active`/
+`ENABLE_PM_RAG_V2` both untouched throughout).
+
+**Issue 1 fix — verbatim-quote-from-named-book specificity rule.** Added a new rule to
+`RELEVANCE_SYSTEM_PROMPT` in `backend/src/lib/consultingRetrieval.js`, same pattern as
+R9.2's firm-name rule and R9.3's metric-type/interview-sub-type rules: when a question
+explicitly asks to quote/reproduce verbatim/word-for-word text attributed to a named
+external author or book, an excerpt that only discusses/paraphrases the same idea in the
+compendium's own words (not the book's actual wording) is now taught as NOT faithful - "the
+compendium explains this author's idea" is categorically different from "the compendium
+contains this author's exact words." Explicitly scoped to only trigger when the question
+itself demands exact/verbatim reproduction, so ordinary "what does X mean" questions are
+unaffected (checked: no other verbatim-style question exists yet in Consulting/Finance's
+`questions.jsonl` rows, so no regression risk there was found).
+
+**Issue 2 investigation and fix — generic-premise/bare-definition specificity rule.**
+Investigated before fixing anything, per the task's instruction: queried `ingest_chunks`
+directly (not through a live judge call - see below) for the actual winning rows in both
+leaked probes. Found the SAME underlying judge gap in both, not two different problems and
+not inherent domain overlap: pm036's winning Consulting chunk ("Premise:", 0.789 similarity)
+is a bare 2-sentence scoping statement that just restates the question's own two
+sub-questions ("should we enter, and how should we enter") without ever naming VRIN, SWOT,
+joint venture or first-mover advantage - while the correctly-tagged Prodman chunk ranked
+2nd (0.774, "11.5 Market entry") actually walks through VRIN/SWOT company analysis in
+detail. Symmetrically, pm037's winning Consulting chunk ("MECE Segmentation", 0.759) is a
+one-line definition of MECE with no mention of rounding aggressively, sense-checking, or the
+supply side, while the correctly-tagged Prodman chunk ranked 3rd (0.754, "7.2 The method")
+has all three terms verbatim in its 4-step guesstimate method. This is the same failure
+class the existing TOC/index rule already names ("naming a topic isn't teaching it") just not
+narrow enough to catch a short premise/definition that happens to name the right vocabulary
+without the content - so the fix is a new rule in the same prompt, explicitly framed as
+**content-depth, not domain**: a chunk that only names/introduces a framework without its
+criteria/steps/checklist is not faithful to a "how do you..."/"what should I do before..."
+question, regardless of which domain or casebook it came from. This is deliberately NOT a
+PM-vs-Consulting tie-breaker or similarity-score bias - a sufficiently specific Consulting
+excerpt still passes a Consulting question, and a sufficiently specific PM excerpt still
+passes a PM question; the rule only ever rejects an excerpt that was already too shallow to
+answer the question asked, independent of source. Concluded this is the right, well-reasoned
+fix rather than forcing an artificial domain bias, and consistent with not touching FIN1.04's
+deliberate `domain: null` cross-domain design (f011/f012 pair, genuinely non-overlapping
+topics, stay unaffected - this rule change doesn't touch retrieval or domain filtering at
+all, only the relevance judge's content-depth bar).
+
+**Tests:** `backend/test/relevanceSpecificityRules.test.js` (6 new tests, network-mocked,
+same convention as `judgeExcerptLimit.test.js` - captures the real `systemInstruction` text
+sent to `judgeRelevanceOnce` and asserts both new rules are present in it, then wires a
+mocked judge verdict through end-to-end for a verbatim-quote scenario, a generic-premise
+scenario, and two regression-guard scenarios (an ordinary non-verbatim question, and a
+sufficiently specific excerpt from either side) to prove neither rule accidentally fails an
+unrelated question). `npm test`: 249/254 pass - the 5 failures are the pre-existing sandbox
+env-leak test plus 4 tests that make a **real** Gemini call, now failing with HTTP 402
+"Your prepayment credits are depleted" (not a code regression; see below).
+
+**Could not re-run the live preview eval - genuine external blocker, not a code issue.**
+`run_eval_pm_preview.js` needs real Gemini calls (embeddings + the 3-vote relevance judge)
+against the actual API, and the project's Gemini API key has run out of prepayment credits
+as of this session (confirmed directly: a bare `embedTexts(["test"], ...)` call also fails
+with the same 402, consistently, on retry). This blocks empirically confirming the fix moved
+pm040-042 to `covered:false` and improved/held pm036-037's leak status - I could not run
+that proof this session. **Aalhad needs to add Gemini API billing/credits before this (and
+the 4 newly-failing real-Gemini tests, and any further live eval work) can proceed.** The
+offline evidence above (direct chunk-content inspection, not a judge call) strongly supports
+the reasoning for both fixes, but is not the same as the live confirmation the task asked
+for - flagging this honestly rather than claiming a result I didn't actually observe.
+
+**Files:** `backend/src/lib/consultingRetrieval.js` (`RELEVANCE_SYSTEM_PROMPT`, 2 new rules),
+`backend/test/relevanceSpecificityRules.test.js` (new).
+
+**Not done in this entry:** the live `run_eval_pm_preview.js` re-run (blocked, see above);
+no `is_active`/flag change (none was in scope).
+
+---
+
 ## 2026-11-11 — D1 follow-up: 30 more PM eval questions added, full preview eval re-run, 2 real gaps found
 
 **Phase:** D1 follow-up · **Type:** eval (read-only, no `is_active`/flag change)
