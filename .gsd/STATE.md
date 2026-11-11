@@ -1,28 +1,22 @@
 # STATE
 
-**Position:** ▶ R9, NOT done. Switch-over already happened live (is_active flipped, flags on)
-— this is further along than it looks, not blocked on a decision. What's actually left:
+**Position:** ▶ D1 (Product management). R9 is done (2026-11-11) — see `.gsd/ROADMAP.md`.
 
-1. **Push commits `4fb1f79` and `0ca4751`** (both committed to `main`, not pushed — blocked by
-   this session's "Production Deploy" permission classifier) so Render serves the
-   footer/attribution-leak fix. Needs Aalhad.
-2. **Run this SQL** (also blocked for this session — "Modify Shared Resources"), so Frameworks
-   stops serving the cached pre-fix leaked text for up to 7 more days:
-   `update frameworks set grounded_checked_at = null where domain='Consulting' and
-   grounded_checked_at is not null;` (8 rows). Needs Aalhad.
-3. After 1-2 land, re-run the `qa-tester` MECE/Market Entry check (2026-11-11's QA found the
-   leak; confirm it's gone post-deploy+cache-clear) before marking R9 done in `ROADMAP.md`.
-4. **Unresolved, not a blocker but worth Aalhad's look:** 2 SRCC Guesstimates-book chunks were
-   deactivated sometime between 2026-11-07 and 2026-11-11 with no `log.md` entry — a 2026-11-11
-   rollback test unintentionally reactivated them and their IDs aren't known, so they were not
-   restored (see that entry). If you recall doing this, the IDs should go into
-   `switchConsultingLive.js`'s `EXCLUDED_CHUNK_IDS` and be turned back off.
+R9 closed out 2026-11-11: Aalhad pushed the 2 pending commits (`4fb1f79` footer/attribution
+fix, `0ca4751` rollback-script fix) and ran the Frameworks cache-clear SQL himself (both were
+correctly blocked for this session's own permissions — "Production Deploy" /
+"Modify Shared Resources" — and needed his direct action, per the same pattern as the original
+2026-11-07 switch-over). `qa-tester` then re-confirmed MECE/Market Entry/Market Sizing live,
+post-deploy, post-cache-clear: no leak, real diagrams, clean console. All of R9's done-whens
+are now met (no regressions, switch flipped, rollback tested). See log.md's 2026-11-11 "R9
+closed" entry.
 
-2026-11-11 done: QA re-check of the live switch (per step 3's predecessor) found and fixed
-2 grounding-policy leaks (casebook footer artifact + paraphrase naming its source) on
-Frameworks — see log.md's 2026-11-11 entries (`4fb1f79` the fix, `0ca4751` the rollback-test
-fix). Rollback mechanism itself is now proven (tested live, see log.md) and the script's
-`--apply` gap it exposed is fixed.
+**Carried forward, not a D1 blocker:** 2 SRCC Guesstimates-book chunks were deactivated
+sometime between 2026-11-07 and 2026-11-11 with no `log.md` entry; a 2026-11-11 rollback test
+unintentionally reactivated them and their IDs aren't known, so they were not restored. If
+Aalhad recalls doing this, the IDs should go into `switchConsultingLive.js`'s
+`EXCLUDED_CHUNK_IDS` and be turned back off.
+
 R9.4 done 2026-11-07: bumped `judgeParaphraseFaithful`'s vote count 3→5 (`faithfulMajority`
 now needs ≥3/5, same simple-majority rule, just less noisy) in `consultingRetrieval.js`, to
 fix the judge non-determinism R9.3 flagged (83%→58% faithfulness swing on identical code).

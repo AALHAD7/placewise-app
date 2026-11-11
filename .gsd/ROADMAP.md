@@ -40,7 +40,7 @@ diagrams included.
 | R7 | Grounded retrieval on new chunks behind a switch: Frameworks, Guesstimates, Q&A (Consulting) with citations + labelled AI fallback | rag-engineer | `npm test` green; switch off = old behaviour | done (2026-11-02) |
 | R7b | Paraphrase layer: Gemini re-presents retrieved chunk(s) in plain language (idea/logic/numbers unchanged) + faithfulness judge gate, fail-closed to verbatim excerpt; reversible flag | rag-engineer | Faithfulness judge passes on eval set; manual check: same facts, different wording, no verbatim casebook sentences shown by default; flag off = today's verbatim behaviour | done (2026-11-03) — code + tests + eval all pass bar; `ENABLE_ANSWER_PARAPHRASE` still off everywhere, Aalhad to flip when ready |
 | R8 | Frontend for RAG only: render new diagram types, citations, "AI-generated — not from the casebooks" label | frontend-engineer | Build passes; QA screenshots desktop + phone | done (2026-11-06) |
-| ▶ R9 | Eval new vs baseline; switch Consulting live; QA on live site | rag-evaluator → qa-tester | No regressions; switch flipped; rollback tested | todo |
+| R9 | Eval new vs baseline; switch Consulting live; QA on live site | rag-evaluator → qa-tester | No regressions; switch flipped; rollback tested | done (2026-11-11) |
 
 ---
 
@@ -60,7 +60,7 @@ switch live.
 
 | ID | Task | Agent | Extra done-when | Status |
 |---|---|---|---|---|
-| D1 | Product management | ingestion-engineer → rag-engineer | Grounded PM content is on with citations | todo |
+| ▶ D1 | Product management | ingestion-engineer → rag-engineer | Grounded PM content is on with citations | todo |
 | FIN1 | Finance reference compendium (`finance_compendium.md`, 208 topics) — curated reference material, not a club casebook; new `source_class = placewise_reference`, ingested into `ingest_documents`/`ingest_chunks` and wired to Q&A, `is_active=false` until Aalhad switches it on | ingestion-engineer → backend-engineer → rag-engineer → rag-evaluator | 208 topic chunks ingested and embedded; `match_ingest_chunks` accepts `placewise_reference` alongside `club_casebook`; Q&A can retrieve Finance content; ≥10 Finance eval questions added and scored; CLAUDE.md's grounding policy documents the new source class; cost logged | todo |
 | D2 | Finance (club casebooks) | ingestion-engineer | Charts and tables: all numbers match the source (number coverage = 100%); Frameworks-page taxonomy expansion for the FIN1 compendium's 26 modules is follow-up work here, not in FIN1 | todo |
 | D3 | Marketing / Sales | ingestion-engineer | — | todo |

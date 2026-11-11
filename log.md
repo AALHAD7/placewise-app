@@ -5,6 +5,42 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-11 — R9 closed: deploy pushed, Frameworks cache cleared, leak fix confirmed live
+
+**Phase:** R9 · **Type:** deploy + verification (closes the phase)
+
+**What changed:** Aalhad pushed the two pending commits (`4fb1f79` footer/attribution fix,
+`0ca4751` rollback-script fix) to `origin/main` — Render auto-deployed. Aalhad then ran the
+cache-clear SQL (`update frameworks set grounded_checked_at = null where domain='Consulting'
+and grounded_checked_at is not null`), clearing the stale 7-day cache on the 8 affected rows.
+
+**Verification:** `qa-tester` re-checked MECE, Market Entry Framework and Market Sizing
+(Top-Down/Bottom-Up) live on `https://placewise-io.vercel.app`, post-deploy, post-cache-clear.
+All 3: no attribution/footer leak (grepped the full rendered text for the club/institute name,
+"©", "Main Index", "Case Index", "published by" and a wider institute-name scan — zero
+matches), real diagrams render correctly (not blank/JSON), console clean except a pre-existing
+benign font-preload warning. The regenerated prose is visibly new (different structure/content
+from the original leaked version), consistent with the fixed code actually running, not a
+cache hit against old code. **PASS.**
+
+**R9 is now done — every done-when met:**
+- No regressions (eval gate passed 3× consistently, 2026-11-07)
+- Switch flipped (9 documents `is_active=true`, confirmed live)
+- Rollback tested (2026-11-11, live `--rollback`/`--apply` cycle — which also exposed and got
+  a real fix for a gap in the script, see that entry)
+- Live QA clean (this entry)
+
+**Still open, not R9 blockers, carried forward:** the 2 unidentified SRCC rows flagged in the
+rollback-test entry (IDs unknown, not restored); `backend/scripts/switchConsultingLive.js`'s
+`EXCLUDED_CHUNK_IDS` comment has the full context if Aalhad ever identifies them.
+
+**Files:** none (deploy + cache-clear + verification only, no new code this entry).
+**Cost:** 0 new Gemini calls (QA hit already-cached-then-cleared endpoints; the 8 Frameworks
+rows' regeneration used the existing paraphrase pipeline — normal per-page cost, not logged
+separately here).
+
+---
+
 ## 2026-11-11 — R9 rollback tested live; found and fixed a real gap it exposed in `switchConsultingLive.js`; 2 unresolved content rows flagged
 
 **Phase:** R9 · **Type:** live-switch verification + script fix (self-caused incident, fixed same session)
