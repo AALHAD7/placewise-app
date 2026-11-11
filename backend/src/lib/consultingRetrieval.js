@@ -251,6 +251,22 @@ export async function retrieveConsultingChunks(queryText, { domain, matchCount =
  * been shown" and "did the eval mark it faithful" stay the same question
  * asked the same way.
  */
+// D1 follow-up (2026-11-11, accuracy fix): both judge prompts below used to truncate their
+// excerpt(s) to 2000 chars before asking a judge to grade them. `ingest_chunks.content`'s
+// real max length is 9556 chars (checked directly against the table, all domains); PM's
+// chunks skew longer on average than Consulting/Finance's, so a 2000-char cutoff landed
+// mid-sentence, well before the answer-bearing content (a worked RCA root cause, the 5th
+// item in a list, a metrics table), on at least 3 real questions in the PM preview eval
+// (pm004, pm006, pm011) - the judge then correctly voted "not faithful" given what it was
+// actually shown, which is a true judge failure, not a borderline call. Raised to 10000 -
+// comfortably above the real max with margin, not an arbitrary round number - rather than
+// removing the limit entirely, so a future outlier chunk still can't blow up prompt size
+// unbounded. Cost impact is negligible: avg chunk length is 1831 chars, so the large
+// majority of judge calls send an identical prompt before and after this change; only the
+// long tail above 2000 chars (and below 10000) now sends more tokens than before, and no
+// chunk in the table exceeds the new limit at all, so nothing is sent twice.
+const JUDGE_EXCERPT_CHAR_LIMIT = 10000;
+
 const RELEVANCE_SYSTEM_PROMPT =
   "You are a strict grader checking whether a casebook excerpt shown VERBATIM to a student " +
   "actually, faithfully and relevantly answers their interview-prep question. The excerpt " +
@@ -312,7 +328,7 @@ const RELEVANCE_SYSTEM_PROMPT =
 export async function judgeRelevanceOnce(queryText, chunkContent) {
   const parsed = await generateJSON({
     system: RELEVANCE_SYSTEM_PROMPT,
-    prompt: `Question: ${queryText}\n\nExcerpt:\n"""${chunkContent.slice(0, 2000)}"""\n\nDoes this excerpt faithfully and relevantly answer the question?`,
+    prompt: `Question: ${queryText}\n\nExcerpt:\n"""${chunkContent.slice(0, JUDGE_EXCERPT_CHAR_LIMIT)}"""\n\nDoes this excerpt faithfully and relevantly answer the question?`,
     maxTokens: 200,
     temperature: 0,
     feature: "consultingRetrieval-relevance-gate"
@@ -477,7 +493,7 @@ const FAITHFULNESS_SYSTEM_PROMPT =
 export async function judgeParaphraseFaithfulOnce(original, paraphrase) {
   const parsed = await generateJSON({
     system: FAITHFULNESS_SYSTEM_PROMPT,
-    prompt: `Original excerpt:\n"""${original.slice(0, 2000)}"""\n\nRewrite:\n"""${paraphrase.slice(0, 2000)}"""\n\nIs the rewrite faithful to the original?`,
+    prompt: `Original excerpt:\n"""${original.slice(0, JUDGE_EXCERPT_CHAR_LIMIT)}"""\n\nRewrite:\n"""${paraphrase.slice(0, JUDGE_EXCERPT_CHAR_LIMIT)}"""\n\nIs the rewrite faithful to the original?`,
     maxTokens: 200,
     temperature: 0,
     feature: "consultingRetrieval-paraphrase-faithfulness"
@@ -530,7 +546,13 @@ export async function judgeParaphraseFaithful(original, paraphrase) {
 // attribute the source" instruction (live-bug fix, see containsSourceAttribution above) -
 // any paraphrase cached under version 2 was generated without that instruction and must
 // not keep serving.
-const PARAPHRASE_PROMPT_VERSION = "3";
+// Bumped 3->4 on 2026-11-11 (D1 follow-up, see JUDGE_EXCERPT_CHAR_LIMIT above):
+// judgeParaphraseFaithfulOnce's excerpt truncation moved from 2000 to 10000 chars, so a
+// long chunk's faithfulness verdict can change (the judge now sees content it previously
+// couldn't) - a "paraphrase failed, fell back to verbatim" result cached under version 3
+// for a long chunk could now legitimately pass and must not keep serving the stale
+// fallback for up to 7 days.
+const PARAPHRASE_PROMPT_VERSION = "4";
 // Same 7-day window as frameworksGrounding.js's GROUNDED_STALE_AFTER_MS - long enough to
 // save almost every repeat request from re-paying the paraphrase + 3 judge calls, short
 // enough that a prompt fix still reaches users within days.

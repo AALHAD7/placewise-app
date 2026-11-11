@@ -1,0 +1,413 @@
+{
+  "runAt": "2026-11-11T08:36:41.817Z",
+  "label": "pm-preview",
+  "isActiveTouched": false,
+  "pmDocId": "8976a3ed-b80f-4c4c-aefc-217575984824",
+  "financeDocId": "3923cb00-cf65-4a9d-862e-0ebef9c7e603",
+  "consultingDocIds": [
+    "e9229429-3eec-478b-b54a-7d5a1cdf6de0",
+    "0a6c4f9e-b1bd-4bf8-bbee-7475ba8a6c14",
+    "17a7c482-5181-423c-b8d5-44f79e90e392",
+    "6ae47aaa-ad2e-4848-9775-75ac2072f79e",
+    "ab676b81-3b29-4c35-b288-6dff71756e26",
+    "fa763d15-dac2-408f-9228-8a5f34785128",
+    "f2c1333f-b205-46fa-991e-551548dffef7",
+    "09c41590-6f53-40be-a19c-60fa645610f4",
+    "faa13328-c4bc-4ed7-8172-6ec5ba38c162"
+  ],
+  "callCounts": {
+    "embedding": 19,
+    "relevanceJudge": 291
+  },
+  "pmResults": [
+    {
+      "id": "pm001",
+      "question": "What are the seven steps of the CIRCLES framework for answering a product design question?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "product-design",
+      "topSimilarity": 0.8215569384647341,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm002",
+      "question": "How do you score a feature using the RICE prioritisation framework?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "prioritisation",
+      "topSimilarity": 0.7991433143768233,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm003",
+      "question": "What are the five dimensions of the HEART framework for evaluating a feature's user experience?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "metrics",
+      "topSimilarity": 0.7801224012758373,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm004",
+      "question": "In the streaming video root-cause-analysis worked case, what turned out to be the actual root cause of the 80% metric drop?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "root-cause-analysis",
+      "topSimilarity": 0.783946375776247,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm005",
+      "question": "How would you estimate YouTube's daily US advertising revenue?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "guesstimates",
+      "topSimilarity": 0.7828035750904229,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm006",
+      "question": "In the Amazon India app teardown, what is the zero-review launch problem and what metrics would you track?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "app-critique",
+      "topSimilarity": 0.7341261616667547,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm007",
+      "question": "What sections should a Product Requirements Document (PRD) include?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "execution",
+      "topSimilarity": 0.7670125439778768,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm008",
+      "question": "What is the K-factor and what are the four types of virality a product can have?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "growth",
+      "topSimilarity": 0.778352795958395,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm009",
+      "question": "What are the three pricing models and the 5 Cs framework used to price a product?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "strategy",
+      "topSimilarity": 0.7751825742572213,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm010",
+      "question": "What are the two categories of network effects and their sub-types?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "platform-economics",
+      "topSimilarity": 0.7395888229864699,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm011",
+      "question": "What are the five properties of blockchain and why does it prevent tampering?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "technology",
+      "topSimilarity": 0.6942847643301979,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm012",
+      "question": "What are the STAR, SOAR and CAR frameworks for answering behavioural interview questions?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "behavioural",
+      "topSimilarity": 0.8163903061344405,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm013",
+      "question": "Quote verbatim the exact sentence Marty Cagan uses in 'Inspired' to define an empowered product team.",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "pm014",
+      "question": "What were Zomato's actual unpublished internal unit-economics figures by city for Q3 FY26?",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "pm015",
+      "question": "What is the precise wording Matt LeMay uses in 'Product Management in Practice' to define 'connective tissue'?",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    }
+  ],
+  "probeResults": [
+    {
+      "id": "f011",
+      "question": "What is the MECE principle and how do you use it to structure a consulting case?",
+      "expectedDomain": "Consulting",
+      "covered": true,
+      "winningDomain": "Consulting",
+      "winningSectionTitle": "MECE Segmentation",
+      "winningSourceFile": "The FMS Consulting CaseBook 2023-24 (1).pdf",
+      "leaked": false,
+      "top6RowsByDomain": [
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting CaseBook 2023-24 (1).pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.794
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting Casebook 2021-22.pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.79
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting Casebook 2021-22.pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.775
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIM Calcutta Consulting CaseBook 2025-26.pdf",
+          "section_title": "Frameworks provide clarity of thought and helps you structure your arguments bet",
+          "similarity": 0.751
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting CaseBook 2023-24 (1).pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.742
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "ISB Consulting Casebook 2025.pdf",
+          "section_title": "Structure and Approach",
+          "similarity": 0.73
+        }
+      ]
+    },
+    {
+      "id": "f012",
+      "question": "What is WACC and how do you calculate it from the cost of equity and after-tax cost of debt?",
+      "expectedDomain": "Finance",
+      "covered": true,
+      "winningDomain": "Finance",
+      "winningSectionTitle": "Cost of Debt and WACC in Practice",
+      "winningSourceFile": "finance_compendium.md",
+      "leaked": false,
+      "top6RowsByDomain": [
+        {
+          "domain": "Finance",
+          "source_file": "finance_compendium.md",
+          "section_title": "Cost of Debt and WACC in Practice",
+          "similarity": 0.736
+        },
+        {
+          "domain": "Finance",
+          "source_file": "finance_compendium.md",
+          "section_title": "Opportunity Cost, Incremental Cash Flows and the Cost of Capital",
+          "similarity": 0.709
+        },
+        {
+          "domain": "Finance",
+          "source_file": "finance_compendium.md",
+          "section_title": "Cost of Equity: CAPM, Beta Estimation and Levering/Unlevering",
+          "similarity": 0.671
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIMA-Consult-Prep-Book-Case-Book-2025-26.pdf",
+          "section_title": "Pepper Spray Manufacturer – Interview Transcript (2/2)",
+          "similarity": 0.649
+        },
+        {
+          "domain": "Finance",
+          "source_file": "finance_compendium.md",
+          "section_title": "Capital Structure Theory: Modigliani-Miller, Trade-Off and Pecking Order",
+          "similarity": 0.646
+        },
+        {
+          "domain": "Finance",
+          "source_file": "finance_compendium.md",
+          "section_title": "Discounted Cash Flow: Building FCFF and Discounting",
+          "similarity": 0.639
+        }
+      ]
+    },
+    {
+      "id": "pm016",
+      "question": "What is the RICE prioritisation framework and how do you score features with it?",
+      "expectedDomain": "Prodman",
+      "covered": true,
+      "winningDomain": "Prodman",
+      "winningSectionTitle": "prioritisation",
+      "winningSourceFile": "PM_Compendium.md",
+      "leaked": false,
+      "top6RowsByDomain": [
+        {
+          "domain": "Prodman",
+          "source_file": "PM_Compendium.md",
+          "section_title": "prioritisation",
+          "similarity": 0.788
+        },
+        {
+          "domain": "Prodman",
+          "source_file": "PM_Compendium.md",
+          "section_title": "prioritisation",
+          "similarity": 0.732
+        },
+        {
+          "domain": "Prodman",
+          "source_file": "PM_Compendium.md",
+          "section_title": "prioritisation",
+          "similarity": 0.715
+        },
+        {
+          "domain": "Prodman",
+          "source_file": "PM_Compendium.md",
+          "section_title": "prioritisation",
+          "similarity": 0.694
+        },
+        {
+          "domain": "Prodman",
+          "source_file": "PM_Compendium.md",
+          "section_title": "prioritisation",
+          "similarity": 0.692
+        },
+        {
+          "domain": "Prodman",
+          "source_file": "PM_Compendium.md",
+          "section_title": "prioritisation",
+          "similarity": 0.681
+        }
+      ]
+    },
+    {
+      "id": "pm017",
+      "question": "What does MECE mean and why is it used to structure a consulting case?",
+      "expectedDomain": "Consulting",
+      "covered": true,
+      "winningDomain": "Consulting",
+      "winningSectionTitle": "MECE Segmentation",
+      "winningSourceFile": "The FMS Consulting CaseBook 2023-24 (1).pdf",
+      "leaked": false,
+      "top6RowsByDomain": [
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting CaseBook 2023-24 (1).pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.783
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting Casebook 2021-22.pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.78
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIM Calcutta Consulting CaseBook 2025-26.pdf",
+          "section_title": "Frameworks provide clarity of thought and helps you structure your arguments bet",
+          "similarity": 0.762
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting Casebook 2021-22.pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.757
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "ISB Consulting Casebook 2025.pdf",
+          "section_title": "MECE based Framework",
+          "similarity": 0.724
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "ISB Consulting Casebook 2025.pdf",
+          "section_title": "How to use these frameworks?",
+          "similarity": 0.722
+        }
+      ]
+    }
+  ]
+}

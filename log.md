@@ -5,6 +5,263 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-11 — D1 follow-up: judge truncation raised 2000 → 10000 chars, fixes pm004/pm006/pm011
+
+**Phase:** D1 · **Type:** fix (retrieval/judge prompt) + eval (read-only preview re-run)
+
+**What changed:** `backend/src/lib/consultingRetrieval.js` had two `.slice(0, 2000)`
+truncations on judge-prompt input: `judgeRelevanceOnce` (the relevance gate every covered
+chunk passes through) and `judgeParaphraseFaithfulOnce` (the faithfulness judge on the
+original excerpt AND its rewrite). Both are now a single named constant,
+`JUDGE_EXCERPT_CHAR_LIMIT = 10000`, derived from a real number checked against the table
+(`max(length(ingest_chunks.content)) = 9556` across every domain) rather than picked
+arbitrarily. Searched `qaRetrieval.js` and the rest of `consultingRetrieval.js` for the same
+`.slice(0, <n>)`-on-judge-input pattern — none found outside the two already fixed (a similar
+pattern exists in `guesstimateRetrieval.js`, out of scope: not touched, per the task's own
+scoping to these two files). `PARAPHRASE_PROMPT_VERSION` bumped 3→4 (the faithfulness
+judge's verdict on a long chunk can now legitimately flip, so a stale cached rejection from
+before this fix must not keep serving for up to 7 days). Added
+`backend/test/judgeExcerptLimit.test.js`: mocks `fetch`, plants a marker past the old
+2000-char cutoff in a >2000/<10000-char fixture, and asserts the marker (and the full
+excerpt, byte-identical) reaches the actual Gemini prompt string for both judges; a fourth
+test proves a >10000-char excerpt is still truncated (the limit is raised, not removed).
+
+**Why:** D1.4's eval (previous entry) found a real, reproduced bug: pm004 (streaming-service
+RCA case) and pm011 (blockchain primer) were voted "not covered" and pm006 (Amazon India
+teardown) failed its `must_include` check, all three because the chunk's answer-bearing
+content (the root cause; the fifth blockchain property; a metrics table) sat past the old
+2000-char cutoff, so the judge saw text that "cuts off mid-sentence" and correctly, given
+what it was shown, voted the content away. Cost checked before raising the limit rather than
+assumed free: `avg(length(ingest_chunks.content)) = 1831` across the whole table, so the
+large majority of judge calls send an identical prompt before and after this change — only
+the long tail above 2000 (and below the new 10000 ceiling) sends more tokens than before,
+and nothing in the table exceeds 10000 at all, so no call grew unboundedly.
+
+**Results:** `node backend/eval/run_eval_pm_preview.js` re-run (read-only, no `is_active`/flag
+change) — **PM preview coverage: 15/15 (100%), up from 12/15 (80%)**. pm004, pm006 and pm011
+specifically: all 3 now pass (`match:true`, `must_include:pass` where applicable), vs.
+"not covered"/failed `must_include` before this fix. All 4 cross-domain probes
+(f011/f012/pm016/pm017) still show `leaked:false` — unaffected, as expected, since this fix
+only changes how much text a judge sees, not which domain's rows are searched.
+Consulting/Finance were **not** re-run as a full paid eval (R9's ~22-sample Consulting run is
+out of scope and unnecessary cost for this fix, per CLAUDE.md's budget rule): the reasoning
+is that `avg` chunk length (1831) is far under both the old and new limit, so a
+universal truncation-limit increase cannot plausibly change a judge's input, and therefore
+its verdict, on a short chunk — the only chunks whose judge input changes at all are the
+long tail above 2000 chars, which this fix only ever gives *more* correct context, never
+less. `npm test` (`backend`): 246 passed, 1 known pre-existing failure (`sandbox.test.js`'s
+"empty environment" macOS/zsh env-leak assertion, unrelated to this change, present before
+this fix too).
+
+**Files:** `backend/src/lib/consultingRetrieval.js`, `backend/test/judgeExcerptLimit.test.js`,
+`backend/eval/results/2026-11-11-pm-preview.{json,md}` (overwritten by the re-run)
+**Undo:** Revert `consultingRetrieval.js`'s `JUDGE_EXCERPT_CHAR_LIMIT` to `2000` and
+`PARAPHRASE_PROMPT_VERSION` to `"3"`; delete `judgeExcerptLimit.test.js`.
+**Open issues:** None for this fix. `guesstimateRetrieval.js`'s own `.slice(0, 2000)` judge
+truncation (line ~169) was noticed but intentionally left untouched — same risk shape, but
+out of this task's scope; worth a follow-up look if a guesstimate judge call is ever found
+rejecting real content the same way.
+
+---
+
+## 2026-11-11 — D1.4: PM eval questions added; read-only preview run against the inactive pool
+
+**Phase:** D1 · **Type:** eval (read-only preview over inactive rows, no DB writes)
+
+**What changed:** Appended 17 new lines to `backend/eval/questions.jsonl` — 12 "covered" PM
+questions spread across the compendium's Parts 3-13 and 16 (CIRCLES, RICE, HEART, the
+streaming-service RCA worked case, a YouTube guesstimate, the Amazon India teardown, PRD,
+K-factor/virality, pricing, the network-effects taxonomy, blockchain, STAR/SOAR/CAR), 3
+"not covered" questions genuinely outside the compendium's own stated scope (verbatim text
+of *Inspired*/*Product Management in Practice*, a named real company's unpublished FY26
+numbers), and 2 new `crossDomainProbe:true` questions (pm016 PM-phrased/RICE, pm017
+Consulting-phrased/MECE) alongside the existing FIN1.05 Consulting/Finance pair. Every
+`must_include` term was grepped against `Data/Prodman Files/PM_Compendium.md` before being
+written. Built `backend/eval/run_eval_pm_preview.js`, mirroring `run_eval_finance_preview.js`
+exactly: loads D1.2's inactive PM `ingest_chunks` rows by `document_id` (never through
+`match_ingest_chunks`, which requires `is_active = true`), computes local cosine similarity,
+and calls the real `decideCoverage`/`judgeRelevanceOnce` from `consultingRetrieval.js` —
+extended to a 3-way pool (Consulting + Finance + Prodman) for the cross-domain probes, since
+Q&A's domain filter is now dropped across all three. Ran it for real.
+
+**Why:** Before any PM switch-over decision (out of scope for this plan — Aalhad's own,
+later call), get an honest accuracy read on D1.2's 159 chunks and confirm D1.3's
+cross-domain risk (PM content leaking into Consulting/Finance answers or vice versa) holds
+with real data, not just unit-tested gate logic.
+
+**Results (real, paid Gemini calls — `backend/eval/results/2026-11-11-pm-preview.{json,md}`):**
+- **Coverage: 12/15 (80%)** got the expected covered/not-covered verdict. All 3
+  "not-covered" questions correctly came back not-covered. 10/12 "covered" questions matched;
+  **2 regressions against expectation: pm004 (RCA streaming worked case) and pm011
+  (blockchain primer) both came back "not covered" despite retrieval finding the right chunk
+  at high similarity (0.78 and 0.69).**
+- **Root cause identified, not just observed:** `judgeRelevanceOnce` truncates each excerpt
+  to 2000 characters before judging. Both failing chunks are longer than 2000 chars
+  (pm.rca.case.streaming = 4858 chars, pm.tech.blockchain = 5921 chars) and put their
+  answer-bearing content (the actual root cause; the fifth blockchain property) past the
+  2000-char cutoff. Reproduced directly: calling `judgeRelevanceOnce` on the real chunk
+  content for both questions gives 3/3 "not faithful" votes, with reasoning that explicitly
+  says the excerpt "cuts off mid-sentence" — this is a real, reproducible truncation gap, not
+  a chunking or content-quality defect in D1.2's ingestion.
+- **must_include: 9/10 (90%)** of covered-and-matched questions had every required term in
+  the matched chunk. The 1 failure, **pm006 (Amazon India teardown)**, is the same truncation
+  issue one level down: the correct chunk (0.73 similarity, highest-ranked) was voted
+  "not faithful" 2-of-3 times (reasoning: "cuts off mid-sentence right at 'the launch
+  problem'") and lost the relevance gate to a lower-similarity "industries" (e-commerce
+  primer) chunk that didn't contain `North Star`/`cart abandonment`/`CAC`.
+- **Cross-domain leakage: no leakage detected, 4/4 probes.** f011 (Consulting/MECE) won a
+  Consulting chunk, f012 (Finance/WACC) won a Finance chunk, pm016 (PM/RICE) won a Prodman
+  chunk, pm017 (Consulting/MECE phrased for the PM pairing) won a Consulting chunk — each
+  against the full 3-way combined pool (3,884 Consulting + 208 Finance + 159 Prodman chunks).
+- **Gemini calls:** 19 embedding calls + 291 relevance-judge calls (flash-lite tier,
+  3-vote gate per covering row) — same order of magnitude as FIN1.05's run.
+
+**Proof:**
+- `cd backend && node -e "..."` (verify script from the plan) — `PM questions: 16 covered:
+  13 not covered: 3` (16 `domain:"Prodman"` rows; the 17th, pm017, is tagged `domain:
+  "Consulting"` by design, for the PM/Consulting probe pairing).
+- `git diff backend/eval/questions.jsonl` — 17 insertions only, zero deletions/edits to any
+  pre-existing line.
+- `cd backend && node eval/run_eval_pm_preview.js` ran to completion; wrote
+  `backend/eval/results/2026-11-11-pm-preview.json` and `.md`.
+- `is_active` untouched everywhere — the script only ever `select`s `ingest_chunks` by
+  `document_id`; no `update`/`upsert` call exists in it.
+
+**Files:** `backend/eval/questions.jsonl`, `backend/eval/run_eval_pm_preview.js`,
+`backend/eval/results/2026-11-11-pm-preview.json`, `backend/eval/results/2026-11-11-pm-preview.md`.
+
+**Cost:** ~19 embedding calls + ~291 flash-lite relevance-judge calls, well inside the
+$20/month budget (same order of magnitude as every prior preview eval in this directory).
+
+**Undo:** delete `run_eval_pm_preview.js` and the two result files; `questions.jsonl`'s new
+lines can be deleted (append-only, no existing line touched) with no effect on any other eval.
+
+**Open issues — reported honestly, not softened:**
+1. **The 2000-char truncation in `judgeRelevanceOnce` is a real gap for the PM domain
+   specifically.** PM compendium chunks (worked cases, teardowns, multi-property primers) run
+   noticeably longer than typical Consulting/Finance chunks and more often put the
+   answer-bearing content past 2000 characters. This cost 2 full coverage failures and 1
+   must_include failure out of 15 questions in this sample — a real accuracy gap, not a
+   sampling artifact (reproduced directly against the real chunk content outside the eval
+   script too). Not fixed by this plan (D1.4 is evaluation-only, no behavior-change task was
+   authorized); flagged for Aalhad as the single actionable finding before any PM
+   switch-over decision.
+2. Sample size is 15 PM questions / 4 cross-domain probes — a first signal, not a final
+   verdict, same caveat every prior preview eval in this project has carried.
+3. Switch-over itself (`is_active = true` for D1.2's rows) remains out of scope for D1
+   entirely — Aalhad's own, separate, later call, same posture as every other switch-over.
+
+---
+
+## 2026-11-11 — D1.3: Frameworks' v2 grounding gate widened to Prodman; Q&A reach confirmed
+
+**Phase:** D1 · **Type:** retrieval/prompt change (gate widening, no DB writes)
+
+**What changed:** `frameworksGrounding.js`'s v2 grounding path (`findGrounding` /
+`findGroundingV2`) was hardcoded to `fw.domain === "Consulting"` and a literal
+`domain: "Consulting"` passed to `groundedConsultingLookup`. Added an exported
+`RAG_V2_DOMAINS = ["Consulting", "Prodman"]` allowlist, changed the gate check to
+`RAG_V2_DOMAINS.includes(fw.domain)`, and changed the lookup call to pass the row's real
+`fw.domain` plus `sourceClasses: ["club_casebook", "placewise_reference"]` (so it can reach
+D1.2's PM compendium rows once they're switched active). `qaRetrieval.js` was not touched —
+`groundedQaAnswer` already calls `groundedConsultingLookup` with `domain: null` across both
+source classes (FIN1.04), so a PM question is already reachable via Q&A; confirmed this is
+already locked in by an existing test (`qaRetrieval.test.js`'s "widened retrieval scope"
+test, FIN1.04) rather than duplicating it.
+
+**Why:** D1's roadmap row required "Frameworks/Q&A show PM content with citations," unlike
+FIN1 which deliberately scoped Finance's `placewise_reference` rollout to Q&A only and left
+Frameworks as D2 follow-up work. Generalizing the gate to an allowlist (rather than
+special-casing a second domain string inline) makes a future domain (e.g. Finance, in D2) a
+one-line addition instead of a repeat of this diff.
+
+**Proof:**
+- `cd backend && npm test -- --test-name-pattern="frameworksGrounding"` — all
+  `frameworksGrounding.test.js` tests pass, including two new network-mocked tests: a
+  `domain: "Prodman"` framework row calls `match_ingest_chunks` with
+  `filter_domain: "Prodman"` and `filter_source_classes: ["club_casebook",
+  "placewise_reference"]` (and never calls `match_document_chunks`); a `domain: "HR"` row
+  (outside `RAG_V2_DOMAINS`) never calls `match_ingest_chunks` and falls through to
+  `match_document_chunks` instead — proving the allowlist is a real gate, not
+  accidentally wide-open.
+- `cd backend && npm test -- --test-name-pattern="qaRetrieval"` — all pass; confirmed
+  `qaRetrieval.js` has zero diff (`git diff --stat backend/src/lib/qaRetrieval.js` empty).
+- Full `npm test`: 243 pass, 1 pre-existing unrelated failure (`sandbox.test.js`'s
+  "generated Python sees an empty environment" — a macOS env-var leak,
+  `__CF_USER_TEXT_ENCODING`, reproduced identically on a clean `git stash` before this
+  plan's changes, so not a regression from this work).
+- CLAUDE.md's "Second source class, same presentation" bullet now documents this decision
+  (`git diff CLAUDE.md` shows only an addition to that bullet's existing text).
+
+**Files:** `backend/src/lib/frameworksGrounding.js`, `backend/test/frameworksGrounding.test.js`,
+`CLAUDE.md`.
+
+**Cost:** $0 — no Gemini/Supabase calls made outside of mocked tests; this plan only
+changes JS logic and a doc.
+
+**Undo:** revert `frameworksGrounding.js`'s diff (one-line gate + one-line domain/
+sourceClasses change) to restore Consulting-only v2 grounding; `ENABLE_CONSULTING_RAG_V2`
+stays the outer kill switch either way.
+
+**Open issues:** none for this plan. PM content still isn't visible to any student —
+D1.2's `ingest_chunks` rows remain `is_active = false` until a separate, later,
+Aalhad-gated switch-over (same posture as every other switch-over in this project).
+
+---
+
+## 2026-11-11 — D1.2: PM compendium ingested (inactive, not switched over)
+
+**Phase:** D1 · **Type:** ingestion
+
+**What changed:** Built `backend/scripts/ingestPmCompendium.js` (mirrors FIN1.02's
+`ingestFinanceCompendium.js`, minus the diagram-authoring step — this source's diagrams are
+already plain-text fence + caption pairs carried verbatim inside chunk content by D1.1's
+parser, so there was nothing to author or judge). Ran a `--dry-run` first (zero writes, zero
+Gemini calls, confirmed 159 would-be chunk rows and the `domain: 'Prodman'` /
+`source_class: 'placewise_reference'` document row), then ran it for real against
+`Data/Prodman Files/PM_Compendium.md`.
+
+**Why:** Wires D1.1's parser into a runnable ingestion so the PM compendium's content
+reaches `ingest_documents`/`ingest_chunks`, ready for D1.3's Frameworks-grounding wiring —
+same inactive-until-switch-over posture as every other re-ingestion in this project.
+
+**Proof:**
+- Dry run: `parsed 159 chunk-ready records from PM_Compendium.md` / `would write 159
+  ingest_chunks rows` / `gemini calls: { embedding: 0 }` — zero Supabase writes, zero Gemini
+  calls.
+- Real run report (`backend/ingestion/out/d1_ingest_report.json`):
+  `{"documentId":"8976a3ed-b80f-4c4c-aefc-217575984824","totalRecords":159,
+  "chunksWritten":159,"geminiCalls":{"embedding":159},
+  "startedAt":"2026-11-11T08:13:38.267Z","finishedAt":"2026-11-11T08:15:47.622Z"}`.
+- Verified live against the DB: exactly one `ingest_documents` row for
+  `source_file='PM_Compendium.md'` (`domain='Prodman'`, `source_class='placewise_reference'`,
+  `status='done'`, `page_count=6717` = source file's line count); `ingest_chunks` count for
+  that document = 159, matching the report; a query for `is_active = true` on those 159 rows
+  returned 0 — every row is `is_active = false`; 27 rows have a non-null `parent_item_id`
+  (split-part groups, same convention as FIN1.02/`chunk_document`). No existing row in any
+  table was touched — this is an insert-only run against a brand-new document id.
+- 159 parsed records vs. 146 raw `<!--chunk` markers in the source (145 real + 1 fenced
+  documentation example correctly excluded by D1.1's fence-tracking, per its own header
+  comment) plus 14 extra records from oversized-chunk splitting — within the plan's expected
+  "145, plus the small number of split parts" / "~145-160" range.
+
+**Files:** `backend/scripts/ingestPmCompendium.js`,
+`backend/ingestion/out/d1_ingest_report.json`.
+
+**Cost:** 159 Gemini embedding calls (`gemini-embedding-001`, 768-d, `RETRIEVAL_DOCUMENT`).
+No diagram-authoring or judge calls (none exist in this pipeline — see Why). Embedding calls
+are free-tier/negligible cost; well within the ~$20/month budget.
+
+**Undo:** delete nothing — `is_active` stays `false` everywhere, unreachable by any student-
+facing path. To fully undo: delete the `PM_Compendium.md` row (id
+`8976a3ed-b80f-4c4c-aefc-217575984824`) from `ingest_documents` — cascades to its 159
+`ingest_chunks` rows.
+
+**Open issues:** none for this plan. Switch-over (`is_active=true`) is explicitly out of
+scope — a separate, later, Aalhad-gated decision.
+
+---
+
 ## 2026-11-11 — R9 closed: deploy pushed, Frameworks cache cleared, leak fix confirmed live
 
 **Phase:** R9 · **Type:** deploy + verification (closes the phase)
