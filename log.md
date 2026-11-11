@@ -5,6 +5,53 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-11 — D1 follow-up: 30 more PM eval questions added, full preview eval re-run, 2 real gaps found
+
+**Phase:** D1 follow-up · **Type:** eval (read-only, no `is_active`/flag change)
+
+**What changed:** Aalhad supplied 30 more PM questions (pm018-pm047) generated against a
+prompt specifying the exact schema and verification rules this project's eval set requires.
+Before appending, verified every one directly against `Data/Prodman Files/PM_Compendium.md`
+myself rather than trusting the input: for all 20 `covered:true` questions, confirmed the
+stated `expected_pages` line range is valid and every `must_include` term appears verbatim
+inside that range (script: read each range, lowercase-substring-check each term — all 20
+passed clean, 0 fixes needed). Confirmed no id collisions with the existing q/f/pm series.
+The 10 `covered:false` questions all target the three commercially-published books the
+compendium deliberately doesn't reproduce (Cagan/LeMay/McDowell) or unpublished company data
+— consistent with the existing not-covered questions' pattern. Appended as-is (68→98 lines in
+`backend/eval/questions.jsonl`).
+
+**Re-ran `run_eval_pm_preview.js`** (read-only, inactive pool, `is_active` untouched
+everywhere) against the full 43-question PM set (30 covered, 13 not-covered) plus 6
+cross-domain probes (49 embedding + 762 relevance-judge calls):
+
+- **Coverage: 40/43 (93%)**, down from the earlier 15-question preview's 100% — a more
+  honest number now that the sample is 3x larger, not a regression in the code.
+- **must_include: 30/30 (100%)** on covered questions — the 2000→10000 char truncation fix
+  from earlier today is holding up at this larger scale too.
+- **3 real false positives** (pm040, pm041, pm042): each asks for a *verbatim quote* from one
+  of the three books the compendium explicitly excludes (Cagan's `Inspired`, LeMay's
+  `Product Management in Practice`, McDowell's `Cracking the PM Interview`). Retrieval found a
+  real compendium chunk discussing the same general topic, and the relevance judge called
+  that "covered" — missing that the specific ask (verbatim text) isn't satisfiable by a
+  paraphrase of the compendium's own attributed description. Not investigated/fixed in this
+  entry.
+- **Cross-domain leakage: 2 of 6 probes leaked** (pm036 "market entry decision", pm037 "MECE
+  market sizing" — both won by Consulting casebook content instead of PM compendium content).
+  Both are frameworks genuinely taught in both domains, unlike the cleaner pm016/pm017 pair.
+  Not investigated/fixed in this entry.
+
+**Files:** `backend/eval/questions.jsonl` (+30 lines),
+`backend/eval/results/2026-11-11-pm-preview.{json,md}` (overwritten with the larger run).
+
+**Cost:** 49 embedding + 762 relevance-judge calls, flash-lite tier throughout.
+
+**Still not live:** `is_active` and `ENABLE_PM_RAG_V2` both untouched — same posture as D1's
+close-out. These 2 findings are additional input for Aalhad's eventual switch-over decision,
+not new blockers introduced by this entry.
+
+---
+
 ## 2026-11-11 — D1 closed: PM compendium ingested, Frameworks wiring fixed and gated, phase committed
 
 **Phase:** D1 · **Type:** ingestion + retrieval wiring (closes the phase) · **Commit:** pending

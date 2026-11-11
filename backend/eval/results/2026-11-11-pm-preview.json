@@ -1,5 +1,5 @@
 {
-  "runAt": "2026-11-11T08:36:41.817Z",
+  "runAt": "2026-11-11T10:08:12.909Z",
   "label": "pm-preview",
   "isActiveTouched": false,
   "pmDocId": "8976a3ed-b80f-4c4c-aefc-217575984824",
@@ -16,8 +16,8 @@
     "faa13328-c4bc-4ed7-8172-6ec5ba38c162"
   ],
   "callCounts": {
-    "embedding": 19,
-    "relevanceJudge": 291
+    "embedding": 49,
+    "relevanceJudge": 762
   },
   "pmResults": [
     {
@@ -205,6 +205,370 @@
     {
       "id": "pm015",
       "question": "What is the precise wording Matt LeMay uses in 'Product Management in Practice' to define 'connective tissue'?",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "pm018",
+      "question": "What are the different types of product manager and which vertical does each one sit in?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "pm-role",
+      "topSimilarity": 0.7647372149731042,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm019",
+      "question": "How does the PM career ladder actually progress, and what are you handed at each level?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "pm-role",
+      "topSimilarity": 0.7705152348234117,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm020",
+      "question": "What three questions do you ask to apply Jobs To Be Done, and what is the difference between a needs view and a solution view?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "product-thinking",
+      "topSimilarity": 0.7479683882539709,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm021",
+      "question": "What are the five stages of design thinking, and why does the Double Diamond say you must fix the problem before generating solutions?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "product-thinking",
+      "topSimilarity": 0.7815018021732125,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm022",
+      "question": "What are the four Kano categories, and what does it mean that a delighter becomes a must-have over time?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "prioritisation",
+      "topSimilarity": 0.7823690837715124,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm023",
+      "question": "What are the four mistakes to avoid when running an A/B test?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "metrics",
+      "topSimilarity": 0.6953004962246522,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm024",
+      "question": "In the bank app uninstalls case, why did the candidate reject the neo-bank competitor as the root cause, and what was actually causing it?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "root-cause-analysis",
+      "topSimilarity": 0.7968202508207062,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm025",
+      "question": "Which India numbers should I memorise for guesstimates - literacy, smartphone users, vehicles and city populations?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "guesstimates",
+      "topSimilarity": 0.8232259209107898,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm026",
+      "question": "What are the five mistakes candidates make in an app critique question?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "app-critique",
+      "topSimilarity": 0.8300042069531018,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm027",
+      "question": "How would you implement a new feature, and which metrics belong to the launch phase versus post-launch?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "execution",
+      "topSimilarity": 0.7859958811314054,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm028",
+      "question": "What is the difference between SaaS, PaaS and IaaS, and which one gives you the most control?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "technology",
+      "topSimilarity": 0.7143487629276015,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm029",
+      "question": "What are the main fintech business models in India, and what makes Zerodha's discount broking model work?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "industries",
+      "topSimilarity": 0.7509625136142252,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm030",
+      "question": "What does the Practo case teach about which side of a multi-sided platform you build first, and what is the chasm?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "industries",
+      "topSimilarity": 0.7482543060902935,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm031",
+      "question": "What are the four risks every product idea carries, and which one do teams habitually assume away?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "canon",
+      "topSimilarity": 0.727086046398802,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm032",
+      "question": "How should I prepare for an Amazon PM interview?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "company-playbooks",
+      "topSimilarity": 0.7481740669168284,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm033",
+      "question": "What should I expect in a PM interview at Razorpay, PhonePe, Swiggy, Flipkart or Meesho?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "company-playbooks",
+      "topSimilarity": 0.8221731202784102,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm034",
+      "question": "Which PM interview topics should I prepare first, based on how often they actually come up?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "preparation",
+      "topSimilarity": 0.79500198936937,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm035",
+      "question": "Which framework should I reach for, for which type of PM interview question?",
+      "expectedCovered": true,
+      "actualCovered": true,
+      "coverageMatch": true,
+      "topSectionTitle": "reference",
+      "topSimilarity": 0.7999838469697677,
+      "mustIncludeCheck": {
+        "verdict": "pass",
+        "reason": "All required terms present in the matched chunk."
+      }
+    },
+    {
+      "id": "pm038",
+      "question": "Quote the exact text of the discovery-techniques chapter from Marty Cagan's 'Inspired'.",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "pm039",
+      "question": "Reproduce word for word how Cagan phrases 'outcome over output' in 'Inspired'.",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "pm040",
+      "question": "Give me Matt LeMay's verbatim passage criticising the phrase 'CEO of the product' from 'Product Management in Practice'.",
+      "expectedCovered": false,
+      "actualCovered": true,
+      "coverageMatch": false,
+      "topSectionTitle": "pm-role",
+      "topSimilarity": 0.7006280060084016,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "No required terms specified, or question not covered."
+      }
+    },
+    {
+      "id": "pm041",
+      "question": "Reproduce the company-by-company chapter text from 'Cracking the PM Interview' verbatim.",
+      "expectedCovered": false,
+      "actualCovered": true,
+      "coverageMatch": false,
+      "topSectionTitle": "company-playbooks",
+      "topSimilarity": 0.7552396402331513,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "No required terms specified, or question not covered."
+      }
+    },
+    {
+      "id": "pm042",
+      "question": "List every practice question from McDowell and Bavaro's 'Cracking the PM Interview' exactly as printed in the book.",
+      "expectedCovered": false,
+      "actualCovered": true,
+      "coverageMatch": false,
+      "topSectionTitle": "root-cause-analysis",
+      "topSimilarity": 0.7428531461482046,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "No required terms specified, or question not covered."
+      }
+    },
+    {
+      "id": "pm043",
+      "question": "What are Razorpay's actual unpublished internal payment-gateway take rates by merchant tier?",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "pm044",
+      "question": "What is on PhonePe's internal unreleased product roadmap for FY27?",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "pm045",
+      "question": "What are Flipkart's internal cohort retention numbers broken down by city?",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "pm046",
+      "question": "What are Swiggy's internal per-order delivery-partner unit economics?",
+      "expectedCovered": false,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
+      "mustIncludeCheck": {
+        "verdict": "n/a",
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
+      }
+    },
+    {
+      "id": "pm047",
+      "question": "What is Amazon's internal interview scoring rubric for rating candidates against the 14 Leadership Principles?",
       "expectedCovered": false,
       "actualCovered": false,
       "coverageMatch": true,
@@ -406,6 +770,102 @@
           "source_file": "ISB Consulting Casebook 2025.pdf",
           "section_title": "How to use these frameworks?",
           "similarity": 0.722
+        }
+      ]
+    },
+    {
+      "id": "pm036",
+      "question": "How do you structure a market entry decision - should we enter, and how should we enter?",
+      "expectedDomain": "Prodman",
+      "covered": true,
+      "winningDomain": "Consulting",
+      "winningSectionTitle": "Premise:",
+      "winningSourceFile": "IIMK Kasebook 2025.pdf",
+      "leaked": true,
+      "top6RowsByDomain": [
+        {
+          "domain": "Consulting",
+          "source_file": "IIMK Kasebook 2025.pdf",
+          "section_title": "Premise:",
+          "similarity": 0.789
+        },
+        {
+          "domain": "Prodman",
+          "source_file": "PM_Compendium.md",
+          "section_title": "strategy",
+          "similarity": 0.774
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIMA-Consult-Prep-Book-Case-Book-2025-26.pdf",
+          "section_title": "Market Entry Framework",
+          "similarity": 0.771
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIMK Kasebook 2025.pdf",
+          "section_title": "Preliminary Questions:",
+          "similarity": 0.77
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIM B Consulting Casebook 2025.pdf",
+          "section_title": "Market Entry Framework",
+          "similarity": 0.768
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIMK Kasebook 2025.pdf",
+          "section_title": "MARKET ENTRY FRAMEWORK",
+          "similarity": 0.759
+        }
+      ]
+    },
+    {
+      "id": "pm037",
+      "question": "How do I keep my issue tree MECE when sizing a market, and what should I do before I start calculating?",
+      "expectedDomain": "Prodman",
+      "covered": true,
+      "winningDomain": "Consulting",
+      "winningSectionTitle": "MECE Segmentation",
+      "winningSourceFile": "The FMS Consulting Casebook 2021-22.pdf",
+      "leaked": true,
+      "top6RowsByDomain": [
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting Casebook 2021-22.pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.759
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIM L Consulting Casebook 2025.pdf",
+          "section_title": "Guesstimates / Market Sizing",
+          "similarity": 0.756
+        },
+        {
+          "domain": "Prodman",
+          "source_file": "PM_Compendium.md",
+          "section_title": "guesstimates",
+          "similarity": 0.754
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting Casebook 2021-22.pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.752
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "The FMS Consulting CaseBook 2023-24 (1).pdf",
+          "section_title": "MECE Segmentation",
+          "similarity": 0.746
+        },
+        {
+          "domain": "Consulting",
+          "source_file": "IIMK Kasebook 2025.pdf",
+          "section_title": "RECOMMENDATIONS",
+          "similarity": 0.738
         }
       ]
     }
