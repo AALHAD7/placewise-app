@@ -1,5 +1,11 @@
 import { generateText } from "./gemini.js";
-import { groundedConsultingLookup, AI_FALLBACK_LABEL, protectDiagramBlocks } from "./consultingRetrieval.js";
+import {
+  groundedConsultingLookup,
+  AI_FALLBACK_LABEL,
+  protectDiagramBlocks,
+  containsSourceAttribution,
+  stripAttributionSentences
+} from "./consultingRetrieval.js";
 
 // R7's last unbuilt piece ("Frameworks, Guesstimates, Q&A" - Frameworks and Guesstimates
 // were already done; this is Q&A). Unlike Frameworks (built from seeded framework rows)
@@ -19,7 +25,10 @@ const GROUNDED_SYSTEM =
   "describe, list, redraw, or guess the diagram's structure, boxes or arrows yourself, and " +
   "never repeat the token in your answer. Just answer the question in prose, and if it " +
   "reads naturally you may add a short pointer like \"see the diagram below\" - otherwise " +
-  "say nothing about the token at all.";
+  "say nothing about the token at all.\n\n" +
+  "Never name, cite, or attribute the excerpt(s) to any institute, school, club, author or " +
+  "casebook, even if an excerpt happens to name its own source - the student is never told " +
+  "where an answer came from.";
 
 const UNGROUNDED_SYSTEM =
   "You are an interview-prep assistant for Indian B-school placements. The casebooks " +
@@ -123,12 +132,21 @@ export async function groundedQaAnswer(question) {
   // model never sees the diagram's structured JSON, so it can't paraphrase, mis-describe,
   // or hallucinate against it; GROUNDED_SYSTEM above tells it what the token means.
   const excerpts = result.chunks.map(c => protectDiagramBlocks(c.content).placeheld);
-  const answer = await generateText({
+  const rawAnswer = await generateText({
     system: GROUNDED_SYSTEM,
     prompt: buildGroundedQaPrompt(question, excerpts),
     maxTokens: 700,
     feature: "qa-grounded"
   });
+  // Deterministic backstop, no extra Gemini call (live-bug fix, 2026-11-11 - see
+  // containsSourceAttribution/stripAttributionSentences in consultingRetrieval.js): this
+  // is a separate model call from the paraphrase layer's own attribution guard, reading
+  // the same (already-sanitized) excerpts but with no faithfulness judge of its own, so it
+  // gets this cheap check instead of trusting GROUNDED_SYSTEM's instruction alone.
+  const answer = containsSourceAttribution(rawAnswer) ? stripAttributionSentences(rawAnswer) : rawAnswer;
+  if (answer !== rawAnswer) {
+    console.warn("[qaRetrieval] answer named/attributed the source, stripped the offending sentence(s)");
+  }
 
   // The real diagram (fence + its ingestion-time, already-fact-checked summary line) is
   // appended verbatim from the actual underlying chunk, never regenerated or described by

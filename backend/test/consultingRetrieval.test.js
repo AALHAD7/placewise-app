@@ -19,7 +19,10 @@ import {
   excludeRowsBySourceFile,
   SIMILARITY_THRESHOLD,
   DIAGRAM_SIMILARITY_THRESHOLD,
-  AI_FALLBACK_LABEL
+  AI_FALLBACK_LABEL,
+  stripCasebookFooterArtifacts,
+  containsSourceAttribution,
+  stripAttributionSentences
 } from "../src/lib/consultingRetrieval.js";
 
 // --- decideCoverage ---
@@ -98,6 +101,148 @@ test("excludeRowsBySourceFile: no-op when excludeSourceFiles is empty/undefined"
 test("excludeRowsBySourceFile: handles undefined/empty rows without throwing", () => {
   assert.deepEqual(excludeRowsBySourceFile(undefined, ["a.pdf"]), []);
   assert.deepEqual(excludeRowsBySourceFile([], ["a.pdf"]), []);
+});
+
+// --- stripCasebookFooterArtifacts ---
+// Added 2026-11-11 (live-bug fix): the FMS Consulting Club casebook's running PDF
+// header/footer template was leaking verbatim into rendered Frameworks/Q&A text (MECE's
+// page showed "The Consulting Club", "© The Consulting Club, FMS Delhi 2023-24 30" and
+// "Main Index"). Confirmed in the stored ingest_chunks row for MECE
+// (id bff0d88e-75d8-48d9-b154-0e07b3519022) - these fixtures are copied from that row.
+
+test("stripCasebookFooterArtifacts: strips the MECE chunk's exact multi-line footer (copyright + year + page + Main Index)", () => {
+  const content =
+    "The MECE principle suggests sorting options into categories.\n\n" +
+    "© The Consulting Club, FMS Delhi\n2023-24\n30\n\nMain Index";
+  const cleaned = stripCasebookFooterArtifacts(content);
+  assert.equal(cleaned, "The MECE principle suggests sorting options into categories.");
+  assert.ok(!cleaned.includes("©"));
+  assert.ok(!cleaned.includes("Main Index"));
+  assert.ok(!cleaned.includes("2023-24"));
+});
+
+test("stripCasebookFooterArtifacts: strips the standalone 'The Consulting Club' header line right after a heading", () => {
+  const content = "# MECE Segmentation\n\nThe Consulting Club\n\nMECE = Mutually Exclusive Collectively Exhaustive";
+  const cleaned = stripCasebookFooterArtifacts(content);
+  assert.equal(cleaned, "# MECE Segmentation\n\nMECE = Mutually Exclusive Collectively Exhaustive");
+});
+
+test("stripCasebookFooterArtifacts: strips the single-line pipe-separated copyright+year+page variant", () => {
+  const content = "Consultants can pinpoint challenges.\n\n© The Consulting Club, FMS Delhi | 2023-24 | 8\n\nMain Index";
+  const cleaned = stripCasebookFooterArtifacts(content);
+  assert.equal(cleaned, "Consultants can pinpoint challenges.");
+});
+
+test("stripCasebookFooterArtifacts: strips a bracketed/markdown-linked Main Index nav token", () => {
+  assert.equal(stripCasebookFooterArtifacts("Some content.\n\n[Main Index](#[UNREADABLE])"), "Some content.");
+  assert.equal(stripCasebookFooterArtifacts("Some content.\n\n[Main Index]"), "Some content.");
+});
+
+test("stripCasebookFooterArtifacts: strips a page-break 'Case Index | Main Index' prefix glued directly to the next case's real title", () => {
+  // Real fixture: the Market Entry Framework's cached rawExcerpt (frameworks.b92348b7...),
+  // the chunk underlying the live attribution bug - the page-break between two cases left
+  // "Case Index | Main Index" glued with no separator onto the next case's actual title.
+  const content =
+    "Okay, thank you! We can wrap up this case, here.\n\n" +
+    "© The Consulting Club, FMS Delhi 2023-24 160\n\n" +
+    " Case Index | Main Index Sports Bike Partner Case\nMarket Entry | Moderate | McKinsey & Co.\n\n" +
+    "Your client is sports bike manufacturer in Europe and they want to enter the US market.";
+  const cleaned = stripCasebookFooterArtifacts(content);
+  assert.ok(!cleaned.includes("Main Index"));
+  assert.ok(!cleaned.includes("©"));
+  assert.ok(cleaned.includes("Sports Bike Partner Case"), "the real next-case title must survive");
+  assert.ok(cleaned.includes("Market Entry | Moderate | McKinsey & Co."));
+  assert.ok(cleaned.includes("Your client is sports bike manufacturer"));
+});
+
+test("stripCasebookFooterArtifacts: strips a full-line FMS breadcrumb nav row", () => {
+  const content =
+    "Real heading text.\n\n" +
+    "FMS | [Main Index](#[UNREADABLE]) | How to Get into Consulting from Here? | The Consulting Club, Faculty of Management Studies, University of Delhi";
+  assert.equal(stripCasebookFooterArtifacts(content), "Real heading text.");
+});
+
+test("stripCasebookFooterArtifacts: strips inline logo placeholders and a glued 'Main Index' token, keeping real content", () => {
+  const content = "[FMS Logo] Main Index 3C's [The Consulting Club Logo]";
+  assert.equal(stripCasebookFooterArtifacts(content), "3C's");
+});
+
+test("stripCasebookFooterArtifacts: the 'Faculty of Management Studies' / 'University of Delhi' header lines are stripped", () => {
+  const content = "The Consulting Club\nFaculty of Management Studies\nUniversity of Delhi\n\nReal prose follows.";
+  assert.equal(stripCasebookFooterArtifacts(content), "Real prose follows.");
+});
+
+test("stripCasebookFooterArtifacts: collapses the blank-line gap left behind, never a ragged double gap", () => {
+  const content = "First paragraph.\n\n© The Consulting Club, FMS Delhi\n2023-24\n9\n\nSecond paragraph.";
+  const cleaned = stripCasebookFooterArtifacts(content);
+  assert.equal(cleaned, "First paragraph.\n\nSecond paragraph.");
+});
+
+test("stripCasebookFooterArtifacts: plain prose with no artifact is returned unchanged (aside from trim)", () => {
+  const content = "MECE means mutually exclusive, collectively exhaustive.";
+  assert.equal(stripCasebookFooterArtifacts(content), content);
+});
+
+test("stripCasebookFooterArtifacts: never touches a diagram fence's JSON content", () => {
+  const content =
+    "Intro.\n\n```placewise-diagram\n{\"type\":\"flow\",\"source_page\":31}\n```\n\n© The Consulting Club, FMS Delhi\n2023-24\n31\n\nMain Index";
+  const cleaned = stripCasebookFooterArtifacts(content);
+  assert.ok(cleaned.includes('{"type":"flow","source_page":31}'), "diagram JSON line must survive byte-identical");
+  assert.ok(!cleaned.includes("Main Index"));
+});
+
+test("stripCasebookFooterArtifacts: empty/undefined input never throws", () => {
+  assert.equal(stripCasebookFooterArtifacts(""), "");
+  assert.equal(stripCasebookFooterArtifacts(undefined), "");
+});
+
+// --- containsSourceAttribution / stripAttributionSentences ---
+// Added 2026-11-11 (live-bug fix): the Market Entry Framework's paraphrase generated its
+// own attribution sentence ("...as published by The Consulting Club at FMS Delhi."),
+// something the source chunk never said - a content-generation problem, not a chunking
+// one. These are the deterministic, no-extra-Gemini-call backstop that catches it.
+
+test("containsSourceAttribution: flags a generated sentence naming the club and school", () => {
+  assert.equal(
+    containsSourceAttribution("This framework was, as published by The Consulting Club at FMS Delhi, a useful tool."),
+    true
+  );
+});
+
+test("containsSourceAttribution: flags each known institute/club name on its own", () => {
+  assert.equal(containsSourceAttribution("A note from Indian School of Business on positioning."), true);
+  assert.equal(containsSourceAttribution("This comes from the ISB casebook."), true);
+  assert.equal(containsSourceAttribution("SRCC's consulting primer covers this."), true);
+  assert.equal(containsSourceAttribution("As taught at IIM Ahmedabad."), true);
+});
+
+test("containsSourceAttribution: plain framework prose with no attribution is not flagged", () => {
+  assert.equal(
+    containsSourceAttribution("MECE means mutually exclusive, collectively exhaustive buckets, useful for structuring a case."),
+    false
+  );
+});
+
+test("containsSourceAttribution: empty/undefined input never throws, not flagged", () => {
+  assert.equal(containsSourceAttribution(""), false);
+  assert.equal(containsSourceAttribution(undefined), false);
+});
+
+test("stripAttributionSentences: drops only the offending sentence, keeps the rest intact", () => {
+  const text =
+    "Here is a case study applying the Market Sizing and Entry framework to a sports bike " +
+    "manufacturer from Europe that wants to expand into the United States, as published by " +
+    "The Consulting Club at FMS Delhi. To begin exploring the proposal, we should first " +
+    "understand the client's current standing in the European market.";
+  const stripped = stripAttributionSentences(text);
+  assert.ok(!containsSourceAttribution(stripped));
+  assert.ok(stripped.includes("To begin exploring the proposal"));
+  assert.ok(!stripped.includes("The Consulting Club"));
+});
+
+test("stripAttributionSentences: text with no attribution is returned unchanged (aside from trim)", () => {
+  const text = "MECE means mutually exclusive, collectively exhaustive buckets.";
+  assert.equal(stripAttributionSentences(text), text);
 });
 
 // --- buildCitation ---

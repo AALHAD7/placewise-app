@@ -29,7 +29,8 @@ import {
   AI_FALLBACK_LABEL,
   judgeRelevanceOnce,
   paraphraseChunk,
-  judgeParaphraseFaithful
+  judgeParaphraseFaithful,
+  stripCasebookFooterArtifacts
 } from "../src/lib/consultingRetrieval.js";
 import { GUESSTIMATES_SOURCE_FILE } from "../src/lib/guesstimateRetrieval.js";
 
@@ -260,9 +261,17 @@ async function evalGroundedQuestion(q, pool) {
   // a real answer. Scored against the real production functions, not a copy.
   let paraphraseText = null;
   if (q.covered && covered) {
+    // 2026-11-11 (live-bug fix): production's groundedConsultingLookup strips the FMS
+    // Consulting Club casebook's footer/header artifact from a chunk's content BEFORE it
+    // ever reaches paraphraseChunk/judgeParaphraseFaithful (see stripCasebookFooterArtifacts
+    // in consultingRetrieval.js) - this script calls those same functions directly on
+    // `top.content` and must sanitize the same way (only reachable here, where `top` is
+    // guaranteed non-null), or it scores a worse (unsanitized) input than what a student
+    // actually sees, misrepresenting production faithfulness.
+    const sanitizedTopContent = stripCasebookFooterArtifacts(top.content);
     try {
       callCounts.paraphrase++;
-      paraphraseText = await paraphraseChunk(q.question, top.content);
+      paraphraseText = await paraphraseChunk(q.question, sanitizedTopContent);
     } catch (err) {
       checks.paraphrase_faithful = { verdict: "fail", reason: `paraphraseChunk threw: ${err.message}` };
       checks.must_include_survives_paraphrase = {
@@ -272,11 +281,11 @@ async function evalGroundedQuestion(q, pool) {
     }
 
     if (paraphraseText !== null && !checks.paraphrase_faithful) {
-      if (paraphraseText === top.content) {
+      if (paraphraseText === sanitizedTopContent) {
         checks.paraphrase_faithful = { verdict: "n/a", reason: "No prose to rewrite (pure diagram chunk) - paraphraseChunk returned the content unchanged." };
       } else {
         callCounts.faithfulnessJudge += 5; // judgeParaphraseFaithful now does a 5-vote majority internally
-        const faithful = await judgeParaphraseFaithful(top.content, paraphraseText);
+        const faithful = await judgeParaphraseFaithful(sanitizedTopContent, paraphraseText);
         checks.paraphrase_faithful = {
           verdict: faithful ? "pass" : "fail",
           reason: faithful

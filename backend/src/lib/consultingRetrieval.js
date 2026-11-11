@@ -63,6 +63,135 @@ export function buildCitation(row) {
   };
 }
 
+// --- Casebook footer/header artifact sanitization (2026-11-11, live-bug fix) ---
+//
+// Live QA on the Frameworks page found the FMS Consulting Club casebook's running
+// PDF header/footer template ("The Consulting Club" / "Faculty of Management Studies" /
+// "University of Delhi" header, "© The Consulting Club, FMS Delhi ... <page#>" copyright
+// footer, "Main Index"/"Case Index" nav links) leaking into the rendered student-facing
+// text (MECE's Frameworks page showed "The Consulting Club", "© The Consulting Club, FMS
+// Delhi 2023-24 30" and "Main Index" verbatim). Confirmed via direct query: this text is
+// actually part of the stored `ingest_chunks.content` for the affected rows (an ingestion-
+// time artifact - the PDF's running footer was never stripped when the page was chunked),
+// not something introduced by the paraphrase layer or frameworksGrounding.js's rendering.
+// Per CLAUDE.md's data-safety rule, existing chunks are never rewritten in place - this
+// strips the artifact at render time instead, applied to the retrieved row content before
+// ANY consumer sees it (the relevance judge, the paraphrase call, AND the raw-excerpt
+// fallback), so the fail-closed path can't just show the artifact raw instead of
+// paraphrased. Deliberately pure/line-based, no model call - this is a known, fixed
+// template, not a judgment call.
+const FOOTER_ARTIFACT_LINE_PATTERNS = [
+  // Copyright line, with or without a pipe-separated year/page on the same line
+  // (e.g. "© The Consulting Club, FMS Delhi" / "© The Consulting Club, FMS Delhi | 2023-24 | 8").
+  /^©\s*The Consulting Club\b.*$/i,
+  // A standalone year-range line left behind when the copyright line wrapped across
+  // several lines in the source PDF (e.g. "2023-24", "2021-22").
+  /^\d{4}-\d{2,4}$/,
+  // A standalone page-number line, same wrapped-copyright-footer cause.
+  /^\d{1,4}$/,
+  // "Main Index" / "Case Index | Main Index" nav links, bare or markdown-linked
+  // (e.g. "Main Index", "[Main Index]", "[Main Index](#...)").
+  /^\[?(Case Index\s*\|\s*)?Main Index\]?(\(.*?\))?$/i,
+  // Breadcrumb nav rows (e.g. "FMS | [Main Index](#...) | <next section title> | The
+  // Consulting Club, Faculty of Management Studies, University of Delhi") - pure page
+  // chrome, even though one segment repeats a real heading already present elsewhere.
+  /^FMS\s*\|.*\bMain Index\b.*$/i,
+  // The casebook's running header block (club/institute name), on its own line.
+  /^The Consulting Club$/i,
+  /^Faculty of Management Studies$/i,
+  /^University of Delhi$/i
+];
+
+/**
+ * Pure: strips the known FMS Consulting Club casebook footer/header template (see above)
+ * from one chunk's content, line by line. Never touches a ```placewise-diagram fence's
+ * contents (those are protected separately by protectDiagramBlocks, which runs first in
+ * every caller that needs it) - this is a simple line filter, not a general PDF cleaner,
+ * and deliberately only targets the exact patterns found in testing, so it can't eat real
+ * prose it hasn't been shown to actually appear in.
+ */
+export function stripCasebookFooterArtifacts(content) {
+  const lines = String(content || "").split("\n");
+  const kept = [];
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+    if (!trimmed) {
+      kept.push(rawLine);
+      continue;
+    }
+    // Inline logo placeholder tokens can share a line with real content
+    // (e.g. "[FMS Logo] Main Index 3C's [The Consulting Club Logo]") - strip just the
+    // tokens, keep the rest of the line.
+    let cleaned = trimmed
+      .replace(/\[FMS Logo\]/gi, "")
+      .replace(/\[The Consulting Club Logo\]/gi, "")
+      .trim();
+    if (!cleaned) continue;
+    if (FOOTER_ARTIFACT_LINE_PATTERNS.some(re => re.test(cleaned))) continue;
+    // A "Main Index"/"Case Index | Main Index" nav token glued directly to real content on
+    // the same line with no separator (e.g. "Main Index 3C's", or a page-break line like
+    // "Case Index | Main Index Sports Bike Partner Case" where the next case's real title
+    // immediately follows the nav breadcrumb) - drop just the token, keep the rest.
+    cleaned = cleaned.replace(/^(Case Index\s*\|\s*)?Main Index\s+/i, "").replace(/\s+Main Index$/i, "");
+    kept.push(cleaned);
+  }
+  // Collapse runs of 2+ blank lines left behind by the removed lines down to one, then
+  // trim the overall result - never leave a ragged gap where the footer used to be.
+  return kept.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+// --- Paraphrase source-attribution guard (2026-11-11, live-bug fix) ---
+//
+// A second, independent live bug found the same day: the Market Entry Framework's
+// rendered explanation included a sentence the paraphrase model generated itself -
+// "...as published by The Consulting Club at FMS Delhi." - naming the source club. This
+// is not a footer artifact bleeding through (the source chunk never said that); it is the
+// paraphrase call introducing an attribution the grounding policy forbids (CLAUDE.md: no
+// per-answer source line, ever - the site states this globally instead). Guarded two ways:
+// an explicit instruction in PARAPHRASE_SYSTEM_PROMPT below, and this cheap, deterministic
+// regex check as a backstop that doesn't trust the instruction alone - same "don't trust
+// the model alone" posture as the relevance/faithfulness judges, but free (no extra Gemini
+// call) since the list of names to catch is small and known.
+const SOURCE_ATTRIBUTION_PATTERNS = [
+  /\bThe Consulting Club\b/i,
+  /\bConsulting\s*(?:&|and)\s*Strategy Club\b/i,
+  /\bFMS Delhi\b/i,
+  /\bFaculty of Management Studies\b/i,
+  /\bIIM\s*(Lucknow|Kozhikode|Bangalore|Calcutta|Ahmedabad)\b/i,
+  /\bIndian School of Business\b/i,
+  /\bISB\b/,
+  /\bSRCC\b/,
+  /\bShri Ram College of Commerce\b/i,
+  /\bUniversity of Delhi\b/i,
+  // Generic attribution phrasing naming a casebook/club as the source of the content.
+  /\b(as published (in|by)|according to the casebook|sourced from the .*casebook|courtesy of the)\b/i
+];
+
+/**
+ * Pure: does `text` name, cite, or attribute a source institute/club/casebook? Used on
+ * paraphrase output only (never on the original chunk, which may legitimately discuss a
+ * named school as case-study content) - a generated rewrite should never need to name any
+ * of these, so any match is treated as a policy violation, not a judgment call.
+ */
+export function containsSourceAttribution(text) {
+  return SOURCE_ATTRIBUTION_PATTERNS.some(re => re.test(String(text || "")));
+}
+
+/**
+ * Pure: drops any sentence in `text` that names/cites/attributes a source (see
+ * containsSourceAttribution above), joining what remains back into prose. A defense-in-
+ * depth backstop for qaRetrieval.js's separate answer-generation call (a second model call
+ * reading the already-paraphrased excerpts, with its own instruction not to attribute -
+ * this catches it deterministically if that instruction is ever violated anyway, same
+ * "don't trust the instruction alone" posture as the paraphrase-layer check above). Splits
+ * on sentence-ending punctuation followed by whitespace - crude, but this only ever needs
+ * to strip a clearly-flagged sentence, not parse prose perfectly.
+ */
+export function stripAttributionSentences(text) {
+  const sentences = String(text || "").split(/(?<=[.!?])\s+/);
+  return sentences.filter(s => !containsSourceAttribution(s)).join(" ").trim();
+}
+
 /**
  * Pure: drops any row whose source_file is in `excludeSourceFiles`, pulled out of
  * retrieveConsultingChunks so it's unit-testable without a network call - same reasoning
@@ -285,6 +414,11 @@ const PARAPHRASE_SYSTEM_PROMPT =
   "a cleaner list in your own words, and turn a bare heading into a sentence introducing " +
   "the problem. If you cannot find anything to change, you have not tried hard enough - " +
   "at minimum, restate every sentence in different words while keeping every fact.\n\n" +
+  "You must NEVER name, cite, or attribute the excerpt's source - not the institute, " +
+  "school, club, author, or casebook it came from, and not with phrasing like \"as " +
+  "published by...\", \"according to...\", or \"sourced from...\". The student is never " +
+  "told where an answer came from; write as if you are simply explaining the idea " +
+  "yourself, even if the excerpt names its own source.\n\n" +
   "The excerpt may contain placeholder tokens of the exact form [[PLACEWISE_DIAGRAM_BLOCK_N]] " +
   "(N is a number) standing in for a diagram that has been removed for this step. Copy every " +
   "such token through to your output EXACTLY as written, in the same relative position in " +
@@ -392,7 +526,11 @@ export async function judgeParaphraseFaithful(original, paraphrase) {
 // folded into the cache key below so a prompt change invalidates old cached paraphrases
 // instead of serving them forever (the exact unbounded-cache bug fixed 2026-11-02 in
 // frameworksGrounding.js's withGroundedExamples - see isStale there).
-const PARAPHRASE_PROMPT_VERSION = "2";
+// Bumped 2->3 on 2026-11-11: PARAPHRASE_SYSTEM_PROMPT gained the "never name, cite, or
+// attribute the source" instruction (live-bug fix, see containsSourceAttribution above) -
+// any paraphrase cached under version 2 was generated without that instruction and must
+// not keep serving.
+const PARAPHRASE_PROMPT_VERSION = "3";
 // Same 7-day window as frameworksGrounding.js's GROUNDED_STALE_AFTER_MS - long enough to
 // save almost every repeat request from re-paying the paraphrase + 3 judge calls, short
 // enough that a prompt fix still reaches users within days.
@@ -413,6 +551,14 @@ async function computeParaphraseResult(queryText, chunkContent) {
     if (paraphrase === chunkContent) {
       // Nothing to rewrite (a pure-diagram chunk) - verbatim is already correct, no
       // faithfulness call needed.
+      return { content: chunkContent, rawContent: chunkContent, paraphrased: false };
+    }
+    if (containsSourceAttribution(paraphrase)) {
+      // Cheap, deterministic check first (no extra Gemini call) - the model named/cited
+      // the source despite PARAPHRASE_SYSTEM_PROMPT's explicit instruction not to (live-bug
+      // fix, see containsSourceAttribution above). Fail closed exactly like a faithfulness
+      // rejection: fall back to the verbatim excerpt rather than show the attribution.
+      console.warn("[consultingRetrieval] paraphrase named/attributed the source, falling back to verbatim excerpt");
       return { content: chunkContent, rawContent: chunkContent, paraphrased: false };
     }
     // Judge prose only, with diagram blocks reduced to their short placeholder tokens
@@ -483,7 +629,13 @@ async function paraphraseRowForOutput(queryText, row) {
 // File name is a holdover from R7 (Consulting-only); this function is domain- and
 // source-class-agnostic as of FIN1 - see qaRetrieval.js's cross-domain Q&A call.
 export async function groundedConsultingLookup(queryText, { domain = "Consulting", matchCount = 6, sourceFile, paraphrase = false, sourceClasses, excludeSourceFiles } = {}) {
-  const rows = await retrieveConsultingChunks(queryText, { domain, matchCount, sourceFile, sourceClasses, excludeSourceFiles });
+  const rawRows = await retrieveConsultingChunks(queryText, { domain, matchCount, sourceFile, sourceClasses, excludeSourceFiles });
+  // Sanitize before anything downstream sees this content - the relevance judge, the
+  // paraphrase call, and the raw-excerpt fallback all read `.content` from here on, so
+  // stripping the casebook's footer/header artifact here (not deeper in the pipeline)
+  // guarantees the fail-closed path can't show the artifact raw either (live-bug fix,
+  // see stripCasebookFooterArtifacts above).
+  const rows = rawRows.map(r => ({ ...r, content: stripCasebookFooterArtifacts(r.content) }));
   const { covered, rows: coveringRows } = decideCoverage(rows);
 
   if (!covered) {

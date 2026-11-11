@@ -5,6 +5,43 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-11 — Fix two live grounding-policy leaks on the Frameworks page (footer artifact + paraphrase naming the source)
+
+**Phase:** M1 (live QA follow-up) · **Type:** retrieval / prompt / fix
+
+**Context:** A live QA pass on the production Frameworks page found two High-severity grounding-policy violations (CLAUDE.md: no per-answer source line, ever). MECE's explanation showed the literal paragraphs "The Consulting Club", "© The Consulting Club, FMS Delhi 2023-24 30" and "Main Index"; the Market Entry Framework's explanation included a model-generated sentence naming "...The Consulting Club at FMS Delhi" as the source.
+
+**Root cause (#1, footer artifact):** confirmed via direct query that the FMS Consulting Club casebook's running PDF header/footer (club/institute name header, copyright+year+page-number footer, "Main Index"/"Case Index" nav links) is actually stored as part of `ingest_chunks.content` for the affected (is_active=true) rows — an ingestion-time artifact, not something introduced by the paraphrase layer or `frameworksGrounding.js`'s rendering. Confirmed on MECE's live chunk (`bff0d88e-75d8-48d9-b154-0e07b3519022`) and the Market Entry chunk (cached in `frameworks.b92348b7...grounded_example.rawExcerpt`).
+
+**Root cause (#2, attribution leak):** a content-generation problem, not chunking — the paraphrase model (`PARAPHRASE_SYSTEM_PROMPT` in `consultingRetrieval.js`) generated its own attribution sentence despite never being told not to.
+
+**What changed:**
+1. `backend/src/lib/consultingRetrieval.js` — added `stripCasebookFooterArtifacts` (pure, line-based, strips the known copyright/year/page-number/nav-link/header-block patterns), applied in `groundedConsultingLookup` to every retrieved row's content **before** the relevance judge, the paraphrase call, or the raw-excerpt fallback ever see it — so the fail-closed path can't show the artifact raw either. Per CLAUDE.md's data-safety rule, no existing chunk was rewritten in place.
+2. `backend/src/lib/consultingRetrieval.js` — `PARAPHRASE_SYSTEM_PROMPT` now explicitly forbids naming/citing/attributing the source; added `containsSourceAttribution` (deterministic regex over known school/club names) as a cheap, no-extra-Gemini-call backstop in `computeParaphraseResult` that fails closed to the verbatim excerpt if the model violates the instruction anyway, same posture as the existing faithfulness judge. `PARAPHRASE_PROMPT_VERSION` bumped 2→3 (invalidates stale in-memory cached paraphrases generated without the new instruction).
+3. `backend/src/lib/qaRetrieval.js` — `GROUNDED_SYSTEM` (Q&A's separate answer-generation call, a different code path reading the same already-sanitized excerpts) got the same no-attribution instruction, plus `stripAttributionSentences` as a deterministic backstop on the final answer.
+4. `backend/eval/run_eval_r9.js` — sanitizes `top.content` with `stripCasebookFooterArtifacts` before calling `paraphraseChunk`/`judgeParaphraseFaithful`, matching production's `groundedConsultingLookup`; this script previously called those functions directly on unsanitized content, which under-measured production faithfulness (see Proof).
+5. Tests added: `backend/test/consultingRetrieval.test.js` (`stripCasebookFooterArtifacts`, `containsSourceAttribution`, `stripAttributionSentences`, using the actual MECE and Market Entry chunk text as fixtures), `backend/test/consultingParaphraseFlagOn.test.js` (end-to-end: attribution fails closed without ever reaching the faithfulness judge; footer artifact stripped even with paraphrase off), `backend/test/qaRetrieval.test.js` (Q&A's answer-generation backstop strips an attribution sentence).
+
+**Q&A reachability:** confirmed both Frameworks and Q&A read through the same `groundedConsultingLookup`/`consultingRetrieval.js` paraphrase layer, so one fix covers both (per `.gsd/STATE.md`'s R7b note). Q&A also has its own separate answer-generation model call (`qaRetrieval.js`'s `GROUNDED_SYSTEM`) reading the paraphrased excerpts — given its own instruction + deterministic backstop too, since it's technically a different code path.
+
+**How to verify:** `npm test` → 234/235 (1 pre-existing sandbox env-leak failure, unrelated — same baseline as R9.4's 2026-11-07 entry). Targeted live checks (3 runs each, real Gemini calls) against the two actual bug chunks: MECE 3/3 clean (no attribution) + faithful; Market Entry 0/9 attribution across all paraphrase/judge calls run during this fix (confirms fix #2 holds); Market Entry's faithfulness judge showed some pre-existing noise unrelated to this fix (see below).
+
+**Known limitation surfaced, not caused by this fix:** the full `run_eval_r9.js` gate (39 questions, read-only) showed paraphrase faithfulness at 61-70% across two runs today, below its 80% bar and below the 90-100% range recorded in three back-to-back runs on 2026-11-07 (STATE.md). Traced one Market Entry re-paraphrase to a faithfulness-judge false "unfaithful" verdict whose own stated reasoning was factually wrong (claimed the rewrite added content that was actually already in the original) — this is the same run-to-run faithfulness-judge non-determinism STATE.md's R9.3/4 entries already flagged as unresolved (an 83%→58% swing with zero code changes), not a regression from this fix. Not investigated further here (out of this task's scope, per the user's instructions).
+
+**Open issue — needs Aalhad or a session with DB-write permission:** `frameworks.grounded_example`/`grounded_image` are cached per-row (`grounded_checked_at`, 7-day TTL) and the live MECE/Market Entry rows still hold the pre-fix, unsanitized/attributed cached text — this code fix alone won't clear the live bug until that cache is invalidated. Writing `grounded_checked_at = null` for the 8 Consulting rows with a cache set (`frameworks` table, `domain = 'Consulting'`) was attempted and blocked by this session's permission classifier ("Modify Shared Resources"); this is a derived cache, not raw ingestion data, so clearing it doesn't touch any `ingest_*`/`document_chunks` table or violate the data-safety rule. Needs Aalhad to either run that update himself or grant the permission, or simply wait up to 7 days for the cache to self-expire.
+
+**Files:** `backend/src/lib/consultingRetrieval.js`, `backend/src/lib/qaRetrieval.js`, `backend/eval/run_eval_r9.js`, `backend/test/consultingRetrieval.test.js`, `backend/test/consultingParaphraseFlagOn.test.js`, `backend/test/qaRetrieval.test.js`.
+
+**Proof:** `npm test` 234/235. Eval runs (read-only, `is_active` untouched): `backend/eval/results/2026-11-11-r9-footer-attribution-fix.{json,md}` (before the eval-script sanitization fix), `backend/eval/results/2026-11-11-r9-footer-attribution-fix-eval-sanitized.{json,md}` (after). `backend/eval/results/2026-11-07-r9-fixed.{json,md}` restored to their original tracked content after this run accidentally overwrote them (the script hardcodes that filename, a known pre-existing quirk — see STATE.md's 2026-11-07 R9.3 note).
+
+**Cost:** ≈ 1700 Gemini calls (two full 39-question R9 eval runs, ~845 calls each, flash-lite tier) + a handful of targeted calls on the two bug chunks ≈ well under $1.
+
+**Undo:** revert this commit. `PARAPHRASE_PROMPT_VERSION` bump already makes the old prompt's cached output unreachable; no `is_active`/migration/schema change was made.
+
+**Open issues:** the frameworks-cache invalidation above (needs DB write); the pre-existing faithfulness-judge noise (STATE.md, unresolved, out of scope here).
+
+---
+
 ## 2026-11-10 — Track student questions in Google Sheets ("Questions Asked" tab)
 
 **Phase:** M1 · **Type:** analytics / ops & monitoring

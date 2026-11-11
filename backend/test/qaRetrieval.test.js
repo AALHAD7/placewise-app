@@ -172,6 +172,38 @@ test("groundedQaAnswer: appends the diagram fence + summary when a covering chun
   assert.ok(promptText.includes("[[PLACEWISE_DIAGRAM_BLOCK_0]]"), "prompt should carry the placeholder token instead");
 });
 
+// Added 2026-11-11 (live-bug fix): the answer-generation call (GROUNDED_SYSTEM) is a
+// separate model call from the paraphrase layer's own attribution guard - proves it has
+// its own deterministic backstop (containsSourceAttribution/stripAttributionSentences) so
+// an attribution sentence slipping past GROUNDED_SYSTEM's instruction still never reaches
+// the student.
+test("groundedQaAnswer: strips an attribution sentence the answer-generation model generated despite being told not to", async t => {
+  const row = {
+    content: "MECE means a set of categories is Mutually Exclusive and Collectively Exhaustive.",
+    has_diagram: false,
+    similarity: 0.8,
+    source_file: "mece.pdf",
+    page_start: 3,
+    page_end: 3,
+    school: "FMS Delhi",
+    club: "The Consulting Club",
+    year: 2023
+  };
+  mockGeminiAndSupabase(t, {
+    row,
+    answerText:
+      "MECE is a structuring principle, as published by The Consulting Club at FMS Delhi. " +
+      "It is used in case interviews to avoid overlapping categories."
+  });
+
+  const result = await groundedQaAnswer("What is MECE?");
+
+  assert.equal(result.groundedInCasebooks, true);
+  assert.ok(!result.answer.includes("The Consulting Club"));
+  assert.ok(!result.answer.includes("FMS Delhi"));
+  assert.ok(result.answer.includes("It is used in case interviews to avoid overlapping categories."));
+});
+
 test("groundedQaAnswer: unchanged behavior when the covering chunk has no diagram", async t => {
   const row = {
     content: "MECE means a set of categories is Mutually Exclusive and Collectively Exhaustive.",
