@@ -368,6 +368,25 @@ const RELEVANCE_SYSTEM_PROMPT =
   "verbatim/word-for-word reproduction attributed to a specific named source - a question " +
   "that just asks what a concept means, with no demand for someone else's exact wording, is " +
   "unaffected by this rule.\n\n" +
+  "This same verbatim-quote trigger has a sharper trap worth naming explicitly (found " +
+  "2026-11-11, pm041/pm042: an excerpt from PlaceWise's OWN compendium - its own company-" +
+  "by-company interview chapter, its own compiled root-cause-analysis practice set - was " +
+  "wrongly accepted as the verbatim text of 'Cracking the PM Interview' by McDowell and " +
+  "Bavaro, purely because the excerpt's subject matter and shape (a chapter organised " +
+  "company by company, a numbered list of practice questions) resembled what that named " +
+  "book might contain). Every excerpt shown to you is PlaceWise's OWN casebook/compendium " +
+  "material, authored or compiled by PlaceWise from its own sources - it is NEVER the " +
+  "literal, separately-published text of a different named external book, no matter how " +
+  "closely its topic, structure, or format overlaps with what that book covers. Do NOT " +
+  "infer or state that an excerpt 'is' or 'contains' the named book's chapter or text " +
+  "merely because the subject matches or the excerpt happens to be organised the same way " +
+  "(company by company, a numbered practice-question list, etc.) - that inference is " +
+  "exactly the mistake this rule exists to block. The only way an excerpt can satisfy a " +
+  "verbatim-quote-from-named-book request is if it explicitly quotes that author/book's own " +
+  "words (for example, marked as a direct quotation and attributed to them inline) - a " +
+  "same-shaped, same-topic excerpt with no such explicit quotation is always unfaithful to " +
+  "this kind of question, even if it otherwise reads exactly like what the named book would " +
+  "say.\n\n" +
   'Respond with ONLY a JSON object, no markdown fences: {"verdict": "faithful" or ' +
   '"unfaithful", "reasoning": "one sentence explaining your judgment"}';
 

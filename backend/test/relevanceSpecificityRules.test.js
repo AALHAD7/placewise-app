@@ -79,6 +79,54 @@ test("judgeRelevanceOnce: an ordinary (non-verbatim) question still wires a mock
   assert.equal(result.faithful, true);
 });
 
+// --- Issue 1b (pm041/pm042, found 2026-11-11 after Issue 1 shipped): the "it's always
+// PlaceWise's own compendium, never the named book's literal text" clause. Live-API testing
+// (judgeRelevanceOnce against the real matched chunk, see log.md) showed the judge was
+// hallucinating that a compendium chunk - organised the same way a named book's chapter
+// would be (company-by-company, a numbered practice-question list) - literally WAS that
+// named book's verbatim text, purely from the shape/topic match, not from any actual
+// quotation. Issue 1's rule alone didn't block this because it only addressed the
+// "paraphrases the author's idea" case, not "is wrongly believed to BE the book itself".
+
+test("judgeRelevanceOnce: the system prompt teaches that excerpts are always PlaceWise's own compendium, never the named book's literal text", async t => {
+  const getBody = mockJudgeCall(t, { verdict: "unfaithful", reasoning: "PlaceWise's own compendium chapter, not the named book's text" });
+
+  await judgeRelevanceOnce(
+    "Reproduce the company-by-company chapter text from 'Cracking the PM Interview' verbatim.",
+    "## 17.6 The remaining companies, in brief\n\n### Sprinklr — 2020\n\nTwo rounds..."
+  );
+
+  const systemText = getBody().systemInstruction.parts[0].text;
+  assert.ok(/PlaceWise's OWN casebook\/compendium/i.test(systemText),
+    "prompt must teach that every excerpt is PlaceWise's own material, never the named book's");
+  assert.ok(/pm041\/pm042/.test(systemText),
+    "prompt must reference the actual pm041/pm042 examples it was fixed from");
+  assert.ok(/Do NOT\s*\n?\s*infer or state that an excerpt/i.test(systemText) || /infer or state that an excerpt/i.test(systemText),
+    "prompt must explicitly forbid inferring the excerpt IS the named book from shape/topic match alone");
+});
+
+test("judgeRelevanceOnce: wires a mocked 'unfaithful' verdict through for a same-shaped, same-topic compendium excerpt wrongly believed to BE the named book (pm041)", async t => {
+  mockJudgeCall(t, { verdict: "unfaithful", reasoning: "this is PlaceWise's own company-by-company chapter, not a quotation from 'Cracking the PM Interview'" });
+
+  const result = await judgeRelevanceOnce(
+    "Reproduce the company-by-company chapter text from 'Cracking the PM Interview' verbatim.",
+    "## 17.6 The remaining companies, in brief\n\n### Sprinklr — 2020\n\nTwo rounds. Round 1 went straight into the product design question with no introduction."
+  );
+
+  assert.equal(result.faithful, false);
+});
+
+test("judgeRelevanceOnce: wires a mocked 'unfaithful' verdict through for a same-shaped, same-topic compendium practice set wrongly believed to BE the named book (pm042)", async t => {
+  mockJudgeCall(t, { verdict: "unfaithful", reasoning: "this is PlaceWise's own RCA practice set, not McDowell and Bavaro's printed questions" });
+
+  const result = await judgeRelevanceOnce(
+    "List every practice question from McDowell and Bavaro's 'Cracking the PM Interview' exactly as printed in the book.",
+    "## 6.6 Practice set\n\n1. Order cancellations on Amazon are up by 10%. Find the root cause.\n2. Instagram Stories engagement is down 30% week over week."
+  );
+
+  assert.equal(result.faithful, false);
+});
+
 // --- Issue 2 (pm036/pm037): generic premise/bare-definition specificity rule ---
 
 test("judgeRelevanceOnce: the system prompt teaches the generic-premise/bare-definition rule, domain-agnostic", async t => {

@@ -5,6 +5,69 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-11 — D1 follow-up: pm041/pm042 false-positive fixed - judge was hallucinating the excerpt WAS the named book
+
+**Phase:** D1 follow-up · **Type:** prompt fix + test, verified by targeted live-API calls (no full suite re-run)
+
+**Context:** two known hard-blocker-class false positives carried forward from the day's
+earlier D1 work (`backend/eval/results/2026-11-11-pm-preview.md`): pm041 ("Reproduce the
+company-by-company chapter text from 'Cracking the PM Interview' verbatim") and pm042
+("List every practice question from McDowell and Bavaro's 'Cracking the PM Interview'
+exactly as printed in the book") both ask for verbatim text from a named external book the
+compendium never reproduces, but both returned `covered:true` - a real violation of
+CLAUDE.md's "a not-covered question must never show a grounded answer" rule. `46461c3`
+already added a verbatim-quote-from-named-source rule to `RELEVANCE_SYSTEM_PROMPT` for this
+exact category (fixed pm040) but it didn't catch pm041/pm042.
+
+**Root cause (found via targeted live calls, not reasoning alone):** retrieved each
+question's real winning chunk directly from `ingest_chunks` (document
+`8976a3ed-b80f-4c4c-aefc-217575984824`) and ran `judgeRelevanceOnce` against the exact
+content several times. pm041's winner is PlaceWise's own "17.6 The remaining companies, in
+brief" chapter (Sprinklr/Adobe/Oracle/Cisco/Salesforce/PayU/Airtel write-ups); pm042's
+winner is PlaceWise's own "6.6 Practice set" (8 RCA practice questions the compendium wrote
+itself). Neither excerpt mentions 'Cracking the PM Interview' or McDowell/Bavaro at all.
+6/6 votes on pm041's chunk and 5/5 on pm042's chunk came back `faithful`, with reasoning
+like *"the excerpt provides the verbatim chapter text... from the book 'Cracking the PM
+Interview'"* - the judge wasn't failing to apply the verbatim-quote rule, it was
+**hallucinating that the excerpt literally IS the named book's text**, purely because the
+excerpt's shape and topic (a chapter organised company-by-company; a numbered list of
+practice questions) resembles what that book would contain. `46461c3`'s rule only addressed
+the "paraphrases the author's idea in different words" failure mode - it never told the
+judge that every excerpt it sees is PlaceWise's own compendium material and can never
+literally be a different, separately-published book's text.
+
+**Fix:** added a 6th clause to `RELEVANCE_SYSTEM_PROMPT` in `backend/src/lib/consultingRetrieval.js`,
+directly below the existing verbatim-quote rule, stating explicitly: every excerpt is
+PlaceWise's own casebook/compendium material, never the literal text of a different named
+external book, no matter how closely its topic/shape overlaps; the judge must not infer or
+state that an excerpt "is" or "contains" the named book's text from a shape/topic match
+alone; only an excerpt that explicitly quotes the author/book's own words (marked and
+attributed inline) can satisfy a verbatim-quote-from-named-book request.
+
+**Verification (targeted live `judgeRelevanceOnce` calls, per the task's cost-discipline
+instruction - no full-suite re-run):**
+- Before the fix: pm041's real winning chunk → 6/6 `faithful` (wrong); pm042's → 5/5
+  `faithful` (wrong).
+- After the fix, same exact chunks + questions: pm041 → 5/5 `unfaithful` (correct); pm042 →
+  5/5 `unfaithful` (correct).
+- Regression checks on the same prompt, live: an ordinary non-verbatim question (Marty
+  Cagan/empowered teams) → still `faithful`; the VRIN/SWOT market-entry excerpt from the
+  Issue 2 (pm036/pm037) rule → still `faithful`. Neither existing rule's behavior changed.
+- Total Gemini calls spent on this investigation + fix verification: ~42 (embeddings +
+  `judgeRelevanceOnce` calls), all flash-lite tier, well under the 50-call budget given for
+  this task. No full `run_eval_r9.js` or `run_eval_pm_preview.js` re-run was performed, per
+  instruction - the targeted live evidence above is the proof.
+- Added 3 new mocked tests to `backend/test/relevanceSpecificityRules.test.js` (prompt-
+  wording assertions + wired-verdict checks for pm041/pm042's exact failure shape), no live
+  calls. `npm test`: 259/260 (1 pre-existing, unrelated sandbox env-leak failure - the sandbox
+  test suite's isolation gap flagged in earlier sessions, confirmed unchanged by this diff).
+
+**Not done here, by design:** no full eval re-run against the live pool (cost discipline);
+PM switch-over (`ENABLE_PM_RAG_V2` + `ingest_chunks.is_active`) is still a separate,
+Aalhad-gated step untouched by this fix.
+
+---
+
 ## 2026-11-11 — D1 follow-up: q008 regression from the previous specificity-rule commit, fixed with a 3rd independent clause
 
 **Phase:** D1 follow-up · **Type:** prompt fix + test + verified eval re-run
