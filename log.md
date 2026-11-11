@@ -5,6 +5,85 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-11 — D1 follow-up: q008 regression from the previous specificity-rule commit, fixed with a 3rd independent clause
+
+**Phase:** D1 follow-up · **Type:** prompt fix + test + verified eval re-run
+
+**Context:** the immediately-prior commit (`46461c3`, this same D1 follow-up thread) added a
+"generic-premise/bare-definition" rule to `RELEVANCE_SYSTEM_PROMPT` in
+`backend/src/lib/consultingRetrieval.js` to fix pm036/pm037. That rule's own wording - an
+excerpt is faithful only if it has "the actual criteria, steps, or checklist content, not
+just introduce or name the topic" - was then confirmed (controlled A/B test, not inference:
+`judgeRelevanceOnce` run 12x on the byte-identical q008 chunk+question, 6 calls on the
+regressing prompt vs 6 on the prompt immediately before it) to cause a new regression on
+q008 ("What is the approach to estimate the number of tennis balls that can fit in a room?",
+`covered:false` - not in the corpus). The regressing prompt accepted the match 11/12 times;
+the chunk is a generic 5-step guesstimate method overview (Clarification/Approach/
+Segmentation/Estimation/Validation, each with a real one-sentence description) that never
+mentions tennis balls, a room, volume, or packing. The judge was using the new rule's own
+"has steps, not just a name" language to justify accepting a reusable, topic-agnostic
+method as an answer to one specific guesstimate - exactly backwards for a question the
+corpus doesn't actually address.
+
+**Fix:** added a 4th rule to `RELEVANCE_SYSTEM_PROMPT`, explicitly scoped as a SEPARATE,
+independent check from the generic-premise/bare-definition rule it follows (not a
+restatement of it): having real depth (steps + descriptions) is necessary but not
+sufficient - that depth must also be specific to the question's actual subject when the
+question names one particular instance (a specific item/room/city for a guesstimate, a
+specific market, a specific case). A chunk whose depth is entirely generic - would read
+identically for any instance of that category of question - is NOT faithful to a
+specific-instance question, even though it clears the "not just naming the topic" bar. The
+rule explicitly does NOT apply to questions asking about the generic method/concept itself
+(e.g. "what's the difference between top-down and bottom-up guesstimate approaches?") -
+scoped and regression-tested for that case directly.
+
+**Verification (repeated, empirical, not reasoning alone):**
+- A/B on the q008 chunk+question: old (pre-`46461c3`) prompt 0/6 faithful; the regressing
+  `46461c3` prompt 11/12 faithful (two 6-call runs); this fix's prompt 0/18 faithful (three
+  6-call runs). The regression is real and this fix closes it reliably.
+- `node backend/eval/run_eval_r9.js` (39-question Consulting gate) run twice with this fix in
+  place: q008 → `pass` both times. Both runs also showed the same `46461c3`-and-switchover-era
+  pre-existing fails (q004, q006, q007, q014, q015, q020/q022/q023/q026/q034/q024 across the
+  two runs) - checked each one's `checks` object directly: every one of them fails on
+  `must_include_survives_paraphrase` or the role/company dark-feature gap, never on
+  `faithfulness`, so none of them are caused by this prompt edit. Also ran the SAME 39-question
+  gate once more with the regressing (`46461c3`) prompt swapped in (then restored) as a
+  same-environment control: q004/q006/q007/q014/q015/q020/q022/q023/q026/q034 fail identically
+  there too - confirming they predate this fix and aren't new. The gate's own overall
+  `Verdict: FAIL` in all three runs is the "Inactive-content gate" hard blocker (most
+  Consulting docs are now `is_active=true` post-switchover, unrelated to this change - the
+  2026-11-07 committed baseline predates switchover and used a different `is_active` mix, so
+  its PASS verdict isn't a like-for-like comparison on that specific bar).
+- `node backend/eval/run_eval_pm_preview.js` re-run: pm036/pm037 still correctly tagged
+  Prodman (no leak), pm040 still correctly `covered:false`, pm041/pm042 still incorrectly
+  `covered:true` - identical to the already-committed 2026-11-11 PM preview baseline, so
+  this fix neither improved nor worsened those two known, pre-existing, separately-scoped
+  misses (a different failure mode - verbatim-quote vs a different author/book - not touched
+  by this edit).
+- `backend/test/relevanceSpecificityRules.test.js`: 4 new tests added (prompt teaches the
+  new rule and references the q008 example; a mocked unfaithful verdict wires through for
+  the generic-method-vs-specific-question case; a regression guard proves a question about
+  the generic method itself is unaffected). 9/9 pass in this file; `npm test` overall:
+  256/257 pass, the 1 failure is the pre-existing sandbox env-leak test (unrelated, already
+  known).
+
+**Files:** `backend/src/lib/consultingRetrieval.js` (`RELEVANCE_SYSTEM_PROMPT`, 1 new
+clause), `backend/test/relevanceSpecificityRules.test.js` (4 new tests), eval result files
+re-written by the verification runs above (`backend/eval/results/2026-11-07-r9-fixed.{json,md}`,
+`backend/eval/results/2026-11-11-pm-preview.{json,md}`).
+
+**Gemini calls this session:** ~30 direct `judgeRelevanceOnce` calls for the A/B tests, plus
+3 full `run_eval_r9.js` runs (~672 relevance-judge + ~120 faithfulness-judge + ~35 embedding
+calls each) and 1 `run_eval_pm_preview.js` run (~49 embedding + ~762 relevance-judge calls) -
+all flash-lite tier, all read-only against the DB, no `is_active`/flag changes.
+
+**Not done in this entry:** no further tightening of the pre-existing q004/q006/q007/q014/
+q015/q020/q022/q023/q026/q034 fails or the pm041/pm042 misses - out of scope for this
+regression fix; the inactive-content-gate bar's post-switchover applicability also needs a
+separate look, not addressed here.
+
+---
+
 ## 2026-11-11 — D1 follow-up: both found gaps addressed (prompt fix + investigation); live eval re-run blocked by Gemini billing
 
 **Phase:** D1 follow-up · **Type:** prompt fix + test + (blocked) eval re-run

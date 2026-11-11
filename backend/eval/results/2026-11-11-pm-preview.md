@@ -1,10 +1,10 @@
-# RAG eval — PM compendium preview, read-only over the inactive pool (2026-11-11T10:08:12.909Z)
+# RAG eval — PM compendium preview, read-only over the inactive pool (2026-11-11T11:17:06.879Z)
 
 **This is NOT a live-site measurement.** `is_active` was not touched anywhere - every retrieved row is still the D1.2 inactive PM pool (159 chunks, one document) plus, for the cross-domain probes, the same 9 inactive Consulting documents and the FIN1.02 inactive Finance document every other preview script in this directory already uses. Retrieval is done locally (cosine similarity over chunk embeddings fetched directly by `document_id`), never through the live `match_ingest_chunks` RPC, which requires `is_active = true`. The real `decideCoverage` and `judgeRelevanceOnce` functions from `consultingRetrieval.js` are called directly - no retrieval or scoring logic is reimplemented in this script.
 
 ## Summary - PM compendium content/chunking quality
 
-Of 43 PM questions (30 covered, 13 not-covered), **40/43** (93%) got the expected covered/not-covered verdict.
+Of 43 PM questions (30 covered, 13 not-covered), **41/43** (95%) got the expected covered/not-covered verdict.
 Of 30 covered questions with required terms, **30/30** (100%) had every required term present in the matched chunk.
 
 | Question | Expected covered | Actual covered | Match | Top section | Similarity | must_include |
@@ -44,7 +44,7 @@ Of 30 covered questions with required terms, **30/30** (100%) had every required
 | pm035 | true | true | yes | reference | 0.800 | pass |
 | pm038 | false | false | yes | - | - | n/a |
 | pm039 | false | false | yes | - | - | n/a |
-| pm040 | false | true | **NO** | pm-role | 0.701 | n/a |
+| pm040 | false | false | yes | - | - | n/a |
 | pm041 | false | true | **NO** | company-playbooks | 0.755 | n/a |
 | pm042 | false | true | **NO** | root-cause-analysis | 0.743 | n/a |
 | pm043 | false | false | yes | - | - | n/a |
@@ -54,7 +54,6 @@ Of 30 covered questions with required terms, **30/30** (100%) had every required
 | pm047 | false | false | yes | - | - | n/a |
 
 **Coverage mismatches:**
-- pm040 (Give me Matt LeMay's verbatim passage criticising the phrase 'CEO of the product' from 'Product Management in Practice'.): expected covered=false, got true.
 - pm041 (Reproduce the company-by-company chapter text from 'Cracking the PM Interview' verbatim.): expected covered=false, got true.
 - pm042 (List every practice question from McDowell and Bavaro's 'Cracking the PM Interview' exactly as printed in the book.): expected covered=false, got true.
 
@@ -117,8 +116,8 @@ Q: What does MECE mean and why is it used to structure a consulting case?
 ### pm036 [expected domain: Prodman]
 Q: How do you structure a market entry decision - should we enter, and how should we enter?
 - covered: true
-- winning chunk's domain: Consulting (IIMK Kasebook 2025.pdf — "Premise:")
-- **leaked cross-domain: YES**
+- winning chunk's domain: Prodman (PM_Compendium.md — "strategy")
+- **leaked cross-domain: no**
 - Top 6 retrieved rows (domain, source, similarity):
   - Consulting / IIMK Kasebook 2025.pdf / "Premise:" — 0.789
   - Prodman / PM_Compendium.md / "strategy" — 0.774
@@ -130,8 +129,8 @@ Q: How do you structure a market entry decision - should we enter, and how shoul
 ### pm037 [expected domain: Prodman]
 Q: How do I keep my issue tree MECE when sizing a market, and what should I do before I start calculating?
 - covered: true
-- winning chunk's domain: Consulting (The FMS Consulting Casebook 2021-22.pdf — "MECE Segmentation")
-- **leaked cross-domain: YES**
+- winning chunk's domain: Prodman (PM_Compendium.md — "guesstimates")
+- **leaked cross-domain: no**
 - Top 6 retrieved rows (domain, source, similarity):
   - Consulting / The FMS Consulting Casebook 2021-22.pdf / "MECE Segmentation" — 0.759
   - Consulting / IIM L Consulting Casebook 2025.pdf / "Guesstimates / Market Sizing" — 0.756
@@ -140,7 +139,7 @@ Q: How do I keep my issue tree MECE when sizing a market, and what should I do b
   - Consulting / The FMS Consulting CaseBook 2023-24 (1).pdf / "MECE Segmentation" — 0.746
   - Consulting / IIMK Kasebook 2025.pdf / "RECOMMENDATIONS" — 0.738
 
-**Overall cross-domain leakage verdict on this sample: LEAKAGE DETECTED.** Sample size is 4 probe questions - a first signal, not a final verdict (same caveat every prior preview eval in this project has carried).
+**Overall cross-domain leakage verdict on this sample: no leakage detected.** Sample size is 4 probe questions - a first signal, not a final verdict (same caveat every prior preview eval in this project has carried).
 
 ## Gemini call counts
 

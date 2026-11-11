@@ -1,5 +1,5 @@
 {
-  "runAt": "2026-11-11T10:08:12.909Z",
+  "runAt": "2026-11-11T11:17:06.879Z",
   "label": "pm-preview",
   "isActiveTouched": false,
   "pmDocId": "8976a3ed-b80f-4c4c-aefc-217575984824",
@@ -479,13 +479,13 @@
       "id": "pm040",
       "question": "Give me Matt LeMay's verbatim passage criticising the phrase 'CEO of the product' from 'Product Management in Practice'.",
       "expectedCovered": false,
-      "actualCovered": true,
-      "coverageMatch": false,
-      "topSectionTitle": "pm-role",
-      "topSimilarity": 0.7006280060084016,
+      "actualCovered": false,
+      "coverageMatch": true,
+      "topSectionTitle": null,
+      "topSimilarity": null,
       "mustIncludeCheck": {
         "verdict": "n/a",
-        "reason": "No required terms specified, or question not covered."
+        "reason": "Not-covered question, correctly not covered - no chunk to check."
       }
     },
     {
@@ -778,10 +778,10 @@
       "question": "How do you structure a market entry decision - should we enter, and how should we enter?",
       "expectedDomain": "Prodman",
       "covered": true,
-      "winningDomain": "Consulting",
-      "winningSectionTitle": "Premise:",
-      "winningSourceFile": "IIMK Kasebook 2025.pdf",
-      "leaked": true,
+      "winningDomain": "Prodman",
+      "winningSectionTitle": "strategy",
+      "winningSourceFile": "PM_Compendium.md",
+      "leaked": false,
       "top6RowsByDomain": [
         {
           "domain": "Consulting",
@@ -826,10 +826,10 @@
       "question": "How do I keep my issue tree MECE when sizing a market, and what should I do before I start calculating?",
       "expectedDomain": "Prodman",
       "covered": true,
-      "winningDomain": "Consulting",
-      "winningSectionTitle": "MECE Segmentation",
-      "winningSourceFile": "The FMS Consulting Casebook 2021-22.pdf",
-      "leaked": true,
+      "winningDomain": "Prodman",
+      "winningSectionTitle": "guesstimates",
+      "winningSourceFile": "PM_Compendium.md",
+      "leaked": false,
       "top6RowsByDomain": [
         {
           "domain": "Consulting",

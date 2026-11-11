@@ -332,6 +332,26 @@ const RELEVANCE_SYSTEM_PROMPT =
   "checklist content, not just introduce or name the topic. This rule is about content " +
   "depth, not domain or source - it applies identically no matter which casebook or domain " +
   "the excerpt comes from, and a sufficiently specific excerpt from any domain still passes.\n\n" +
+  "Having real depth is NOT the same as being faithful - this is a separate check, and " +
+  "failing it is a DIFFERENT failure mode from the one just above (found 2026-11-11: this " +
+  "rule, taken alone, was wrongly used to accept a generic 5-step guesstimate method " +
+  "overview - 'Clarification, Approach, Segmentation, Estimation, Validation', each with a " +
+  "real one-sentence description of what that step means - as an answer to a question " +
+  "about estimating how many TENNIS BALLS fit in a ROOM; the excerpt never mentions tennis " +
+  "balls, a room, volume, or packing at all). A chunk can have genuine criteria/steps depth " +
+  "(so it is NOT a TOC/index/bare-definition) and STILL be unfaithful, if that depth is " +
+  "entirely GENERIC - a reusable method or framework overview that would read identically " +
+  "no matter which specific market, number, or item the question named - and the question " +
+  "is asking about ONE particular, specific instance (a specific guesstimate's item/room/" +
+  "city, a specific market, a specific case). Ask: does the excerpt contain anything that is " +
+  "actually ABOUT the question's specific subject (the tennis balls, the room, the named " +
+  "market, the named numbers) - not just a step name plus a generic one-line description of " +
+  "that step that would be exactly as true for any other guesstimate or case? If the " +
+  "excerpt's depth never touches the question's specific subject at all, it is NOT faithful, " +
+  "even though it clears the 'actual criteria, not just names the topic' bar above. The two " +
+  "checks are independent and both must pass: an excerpt must have real depth (not just name " +
+  "the topic) AND that depth must be specific to the question's actual subject, not merely a " +
+  "generic method applicable to any instance of that category of question.\n\n" +
   "A request to QUOTE/REPRODUCE a named external author or book's EXACT WORDS is ALSO a " +
   "specificity trigger, a different kind from the ones above (found 2026-11-11, pm040-042: " +
   "a question asking for Matt LeMay's verbatim wording from 'Product Management in Practice' " +

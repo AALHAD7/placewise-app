@@ -122,3 +122,65 @@ test("judgeRelevanceOnce: wires a mocked 'faithful' verdict through for an excer
 
   assert.equal(result.faithful, true);
 });
+
+// --- Issue 3 (q008 regression, 2026-11-11): generic-but-real-depth vs question-specific
+// instance rule. Found via controlled A/B test (6 calls old prompt vs 6 calls the prompt as
+// it stood right after the Issue 2 fix above, on the byte-identical q008 chunk+question):
+// the Issue 2 rule's own wording ("the excerpt must contain the actual criteria, steps, or
+// checklist content, not just introduce or name the topic") was being used to wrongly accept
+// a GENERIC 5-step guesstimate method overview (Clarification/Approach/Segmentation/
+// Estimation/Validation, each with a real one-sentence description) as an answer to a
+// question about one specific guesstimate (tennis balls in a room) the excerpt never
+// mentions at all - because the excerpt technically "has steps", even though none of that
+// depth is about the question's actual subject. This is a different dimension from Issue 2
+// (missing depth) - this is real depth that is generic, not specific to the question's
+// subject - so it needs its own clause, verified separately here.
+
+test("judgeRelevanceOnce: the system prompt teaches the generic-depth-vs-specific-instance rule, distinct from the bare-definition rule", async t => {
+  const getBody = mockJudgeCall(t, { verdict: "unfaithful", reasoning: "generic method, never mentions tennis balls or a room" });
+
+  await judgeRelevanceOnce(
+    "What is the approach to estimate the number of tennis balls that can fit in a room?",
+    "Clarification: understand the question. Approach: pick demand-side or supply-side. " +
+    "Segmentation: build a MECE issue tree. Estimation: assume values for key drivers. " +
+    "Validation: sanity-check the final figure against a benchmark."
+  );
+
+  const systemText = getBody().systemInstruction.parts[0].text;
+  assert.ok(/TENNIS BALLS/.test(systemText) && /ROOM/.test(systemText),
+    "prompt must reference the actual q008 example it was fixed from");
+  assert.ok(/GENERIC/.test(systemText) && /independent/i.test(systemText),
+    "prompt must state the generic-depth check as independent from (not a restatement of) the missing-depth rule");
+});
+
+test("judgeRelevanceOnce: wires a mocked 'unfaithful' verdict through for a generic step-by-step guesstimate method against a question about one specific item/room", async t => {
+  mockJudgeCall(t, { verdict: "unfaithful", reasoning: "generic 5-step framework, never mentions tennis balls, a room, volume, or packing" });
+
+  const result = await judgeRelevanceOnce(
+    "What is the approach to estimate the number of tennis balls that can fit in a room?",
+    "Clarification: understand the question. Approach: pick demand-side or supply-side. " +
+    "Segmentation: build a MECE issue tree. Estimation: assume values for key drivers. " +
+    "Validation: sanity-check the final figure against a benchmark."
+  );
+
+  assert.equal(result.faithful, false);
+});
+
+// Regression guard: a question asking about the GENERIC method itself (not a specific
+// instance) must be unaffected by this rule - the new clause only applies when the question
+// names one particular subject (an item, a room, a market, a case), per its own scoping
+// language. q024-style questions ("what is the difference between top-down and bottom-up
+// approaches in guesstimates?") ask about the generic concept itself, so a generic
+// methodology excerpt answering that generic concept must still wire through as faithful.
+test("judgeRelevanceOnce: a question about the generic method itself still wires a mocked 'faithful' verdict through unaffected", async t => {
+  mockJudgeCall(t, { verdict: "faithful", reasoning: "excerpt defines and contrasts top-down and bottom-up approaches directly" });
+
+  const result = await judgeRelevanceOnce(
+    "What is the difference between top-down and bottom-up approaches in guesstimates?",
+    "Top-down approach: start with a high-level estimate and break it into smaller " +
+    "components. Bottom-up approach: start with small, measurable components and " +
+    "aggregate them into a larger estimate."
+  );
+
+  assert.equal(result.faithful, true);
+});
