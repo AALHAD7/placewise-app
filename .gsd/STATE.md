@@ -1,6 +1,28 @@
 # STATE
 
-**Position:** ▶ R9 (qa-tester / Aalhad sign-off → switch Consulting live, QA on live site).
+**Position:** ▶ R9, NOT done. Switch-over already happened live (is_active flipped, flags on)
+— this is further along than it looks, not blocked on a decision. What's actually left:
+
+1. **Push commits `4fb1f79` and `0ca4751`** (both committed to `main`, not pushed — blocked by
+   this session's "Production Deploy" permission classifier) so Render serves the
+   footer/attribution-leak fix. Needs Aalhad.
+2. **Run this SQL** (also blocked for this session — "Modify Shared Resources"), so Frameworks
+   stops serving the cached pre-fix leaked text for up to 7 more days:
+   `update frameworks set grounded_checked_at = null where domain='Consulting' and
+   grounded_checked_at is not null;` (8 rows). Needs Aalhad.
+3. After 1-2 land, re-run the `qa-tester` MECE/Market Entry check (2026-11-11's QA found the
+   leak; confirm it's gone post-deploy+cache-clear) before marking R9 done in `ROADMAP.md`.
+4. **Unresolved, not a blocker but worth Aalhad's look:** 2 SRCC Guesstimates-book chunks were
+   deactivated sometime between 2026-11-07 and 2026-11-11 with no `log.md` entry — a 2026-11-11
+   rollback test unintentionally reactivated them and their IDs aren't known, so they were not
+   restored (see that entry). If you recall doing this, the IDs should go into
+   `switchConsultingLive.js`'s `EXCLUDED_CHUNK_IDS` and be turned back off.
+
+2026-11-11 done: QA re-check of the live switch (per step 3's predecessor) found and fixed
+2 grounding-policy leaks (casebook footer artifact + paraphrase naming its source) on
+Frameworks — see log.md's 2026-11-11 entries (`4fb1f79` the fix, `0ca4751` the rollback-test
+fix). Rollback mechanism itself is now proven (tested live, see log.md) and the script's
+`--apply` gap it exposed is fixed.
 R9.4 done 2026-11-07: bumped `judgeParaphraseFaithful`'s vote count 3→5 (`faithfulMajority`
 now needs ≥3/5, same simple-majority rule, just less noisy) in `consultingRetrieval.js`, to
 fix the judge non-determinism R9.3 flagged (83%→58% faithfulness swing on identical code).
