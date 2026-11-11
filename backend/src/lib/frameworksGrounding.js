@@ -27,6 +27,39 @@ const IMAGE_SIMILARITY_THRESHOLD = 0.65;
 // correct, safe state, not a bug.
 const CONSULTING_RAG_V2_ENABLED = process.env.ENABLE_CONSULTING_RAG_V2 === "true";
 
+// D1 switch-over flag for Prodman - deliberately separate from
+// CONSULTING_RAG_V2_ENABLED, default off, same reversible-flag pattern as
+// ENABLE_ANSWER_PARAPHRASE/ENABLE_GUESSTIMATE_PARAPHRASE. This is NOT the same
+// situation R9's Consulting switch-over was: Prodman's 11 frameworks already have a
+// live, working v1 (document_chunks) grounded_example/grounded_image cached, and D1.2's
+// new PM ingest_chunks rows are correctly is_active=false (no PM switch-over has
+// happened yet). If Prodman piggybacked on CONSULTING_RAG_V2_ENABLED (which is already
+// on for R9), findGroundingV2 would return a clean `{covered: false}` for every Prodman
+// framework the moment its 7-day cache goes stale (GROUNDED_STALE_AFTER_MS below) -
+// there are no active PM rows for it to find - and findGrounding has no fallback for a
+// *clean* "not covered" result (only for findGroundingV2 throwing), so it would silently
+// overwrite every Prodman framework's good cached example/image with null, as an
+// unplanned side effect of time passing rather than a deliberate step. That would violate
+// CLAUDE.md's "never wipe what exists" and "every switch-over reversible in one step"
+// rules. Flipping this on is step one of a real PM switch-over; step two is flipping the
+// PM ingest_chunks rows to is_active=true (same two-part shape as R9's Consulting
+// switch-over) - do both together, deliberately, logged in log.md, not as a side effect
+// of this file alone.
+const PM_RAG_V2_ENABLED = process.env.ENABLE_PM_RAG_V2 === "true";
+
+// Consulting (R7) and Prodman (D1) - domains with real ingest_chunks data to ground
+// against via the v2 path, gated by their own flag above; a domain not in this list, or
+// whose own flag is off, keeps using the v1 (document_chunks) fallback below.
+export const RAG_V2_DOMAINS = ["Consulting", "Prodman"];
+
+// Per-domain flag lookup - keeps Consulting and Prodman's go-live independently
+// reversible even though both share RAG_V2_DOMAINS and findGroundingV2's code path.
+function isV2EnabledForDomain(domain) {
+  if (domain === "Consulting") return CONSULTING_RAG_V2_ENABLED;
+  if (domain === "Prodman") return PM_RAG_V2_ENABLED;
+  return false;
+}
+
 async function findGroundingV2(fw) {
   const query = `${fw.name} framework diagram case study real example application ${fw.subdomain || fw.role || ""}`;
   // paraphrase: true opts Frameworks in to the paraphrase layer (grounded-answering
@@ -45,9 +78,10 @@ async function findGroundingV2(fw) {
   // from this exact book on purpose, via its own feature (guesstimateRetrieval.js) - it
   // should never also surface as a Frameworks "real example".
   const result = await groundedConsultingLookup(query, {
-    domain: "Consulting",
+    domain: fw.domain,
     paraphrase: true,
-    excludeSourceFiles: [GUESSTIMATES_SOURCE_FILE]
+    excludeSourceFiles: [GUESSTIMATES_SOURCE_FILE],
+    sourceClasses: ["club_casebook", "placewise_reference"]
   });
   if (!result.covered) return { example: null, image: null };
 
@@ -109,7 +143,7 @@ export function pickTopTextAndImage(rows) {
 // those exact values (see migration_019) specifically so no remapping layer
 // is needed here.
 async function findGrounding(fw) {
-  if (CONSULTING_RAG_V2_ENABLED && fw.domain === "Consulting") {
+  if (RAG_V2_DOMAINS.includes(fw.domain) && isV2EnabledForDomain(fw.domain)) {
     try {
       return await findGroundingV2(fw);
     } catch (err) {

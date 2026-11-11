@@ -77,7 +77,7 @@ function rfindNewline(text, from, to) {
  * Returns [start, end) character spans covering the whole of `text`, each <= maxChars
  * except where a part can't be made that small without losing the overlap entirely.
  */
-function computeSplitSpans(text, maxChars, overlapChars) {
+export function computeSplitSpans(text, maxChars, overlapChars) {
   const n = text.length;
   const spans = [];
   let start = 0;
@@ -119,7 +119,7 @@ export function splitLongContent(content, maxChars = MAX_CHUNK_CHARS, overlapCha
  * Pure: 1-based file line number of the character at `offset` within `content`, given
  * that `content`'s own first character sits on file line `baseLine` (1-based).
  */
-function fileLineAtContentOffset(content, offset, baseLine) {
+export function fileLineAtContentOffset(content, offset, baseLine) {
   let newlines = 0;
   const limit = Math.min(offset, content.length);
   for (let i = 0; i < limit; i++) {

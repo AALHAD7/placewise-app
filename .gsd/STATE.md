@@ -1,6 +1,27 @@
 # STATE
 
-**Position:** ▶ D1 (Product management). R9 is done (2026-11-11) — see `.gsd/ROADMAP.md`.
+**Position:** ▶ D2 (Finance club casebooks). D1 is done (2026-11-11); FIN1 was found already
+done (2026-11-06) but still marked `todo` — corrected in `.gsd/ROADMAP.md`. R9 is also done
+(2026-11-11) — see `.gsd/ROADMAP.md`.
+
+D1 closed out 2026-11-11: ingested `Data/Prodman Files/PM_Compendium.md` only, per Aalhad's
+call (not the raw PM casebook PDFs) — 159 `ingest_chunks` rows (`source_class
+='placewise_reference'`, `domain='Prodman'`), all `is_active=false`. Widened
+`frameworksGrounding.js` to retrieve PM content, behind a new, dedicated `ENABLE_PM_RAG_V2`
+flag (default off) — a round-1 code review caught a real bug where piggybacking on the
+already-on `ENABLE_CONSULTING_RAG_V2` flag would have silently nulled out Prodman's 11
+currently-live v1 (`document_chunks`) cached examples within days; fixed and regression-tested
+before commit. Also fixed, same session, found by D1's own eval: `judgeRelevanceOnce`/the
+paraphrase judge were truncating excerpts at 2000 chars, losing real answers in PM's longer
+chunks — raised to 10000, PM preview coverage went 80%→100%. See log.md's 2026-11-11 "D1
+closed" entry for full detail. PM switch-over (flag + `is_active`) is a separate, later,
+Aalhad-gated step, not done here.
+
+**Noticed while closing D1, not a D2 blocker, worth knowing:** FIN1's own 2026-11-06 preview
+eval had 2 must_include failures (f005, f008) that look like the same 2000-char truncation
+bug D1 just fixed — not re-verified against the fix, since FIN1 is already closed and this
+wasn't asked for; if Aalhad wants, a quick re-run of `run_eval_finance_preview.js` would
+confirm whether the fix also improves Finance's numbers for free.
 
 R9 closed out 2026-11-11: Aalhad pushed the 2 pending commits (`4fb1f79` footer/attribution
 fix, `0ca4751` rollback-script fix) and ran the Frameworks cache-clear SQL himself (both were

@@ -5,6 +5,77 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-11 — D1 closed: PM compendium ingested, Frameworks wiring fixed and gated, phase committed
+
+**Phase:** D1 · **Type:** ingestion + retrieval wiring (closes the phase) · **Commit:** pending
+
+**Context:** Aalhad's call: ingest only `Data/Prodman Files/PM_Compendium.md` for the PM
+domain — not the raw PM club casebook PDFs, which the compendium already consolidates.
+Planned as 4 waves (`.gsd/phases/D1/`), executed, code-reviewed over 2 rounds.
+
+**What shipped:**
+1. `backend/src/lib/pmCompendiumParser.js` — parses the compendium's own `<!--chunk-->`
+   markers; fence-aware so the file's one in-doc documentation example (which looks like a
+   real marker to a naive splitter) is correctly excluded (145 real chunks, not 146). Oversized
+   chunks split via the exact same character-offset helpers `financeCompendiumParser.js` uses
+   internally (`computeSplitSpans`/`fileLineAtContentOffset`, newly exported, no behavior
+   change to FIN1's own path — confirmed by review).
+2. `backend/scripts/ingestPmCompendium.js` — embedded and wrote 159 `ingest_chunks` rows
+   (`source_class='placewise_reference'`, `domain='Prodman'`), one new `ingest_documents` row.
+   159 embedding calls. All rows `is_active=false` — no student can reach this content yet.
+3. `backend/src/lib/frameworksGrounding.js` — widened to retrieve `Prodman`-domain
+   `placewise_reference` content via the v2 path, gated behind a **new, dedicated
+   `ENABLE_PM_RAG_V2` flag (default off)** — deliberately separate from the already-on
+   `ENABLE_CONSULTING_RAG_V2`. Round-1 code review caught a real bug here: piggybacking on
+   the Consulting flag would have let Prodman's 11 currently-live v1 (`document_chunks`)
+   cached examples get silently overwritten with `null` within days, the next time each
+   framework's 7-day cache went stale and `findGroundingV2` correctly returned
+   `{covered:false}` (no active PM rows yet) with no fallback to v1. Fixed with the dedicated
+   flag plus a regression test (`frameworksGroundingPmFlagOff.test.js`) proving Prodman stays
+   on v1 with the flag off even when Consulting's flag is on. `backend/.env.example` updated.
+4. `backend/eval/questions.jsonl` — 17 new PM questions (12 covered, 3 not-covered, 2
+   cross-domain probes). `backend/eval/run_eval_pm_preview.js` — read-only preview eval
+   against the inactive pool.
+5. **Real accuracy fix found by the eval, not scoped to PM alone:** `judgeRelevanceOnce`/the
+   paraphrase-faithfulness judge in `consultingRetrieval.js` were truncating excerpts to 2000
+   chars before judging — PM's longer chunks (avg 1831, max 9556 across the whole table) were
+   losing real answers past that cutoff. Raised to a named `JUDGE_EXCERPT_CHAR_LIMIT = 10000`.
+   PM preview coverage went 12/15 (80%) → **15/15 (100%)** after the fix; the 3 specific
+   regressions (pm004 streaming-RCA, pm006 Amazon-teardown must_include, pm011 blockchain)
+   all now pass. Cross-domain leakage: 0/4 probes, unaffected. Consulting/Finance not
+   re-evaluated with a full paid run — reasoned, not assumed: avg chunk length sits far under
+   both the old and new limit, so the fix can only ever add context for the long tail, never
+   remove any; `npm test` green is the corroborating evidence. `PARAPHRASE_PROMPT_VERSION`
+   bumped 3→4 so no stale cache keeps serving a pre-fix verdict.
+
+**Code review: 2 rounds.** Round 1 found the `ENABLE_PM_RAG_V2` gap above (high) and a
+low-severity split-chunk line-locator ambiguity (fixed same session, admin-metadata only,
+never student-facing). Round 2: ship — confirmed the fix actually closes the hole (read the
+code directly, didn't trust the description), confirmed the regression test exercises the
+exact failure mode, confirmed `financeCompendiumParser.js`'s two new `export` keywords don't
+change FIN1's behavior.
+
+**`npm test`:** 247/248 pass — the 1 failure is the pre-existing, unrelated macOS sandbox
+env-leak flake (`test/sandbox.test.js`), present before this phase too.
+
+**What's still NOT live, by design:** every PM `ingest_chunks` row is `is_active=false`;
+`ENABLE_PM_RAG_V2` is unset (off). PM switch-over is a separate, later, Aalhad-gated decision
+— same posture as every other domain in this project (R6/R9/FIN1).
+
+**Files:** `backend/src/lib/{pmCompendiumParser,financeCompendiumParser,frameworksGrounding,consultingRetrieval}.js`,
+`backend/scripts/ingestPmCompendium.js`, `backend/eval/{questions.jsonl,run_eval_pm_preview.js,results/2026-11-11-pm-preview.{json,md}}`,
+`backend/test/{pmCompendiumParser,frameworksGrounding,frameworksGroundingPmFlagOff,judgeExcerptLimit}.test.js`,
+`backend/.env.example`, `CLAUDE.md`, `.gsd/phases/D1/*.md`, `.gsd/ROADMAP.md`, `.gsd/STATE.md`.
+
+**Cost:** 159 embedding calls (ingestion) + the PM preview eval's ~19 embedding + ~291
+relevance-judge calls (flash-lite tier throughout) — well within the ~$20/month budget.
+
+**Undo:** the new PM `ingest_documents`/`ingest_chunks` rows can be deleted or left
+`is_active=false` indefinitely with zero effect on any live page. `ENABLE_PM_RAG_V2` unset =
+Prodman Frameworks' current v1 behavior, unchanged.
+
+---
+
 ## 2026-11-11 — D1 follow-up: judge truncation raised 2000 → 10000 chars, fixes pm004/pm006/pm011
 
 **Phase:** D1 · **Type:** fix (retrieval/judge prompt) + eval (read-only preview re-run)

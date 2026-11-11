@@ -13,7 +13,22 @@
 // what "fixed" looks like from the call site.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickTopTextAndImage, isStale } from "../src/lib/frameworksGrounding.js";
+
+// ENABLE_CONSULTING_RAG_V2=true and ENABLE_PM_RAG_V2=true for this whole file (same
+// pattern as consultingParaphraseFlagOn.test.js) so the D1.3 tests below can exercise
+// the v2 gate for both domains - module-level flags are read once at import time, so
+// this must be set before the dynamic import, not inside an individual test. The
+// pre-existing pickTopTextAndImage/isStale tests are pure functions, unaffected by
+// either flag. A separate file (frameworksGroundingPmFlagOff.test.js) imports the module
+// fresh with ENABLE_PM_RAG_V2 left off to prove the opposite case - see the review this
+// locks in, below.
+process.env.GEMINI_API_KEY = process.env.GEMINI_API_KEY || "test-gemini-key";
+process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://fake-supabase.test";
+process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "test-supabase-key";
+process.env.ENABLE_CONSULTING_RAG_V2 = "true";
+process.env.ENABLE_PM_RAG_V2 = "true";
+
+const { pickTopTextAndImage, isStale, withGroundedExamples, RAG_V2_DOMAINS } = await import("../src/lib/frameworksGrounding.js");
 
 test("pickTopTextAndImage: finds the image row when image_url is present and above its threshold", () => {
   const rows = [
@@ -76,4 +91,86 @@ test("isStale: exactly on the 7-day boundary is not yet stale, just past it is",
   const now = new Date("2026-11-02T00:00:00Z").getTime();
   assert.equal(isStale("2026-10-26T00:00:00.001Z", now), false); // just under 7 days
   assert.equal(isStale("2026-10-25T23:59:59.000Z", now), true);  // just over 7 days
+});
+
+// --- D1.3: widen the v2 grounding gate from Consulting-only to RAG_V2_DOMAINS ---
+//
+// Network-mocked end-to-end (same pattern as qaRetrieval.test.js's "widened retrieval
+// scope" test) to prove findGrounding's actual RPC call for a Prodman framework row
+// carries domain: "Prodman" (not hardcoded "Consulting") and both source classes, and
+// that a domain outside RAG_V2_DOMAINS (HR) never reaches match_ingest_chunks at all -
+// proving the allowlist is a real gate, not accidentally wide-open.
+
+function installFrameworksFakeFetch(t, { ingestRows = [], documentRows = [] } = {}) {
+  const ingestCalls = [];
+  const documentCalls = [];
+  t.mock.method(globalThis, "fetch", async (url, opts) => {
+    const href = typeof url === "string" ? url : url.toString();
+    if (href.includes(":embedContent")) {
+      return new Response(JSON.stringify({ embedding: { values: new Array(768).fill(0) } }), { status: 200 });
+    }
+    if (href.includes("/rest/v1/rpc/match_ingest_chunks")) {
+      ingestCalls.push(JSON.parse(opts.body));
+      return new Response(JSON.stringify(ingestRows), { status: 200 });
+    }
+    if (href.includes("/rest/v1/rpc/match_document_chunks")) {
+      documentCalls.push(JSON.parse(opts.body));
+      return new Response(JSON.stringify(documentRows), { status: 200 });
+    }
+    if (href.includes(":generateContent")) {
+      // Relevance judge (RELEVANCE_SYSTEM_PROMPT, "strict grader") - always faithful, so a
+      // covering row always survives to become grounded_example/grounded_image.
+      return new Response(
+        JSON.stringify({ candidates: [{ content: { parts: [{ text: '{"verdict": "faithful", "reasoning": "on topic"}' }] } }] }),
+        { status: 200 }
+      );
+    }
+    if (href.includes("/rest/v1/frameworks")) {
+      // The grounded_checked_at cache write (withGroundedExamples) - succeed as a no-op.
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    return new Response(JSON.stringify({}), { status: 200 });
+  });
+  return { ingestCalls, documentCalls };
+}
+
+test("RAG_V2_DOMAINS: includes both Consulting and Prodman", () => {
+  assert.ok(RAG_V2_DOMAINS.includes("Consulting"));
+  assert.ok(RAG_V2_DOMAINS.includes("Prodman"));
+});
+
+test("withGroundedExamples: with ENABLE_PM_RAG_V2 on, a Prodman row calls match_ingest_chunks with domain Prodman and both source classes", async t => {
+  const row = {
+    content: "AARRR maps Acquisition, Activation, Retention, Referral and Revenue.",
+    has_diagram: false,
+    similarity: 0.9,
+    source_file: "pm-compendium.pdf",
+    page_start: 4,
+    page_end: 4,
+    school: null,
+    club: null,
+    year: null
+  };
+  const { ingestCalls, documentCalls } = installFrameworksFakeFetch(t, { ingestRows: [row] });
+
+  const fw = { id: "fw-aarrr", domain: "Prodman", name: "AARRR Framework", grounded_checked_at: null };
+  const [result] = await withGroundedExamples([fw]);
+
+  assert.equal(ingestCalls.length, 1);
+  assert.equal(ingestCalls[0].filter_domain, "Prodman");
+  assert.deepEqual(ingestCalls[0].filter_source_classes, ["club_casebook", "placewise_reference"]);
+  assert.equal(documentCalls.length, 0, "a Prodman row should never fall through to the v1 document_chunks path");
+  assert.ok(result.grounded_example, "a covering row should produce a grounded_example");
+  assert.ok(result.grounded_example.excerpt.includes("AARRR"));
+});
+
+test("withGroundedExamples: an HR row (not in RAG_V2_DOMAINS) falls back to the v1 document_chunks path", async t => {
+  const { ingestCalls, documentCalls } = installFrameworksFakeFetch(t, { documentRows: [] });
+
+  const fw = { id: "fw-hr", domain: "HR", name: "Some HR Framework", grounded_checked_at: null };
+  await withGroundedExamples([fw]);
+
+  assert.equal(ingestCalls.length, 0, "an allowlist-excluded domain must never call match_ingest_chunks");
+  assert.equal(documentCalls.length, 1);
+  assert.equal(documentCalls[0].filter_domain, "HR");
 });

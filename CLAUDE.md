@@ -53,7 +53,20 @@ Spec: `.gsd/SPEC.md`. Session position: `.gsd/STATE.md`.
   visible label distinguishes them, consistent with the no-per-answer-source-line decision
   above. `source_class` stays accurate internally for Aalhad's own tracking/audit; the
   per-answer AI-fallback disclosure (casebooks don't cover this, general answer) is
-  unaffected and still applies whenever NEITHER source class covers a question.
+  unaffected and still applies whenever NEITHER source class covers a question. Decided
+  2026-11-11 (D1): unlike Finance (FIN1), which scoped `placewise_reference` to Q&A only,
+  Product Management's compendium is also wired into the Frameworks page's grounded-example
+  lookup (`frameworksGrounding.js`), since D1's roadmap scope required it — Finance's
+  equivalent Frameworks wiring remains D2 follow-up work, not done here. This wiring is
+  built and tested but inert until `ENABLE_PM_RAG_V2` is explicitly turned on (default
+  off, separate from the already-on `ENABLE_CONSULTING_RAG_V2`) — Prodman's 11 frameworks
+  already have a live, working v1 (`document_chunks`) `grounded_example`/`grounded_image`
+  cached, and D1's new PM `ingest_chunks` rows are correctly `is_active = false` (no PM
+  switch-over yet). Piggybacking the new path on the Consulting flag would have let the
+  v1 cache silently go stale and get overwritten with `null` once each framework's 7-day
+  cache expired — flipping `ENABLE_PM_RAG_V2=true` together with the PM `ingest_chunks`
+  rows' `is_active` is the real switch-over, done deliberately, as one logged step, same
+  shape as R9's Consulting switch-over.
 
 **What is grounded in the casebooks**
 - Frameworks page (by domain/subdomain): explanation + rebuilt diagram from casebooks.
