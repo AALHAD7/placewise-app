@@ -39,6 +39,33 @@ const DOC_IDS = [
   "faa13328-c4bc-4ed7-8172-6ec5ba38c162"  // The FMS Consulting CaseBook 2023-24, v6
 ];
 
+// 2026-11-11 incident: a live rollback/apply test (run to verify this script, per R9's
+// "rollback tested" done-when) proved that --apply unconditionally sets is_active=true for
+// EVERY row in DOC_IDS, with no memory of rows that were surgically deactivated afterward for
+// content-quality reasons (not part of the original switch-over). That silently undid 10
+// known-bad SRCC Guesstimates-book chunks (2 cheat-sheet-dump rows from the 2026-11-07 R9.3
+// incident, 8 concatenation/truncation rows from the same day's follow-up fix - see log.md) -
+// restored by hand afterward, cross-checked against log.md's page ranges. --apply now excludes
+// this list so a future rollback/apply cycle can't reintroduce the same bug.
+// KNOWN GAP: the live row count before the 2026-11-11 test was 57 active/12 inactive for SRCC,
+// but only 10 inactive IDs are documented in log.md (59/10) - 2 more rows were deactivated
+// between 2026-11-07 and 2026-11-11 with no log.md entry found. Those 2 IDs are NOT in this
+// list because they are unknown, and were unintentionally reactivated by the 2026-11-11 test.
+// Aalhad: if you know what those 2 rows were, add them here and re-deactivate them; otherwise
+// this is a known, flagged gap, not a silent one.
+const EXCLUDED_CHUNK_IDS = [
+  "2da998b5-2055-4c48-bf36-2cab37435591", // SRCC p1-4, cheat-sheet-dump merge (R9.3)
+  "f4185c4a-321c-423a-bb2a-617d270a98e1", // SRCC p9-12, cheat-sheet-dump merge (R9.3)
+  "eb4272dc-d0a8-4896-b622-742f9312119b", // SRCC p26-28, 2 problems concatenated
+  "912ed1ed-a641-4a6d-a691-3ca529f295bb", // SRCC p35-36, 2 problems concatenated
+  "06d23f19-f23f-4bde-a57a-28d512d41e28", // SRCC p44-45, 2 problems concatenated
+  "f55ca214-e436-4090-b0d6-40d80dd9e1be", // SRCC p47-50, 2nd problem truncated mid-assumption
+  "efe311a9-44c3-4ca1-8ac7-07b84f256fc3", // SRCC p51-52, 2nd problem truncated mid-assumption
+  "661a8e35-0ef3-49b4-845a-55bfe08dff73", // SRCC p55-57, truncated duplicate (real copy elsewhere)
+  "84e55de3-8f34-4bc9-b332-e7094b9c8112", // SRCC p28-29, orphan fragment, no diagram/answer
+  "df90c84b-f906-4834-ae01-7d6868226f2e", // SRCC p29, duplicate orphan fragment
+];
+
 function fail(message, err) {
   console.error(`[switchConsultingLive] ${message}`);
   if (err) console.error(err);
@@ -113,11 +140,15 @@ async function main() {
 
   const targetActive = apply; // true for --apply, false for --rollback
 
-  const { error: updateError, count: updatedCount } = await supabase
-    .from("ingest_chunks")
-    .update({ is_active: targetActive })
-    .in("document_id", DOC_IDS)
-    .select("id", { count: "exact" });
+  // --apply must never resurrect a chunk that was surgically deactivated afterward for
+  // content-quality reasons (see EXCLUDED_CHUNK_IDS above) - exclude those from the write.
+  // --rollback intentionally still deactivates everything, EXCLUDED_CHUNK_IDS included:
+  // "off" means off.
+  let query = supabase.from("ingest_chunks").update({ is_active: targetActive }).in("document_id", DOC_IDS);
+  if (apply && EXCLUDED_CHUNK_IDS.length) {
+    query = query.not("id", "in", `(${EXCLUDED_CHUNK_IDS.join(",")})`);
+  }
+  const { error: updateError, count: updatedCount } = await query.select("id", { count: "exact" });
 
   if (updateError) {
     fail(`Update failed (mode=${apply ? "--apply" : "--rollback"}).`, updateError);
