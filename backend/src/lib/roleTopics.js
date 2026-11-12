@@ -7,18 +7,11 @@ import { ROLE_CONTENT_RULES } from "./roleContentRules.js";
 import { checkContentBatch, repairExplanation, verifyPracticePromptOrReplace } from "./contentVerifier.js";
 import { groundedConsultingLookup } from "./consultingRetrieval.js";
 import { ingestDomainForRole } from "./roles.js";
+import { isV2EnabledForDomain } from "./domainGrounding.js";
 
 // Same long TTL rationale as roleOverview.js - an interview curriculum for a
 // role doesn't shift week to week.
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-
-// G2 switch (pulled forward ahead of its normal M3 sequencing - Aalhad's
-// explicit call, see log.md). Off by default, so flipping it off restores
-// today's exact v1 behavior below. Same posture as frameworksGrounding.js's
-// CONSULTING_RAG_V2_ENABLED - deliberately the same env var, since both are
-// "is the new ingest_chunks pipeline live for Consulting content" questions,
-// not independent toggles.
-const CONSULTING_RAG_V2_ENABLED = process.env.ENABLE_CONSULTING_RAG_V2 === "true";
 
 // v1: pull real excerpts from the OLD corpus (document_chunks) and hand
 // them to the model as loose "context" it may or may not actually use in
@@ -61,25 +54,26 @@ async function retrieveContextV1(roleName) {
 // v2: one retrieval against the new ingest_chunks pipeline, then ONE
 // explicit covered/not-covered decision for the whole curriculum (not a
 // per-field guess) - the response either carries real page citations for
-// content it actually drew on, or is labelled not-grounded. Hardcoded to
-// domain "Consulting" because that's the only domain re-ingested so far
-// (R6) - there is no domain concept on roles themselves (roleName is free
-// text), so this intentionally queries the Consulting slice of the corpus
-// regardless of what role is asked about. A role genuinely unrelated to
-// consulting case prep (e.g. "Data Scientist") will correctly come back
-// not-covered rather than being force-matched to irrelevant excerpts. Once
-// M2 ingests other domains, this will need an actual per-role domain signal
-// to stay accurate - flagged here rather than silently assumed permanent.
+// content it actually drew on, or is labelled not-grounded. Was hardcoded to
+// domain "Consulting" (the only domain re-ingested at the time) until
+// 2026-11-13; now uses ingestDomainForRole(roleName) same as the v1 path
+// below, so a Prodman role benefits from the PM compendium too, not just
+// Consulting roles - the exact widening this function's own prior comment
+// flagged as needed "once M2 ingests other domains." A role that maps to no
+// v2-enabled domain (or no domain at all) correctly comes back not-covered
+// rather than being force-matched to an unrelated domain's excerpts.
 async function retrieveContextV2(roleName) {
+  const domain = ingestDomainForRole(roleName);
   const query = `${roleName} interview preparation case studies frameworks practice questions`;
-  const result = await groundedConsultingLookup(query, { domain: "Consulting" });
+  const result = await groundedConsultingLookup(query, { domain: domain || "Consulting" });
   if (!result.covered) return { context: "", groundedInCasebooks: false, citations: [] };
   const context = result.chunks.map((c, i) => `[Source ${i + 1}]\n${c.content}`).join("\n\n---\n\n");
   return { context, groundedInCasebooks: true, citations: result.citations };
 }
 
 async function retrieveContext(roleName) {
-  if (CONSULTING_RAG_V2_ENABLED) {
+  const domain = ingestDomainForRole(roleName);
+  if (isV2EnabledForDomain(domain || "Consulting")) {
     try {
       return await retrieveContextV2(roleName);
     } catch (err) {

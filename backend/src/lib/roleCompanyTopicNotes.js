@@ -7,13 +7,7 @@ import { ROLE_CONTENT_RULES } from "./roleContentRules.js";
 import { resolveAliasGroup, mentionsCompany } from "./companyMatcher.js";
 import { retrieveConsultingChunks, buildCitation } from "./consultingRetrieval.js";
 import { ingestDomainForRole } from "./roles.js";
-
-// G2 switch, same env var and off-by-default posture as frameworksGrounding.js/
-// roleTopics.js/chipPanel.js. The mention-gate below (not a similarity
-// threshold) is the real grounding requirement here, unchanged by this
-// switch - this only changes WHERE the candidate chunks come from, so a hit
-// can carry a real page citation instead of none at all.
-const CONSULTING_RAG_V2_ENABLED = process.env.ENABLE_CONSULTING_RAG_V2 === "true";
+import { isV2EnabledForDomain } from "./domainGrounding.js";
 
 // "How this shows up by company" (Phase 1 amendment C) - split out of the
 // topics call entirely so it can carry its own, much stricter grounding
@@ -74,13 +68,15 @@ async function retrieveCompanyChunksV1(roleName, companyName) {
 // v2: same mention-gate (vector similarity alone still can't tell "ranked
 // high" from "actually about this company" - see the note above), but
 // against ingest_chunks via consultingRetrieval.js, so a real hit carries a
-// real page citation (school/casebook/page) instead of none. Hardcoded to
-// domain "Consulting" for the same reason as roleTopics.js v2 - no
-// per-role domain signal exists yet, and this is the only ingested domain.
-async function retrieveCompanyChunksV2(roleName, companyName) {
+// real page citation (school/casebook/page) instead of none. Was hardcoded
+// to domain "Consulting" until 2026-11-13 (no per-role domain signal was
+// wired in yet); now uses ingestDomainForRole(roleName), same as the v1
+// path, so a Prodman role's company notes also benefit from the PM
+// compendium.
+async function retrieveCompanyChunksV2(roleName, companyName, domain) {
   const aliases = await resolveAliasGroup(companyName);
   const rows = await retrieveConsultingChunks(`${companyName} ${roleName} interview case study experience`, {
-    domain: "Consulting", matchCount: MATCH_COUNT
+    domain, matchCount: MATCH_COUNT
   });
   const mentioning = rows.filter(r => mentionsCompany(r.content || "", aliases));
   return {
@@ -103,9 +99,10 @@ export function buildNoteCitations(notes, mentionCitations) {
 }
 
 async function retrieveCompanyChunks(roleName, companyName) {
-  if (CONSULTING_RAG_V2_ENABLED) {
+  const domain = ingestDomainForRole(roleName) || "Consulting";
+  if (isV2EnabledForDomain(domain)) {
     try {
-      return await retrieveCompanyChunksV2(roleName, companyName);
+      return await retrieveCompanyChunksV2(roleName, companyName, domain);
     } catch (err) {
       console.warn(`[roleCompanyTopicNotes] v2 retrieval failed for "${roleName}"/"${companyName}", falling back to v1: ${err.message}`);
     }

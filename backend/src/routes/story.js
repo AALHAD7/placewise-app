@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { supabase } from "../lib/supabase.js";
-import { embedTexts, generateJSON } from "../lib/gemini.js";
+import { generateJSON } from "../lib/gemini.js";
+import { retrieveDomainChunks } from "../lib/domainGrounding.js";
 import { requireAuth } from "../middleware/auth.js";
 import { heavyAiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
@@ -38,14 +38,11 @@ router.post("/generate", requireAuth, heavyAiLimiter, async (req, res) => {
   }
 
   try {
-    const [queryEmbedding] = await embedTexts([resume], "RETRIEVAL_QUERY");
-
-    const { data: chunks, error: matchError } = await supabase.rpc("match_document_chunks", {
-      query_embedding: queryEmbedding,
-      match_count: 6,
-      filter_domain: domain || null
-    });
-    if (matchError) throw matchError;
+    // domainGrounding.js's retrieveDomainChunks tries the new ingest_chunks
+    // pipeline first for Consulting/Prodman, falling back to v1
+    // document_chunks otherwise - was a direct, unconditional v1-only call
+    // before 2026-11-13.
+    const { chunks } = await retrieveDomainChunks(resume, domain, { matchCount: 6 });
 
     const context = (chunks || [])
       .map((c, i) => `[Source ${i + 1}: ${c.source_file}]\n${c.content}`)

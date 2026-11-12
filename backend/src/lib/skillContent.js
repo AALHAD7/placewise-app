@@ -1,5 +1,5 @@
-import { supabase } from "./supabase.js";
-import { generateJSON, generateGroundedText, embedTexts } from "./gemini.js";
+import { generateJSON, generateGroundedText } from "./gemini.js";
+import { retrieveDomainChunks } from "./domainGrounding.js";
 import { runInSandbox } from "./sandbox.js";
 import { normalizeCacheKey } from "./cacheKey.js";
 import { singleFlight } from "./singleFlight.js";
@@ -59,22 +59,22 @@ function conceptFor(concepts, index) {
 // second or third difficulty tier reuses it instead of re-embedding.
 async function retrieveContext(roleName, skillName) {
   try {
-    const [queryEmbedding] = await embedTexts(
-      [`${roleName} ${skillName} interview questions case studies practice`],
-      "RETRIEVAL_QUERY"
-    );
     // filter_domain: roleName is almost always a canonical role here (typed
     // into the Skill page from a Role already resolved on the frontend), so
-    // ingestDomainForRole can usually map it to a real document_chunks.domain
-    // bucket - narrowing the scan up front instead of a full sequential scan
-    // over all ~22k chunks (no approximate index backs this table anymore,
+    // ingestDomainForRole can usually map it to a real domain bucket -
+    // narrowing the scan up front instead of a full sequential scan over
+    // all ~22k chunks (no approximate index backs document_chunks anymore,
     // see log.md). Falls back to null (search everything, today's behavior)
-    // for free text it can't map, same as before.
-    const { data: chunks } = await supabase.rpc("match_document_chunks", {
-      query_embedding: queryEmbedding,
-      match_count: 6,
-      filter_domain: ingestDomainForRole(roleName)
-    });
+    // for free text it can't map, same as before. domainGrounding.js's
+    // retrieveDomainChunks tries the new ingest_chunks pipeline first when
+    // that mapped domain is Consulting/Prodman, falling back to this same
+    // v1 RPC otherwise - was a direct, unconditional v1-only call before
+    // 2026-11-13.
+    const { chunks } = await retrieveDomainChunks(
+      `${roleName} ${skillName} interview questions case studies practice`,
+      ingestDomainForRole(roleName),
+      { matchCount: 6 }
+    );
     return (chunks || []).map((c, i) => `[Source ${i + 1}: ${c.source_file}]\n${c.content}`).join("\n\n---\n\n");
   } catch {
     return "";

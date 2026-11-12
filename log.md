@@ -5,6 +5,160 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-13 — Mock Interview/Resume/Story/Skill wired to the v2 pipeline; centralized the v1/v2 switch
+
+**Phase:** ad-hoc (closes a gap flagged in the previous entry) · **Type:** new shared lib + 6 files rewired, all live-verified, no behavior change for any domain not already on v2
+
+**Context:** the previous entry flagged that Mock Interview, Role pages, Skill pages, Resume
+feedback and Story Builder all still read the old `document_chunks` (v1) table directly,
+for every domain, with no v2 path at all. Investigating before writing any code corrected
+that claim halfway: `roleTopics.js` and `roleCompanyTopicNotes.js` already had a working v2
+path, live since R9 (same `ENABLE_CONSULTING_RAG_V2` flag), just hardcoded to `domain:
+"Consulting"` - their own code comments already flagged this as temporary ("once M2 ingests
+other domains, this will need an actual per-role domain signal"). The real gap was narrower:
+`mockInterview.js`, `resume.js`, `story.js` and `skillContent.js` had no v2 path whatsoever -
+confirmed by grep (zero hits for v2/groundedConsultingLookup/retrieveConsultingChunks in any
+of the four).
+
+**What changed:**
+- `backend/src/lib/domainGrounding.js` (new): single source of truth for `RAG_V2_DOMAINS`/
+  `isV2EnabledForDomain` (previously three independent copies - frameworksGrounding.js,
+  roleTopics.js's Consulting-only version, roleCompanyTopicNotes.js's Consulting-only
+  version), plus `retrieveDomainChunks(queryText, domain, opts)` - a drop-in replacement for
+  a direct `match_document_chunks` RPC call. Tries `ingest_chunks` first when the domain is
+  v2-enabled (both `club_casebook` and `placewise_reference` source classes, so Prodman
+  callers get the PM compendium too); an empty v2 result or a v2 error falls through to v1 -
+  deliberately different from `frameworksGrounding.js`'s `findGroundingV2` (which shows
+  nothing on a clean "not covered" result, since that's its actual intended answer with its
+  own UI state) - none of these 4 callers have ever had a covered/not-covered UI distinction,
+  they've always tolerated a best-effort context, so falling back can only improve on prior
+  behavior, never regress it. Flag values are read live on every call (not cached at module
+  load), matching `gemini.js`'s existing cascade-flag convention.
+- `frameworksGrounding.js`: now imports+re-exports `RAG_V2_DOMAINS`/`isV2EnabledForDomain`
+  from `domainGrounding.js` instead of defining its own copies - no behavior change, just
+  one less duplicate.
+- `mockInterview.js`, `resume.js`, `story.js`, `skillContent.js`: swapped their direct
+  `match_document_chunks` RPC call for `retrieveDomainChunks` - each one's existing
+  domain-resolution logic (a raw `domain` request field for the first three,
+  `ingestDomainForRole(roleName)` for skillContent) is unchanged, only the data source
+  underneath it is now domain-aware.
+- `roleTopics.js`/`roleCompanyTopicNotes.js`: their v2 path's hardcoded `domain: "Consulting"`
+  is now `ingestDomainForRole(roleName)` (falling back to "Consulting" when a role maps to
+  no domain, preserving today's exact behavior for those roles) - closes the gap their own
+  comments already flagged, so a Prodman role's Topics/Company Notes also benefit from the
+  PM compendium, not just Consulting roles.
+- `backend/test/domainGrounding.test.js` (new): 7 tests covering the flag matrix and all 4
+  `retrieveDomainChunks` branches (v2 disabled, v2 with real results, v2 empty falling
+  through to v1, v2 RPC error falling through to v1, null domain skipping v2 entirely) -
+  network-mocked end-to-end (`:embedContent`/`match_ingest_chunks`/`match_document_chunks`),
+  same pattern as `frameworksGrounding.test.js`'s `installFrameworksFakeFetch`. Caught a
+  real bug in my own first draft of `domainGrounding.js` before it shipped: the flags were
+  cached at module-load time, so a test flipping `ENABLE_CONSULTING_RAG_V2` mid-file (the
+  same thing this test file needs to do across its own cases) silently kept reading the
+  stale value - fixed by reading `process.env` live inside `isV2EnabledForDomain` instead.
+
+**Proof:**
+- `npm test`: 283/284 (same 1 pre-existing/unrelated `sandbox.test.js` failure as every
+  prior entry); all 7 new `domainGrounding.test.js` tests pass.
+- Live, non-mocked verification with the dev server running locally: `POST
+  /api/mock-interview/start` with `domain: "Consulting"` and a resume that never mentions
+  pharma returned an opening question about "a newly launched Hepatitis-B drug for a
+  pharmaceutical client" - unmistakably real casebook content injected via the new pipeline,
+  not resume-only generation. `POST /api/story/generate` and `POST /api/resume/interrogate`
+  with `domain: "Prodman"` both returned HTTP 200 with no regressions post-rewire.
+
+**Files:** `backend/src/lib/domainGrounding.js` (new), `backend/src/lib/frameworksGrounding.js`,
+`backend/src/lib/roleTopics.js`, `backend/src/lib/roleCompanyTopicNotes.js`,
+`backend/src/lib/skillContent.js`, `backend/src/routes/mockInterview.js`,
+`backend/src/routes/resume.js`, `backend/src/routes/story.js`,
+`backend/test/domainGrounding.test.js` (new)
+
+**Undo:** no new flags were introduced - every domain's v2 eligibility is governed by the
+same `ENABLE_CONSULTING_RAG_V2`/`ENABLE_PM_RAG_V2` flags already live, so turning either off
+reverts every file touched here (and `frameworksGrounding.js`/`roleTopics.js`/
+`roleCompanyTopicNotes.js`) to pure v1 behavior in one step, same as before this change.
+
+**Open issues:** Finance still isn't in `RAG_V2_DOMAINS` (per the previous entry - that's
+the real `▶ D2` work), so none of the 6 files touched here benefit from the Finance
+compendium yet, only Consulting and Prodman. HR/Marketing:Sales/General Management remain
+v1-only everywhere, unchanged.
+
+---
+
+## 2026-11-13 — Orphaned Storage cleanup (87MB) + Finance compendium switch-over for Q&A
+
+**Phase:** ad-hoc (data/storage maintenance + D-phase switch-over) · **Type:** Storage deletion (verified safe) + `is_active` flip, both live-verified
+
+**Context:** a Supabase Fair Use Policy email flagged File Storage at 1.45GB against a 1.1GB
+threshold (grace period until 2026-12-13). Aalhad's first instinct was to delete old
+`document_chunks` (v1) data for Consulting/PM/Finance, reasoning the new ingestion passes
+had superseded it. Investigation found that premise wrong on every count worth flagging
+before acting:
+- The 1.1GB+ overage is almost entirely Storage (`casebook-source` + `casebook-images`
+  buckets), not the database (310MB total) - deleting `document_chunks` rows wouldn't have
+  touched the actual quota problem at all.
+- `document_chunks` (v1) is still the live, unconditional data source for Mock Interview
+  question grounding, Role pages, Skill pages, Resume feedback and Story Builder, for
+  EVERY domain including Consulting and Prodman - confirmed by grep, not assumption. None
+  of those features were ever ported to the v2 pipeline. Deleting v1 rows for any domain
+  would have silently degraded or broken all of them for that domain.
+- Finance specifically: the new compendium was ingested successfully 2026-11-06 but was
+  not live anywhere - confirmed via code (`frameworksGrounding.js`'s `RAG_V2_DOMAINS =
+  ["Consulting", "Prodman"]` never included Finance) and via DB (`is_active=false` on all
+  208 rows). Deleting Finance's old `document_chunks` data would have left Finance with
+  zero grounded content, not an upgrade.
+
+**What was actually found and fixed instead:**
+- Querying `ingest_documents`/`ingest_chunks` showed many source files were re-ingested
+  repeatedly while debugging the pipeline (one FMS casebook alone: 8 separate attempts,
+  2026-10-09 through 2026-11-01) - each attempt superseded by the next, with only the
+  final "winning" attempt per file ever switched `is_active=true`. Cross-referencing each
+  superseded attempt's `ingest_pages.image_path` against every currently-active document's
+  paths (accounting for the pipeline's own page-reuse mechanism, `reused_from_page_id`)
+  found exactly 200 real orphaned files in Storage - all from one superseded attempt at
+  "The FMS Consulting Casebook 2021-22.pdf" (2026-10-30, `document_id`
+  `60f47f77-de34-4ef7-b698-b3f484279537`), nothing referenced by anything live.
+- Deleted those 200 objects via the Storage API's bulk-delete endpoint (`DELETE
+  /storage/v1/object/casebook-source` with `prefixes`), not a raw SQL delete on
+  `storage.objects` (which only removes metadata, not the underlying blob, and would have
+  desynced the two). Verified before/after via direct bucket queries: `casebook-source`
+  2,286 -> 2,086 files, 1,109MB -> 1,022MB. **87MB freed**, exactly matching the 200 files.
+- Separately, confirmed `qaRetrieval.js`'s free-form Q&A already searches across every
+  domain/source-class with no domain allowlist (a FIN1.04 comment confirms this was
+  deliberate) - Finance's compendium was blocked ONLY by `is_active=false`, not missing
+  code, unlike Frameworks (which genuinely needs new code - `RAG_V2_DOMAINS` - deferred to
+  the `▶ D2` roadmap item, not done here). Flipped `is_active=true` for all 208 rows on
+  document `3923cb00-cf65-4a9d-862e-0ebef9c7e603` (`finance_compendium.md`). Live-verified
+  against the real question "What is the difference between NPV and IRR?" via
+  `POST /api/qa/ask`: `groundedInCasebooks: true`, correct answer - and since
+  `groundedQaAnswer` only ever reads `ingest_chunks`, never `document_chunks`, this proves
+  the compendium itself answered it, not old v1 data coincidentally covering the same
+  question.
+
+**Proof:** direct Storage bucket byte-count queries before/after (1,109MB -> 1,022MB,
+casebook-source); direct `ingest_chunks` active-row count before/after (0 -> 208, Finance);
+one real end-to-end `POST /api/qa/ask` call against the local backend (same DB as
+production) returning a correct, compendium-grounded answer.
+
+**Files:** no code changes - this entry is Storage objects deleted + one `ingest_chunks`
+column flip, both directly against the production Supabase project.
+
+**Undo:** the 200 deleted page images were from an already-superseded, zero-active-chunk
+ingestion attempt - nothing reads them, so there's nothing to restore. Finance's switch-over
+reverts in one step: `update ingest_chunks set is_active = false where document_id =
+'3923cb00-cf65-4a9d-862e-0ebef9c7e603'`.
+
+**Open issues:** Storage is still ~1.30GB, over the 1.1GB line - the 87MB freed here was a
+verified-safe first pass (one superseded attempt), not a full cleanup; the other ~25
+superseded `ingest_documents` rows have reused-only page images (nothing orphaned) so don't
+offer further easy wins the same way. Frameworks still doesn't use the Finance compendium -
+that's the real `▶ D2` work, not a flag flip. The 16 Consulting `document_chunks` (v1) files
+with no v2 equivalent, and the live dependency of Mock Interview/Role/Skill/Resume/Story on
+v1 data for every domain, are both still open and unaddressed - flagged, not fixed, in this
+session.
+
+---
+
 ## 2026-11-13 — Company page "Events" (upcoming corporate calendar), site-wide page-view signal
 
 **Phase:** ad-hoc (infra, not a roadmap phase) · **Type:** new table + lib + route + frontend feature, verified live against real companies

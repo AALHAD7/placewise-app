@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { supabase } from "../lib/supabase.js";
-import { embedTexts, generateJSON, generateChatJSON } from "../lib/gemini.js";
+import { generateJSON, generateChatJSON } from "../lib/gemini.js";
+import { retrieveDomainChunks } from "../lib/domainGrounding.js";
 import { requireAuth } from "../middleware/auth.js";
 import { aiLimiter, heavyAiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
@@ -53,12 +54,12 @@ function buildCandidateContext(resumeText, jdText, questionSource) {
 
 async function retrieveContext(queryText, domain) {
   try {
-    const [queryEmbedding] = await embedTexts([queryText], "RETRIEVAL_QUERY");
-    const { data: chunks } = await supabase.rpc("match_document_chunks", {
-      query_embedding: queryEmbedding,
-      match_count: 4,
-      filter_domain: domain || null
-    });
+    // domainGrounding.js's retrieveDomainChunks tries the new ingest_chunks
+    // pipeline first for Consulting/Prodman (both now live), falling back to
+    // this same v1 document_chunks RPC otherwise - was a direct, unconditional
+    // v1-only call before 2026-11-13, so Mock Interview never benefited from
+    // the better-quality re-ingested casebooks even for domains that have them.
+    const { chunks } = await retrieveDomainChunks(queryText, domain, { matchCount: 4 });
     return (chunks || []).map((c, i) => `[Source ${i + 1}: ${c.source_file}]\n${c.content}`).join("\n\n---\n\n");
   } catch {
     return "";
