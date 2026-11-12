@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { DashboardProvider } from "../../hooks/useDashboard";
 import TopNav from "./TopNav";
 import SmoothScroll from "./SmoothScroll";
+import { trackView } from "../../lib/uiEvents";
 
 // Ported from frontend/index.html lines 222-224, 294. The former 1180px
 // desktop-only floor (see git history) was a deliberate decision at the
@@ -18,6 +19,15 @@ import SmoothScroll from "./SmoothScroll";
 // block.
 export default function AppShell() {
   const location = useLocation();
+
+  // Site-wide page-view event, every route change - this is the one place
+  // that fires for every page (not just the 3 instrumented ones), so it's
+  // what backs the "unique daily users" rollup (see
+  // backend/scripts/dailyUniqueUsers.js), which needs a signal for ANY
+  // visit, not just Frameworks/Q&A/Guesstimates interactions.
+  useEffect(() => {
+    trackView(location.pathname, "page-view");
+  }, [location]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {

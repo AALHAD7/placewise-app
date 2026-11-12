@@ -8,7 +8,7 @@ import { useSelectorOpenState } from "../hooks/useSelector";
 import { useExitTransition } from "../hooks/useExitTransition";
 import Selector, { type SelectorOption } from "../components/Selector";
 import PageHeader from "../components/PageHeader";
-import type { CompanyBusinessModelResponse, CompanyExecutive, CompanyLeadershipResponse, CompanyLogoResponse, CompanyNewsResponse, CompanyOverview, CompanyOverviewResponse, CompanyRatingResponse, CompanyRolesResponse, CompanyRoleRatingResponse, CompanySubsidiariesResponse, CompanyTimelineEvent, CompanyTimelineResponse, CompanyValueChainResponse, CompanyValueChainStage, CompanyValueChainStageDetailResponse, RoleOverviewResponse } from "../types/api";
+import type { CompanyBusinessModelResponse, CompanyEvent, CompanyEventsResponse, CompanyExecutive, CompanyLeadershipResponse, CompanyLogoResponse, CompanyNewsResponse, CompanyOverview, CompanyOverviewResponse, CompanyRatingResponse, CompanyRolesResponse, CompanyRoleRatingResponse, CompanySubsidiariesResponse, CompanyTimelineEvent, CompanyTimelineResponse, CompanyValueChainResponse, CompanyValueChainStage, CompanyValueChainStageDetailResponse, RoleOverviewResponse } from "../types/api";
 
 // Ported from frontend/index.html: companySelector() (3762-3815),
 // companyInfo() (3924-3970), roleInCompanySel (4030-4037, a lightSelector()
@@ -35,6 +35,7 @@ interface OverviewState { loading: boolean; error: string; data: CompanyOverview
 interface RolesState { loading: boolean; error: string; roles: string[] }
 interface RoleAtCompanyState { loading: boolean; error: string; process: string[] }
 interface TimelineState { loading: boolean; error: string; events: CompanyTimelineEvent[] }
+interface EventsState { loading: boolean; error: string; found: boolean; events: CompanyEvent[]; grounded: boolean }
 interface ValueChainState { loading: boolean; error: string; stages: CompanyValueChainStage[] }
 interface StageDetailState { loading: boolean; error: string; detail: string; sources: CompanyValueChainStageDetailResponse["sources"]; grounded: boolean }
 interface BusinessModelState { loading: boolean; error: string; ascii: string; howItWorks: string; sources: CompanyBusinessModelResponse["sources"]; grounded: boolean }
@@ -113,6 +114,14 @@ export default function CompanyPage() {
   const [rolesByCompany, setRolesByCompany] = useState<Record<string, RolesState>>({});
   const [roleAtCompany, setRoleAtCompany] = useState<Record<string, RoleAtCompanyState>>({});
   const [timelineByCompany, setTimelineByCompany] = useState<Record<string, TimelineState>>({});
+  // Lazy-loaded behind the "Events" button (unlike timeline/rating/etc.,
+  // which load automatically with the rest of the page) - a future-dated
+  // claim is higher-stakes to get wrong than a historical one, so this
+  // isn't fetched for every company page visit by default, only when
+  // someone actually asks to see it. eventsOpenByCompany tracks the
+  // toggle; the fetch only fires once per company (see toggleEvents).
+  const [eventsByCompany, setEventsByCompany] = useState<Record<string, EventsState>>({});
+  const [eventsOpenByCompany, setEventsOpenByCompany] = useState<Record<string, boolean>>({});
   const [valueChainByCompany, setValueChainByCompany] = useState<Record<string, ValueChainState>>({});
   const [stageDetailByKey, setStageDetailByKey] = useState<Record<string, StageDetailState>>({});
   const [openStage, setOpenStage] = useState<CompanyValueChainStage | null>(null);
@@ -211,6 +220,23 @@ export default function CompanyPage() {
     apiFetch<CompanyTimelineResponse>("/api/companies/" + encodeURIComponent(c) + "/timeline", {}, "Failed to load company timeline.")
       .then((data) => setTimelineByCompany((s) => ({ ...s, [c]: { loading: false, error: "", events: data.events || [] } })))
       .catch((e) => setTimelineByCompany((s) => ({ ...s, [c]: { loading: false, error: e instanceof Error ? e.message : "Could not load company timeline.", events: [] } })));
+  }
+
+  // Upcoming corporate events (quarterly results, AGM, etc. - the "Events"
+  // button). `found: false` is a real, valid answer (the research
+  // genuinely located nothing verifiable, e.g. an unlisted company has no
+  // public corporate calendar) - rendered as "nothing found," not an error.
+  function loadCompanyEvents(c: string) {
+    setEventsByCompany((s) => ({ ...s, [c]: { loading: true, error: "", found: false, events: [], grounded: false } }));
+    apiFetch<CompanyEventsResponse>("/api/companies/" + encodeURIComponent(c) + "/events", {}, "Failed to load upcoming events.")
+      .then((data) => setEventsByCompany((s) => ({ ...s, [c]: { loading: false, error: "", found: data.found, events: data.events || [], grounded: data.grounded } })))
+      .catch((e) => setEventsByCompany((s) => ({ ...s, [c]: { loading: false, error: e instanceof Error ? e.message : "Could not load upcoming events.", found: false, events: [], grounded: false } })));
+  }
+
+  function toggleEvents(c: string) {
+    const opening = !eventsOpenByCompany[c];
+    setEventsOpenByCompany((s) => ({ ...s, [c]: opening }));
+    if (opening && !eventsByCompany[c]) loadCompanyEvents(c);
   }
 
   function loadCompanyValueChain(c: string) {
@@ -430,6 +456,8 @@ export default function CompanyPage() {
   const displayParentName = overviewByCompany[parentCompany]?.data?.name || parentCompany;
   const news = newsByCompany[company];
   const timelineInfo = timelineByCompany[company] || { loading: false, error: "", events: [] };
+  const eventsInfo = eventsByCompany[company] || { loading: false, error: "", found: false, events: [], grounded: false };
+  const eventsOpen = !!eventsOpenByCompany[company];
   const valueChainInfo = valueChainByCompany[company] || { loading: false, error: "", stages: [] };
   const ratingInfo = ratingByCompany[company] || { loading: false, error: "", found: false, rating: null, reviewCount: null, sources: [], grounded: false };
   const roleRatingInfo = companyRole ? roleRatingByKey[company + "@@" + companyRole] : undefined;
@@ -817,6 +845,66 @@ export default function CompanyPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* "Events" button - the Zerodha-style upcoming-events timeline (next quarterly
+              results, AGM, dividend dates, etc.). Unlike every section above, this is NOT
+              fetched automatically with the rest of the page - see loadCompanyEvents/
+              toggleEvents and companyEvents.js's hard-refuse-if-ungrounded posture: a
+              future-dated claim is higher-stakes to get wrong than a historical fact, so
+              it's loaded only when someone actually asks to see it. */}
+          <div style={{ marginTop: 14, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "22px 24px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ color: "var(--text-lightgray)", fontSize: "0.65625rem", letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 600 }}>Upcoming events</div>
+                <div style={{ marginTop: 5, color: "var(--text-lightgray)", fontSize: "0.78125rem" }}>Next quarterly results, AGM, dividend dates and other scheduled corporate events.</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => toggleEvents(company)}
+                className="btn-outline-indigo"
+                style={{ flex: "none", border: "1px solid var(--card-border)", borderRadius: "var(--r-sm)", padding: "9px 16px", font: "600 0.8125rem 'Instrument Sans',sans-serif", cursor: "pointer", background: "var(--surface)", color: "var(--text-700)" }}
+              >
+                {eventsOpen ? "Hide events" : "Events"}
+              </button>
+            </div>
+
+            {eventsOpen && (
+              <div style={{ marginTop: 16, borderTop: "1px solid var(--divider)", paddingTop: 14 }}>
+                {eventsInfo.loading && (
+                  <div role="status" aria-live="polite" style={{ maxWidth: 420 }}>
+                    <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>Checking {company}'s corporate calendar…</div>
+                    <IndeterminateProgressBar />
+                  </div>
+                )}
+                {eventsInfo.error && <div style={{ color: "var(--red-dark)", fontSize: "0.84375rem" }}>{eventsInfo.error}</div>}
+                {!eventsInfo.loading && !eventsInfo.error && !eventsInfo.found && (
+                  <div style={{ color: "var(--text-lightgray)", fontSize: "0.84375rem" }}>
+                    No verifiable upcoming events found for {company} right now - this is common for unlisted companies, or when nothing's currently scheduled.
+                  </div>
+                )}
+                {eventsInfo.found && eventsInfo.events.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {eventsInfo.events.map((ev, i) => (
+                      <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                        <span style={{ flex: "none", marginTop: 6, width: 8, height: 8, borderRadius: "50%", background: "var(--indigo)" }}></span>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            <span style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-900)" }}>{ev.title}</span>
+                            <span style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--indigo)", background: "rgba(99, 102, 241, 0.08)", padding: "2px 8px", borderRadius: "var(--r-pill)" }}>{ev.type}</span>
+                          </div>
+                          <div style={{ marginTop: 3, fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-gray2)" }}>{ev.expectedDate}</div>
+                          {ev.description && <div style={{ marginTop: 4, color: "var(--text-gray2)", fontSize: "0.84375rem", lineHeight: 1.5 }}>{ev.description}</div>}
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ marginTop: 4, fontSize: "0.71875rem", color: "var(--text-lightgray)" }}>
+                      Dates are sourced from web search and may shift - always confirm against the company's own investor-relations page before relying on one.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

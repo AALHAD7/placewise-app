@@ -300,6 +300,24 @@ export interface CompanyTimelineResponse {
   events: CompanyTimelineEvent[];
 }
 
+// GET /api/companies/:name/events
+export interface CompanyEvent {
+  type: string;
+  title: string;
+  expectedDate: string;
+  description: string;
+}
+export interface CompanyEventsResponse {
+  success: true;
+  company: string;
+  found: boolean;
+  events: CompanyEvent[];
+  sources: ValueChainSource[];
+  grounded: boolean;
+  cached: boolean;
+  fetchedAt: string;
+}
+
 // GET /api/companies/:name/value-chain
 export interface CompanyValueChainStage {
   name: string;

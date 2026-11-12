@@ -8,6 +8,7 @@ import { getCompanyValueChain } from "../lib/companyValueChain.js";
 import { getCompanyValueChainStageDetail } from "../lib/companyValueChainStage.js";
 import { getCompanyBusinessModel } from "../lib/companyBusinessModel.js";
 import { getCompanyRating, getCompanyRoleRating } from "../lib/companyRating.js";
+import { getCompanyEvents } from "../lib/companyEvents.js";
 import { getCompanyLeadership } from "../lib/companyLeadership.js";
 import { getCompanyLogo } from "../lib/companyLogo.js";
 import { getCompanySubsidiaries } from "../lib/companySubsidiaries.js";
@@ -155,6 +156,28 @@ router.get("/:companyName/timeline", optionalAuth, aiLimiter, async (req, res) =
   } catch (err) {
     console.error("[companies/:companyName/timeline]", err);
     res.status(500).json({ success: false, error: "Failed to fetch company timeline.", detail: errorDetail(err) });
+  }
+});
+
+// Upcoming corporate events (quarterly results, AGM, dividend dates, etc.) - the
+// Zerodha-style "Events" timeline Aalhad asked for, 2026-11-13. Own endpoint, same
+// reasoning as /timeline (loads in parallel, doesn't delay the rest of the page) -
+// and loaded behind an explicit "Events" button on the frontend rather than
+// automatically like /timeline, since a future date is higher-stakes to get wrong
+// than a historical one (see companyEvents.js's hard-refuse-if-ungrounded posture).
+router.get("/:companyName/events", optionalAuth, aiLimiter, async (req, res) => {
+  const { companyName } = req.params;
+  const trimmed = (companyName || "").trim();
+  if (!trimmed || trimmed.length > 100) {
+    return res.status(400).json({ success: false, error: "companyName is required (max 100 characters)." });
+  }
+
+  try {
+    const result = await getCompanyEvents(trimmed);
+    res.json({ success: true, company: trimmed, ...result });
+  } catch (err) {
+    console.error("[companies/:companyName/events]", err);
+    res.status(500).json({ success: false, error: "Failed to fetch company events.", detail: errorDetail(err) });
   }
 });
 
