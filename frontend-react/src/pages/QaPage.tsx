@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { apiFetch } from "../lib/apiClient";
+import { trackClick, trackView } from "../lib/uiEvents";
 import PageHeader from "../components/PageHeader";
 import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
 import GroundingNote from "../components/GroundingNote";
@@ -53,6 +54,7 @@ export default function QaPage() {
   async function onAsk() {
     const text = question.trim();
     if (!text || state.status === "loading") return;
+    trackClick("/qa", "ask-submit");
     setState({ status: "loading" });
     try {
       const res = await apiFetch<QaAskResponse>(
@@ -60,6 +62,9 @@ export default function QaPage() {
         { method: "POST", body: JSON.stringify({ question: text }) },
         "Failed to answer that question."
       );
+      // Question text itself isn't duplicated here - already captured
+      // server-side in qa.js's /ask handler ("Questions Asked" Sheet tab).
+      trackView("/qa", "answer", { grounded: !!res.groundedInCasebooks, available: !!res.available });
       setState({ status: "answered", question: text, res });
     } catch (err) {
       setState({ status: "error", message: err instanceof Error ? err.message : "Failed to answer that question." });
@@ -67,6 +72,7 @@ export default function QaPage() {
   }
 
   function onAskAnother() {
+    trackClick("/qa", "ask-another");
     setQuestion("");
     setState({ status: "idle" });
   }
@@ -200,6 +206,7 @@ export default function QaPage() {
                   key={i}
                   type="button"
                   onClick={() => {
+                    trackClick("/qa", "example-question", { question: q });
                     setQuestion(q);
                     if (state.status === "answered") setState({ status: "idle" });
                   }}

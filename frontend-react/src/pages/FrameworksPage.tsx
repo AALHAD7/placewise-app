@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch, logActivity } from "../lib/apiClient";
+import { trackClick, trackView } from "../lib/uiEvents";
 import { ICON_D } from "../lib/constants";
 import { useSelectorOpenState } from "../hooks/useSelector";
 import Selector, { type SelectorOption } from "../components/Selector";
@@ -109,18 +110,29 @@ export default function FrameworksPage() {
   function toggle(f: Framework) {
     const opening = !open[f.id];
     setOpen((s) => ({ ...s, [f.id]: !s[f.id] }));
-    if (opening) logActivity("framework_review", f.name);
+    if (opening) {
+      logActivity("framework_review", f.name);
+      // Separate from logActivity above: that feeds the Home dashboard's
+      // discrete "did something today" milestones, this feeds the raw
+      // per-section engagement rollup (see backend/scripts/rollupUiEvents.js) -
+      // different consumers, so both fire rather than one replacing the other.
+      trackView("/frameworks", `framework-card:${f.name}`, { domain: f.domain, subdomain: f.subdomain });
+    } else {
+      trackClick("/frameworks", `framework-card-collapse:${f.name}`);
+    }
   }
 
   function pickDomain(d: string) {
     setDomain(d);
     setSubdomain("");
     domainSel.reset();
+    trackClick("/frameworks", `domain-select:${d}`);
   }
 
   function pickSubdomain(s: string) {
     setSubdomain(s);
     subdomainSel.reset();
+    trackClick("/frameworks", `subdomain-select:${s}`, { domain });
   }
 
   const domainOptions: SelectorOption[] = taxonomy.map((d) => ({

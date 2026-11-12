@@ -116,3 +116,17 @@ export const devLoginLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: "Too many dev-login requests. Please wait a few minutes and try again." }
 });
+
+// UI event tracking (src/routes/events.js) - no AI cost, but the frontend
+// batches many individual clicks/views into one POST every few seconds
+// (see frontend src/lib/uiEvents.ts), so this needs real headroom per user:
+// sized for roughly one batch every 3s sustained for the full 15min window,
+// comfortably above actual browsing behavior.
+export const eventsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userOrIpKey,
+  message: { error: "Too many tracking requests." }
+});

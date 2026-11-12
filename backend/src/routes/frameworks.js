@@ -110,13 +110,20 @@ router.post("/ask", requireAuth, aiLimiter, async (req, res) => {
 
     const result = await answerFrameworkQuestion(fw, question.trim());
 
+    // Split into its own "Framework Questions" tab (2026-11-12, Aalhad's call) rather than
+    // sharing "Questions Asked" with the separate standalone Q&A page - Action = the
+    // framework name itself (not a prefixed label) so sorting/filtering that column in
+    // Sheets directly groups every question by framework, which is the point: a
+    // professor-shareable view of what students actually ask about a given framework,
+    // including every follow-up/cross-question (this logs on every submission to the
+    // "Ask about this framework" box, not just the first one per session).
     const userLabel = req.user?.email || (req.user?.id ? `Guest (${req.user.id.slice(0, 8)})` : "Guest");
     logToGoogleSheet({
-      sheet: "Questions Asked",
+      sheet: "Framework Questions",
       user: userLabel,
-      action: `Framework Q&A (${fw.name})`,
+      action: fw.name,
       item: question.trim(),
-      details: result.grounded ? "Grounded in Framework" : "General Guidance"
+      details: `${fw.domain || "?"} > ${fw.subdomain || "?"} | ${result.grounded ? "Grounded in Framework" : "General Guidance"}`
     });
 
     res.json({ success: true, ...result });

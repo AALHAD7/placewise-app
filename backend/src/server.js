@@ -23,6 +23,7 @@ import activityRouter from "./routes/activity.js";
 import planRouter from "./routes/plan.js";
 import adminRouter from "./routes/admin.js";
 import adminReviewRouter from "./routes/adminReview.js";
+import eventsRouter from "./routes/events.js";
 
 const REQUIRED_ENV = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "GEMINI_API_KEY", "GNEWS_API_KEY"];
 const missing = REQUIRED_ENV.filter(k => !process.env[k]);
@@ -94,6 +95,7 @@ app.use("/api/roles", rolesRouter);
 app.use("/api/skills", skillsRouter);
 app.use("/api/activity", activityRouter);
 app.use("/api/plan", planRouter);
+app.use("/api/events", eventsRouter);
 // Before /api/admin so the review queue gets adminReviewLimiter, not adminLimiter.
 app.use("/api/admin/review", adminReviewRouter);
 app.use("/api/admin", adminRouter);

@@ -3,6 +3,7 @@ import type { Framework, FrameworkAskResponse } from "../types/api";
 import { apiFetch } from "../lib/apiClient";
 import { useVoiceRecording } from "../hooks/useVoiceRecording";
 import VoiceRecordButton from "./VoiceRecordButton";
+import { trackClick } from "../lib/uiEvents";
 
 // The "ask a follow-up" box under each framework's Review panel - suggested-question chips
 // (generated once per framework, backend/scripts/generateFollowUpQuestions.js) plus a
@@ -34,9 +35,14 @@ export default function FrameworkAskBox({ framework }: FrameworkAskBoxProps) {
     }
   }
 
-  async function onAsk(q: string) {
+  // `source` is tracking-only metadata (which entry point was used) - the
+  // question text itself is already captured server-side in frameworks.js's
+  // /ask handler (the "Framework Questions" Sheet tab), so it isn't
+  // duplicated into the click event here.
+  async function onAsk(q: string, source: "suggested" | "typed" = "typed") {
     const text = q.trim();
     if (!text || loading) return;
+    trackClick("/frameworks", "framework-ask-submit", { framework: framework.name, source });
     setLoading(true);
     setError("");
     try {
@@ -78,7 +84,7 @@ export default function FrameworkAskBox({ framework }: FrameworkAskBoxProps) {
             <button
               key={i}
               type="button"
-              onClick={() => onAsk(q)}
+              onClick={() => onAsk(q, "suggested")}
               disabled={loading}
               className="unbutton"
               style={{

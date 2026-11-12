@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "../lib/apiClient";
+import { trackClick, trackView } from "../lib/uiEvents";
 import PageHeader from "../components/PageHeader";
 import MarkdownWithDiagrams from "../components/MarkdownWithDiagrams";
 import GuesstimateCalculationView from "../components/GuesstimateCalculationView";
@@ -224,6 +225,7 @@ export default function GuesstimatesPage() {
         { method: "POST", body: JSON.stringify({ chunkId, question: text }) },
         "Failed to get an answer to that question."
       );
+      trackClick("/guesstimates", "ask-clarifying-question", { chunkId });
       setClarifyExchanges((ex) => [...ex, { question: text, answer: res.answer }]);
       setClarifyQuestion("");
     } catch (err) {
@@ -240,6 +242,7 @@ export default function GuesstimatesPage() {
       setSubmitError("Please write an attempt with at least 5 characters.");
       return;
     }
+    trackClick("/guesstimates", "submit-attempt", { chunkId: state.data?.chunkId, isAutoSubmit });
     setTimerRunning(false); // Stop timer upon evaluation
     setSubmitLoading(true);
     setSubmitError("");
@@ -407,6 +410,7 @@ export default function GuesstimatesPage() {
         setWakingUp(false);
         setState({ loading: false, error: "", data });
         if (data.available && data.chunkId) {
+          trackView("/guesstimates", "practice-problem", { chunkId: data.chunkId });
           const newId = data.chunkId;
           sessionSeenRef.current = data.cycleReset
             ? [newId]
@@ -953,6 +957,7 @@ export default function GuesstimatesPage() {
                   <button
                     type="button"
                     onClick={() => {
+                      trackClick("/guesstimates", "show-answer", { chunkId: state.data?.chunkId });
                       setRevealed(true);
                       setTimerRunning(false);
                     }}
@@ -964,7 +969,10 @@ export default function GuesstimatesPage() {
                 )}
                 <button
                   type="button"
-                  onClick={() => load()}
+                  onClick={() => {
+                    trackClick("/guesstimates", "try-another");
+                    load();
+                  }}
                   style={{ border: "1px solid var(--border-soft)", borderRadius: "var(--r-pill)", padding: "9px 18px", fontSize: "0.8125rem", fontWeight: 600, color: "var(--indigo)", background: "none", cursor: "pointer" }}
                 >
                   Try another
@@ -1372,6 +1380,7 @@ export default function GuesstimatesPage() {
                       <div
                         key={item.chunkId}
                         onClick={() => {
+                          trackClick("/guesstimates", "catalog-select-question", { chunkId: item.chunkId });
                           setIsCatalogOpen(false);
                           load(item.chunkId);
                         }}

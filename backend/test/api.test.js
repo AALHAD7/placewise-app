@@ -390,3 +390,71 @@ test("admin review: a valid non-admin token gets 404 on all 5 review routes", as
     child.kill();
   }
 });
+
+test("events/track rejects a missing/empty events array", async () => {
+  const res = await fetch(`${BASE}/api/events/track`, {
+    method: "POST", headers: authHeaders(), body: JSON.stringify({})
+  });
+  assert.equal(res.status, 400);
+
+  const res2 = await fetch(`${BASE}/api/events/track`, {
+    method: "POST", headers: authHeaders(), body: JSON.stringify({ events: [] })
+  });
+  assert.equal(res2.status, 400);
+});
+
+test("events/track rejects a batch over the size cap", async () => {
+  const events = Array.from({ length: 51 }, () => ({ eventType: "click", page: "/qa", section: "test" }));
+  const res = await fetch(`${BASE}/api/events/track`, {
+    method: "POST", headers: authHeaders(), body: JSON.stringify({ events })
+  });
+  assert.equal(res.status, 400);
+});
+
+test("events/track drops invalid individual events but accepts the valid ones in the same batch", async () => {
+  const res = await fetch(`${BASE}/api/events/track`, {
+    method: "POST", headers: authHeaders(),
+    body: JSON.stringify({
+      events: [
+        { eventType: "click", page: "/qa", section: "ask-submit" },
+        { eventType: "not-a-real-type", page: "/qa", section: "bad" },
+        { eventType: "view", page: "a".repeat(500), section: "too-long-page" }
+      ]
+    })
+  });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.equal(data.accepted, 1);
+});
+
+test("events/track works without auth (guest tracking)", async () => {
+  const res = await fetch(`${BASE}/api/events/track`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      events: [{ eventType: "view", page: "/frameworks", section: "framework-card:Test" }],
+      guestLabel: "guest-test-123"
+    })
+  });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.equal(data.accepted, 1);
+});
+
+test("events/track accepts a real authenticated batch end to end", async () => {
+  const res = await fetch(`${BASE}/api/events/track`, {
+    method: "POST", headers: authHeaders(),
+    body: JSON.stringify({
+      events: [
+        { eventType: "click", page: "/guesstimates", section: "submit-attempt", metadata: { chunkId: "test-chunk" } },
+        { eventType: "view", page: "/guesstimates", section: "practice-problem" }
+      ]
+    })
+  });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.equal(data.accepted, 2);
+});
