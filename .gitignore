@@ -8,6 +8,9 @@ dist-ssr/
 .env.*
 !.env.example
 
+# Codex CLI config - contains plaintext API tokens (Render, Supabase), never committed
+.codex/
+
 # Source casebooks (large, third-party). Already ingested into Supabase,
 # not needed to build or run either app.
 Data/

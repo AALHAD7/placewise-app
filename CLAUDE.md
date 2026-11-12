@@ -151,6 +151,7 @@ feature, bug, review, QA, eval or ship) through the right agents and skills.
 | `frontend-conventions` | React structure, API client, types, CSS tokens, verifying UI changes |
 | `build-log` | How and when to write `log.md` entries |
 | `model-routing` | Which model/effort to use when delegating, so trivial lookups don't cost the same as correctness-critical work |
+| `delegate-review-loop` | Delegate to a cheap model, review the result yourself, send it back with fixes until it's right — only then report it |
 
 ## gstack (global install, required)
 

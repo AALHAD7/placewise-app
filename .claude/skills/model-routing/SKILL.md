@@ -1,6 +1,6 @@
 ---
 name: model-routing
-description: Which model/effort to use when delegating a task on PlaceWise, so trivial lookups don't run on the same model as correctness-critical work. Use before every Agent tool call that isn't one of this project's named agents, and when deciding whether a named agent needs its model overridden for one specific call.
+description: Which model/effort to use when delegating a task on PlaceWise, so trivial lookups don't run on the same model as correctness-critical work — and how to keep raw tool output out of the main context so sessions don't bloat. Use before every Agent tool call that isn't one of this project's named agents, when deciding whether a named agent needs its model overridden for one specific call, and whenever a task would pull a lot of raw file/search output into the conversation.
 ---
 
 # Model routing for PlaceWise
@@ -44,3 +44,31 @@ When about to call the Agent tool for a task that isn't one of the 11 named agen
 which row above it matches before deciding whether to pass `model` or `effort`. When in
 doubt, don't downgrade — a wrong cheap answer costs more (in tokens and trust) than a correct
 one did.
+
+For anything in the "mechanical but multi-file" or routable rows above, don't just fire the
+cheap call and hand its output straight to Aalhad — use the `delegate-review-loop` skill to
+review the result yourself and send it back for fixes before it's reported as done.
+
+## Token economy, not just dollar economy
+
+Routing to a cheaper model saves cost, not context size — the same volume of tokens still
+gets generated and reviewed. If the actual goal is keeping a session's total context small,
+these matter more than model choice:
+
+- **Keep raw output out of the main thread.** A `Read` of a whole file, a wide `grep`, or an
+  agent's full tool transcript all sit in context for the rest of the session. Push that into
+  a `fork` (for exploratory/throwaway research whose output isn't needed again) or a fresh
+  agent (for a self-contained lookup) so only the summary comes back.
+- **Read narrow, not wide.** `Grep`/`Glob` to find the right lines before `Read`-ing; use
+  `offset`/`limit` instead of pulling a whole large file; use `Explore` for "where is X
+  defined" instead of reading candidate files one by one.
+- **Don't re-read what you just wrote.** `Edit`/`Write` already error on failure — there's no
+  need to `Read` a file back afterward to confirm it worked.
+- **Cap what you ask subagents to return.** When delegating (including through
+  `delegate-review-loop`), ask for a bounded report ("under 200 words", "list only") instead
+  of a full narrative — that report is what lands in your context, not the subagent's.
+- **Batch independent tool calls** in one turn instead of serial round-trips; each separate
+  turn re-sends the accumulated context so far.
+
+These are habits, not a separate workflow — apply them whenever a task would otherwise pull a
+lot of raw output into the conversation, regardless of which model is doing the work.
