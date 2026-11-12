@@ -5,6 +5,47 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-13 — Deleted the entire casebook-images bucket (275MB) - unused by any live code path
+
+**Phase:** ad-hoc (storage maintenance) · **Type:** Storage deletion, verified unused before and confirmed empty after
+
+**Context:** continuing the Supabase Fair Use storage cleanup. Found that every image-bearing
+row in `document_chunks` (v1) has `is_active = false` - all 2,295 of them, matching exactly
+the 2,295 files in the `casebook-images` bucket. Confirmed via the actual `match_document_chunks`
+RPC definition (`where is_active = true`) that an inactive row can never be returned by the
+live retrieval path used by `frameworksGrounding.js`'s v1 fallback - the only code in the
+whole backend that ever reads `document_chunks.image_url` at all (grepped, confirmed no
+other caller touches it). Also checked `scripts/ingestImages.js` (the pipeline that
+originally populated this bucket) and the admin review routes - neither path reads these
+rows unconditionally either. Conclusion: this was a built-but-never-switched-on feature
+(image captioning for v1 Frameworks grounding), not selectively deactivated content -
+100% inactive, 0% active, no partial subset. Reactivating it later would also now conflict
+with `CLAUDE.md`'s diagram-privacy rule (`frameworksGrounding.js`'s v1 image path returns a
+raw Storage URL straight to students, which the rule now forbids), so there was no reason
+to keep it "just in case."
+
+**What changed:** deleted all 2,295 objects in the `casebook-images` bucket via the Storage
+API's list + bulk-delete endpoints (recursively walked the bucket's domain-folder structure
+to collect every real file path, since the Storage REST schema isn't exposed through the
+normal Postgres client - listing had to go through `/storage/v1/object/list`, not a direct
+query), in 5 batches of up to 500. No `document_chunks` rows were touched - the already-dead
+`image_url` pointers in those 2,295 inactive rows are harmless and were left alone, since
+DB row size was never the actual problem and those rows still carry real page content
+elsewhere in their other columns (not purely image rows beyond `image_url`/`is_image`).
+
+**Proof:** direct Storage bucket query before (2,295 files, 275MB) and after (bucket no
+longer appears in the grouped-by-bucket query at all - 0 files) confirms complete,
+verified deletion. Combined with the previous entry's 87MB cleanup, total Storage usage is
+now ~1.0GB (`casebook-source`, 1,022MB) - **under** the 1.1GB Fair Use threshold named in
+Supabase's email, down from the original 1.45GB.
+
+**Files:** no code changes - Storage objects only.
+
+**Undo:** nothing to restore - every deleted file was already fully unreachable by live
+code (confirmed via the RPC's own `is_active` filter, not an assumption) before deletion.
+
+---
+
 ## 2026-11-13 — Mock Interview/Resume/Story/Skill wired to the v2 pipeline; centralized the v1/v2 switch
 
 **Phase:** ad-hoc (closes a gap flagged in the previous entry) · **Type:** new shared lib + 6 files rewired, all live-verified, no behavior change for any domain not already on v2
