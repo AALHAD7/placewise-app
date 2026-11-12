@@ -44,56 +44,60 @@ export const GENERATION_MODELS = [
 // escalation call sites can go further.
 export const MAX_CASCADE_TIER = 3;
 
-// Nvidia-cascade: nvidia/nemotron-3-ultra-550b-a55b, tried first (ahead of
-// every Gemini tier) for chat.js's ungrounded Q&A/chat passthrough only
-// (framework explain/pushback chat, Tone Shifter) — not wired into
-// generateText/generateJSON/generateGroundedText, so every grounded/RAG
-// path and every other feature (resume, mock interview, company/role
-// content, Guesstimates, Frameworks) is completely untouched by this. See
-// generateChatText below. OpenAI-compatible /chat/completions endpoint,
-// confirmed live via curl earlier this session. Off by default — see
-// ENABLE_NVIDIA_CASCADE below and log.md for why.
-const NVIDIA_MODEL = "nvidia/nemotron-3-ultra-550b-a55b";
+// Groq cascade: openai/gpt-oss-120b, tried first (ahead of every Gemini
+// tier) for chat.js's ungrounded Q&A/chat passthrough (framework
+// explain/pushback chat, Tone Shifter) and mockInterview.js's opening-
+// question generation (generateChatJSON below) — not wired into
+// generateText/generateJSON/generateGroundedText directly, so every
+// grounded/RAG path (Frameworks, Guesstimates, Q&A, company/role content)
+// and Mock Interview's answer-scoring call (explicitly correctness-critical,
+// see MAX_CASCADE_TIER comment) stay untouched by this. OpenAI-compatible
+// /chat/completions endpoint on api.groq.com, confirmed live via curl
+// 2026-11-12. Replaces the former NVIDIA Nemotron-3-Ultra cascade, removed
+// the same day: live-measured Nemotron latency was 3.3-13.3s against a
+// 4000ms timeout (near-100% fallback rate in production — see log.md),
+// while Groq measured 0.8-1.1s on the same prompts, well inside the timeout
+// below. Off by default — see ENABLE_GROQ_CASCADE below.
+const GROQ_MODEL = "openai/gpt-oss-120b";
 // Read live from process.env on every call (not cached at module load) —
 // cheap, and lets tests flip config/flag between calls within one process
 // instead of needing a fresh module import per scenario.
-// Free tier is ~40 req/min, shared across however many features eventually
-// use it — short enough that a slow/hung call never makes the user wait
-// meaningfully longer than the Gemini cascade alone would, and never serves
-// as the sole path (a timeout here always falls straight through to Gemini).
-// Overridable via env for tests only (simulating a timeout without a real
-// multi-second wait) — unset in .env.example, so production always gets the
-// 4000ms default.
-const NVIDIA_TIMEOUT_MS = Number(process.env.NVIDIA_CASCADE_TIMEOUT_MS) || 4000;
+// Groq's free tier is generous (1000 req / 8000 tokens per short rolling
+// window, confirmed live) - short enough timeout that a slow/hung call
+// never makes the user wait meaningfully longer than the Gemini cascade
+// alone would, and never serves as the sole path (a timeout here always
+// falls straight through to Gemini). Overridable via env for tests only
+// (simulating a timeout without a real wait) — unset in .env.example, so
+// production always gets the 5000ms default.
+const GROQ_TIMEOUT_MS = Number(process.env.GROQ_CASCADE_TIMEOUT_MS) || 5000;
 
-export function isNvidiaCascadeEnabled() {
-  return process.env.ENABLE_NVIDIA_CASCADE === "true";
+export function isGroqCascadeEnabled() {
+  return process.env.ENABLE_GROQ_CASCADE === "true";
 }
 
 // Every failure mode (missing config, non-2xx, timeout/abort, network
 // error, malformed body, empty text) is caught here and turned into `null`
-// — this function must never throw. generateChatText below treats `null`
-// as "fall through to Gemini, exactly as it works today" with no special
-// casing per failure type, so a quota 429, a 500, a dropped connection and
-// a slow response all degrade identically and invisibly to the caller.
-async function tryNvidiaChat({ system, prompt, maxTokens }) {
-  const baseUrl = process.env.NVIDIA_NEMOTRON3_ULTRA_BASE_URL;
-  const apiKey = process.env.NVIDIA_NEMOTRON3_ULTRA_API_KEY;
-  if (!baseUrl || !apiKey) {
-    console.warn("[gemini] nvidia cascade enabled but NVIDIA_NEMOTRON3_ULTRA_BASE_URL/API_KEY not set, skipping");
+// — this function must never throw. Callers below treat `null` as "fall
+// through to Gemini" with no special casing per failure type, so a quota
+// 429, a 500, a dropped connection and a slow response all degrade
+// identically and invisibly to the caller.
+async function tryGroqChat({ system, prompt, maxTokens }) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    console.warn("[gemini] groq cascade enabled but GROQ_API_KEY not set, skipping");
     return null;
   }
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), NVIDIA_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
   try {
-    const res = await fetch(`${baseUrl}/chat/completions`, {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: NVIDIA_MODEL,
+        model: GROQ_MODEL,
         messages: [
           { role: "system", content: system },
           { role: "user", content: prompt }
@@ -104,19 +108,19 @@ async function tryNvidiaChat({ system, prompt, maxTokens }) {
       signal: controller.signal
     });
     if (!res.ok) {
-      console.warn(`[gemini] nvidia cascade: ${NVIDIA_MODEL} returned ${res.status}, falling back to Gemini`);
+      console.warn(`[gemini] groq cascade: ${GROQ_MODEL} returned ${res.status}, falling back to Gemini`);
       return null;
     }
     const data = await res.json();
     const text = data?.choices?.[0]?.message?.content;
     if (!text || !text.trim()) {
-      console.warn("[gemini] nvidia cascade: empty response, falling back to Gemini");
+      console.warn("[gemini] groq cascade: empty response, falling back to Gemini");
       return null;
     }
     return text;
   } catch (err) {
-    const reason = err?.name === "AbortError" ? `timed out after ${NVIDIA_TIMEOUT_MS}ms` : err.message;
-    console.warn(`[gemini] nvidia cascade: ${reason}, falling back to Gemini`);
+    const reason = err?.name === "AbortError" ? `timed out after ${GROQ_TIMEOUT_MS}ms` : err.message;
+    console.warn(`[gemini] groq cascade: ${reason}, falling back to Gemini`);
     return null;
   } finally {
     clearTimeout(timer);
@@ -384,21 +388,50 @@ export async function generateText({ system, prompt, maxTokens = 1200, temperatu
 }
 
 // chat.js's ungrounded Q&A/chat passthrough only (framework explain/pushback
-// chat, Tone Shifter) — tries nvidia/nemotron-3-ultra-550b-a55b first when
-// ENABLE_NVIDIA_CASCADE=true, then falls straight through to the existing
+// chat, Tone Shifter) — tries openai/gpt-oss-120b via Groq first when
+// ENABLE_GROQ_CASCADE=true, then falls straight through to the existing
 // Gemini generateText cascade on any failure, exactly as it behaved before
 // this model existed. Caching/singleFlight in the caller is untouched: this
 // function just returns a string either way, same as generateText always
 // did, so whichever model answered is cached identically.
 export async function generateChatText({ system, prompt, maxTokens = 1200, feature }) {
-  if (isNvidiaCascadeEnabled()) {
-    const text = await tryNvidiaChat({ system, prompt, maxTokens });
+  if (isGroqCascadeEnabled()) {
+    const text = await tryGroqChat({ system, prompt, maxTokens });
     if (text) {
-      logLlmCall("text", NVIDIA_MODEL, feature);
+      logLlmCall("text", GROQ_MODEL, feature);
       return text;
     }
   }
   return generateText({ system, prompt, maxTokens, feature });
+}
+
+// Same Groq-first/Gemini-fallback shape as generateChatText, for callers
+// that need a parsed JSON object rather than plain text — today just
+// mockInterview.js's /start opening-question generation (not /answer's
+// scoring call, which stays Gemini-only; see MAX_CASCADE_TIER comment on
+// why that one is deliberately excluded from any speed/cost optimization).
+// `validate(parsed)` lets the caller reject a syntactically-valid but
+// wrong-shaped JSON object (e.g. missing an expected key) as a cascade
+// failure too, not just a parse error, so a malformed Groq response falls
+// back to Gemini's own retry-on-malformed-JSON logic (generateJSON below)
+// instead of returning something the caller can't use.
+export async function generateChatJSON({ system, prompt, maxTokens = 1200, feature, validate }) {
+  if (isGroqCascadeEnabled()) {
+    const raw = await tryGroqChat({ system, prompt, maxTokens });
+    if (raw) {
+      try {
+        const parsed = extractJSON(raw);
+        if (!validate || validate(parsed)) {
+          logLlmCall("json", GROQ_MODEL, feature);
+          return parsed;
+        }
+        console.warn("[gemini] groq cascade: JSON failed shape validation, falling back to Gemini");
+      } catch {
+        console.warn("[gemini] groq cascade: JSON parse failed, falling back to Gemini");
+      }
+    }
+  }
+  return generateJSON({ system, prompt, maxTokens, feature });
 }
 
 // A greedy [...]/{ ...} regex can't just be tried in a fixed order: a top-level

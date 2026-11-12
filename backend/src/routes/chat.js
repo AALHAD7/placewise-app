@@ -3,6 +3,7 @@ import { generateChatText } from "../lib/gemini.js";
 import { requireAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
+import { isPromptGuardEnabled, looksLikeInjection } from "../lib/promptGuard.js";
 
 const router = Router();
 
@@ -33,6 +34,15 @@ router.post("/", requireAuth, aiLimiter, async (req, res) => {
   );
   if (invalid) {
     return res.status(400).json({ error: "Each message needs role ('user'|'assistant') and non-empty content (string, max 16000 chars)." });
+  }
+
+  // Checks only the most recent user turn - earlier turns in a multi-turn
+  // conversation already passed this same check when they were first
+  // submitted (each turn is its own POST), so re-checking the full history
+  // every time would just repeat work for no extra safety.
+  const lastUserMessage = [...messages].reverse().find(m => m.role === "user");
+  if (isPromptGuardEnabled() && lastUserMessage && await looksLikeInjection(lastUserMessage.content)) {
+    return res.status(400).json({ error: "That message looks like it's trying to override these instructions rather than continue the conversation — try rephrasing." });
   }
 
   try {

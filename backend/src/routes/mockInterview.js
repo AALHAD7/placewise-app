@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { supabase } from "../lib/supabase.js";
-import { embedTexts, generateJSON } from "../lib/gemini.js";
+import { embedTexts, generateJSON, generateChatJSON } from "../lib/gemini.js";
 import { requireAuth } from "../middleware/auth.js";
 import { aiLimiter, heavyAiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
@@ -91,7 +91,17 @@ router.post("/start", requireAuth, heavyAiLimiter, async (req, res) => {
     const candidateContext = buildCandidateContext(cleanResume, cleanJd, source);
     const prompt = `CONTEXT:\n${context || "(no matching context found)"}\n\n${candidateContext ? candidateContext + "\n\n" : ""}COMPANY: ${company || "(not specified)"}\nROLE: ${role || "(not specified)"}\nDIFFICULTY: ${diff}\n\nGenerate the opening question.`;
 
-    const { question } = await generateJSON({ system: START_SYSTEM_PROMPT, prompt, maxTokens: 1000 });
+    // Opening-question generation isn't an evaluation call (unlike /answer's
+    // scoring below) - a slightly-less-polished question is far cheaper than
+    // a wrong score, so this is the one mockInterview.js call site that can
+    // safely try the faster/free Groq cascade first (see generateChatJSON in
+    // gemini.js). `validate` rejects a syntactically-valid but empty/missing
+    // question, which falls back to Gemini's own generateJSON exactly as if
+    // Groq had failed outright.
+    const { question } = await generateChatJSON({
+      system: START_SYSTEM_PROMPT, prompt, maxTokens: 1000, feature: "mockInterview.start",
+      validate: parsed => typeof parsed?.question === "string" && parsed.question.trim().length > 0
+    });
 
     const { data: session, error } = await supabase
       .from("mock_interview_sessions")

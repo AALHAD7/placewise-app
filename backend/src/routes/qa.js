@@ -4,6 +4,7 @@ import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
 import { groundedQaAnswer } from "../lib/qaRetrieval.js";
 import { logToGoogleSheet } from "../lib/sheetsLogger.js";
+import { isPromptGuardEnabled, looksLikeInjection } from "../lib/promptGuard.js";
 
 const router = Router();
 
@@ -24,6 +25,9 @@ router.post("/ask", requireAuth, aiLimiter, async (req, res) => {
   }
   if (question.length > 1000) {
     return res.status(400).json({ success: false, error: "question: too long (max 1000 chars)." });
+  }
+  if (isPromptGuardEnabled() && await looksLikeInjection(question.trim())) {
+    return res.status(400).json({ success: false, error: "That doesn't look like a casebook question — try rephrasing it as a direct question about a topic." });
   }
   try {
     const result = await groundedQaAnswer(question.trim());
