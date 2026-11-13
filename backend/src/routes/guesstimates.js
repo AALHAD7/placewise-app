@@ -3,6 +3,7 @@ import { optionalAuth, requireAuth } from "../middleware/auth.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
 import { logToGoogleSheet } from "../lib/sheetsLogger.js";
+import { logQuestion } from "../lib/questionLog.js";
 import {
   getRandomGuesstimateProblem,
   groundedGuesstimateLookup,
@@ -214,6 +215,18 @@ router.post("/clarify", requireAuth, aiLimiter, async (req, res) => {
       action: "Guesstimate Clarifying Question",
       item: validated.question,
       details: "Assumption Clarification"
+    });
+
+    // Additive structured log alongside the Sheets write above - see migration_053 and
+    // the admin dashboard's GET /api/admin/questions. The only genuine "question a
+    // student asked" call site in this file (loaded/random just show a problem; /ask is
+    // a topic lookup, not a conversational question) - matches the product framing in
+    // the task that named this specifically as the third ask-a-question surface.
+    logQuestion({
+      source: "guesstimate",
+      question: validated.question,
+      grounded: result.grounded ?? null,
+      userLabel
     });
 
     res.json({ success: true, answer: result.answer });

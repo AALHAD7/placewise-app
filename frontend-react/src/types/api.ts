@@ -706,6 +706,32 @@ export interface AdminEngagementResponse {
   dailyTotals: AdminEngagementDailyRow[];
 }
 
+// GET /api/admin/questions?frameworkId=&source= - backend/src/routes/admin.js (ad-hoc
+// Questions tab, sibling of Engagement). Same admin-only 404 gate as /api/admin/usage.
+// `byFramework` is the headline "which framework gets asked about most" ranking;
+// `recent` is the question feed, newest first, filterable by frameworkId/source.
+export interface AdminQuestionsByFrameworkRow {
+  frameworkId: string;
+  frameworkName: string;
+  domain: string | null;
+  subdomain: string | null;
+  count: number;
+}
+export type AdminQuestionSource = "framework" | "qa" | "guesstimate";
+export interface AdminQuestionsRecentRow {
+  id: string;
+  source: AdminQuestionSource;
+  frameworkName: string | null;
+  question: string;
+  grounded: boolean;
+  createdAt: string;
+}
+export interface AdminQuestionsResponse {
+  success: true;
+  byFramework: AdminQuestionsByFrameworkRow[];
+  recent: AdminQuestionsRecentRow[];
+}
+
 // ---------------------------------------------------------------------------
 // R5 admin review queue - backend/src/routes/adminReview.js (/api/admin/review/*).
 // Admin-only. No storage path or URL is ever part of these shapes: the page

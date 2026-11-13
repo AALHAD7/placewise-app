@@ -4,6 +4,7 @@ import { aiLimiter } from "../middleware/rateLimit.js";
 import { errorDetail } from "../lib/errors.js";
 import { groundedQaAnswer } from "../lib/qaRetrieval.js";
 import { logToGoogleSheet } from "../lib/sheetsLogger.js";
+import { logQuestion } from "../lib/questionLog.js";
 import { isPromptGuardEnabled, looksLikeInjection } from "../lib/promptGuard.js";
 
 const router = Router();
@@ -41,6 +42,15 @@ router.post("/ask", requireAuth, aiLimiter, async (req, res) => {
       details: result.groundedInCasebooks
         ? `Grounded in Casebooks (${result.citation?.school || "Casebook"} p.${result.citation?.pages?.join(",") || ""})`
         : "General Knowledge Answer"
+    });
+
+    // Additive structured log alongside the Sheets write above - see migration_053 and
+    // the admin dashboard's GET /api/admin/questions.
+    logQuestion({
+      source: "qa",
+      question: question.trim(),
+      grounded: result.groundedInCasebooks,
+      userLabel
     });
 
     res.json({ success: true, available: true, ...result });

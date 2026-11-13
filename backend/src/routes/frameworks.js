@@ -7,6 +7,7 @@ import { withGroundedExamples } from "../lib/frameworksGrounding.js";
 import { buildConsultingFrameworkCatalog } from "../lib/frameworkCatalog.js";
 import { answerFrameworkQuestion } from "../lib/frameworkQa.js";
 import { logToGoogleSheet } from "../lib/sheetsLogger.js";
+import { logQuestion } from "../lib/questionLog.js";
 
 const router = Router();
 
@@ -124,6 +125,19 @@ router.post("/ask", requireAuth, aiLimiter, async (req, res) => {
       action: fw.name,
       item: question.trim(),
       details: `${fw.domain || "?"} > ${fw.subdomain || "?"} | ${result.grounded ? "Grounded in Framework" : "General Guidance"}`
+    });
+
+    // Additive structured log alongside the Sheets write above - see migration_053 and
+    // the admin dashboard's GET /api/admin/questions.
+    logQuestion({
+      source: "framework",
+      question: question.trim(),
+      frameworkId: fw.id,
+      frameworkName: fw.name,
+      domain: fw.domain || null,
+      subdomain: fw.subdomain || null,
+      grounded: result.grounded,
+      userLabel
     });
 
     res.json({ success: true, ...result });

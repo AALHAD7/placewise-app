@@ -9,6 +9,7 @@ import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { supabase } from "../src/lib/supabase.js";
 
 const PORT = 4001; // different from the dev server's 4000, so `npm test` doesn't fight a running `npm start`
 const BASE = `http://localhost:${PORT}`;
@@ -563,4 +564,108 @@ test("admin engagement: zero-data window returns empty arrays, not an error", as
   assert.equal(data.success, true);
   assert.ok(data.topClicks.length <= 1);
   assert.ok(data.topViews.length <= 1);
+});
+
+// ---- Admin question log (GET /api/admin/questions) -------------------------------------
+// Same gating posture as /api/admin/engagement above. Seeds question_log rows directly
+// via Supabase (migration_053) rather than through the real /ask endpoints, to avoid a
+// real Gemini call per test run - this is the same "seed the raw table, assert the
+// aggregation math" shape as the engagement tests above, just against a different table.
+test("admin questions: 404s with no token and a garbage token", async () => {
+  for (const headers of [{ "Content-Type": "application/json" },
+    { "Content-Type": "application/json", Authorization: "Bearer not-a-real-token" }]) {
+    const res = await fetch(`${BASE}/api/admin/questions`, { headers });
+    assert.equal(res.status, 404);
+  }
+});
+
+test("admin questions: seeded rows come back correctly grouped and filtered", async (t) => {
+  const marker = `__question_log_test_${Date.now()}`;
+  const fwA = `${marker}-fw-a`;
+  const fwB = `${marker}-fw-b`;
+
+  const rows = [
+    { source: "framework", question: `${marker} q1`, framework_id: null, framework_name: fwA, domain: "Consulting", subdomain: "Case Structuring", grounded: true, user_label: "test@example.com" },
+    { source: "framework", question: `${marker} q2`, framework_id: null, framework_name: fwA, domain: "Consulting", subdomain: "Case Structuring", grounded: false, user_label: "Guest" },
+    { source: "framework", question: `${marker} q3`, framework_id: null, framework_name: fwB, domain: "Consulting", subdomain: "Market Sizing & Entry", grounded: true, user_label: "test@example.com" },
+    { source: "qa", question: `${marker} q4`, framework_id: null, framework_name: null, domain: null, subdomain: null, grounded: false, user_label: "Guest" },
+    { source: "guesstimate", question: `${marker} q5`, framework_id: null, framework_name: null, domain: null, subdomain: null, grounded: true, user_label: "test@example.com" }
+  ];
+
+  const { data: inserted, error } = await supabase.from("question_log").insert(rows).select("id, framework_name");
+  assert.equal(error, null);
+  t.after(async () => {
+    await supabase.from("question_log").delete().in("id", inserted.map(r => r.id));
+  });
+
+  const res = await fetch(`${BASE}/api/admin/questions?limit=500`, { headers: authHeaders() });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.ok(Array.isArray(data.byFramework));
+  assert.ok(Array.isArray(data.recent));
+
+  // byFramework groups by framework_id, which is null for every seeded row here (no real
+  // frameworks table row used), so they all collapse into other null-grouped rows already
+  // in the table rather than a distinguishable "fwA"/"fwB" bucket - instead, confirm the
+  // recent feed carries the right source/question/grounded/frameworkName per row, and that
+  // a source filter narrows correctly, which is the behavior this endpoint actually promises.
+  const recentByQuestion = new Map(data.recent.map(r => [r.question, r]));
+  const q1 = recentByQuestion.get(`${marker} q1`);
+  const q4 = recentByQuestion.get(`${marker} q4`);
+  const q5 = recentByQuestion.get(`${marker} q5`);
+  assert.ok(q1, "framework question present in recent feed");
+  assert.equal(q1.source, "framework");
+  assert.equal(q1.frameworkName, fwA);
+  assert.equal(q1.grounded, true);
+  assert.ok(q4, "qa question present in recent feed");
+  assert.equal(q4.source, "qa");
+  assert.ok(q5, "guesstimate question present in recent feed");
+  assert.equal(q5.source, "guesstimate");
+
+  const qaOnly = await fetch(`${BASE}/api/admin/questions?source=qa&limit=500`, { headers: authHeaders() });
+  const qaData = await qaOnly.json();
+  assert.ok(qaData.recent.every(r => r.source === "qa"), "source=qa filter excludes other sources");
+  assert.ok(qaData.recent.some(r => r.question === `${marker} q4`), "qa-filtered feed still has the seeded qa row");
+});
+
+test("admin questions: frameworkId filter narrows byFramework and recent to just that framework", async (t) => {
+  const marker = `__question_log_fwfilter_test_${Date.now()}`;
+
+  const { data: fw, error: fwErr } = await supabase
+    .from("frameworks")
+    .insert({ name: `${marker}-framework`, domain: "Consulting", subdomain: "Case Structuring" })
+    .select("id")
+    .single();
+  assert.equal(fwErr, null);
+  t.after(async () => {
+    // The third seeded row deliberately has framework_id: null (an "unrelated
+    // framework's question" with no real framework row), so cleanup must match on the
+    // question text marker, not just framework_id, or it leaks forever.
+    await supabase.from("question_log").delete().like("question", `${marker}%`);
+    await supabase.from("frameworks").delete().eq("id", fw.id);
+  });
+
+  const rows = [
+    { source: "framework", question: `${marker} q1`, framework_id: fw.id, framework_name: `${marker}-framework`, domain: "Consulting", subdomain: "Case Structuring", grounded: true, user_label: "test@example.com" },
+    { source: "framework", question: `${marker} q2`, framework_id: fw.id, framework_name: `${marker}-framework`, domain: "Consulting", subdomain: "Case Structuring", grounded: true, user_label: "Guest" },
+    // A different, unrelated framework's question - must NOT show up once filtered.
+    { source: "framework", question: `${marker} other-fw-question`, framework_id: null, framework_name: "Some Other Framework", domain: "Consulting", subdomain: "Case Structuring", grounded: true, user_label: "Guest" }
+  ];
+  const { error } = await supabase.from("question_log").insert(rows);
+  assert.equal(error, null);
+
+  const res = await fetch(`${BASE}/api/admin/questions?frameworkId=${fw.id}&limit=500`, { headers: authHeaders() });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+
+  assert.equal(data.byFramework.length, 1, "byFramework narrowed to exactly this one framework");
+  assert.equal(data.byFramework[0].frameworkId, fw.id);
+  assert.equal(data.byFramework[0].count, 2);
+
+  assert.ok(data.recent.every(r => r.frameworkName === `${marker}-framework`), "recent only has this framework's questions");
+  assert.ok(data.recent.some(r => r.question === `${marker} q1`));
+  assert.ok(data.recent.some(r => r.question === `${marker} q2`));
+  assert.ok(!data.recent.some(r => r.question === `${marker} other-fw-question`), "unrelated framework's question excluded");
 });

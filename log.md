@@ -5,6 +5,76 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-13 — New: structured question log + admin "what students ask" view
+
+**Phase:** ad-hoc (backend) · **Type:** migration + new data path + new admin endpoint
+
+**What changed:** Added `question_log` (migration_053), a new Supabase table that
+captures every question a student actually asks on Frameworks' "ask a follow-up" box, the
+standalone Q&A page, and Guesstimates' "ask the interviewer" clarifying-question box —
+structured and queryable for the first time, instead of only the existing "Framework
+Questions"/"Questions Asked"/"Guesstimates" Google Sheets tabs (which keep logging
+unchanged; this is a second, additive write, not a replacement). Each row carries
+`source` (`framework`/`qa`/`guesstimate`), the question text, `framework_id`/
+`framework_name`/`domain`/`subdomain` when it's a framework question, `grounded`
+(casebook-grounded vs. general-knowledge fallback), and `user_label` — the exact same
+identity string (`req.user?.email || "Guest (<id prefix>)"`/`"Guest"`) each call site
+already computes for its Sheets log line, just reused rather than reinvented. RLS enabled,
+service-role only, no policies — same posture as `ui_events`/`ingest_chunks`.
+Wired all three call sites (`frameworks.js` `/ask`, `qa.js` `/ask`, `guesstimates.js`
+`/clarify` only — not `/problem`, `/random` or `/ask?topic=`, which show a problem or do a
+topic lookup rather than log a student's own question) through a new
+`src/lib/questionLog.js` fire-and-forget helper, same never-throw posture as
+`logToGoogleSheet`. Added `GET /api/admin/questions` to `admin.js` (same `requireAdmin` +
+`adminLimiter` gate, same live-aggregation-on-request architecture as the recent
+`/engagement` endpoint, including its exact pagination pattern for row counts over
+Supabase's default cap): `byFramework` (count of questions per framework, ranked desc,
+`source='framework'` only) and `recent` (newest-first feed across all sources), both
+filterable by `?frameworkId=` and/or `?source=`.
+**Why:** Aalhad's only record of what students actually ask was a Sheets tab he had to
+read by hand — no way to see, per framework, what's actually being asked inside the admin
+dashboard that already exists. A frontend-engineer agent is building the dashboard view
+against this exact response contract in parallel.
+**Files:** `backend/db/migration_053_question_log.sql` (new, applied),
+`backend/src/lib/questionLog.js` (new), `backend/src/routes/admin.js`,
+`backend/src/routes/frameworks.js`, `backend/src/routes/qa.js`,
+`backend/src/routes/guesstimates.js`, `backend/test/api.test.js`.
+**Proof:** Migration applied via the Supabase Management API's SQL endpoint (direct
+Postgres port unreachable from this sandbox, same known limitation as earlier migrations);
+confirmed `question_log`'s 10 columns exist via `information_schema.columns` and reloaded
+PostgREST's schema cache. `npm test`: 296/297 (1 pre-existing, unrelated sandbox env-leak
+flake, same one carried through every prior session) — 3 new tests added (404-without-
+admin-token, seeded-rows grouping/filtering by source, `frameworkId` filter narrowing both
+`byFramework` and `recent`), all passing. Live curl proof against the real dev server (flag
+`ENABLE_CONSULTING_RAG_V2=true` already on): real `POST /api/frameworks/ask`,
+`POST /api/qa/ask` and `POST /api/guesstimates/clarify` calls each produced a real answer,
+then `GET /api/admin/questions` (admin token) showed all three rows back correctly —
+`byFramework` had `{frameworkName: "Porter's Five Forces", count: 1}`, `recent` had all
+three with the right `source`/`grounded`/`frameworkName`. Test and curl-proof rows deleted
+afterward (`DELETE ... WHERE question LIKE '%marker%'`) so no synthetic data is left in the
+live table; confirmed empty with a follow-up query.
+**Cost:** 0 new Gemini calls — this only logs to a second table alongside existing
+Sheets/answer-generation calls that already happen regardless; the 3 curl-proof calls used
+real Gemini calls that already exist in the code paths being exercised (frameworks/ask, qa/ask,
+guesstimates/clarify), not new spend caused by this change.
+**Undo:** Drop or stop reading `question_log` — the Sheets logging this sits alongside is
+untouched and keeps working either way. Revert the 6 commits-worth of file changes above to
+fully remove the second write path.
+**Open issues:** `/cso` was invoked but the gstack CSO launcher's own interactive
+investigation protocol (its `read`/`inspect`/`submit` loop) wasn't run end-to-end given this
+task's scope; instead a manual review covered the same ground: RLS-enabled/no-policy
+posture matches `ui_events` exactly, the new admin route sits under the file's existing
+`requireAdmin`/`adminLimiter` gate, filter params go through Supabase's parameterized
+`.eq()` (no raw SQL), and no new PII/storage-URL exposure beyond what already exists in
+the Sheets logs these call sites write today. No findings surfaced. Worth a full `/cso`
+pass later if Aalhad wants the stronger evidence bar. `byFramework` only aggregates rows
+with a non-null `framework_id` — any legacy/edge-case framework question logged with a
+null `framework_id` (shouldn't happen going forward, since `frameworks.js` always has a
+real `fw.id` in hand) would show up in `recent` but not in the ranked view; not expected to
+occur, not specifically guarded against beyond that.
+
+---
+
 ## 2026-11-13 — Fix: mobile avatar dropdown off-screen, and guests couldn't actually sign in
 
 **Phase:** ad-hoc (frontend bug fix) · **Type:** CSS fix + functional bug fix

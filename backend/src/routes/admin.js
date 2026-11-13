@@ -183,6 +183,107 @@ router.get("/engagement", async (req, res) => {
   }
 });
 
+const QUESTIONS_PAGE_SIZE = 1000;
+const QUESTIONS_RECENT_DEFAULT = 50;
+const QUESTIONS_RECENT_MAX = 500;
+const VALID_QUESTION_SOURCES = new Set(["framework", "qa", "guesstimate"]);
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// question_log can exceed Supabase's default row cap over time, same reasoning as
+// fetchAllUiEvents above - page through it rather than relying on a single .select().
+async function fetchAllQuestionLogRows(select, filters = {}) {
+  const rows = [];
+  let from = 0;
+  while (true) {
+    let query = supabase.from("question_log").select(select);
+    if (filters.frameworkId) query = query.eq("framework_id", filters.frameworkId);
+    if (filters.source) query = query.eq("source", filters.source);
+    query = query.range(from, from + QUESTIONS_PAGE_SIZE - 1);
+    const { data, error } = await query;
+    if (error) throw error;
+    rows.push(...data);
+    if (data.length < QUESTIONS_PAGE_SIZE) break;
+    from += QUESTIONS_PAGE_SIZE;
+  }
+  return rows;
+}
+
+// GET /api/admin/questions?frameworkId=&source= - structured view over question_log
+// (migration_053), the second, additive write alongside the existing Google Sheets
+// logging at Frameworks ask-a-follow-up, standalone Q&A and Guesstimates'
+// ask-the-interviewer box. byFramework ranks "which framework gets the most questions"
+// (source='framework' only); recent is the raw browsable feed across all sources, newest
+// first, optionally filtered to one framework and/or one source.
+router.get("/questions", async (req, res) => {
+  try {
+    const { frameworkId, source } = req.query;
+    if (source !== undefined && !VALID_QUESTION_SOURCES.has(source)) {
+      return res.status(400).json({ success: false, error: "source must be one of: framework, qa, guesstimate." });
+    }
+    // framework_id is a uuid column - an unvalidated non-uuid string would hit Postgres's
+    // own 22P02 error and surface as a generic 500 instead of a clean empty/400 response.
+    if (frameworkId !== undefined && !UUID_RE.test(frameworkId)) {
+      return res.status(400).json({ success: false, error: "frameworkId must be a valid uuid." });
+    }
+
+    // byFramework: always computed from ALL source='framework' rows (ignoring the
+    // `source` filter, which wouldn't make sense against this view), then narrowed to
+    // one row if frameworkId is given - matches the task's "filters BOTH views" contract.
+    const frameworkRows = await fetchAllQuestionLogRows(
+      "framework_id, framework_name, domain, subdomain",
+      { source: "framework" }
+    );
+
+    const byFrameworkCounts = new Map(); // framework_id -> { frameworkName, domain, subdomain, count }
+    for (const r of frameworkRows) {
+      if (!r.framework_id) continue;
+      const existing = byFrameworkCounts.get(r.framework_id) || {
+        frameworkId: r.framework_id,
+        frameworkName: r.framework_name,
+        domain: r.domain,
+        subdomain: r.subdomain,
+        count: 0
+      };
+      existing.count += 1;
+      byFrameworkCounts.set(r.framework_id, existing);
+    }
+
+    let byFramework = [...byFrameworkCounts.values()].sort((a, b) => b.count - a.count);
+    if (frameworkId) {
+      byFramework = byFramework.filter((r) => r.frameworkId === frameworkId);
+    }
+
+    let recentLimit = Number(req.query.limit) || QUESTIONS_RECENT_DEFAULT;
+    if (!Number.isFinite(recentLimit) || recentLimit <= 0) recentLimit = QUESTIONS_RECENT_DEFAULT;
+    recentLimit = Math.min(recentLimit, QUESTIONS_RECENT_MAX);
+
+    let recentQuery = supabase
+      .from("question_log")
+      .select("id, source, framework_id, framework_name, question, grounded, created_at")
+      .order("created_at", { ascending: false })
+      .limit(recentLimit);
+    if (frameworkId) recentQuery = recentQuery.eq("framework_id", frameworkId);
+    if (source) recentQuery = recentQuery.eq("source", source);
+
+    const { data: recentRows, error: recentErr } = await recentQuery;
+    if (recentErr) throw recentErr;
+
+    const recent = (recentRows || []).map((r) => ({
+      id: r.id,
+      source: r.source,
+      frameworkName: r.framework_name,
+      question: r.question,
+      grounded: r.grounded,
+      createdAt: r.created_at
+    }));
+
+    res.json({ success: true, byFramework, recent });
+  } catch (err) {
+    console.error("[admin/questions]", err);
+    res.status(500).json({ success: false, error: "Failed to load question log.", detail: errorDetail(err) });
+  }
+});
+
 // Frontend's only way to know if the logged-in user is an admin, so the admin nav link
 // can be shown/hidden correctly instead of requiring Aalhad to type /admin by hand.
 // No body beyond success - requireAdmin above already did the real work (token validation
