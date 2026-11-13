@@ -15,11 +15,14 @@ import type {
 //
 // Chart choices (dataviz skill): `byPage` is a ranked-categorical headline, so it's
 // ranked horizontal bars, one hue, largest first, value labelled at the tip. Two
-// series (clicks vs views) over time is a line chart with a legend (never color-alone
-// for >=2 series) - colours are var(--indigo-700)/var(--royal-blue-light), the one
-// pair from this palette that passes scripts/validate_palette.js's six checks against
-// this app's dark surface. `topClicks`/`topViews` are secondary, so plain ranked
-// tables. Every chart also has a "View as table" fallback per the skill's
+// series (clicks vs views) over time is a grouped bar chart (one bar pair per day),
+// not a line - changed 2026-11-13 after Aalhad's call: with only a couple of real
+// days of history, a line visually implies a trend between sparse points that isn't
+// really there (see DailyTrendChart's own comment for the full reasoning). Legend is
+// never color-alone for >=2 series - colours are var(--indigo-700)/var(--royal-blue-light),
+// the one pair from this palette that passes scripts/validate_palette.js's six checks
+// against this app's dark surface. `topClicks`/`topViews` are secondary, so plain
+// ranked tables. Every chart also has a "View as table" fallback per the skill's
 // accessibility-twin rule.
 
 type Load<T> = { state: "loading" } | { state: "error"; message: string } | { state: "ready"; data: T };
@@ -100,9 +103,15 @@ function PageBarChart({ rows }: { rows: AdminEngagementPageRow[] }) {
   );
 }
 
-// Simple SVG line chart, two series, with a legend (identity is never
-// color-alone), direct end-labels on the last point, and a per-column hover
-// tooltip (the "crosshair+tooltip" the skill asks for on a line chart).
+// Grouped bar chart, two series per day (clicks/views side by side), with a
+// legend (identity is never color-alone) and a per-day hover tooltip. Changed
+// from a line chart (2026-11-13, Aalhad's call) - with only a handful of real
+// days of history so far, a line visually implies a continuous trend between
+// sparse points, which reads as "usage is trending" when it's really just
+// "day 2 had more views than day 1" (often from instrumentation coverage
+// changing, not real usage change). Bars make each day a standalone
+// comparison instead of implying interpolation, and stay the right form once
+// there's more history too - this isn't a stopgap until enough days exist.
 function DailyTrendChart({ rows }: { rows: AdminEngagementDailyRow[] }) {
   const [hover, setHover] = useState<number | null>(null);
   const width = 640;
@@ -114,12 +123,16 @@ function DailyTrendChart({ rows }: { rows: AdminEngagementDailyRow[] }) {
   const plotW = width - padL - padR;
   const plotH = height - padT - padB;
   const max = Math.max(1, ...rows.map((r) => Math.max(r.clicks, r.views)));
-  const n = Math.max(1, rows.length - 1);
-  const x = (i: number) => padL + (n === 0 ? 0 : (i / n) * plotW);
-  const y = (v: number) => padT + plotH - (v / max) * plotH;
-  const path = (key: "clicks" | "views") =>
-    rows.map((r, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(r[key]).toFixed(1)}`).join(" ");
-  const gridLines = [0, 0.5, 1];
+  const n = Math.max(1, rows.length);
+  const slotW = plotW / n;
+  // Each day's slot holds two bars (clicks, views) with a small gap between
+  // them and between slots - narrows automatically as more days are shown.
+  const barGap = Math.max(1, slotW * 0.08);
+  const barW = Math.max(2, (slotW - barGap * 3) / 2);
+  const slotX = (i: number) => padL + i * slotW;
+  const barH = (v: number) => (v / max) * plotH;
+  const barY = (v: number) => padT + plotH - barH(v);
+  const showDateLabel = slotW >= 28;
   const hovered = hover != null ? rows[hover] : null;
 
   return (
@@ -129,8 +142,8 @@ function DailyTrendChart({ rows }: { rows: AdminEngagementDailyRow[] }) {
         <Legend swatch="var(--royal-blue-light)" label="Views" />
       </div>
       <div style={{ position: "relative" }}>
-        <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label="Daily clicks and views over the selected window">
-          {gridLines.map((g) => (
+        <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label="Daily clicks and views over the selected window, as a bar per day">
+          {[0, 0.5, 1].map((g) => (
             <line
               key={g}
               x1={padL}
@@ -147,30 +160,44 @@ function DailyTrendChart({ rows }: { rows: AdminEngagementDailyRow[] }) {
           <text x={4} y={padT + plotH} fontSize={9} fill="var(--text-lightgray)">
             0
           </text>
-          <path d={path("clicks")} fill="none" stroke="var(--indigo-700)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-          <path d={path("views")} fill="none" stroke="var(--royal-blue-light)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
           {rows.map((r, i) => (
             <g key={r.date}>
-              <circle cx={x(i)} cy={y(r.clicks)} r={4} fill="var(--indigo-700)" stroke="var(--bg)" strokeWidth={2} />
-              <circle cx={x(i)} cy={y(r.views)} r={4} fill="var(--royal-blue-light)" stroke="var(--bg)" strokeWidth={2} />
-              {/* Invisible full-height hit column, bigger than the marks, for hover */}
+              {hover === i && (
+                <rect x={slotX(i)} y={padT} width={slotW} height={plotH} fill="var(--surface-sunken)" />
+              )}
               <rect
-                x={x(i) - plotW / Math.max(1, rows.length) / 2}
+                x={slotX(i) + barGap}
+                y={barY(r.clicks)}
+                width={barW}
+                height={Math.max(1, barH(r.clicks))}
+                rx={2}
+                fill="var(--indigo-700)"
+              />
+              <rect
+                x={slotX(i) + barGap * 2 + barW}
+                y={barY(r.views)}
+                width={barW}
+                height={Math.max(1, barH(r.views))}
+                rx={2}
+                fill="var(--royal-blue-light)"
+              />
+              {showDateLabel && (
+                <text x={slotX(i) + slotW / 2} y={height - 6} fontSize={9} fill="var(--text-lightgray)" textAnchor="middle">
+                  {r.date.slice(5)}
+                </text>
+              )}
+              {/* Invisible full-height hit column, for hover */}
+              <rect
+                x={slotX(i)}
                 y={padT}
-                width={plotW / Math.max(1, rows.length)}
+                width={slotW}
                 height={plotH}
                 fill="transparent"
                 onMouseEnter={() => setHover(i)}
                 onMouseLeave={() => setHover((cur) => (cur === i ? null : cur))}
               />
-              {i === rows.length - 1 && (
-                <text x={Math.min(width - padR - 2, x(i) + 6)} y={y(r.clicks)} fontSize={9} fill="var(--text-900)" textAnchor="end">
-                  {fmt(r.clicks)}
-                </text>
-              )}
             </g>
           ))}
-          {hover != null && <line x1={x(hover)} x2={x(hover)} y1={padT} y2={padT + plotH} stroke="var(--border-soft)" strokeWidth={1} />}
         </svg>
         {hovered && (
           <div
