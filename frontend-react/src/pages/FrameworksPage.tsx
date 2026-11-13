@@ -268,7 +268,13 @@ export default function FrameworksPage() {
               const pitfalls = Array.isArray(f.pitfalls) ? f.pitfalls : [];
 
               return (
-                <div key={f.id} style={{ background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
+                // minWidth: 0 overrides the flex item's default min-width:auto (same fix
+                // as GuesstimatesPage's two-col-sidebar-wide grid) - without it, a card
+                // holding a wide monospace AsciiDiagram pre refuses to shrink below the
+                // diagram's full content width, growing the flex item (and the whole
+                // page) past the viewport on phone widths instead of letting the
+                // diagram's own <pre> handle the overflow with its internal scrollbar.
+                <div key={f.id} style={{ minWidth: 0, background: "var(--surface)", border: "1px solid var(--border-input)", borderRadius: "var(--r-md)", boxShadow: "0 0 0 1px var(--card-border)", padding: "20px 22px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
                     <div style={{ minWidth: 0 }}>
                       <span

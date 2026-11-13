@@ -38,6 +38,12 @@ export default function AsciiDiagram({
       style={{
         marginTop: 14,
         marginBottom: 14,
+        // minWidth: 0 + maxWidth: 100% so this never becomes the thing that forces a
+        // flex/grid ancestor (or the page) to grow past the viewport on phone widths -
+        // the box itself must stay within its parent's width no matter where it's
+        // dropped in; the wide monospace content scrolls inside the <pre> below instead.
+        minWidth: 0,
+        maxWidth: "100%",
         borderRadius: "var(--r-md)",
         border: "1px solid rgba(59, 130, 246, 0.3)",
         background: "linear-gradient(180deg, #0e121a 0%, #090c12 100%)",
@@ -169,7 +175,8 @@ export default function AsciiDiagram({
           color: "#e2e8f0",
           overflowX: "auto",
           whiteSpace: "pre",
-          tabSize: 2
+          tabSize: 2,
+          WebkitOverflowScrolling: "touch"
         }}
       >
         {activeAscii}
