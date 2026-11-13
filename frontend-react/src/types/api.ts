@@ -669,6 +669,35 @@ export interface AdminUsageResponse {
   openAlerts: AdminAlert[];
 }
 
+// GET /api/admin/engagement?windowHours=&topN= - backend/src/routes/admin.js (ad-hoc
+// Engagement tab). Same admin-only 404 gate as /api/admin/usage. `byPage` is the
+// headline "which feature/page gets used" ranking; `topClicks`/`topViews` are the
+// finer-grained page+section breakdown; `dailyTotals` is the trend over the window.
+export interface AdminEngagementClickRow {
+  page: string;
+  section: string;
+  count: number;
+}
+export interface AdminEngagementPageRow {
+  page: string;
+  count: number;
+}
+export interface AdminEngagementDailyRow {
+  date: string;
+  clicks: number;
+  views: number;
+}
+export interface AdminEngagementResponse {
+  success: true;
+  windowHours: number;
+  generatedAt: string;
+  totalEvents: number;
+  topClicks: AdminEngagementClickRow[];
+  topViews: AdminEngagementClickRow[];
+  byPage: AdminEngagementPageRow[];
+  dailyTotals: AdminEngagementDailyRow[];
+}
+
 // ---------------------------------------------------------------------------
 // R5 admin review queue - backend/src/routes/adminReview.js (/api/admin/review/*).
 // Admin-only. No storage path or URL is ever part of these shapes: the page

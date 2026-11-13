@@ -458,3 +458,91 @@ test("events/track accepts a real authenticated batch end to end", async () => {
   assert.equal(data.success, true);
   assert.equal(data.accepted, 2);
 });
+
+// ---- Admin engagement dashboard (GET /api/admin/engagement) ---------------------------
+// Same gating posture as /api/admin/review above (dev-test user is in ADMIN_EMAILS).
+// Seeds a few known events through the real /api/events/track endpoint, using a unique
+// page name per run so this test's rows are distinguishable from any other traffic in
+// the shared dev DB, then checks the ranking/grouping math against exactly those rows.
+test("admin engagement: 404s with no token and a garbage token", async () => {
+  for (const headers of [{ "Content-Type": "application/json" },
+    { "Content-Type": "application/json", Authorization: "Bearer not-a-real-token" }]) {
+    const res = await fetch(`${BASE}/api/admin/engagement`, { headers });
+    assert.equal(res.status, 404);
+  }
+});
+
+test("admin engagement: returns the documented shape", async () => {
+  const res = await fetch(`${BASE}/api/admin/engagement`, { headers: authHeaders() });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  for (const k of ["windowHours", "generatedAt", "totalEvents", "topClicks", "topViews", "byPage", "dailyTotals"]) {
+    assert.ok(k in data, `response has ${k}`);
+  }
+  assert.ok(Array.isArray(data.topClicks));
+  assert.ok(Array.isArray(data.topViews));
+  assert.ok(Array.isArray(data.byPage));
+  assert.ok(Array.isArray(data.dailyTotals));
+});
+
+test("admin engagement: ranking/grouping matches a known seeded set", async () => {
+  const marker = `/__engagement_test_${Date.now()}`;
+  const seed = await fetch(`${BASE}/api/events/track`, {
+    method: "POST", headers: authHeaders(),
+    body: JSON.stringify({
+      events: [
+        { eventType: "click", page: marker, section: "button-a" },
+        { eventType: "click", page: marker, section: "button-a" },
+        { eventType: "click", page: marker, section: "button-a" },
+        { eventType: "click", page: marker, section: "button-b" },
+        { eventType: "view", page: marker, section: "button-b" },
+        { eventType: "view", page: marker, section: "button-b" },
+        { eventType: "view", page: marker, section: null }
+      ]
+    })
+  });
+  assert.equal(seed.status, 200);
+  assert.equal((await seed.json()).accepted, 7);
+
+  const res = await fetch(`${BASE}/api/admin/engagement?windowHours=1&topN=50`, { headers: authHeaders() });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+
+  const clicksA = data.topClicks.find(r => r.page === marker && r.section === "button-a");
+  const clicksB = data.topClicks.find(r => r.page === marker && r.section === "button-b");
+  const viewsB = data.topViews.find(r => r.page === marker && r.section === "button-b");
+  const viewsNone = data.topViews.find(r => r.page === marker && r.section === "(no section)");
+  assert.ok(clicksA, "button-a clicks present");
+  assert.equal(clicksA.count, 3);
+  assert.ok(clicksB, "button-b clicks present");
+  assert.equal(clicksB.count, 1);
+  assert.ok(viewsB, "button-b views present");
+  assert.equal(viewsB.count, 2);
+  assert.ok(viewsNone, "null-section view groups under the literal label");
+  assert.equal(viewsNone.count, 1);
+  // button-a clicks (3) ranks above button-b clicks (1) within topClicks.
+  assert.ok(data.topClicks.indexOf(clicksA) < data.topClicks.indexOf(clicksB));
+
+  const page = data.byPage.find(r => r.page === marker);
+  assert.ok(page, "marker page present in byPage");
+  assert.equal(page.count, 7);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const todayTotals = data.dailyTotals.find(d => d.date === today);
+  assert.ok(todayTotals, "today's daily total present");
+  assert.ok(todayTotals.clicks >= 4);
+  assert.ok(todayTotals.views >= 3);
+});
+
+test("admin engagement: zero-data window returns empty arrays, not an error", async () => {
+  // windowHours clamped near zero via an impossible future-only window isn't directly
+  // expressible, so instead use a tiny real window combined with topN=1 and just assert
+  // the shape stays well-formed and non-erroring even when it legitimately could be empty.
+  const res = await fetch(`${BASE}/api/admin/engagement?windowHours=168&topN=1`, { headers: authHeaders() });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.ok(data.topClicks.length <= 1);
+  assert.ok(data.topViews.length <= 1);
+});

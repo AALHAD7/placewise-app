@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/apiClient";
 import type { AdminUsageResponse } from "../types/api";
 import ReviewQueue from "./admin/ReviewQueue";
+import EngagementDashboard from "./admin/EngagementDashboard";
 
 // Phase 1.6 item 1. No client-side admin flag anywhere on this page by
 // design (the spec's own "never trust a client-side flag") - this just
@@ -117,6 +118,14 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+
+      {/* Ad-hoc Engagement tab: only reached after /api/admin/usage succeeded
+          (admin-only, same 404 gate). Which features/pages students actually use,
+          pulled from GET /api/admin/engagement. */}
+      <section style={{ marginTop: 40, borderTop: "1px solid var(--card-border)", paddingTop: 24 }} aria-labelledby="engagement-heading">
+        <h2 id="engagement-heading" style={{ margin: 0, fontSize: "var(--fs-title)", fontWeight: 700, color: "var(--text-900)" }}>Engagement</h2>
+        <EngagementDashboard />
+      </section>
 
       {/* R5.3: only reached after /api/admin/usage succeeded (admin-only, same 404 gate). */}
       <section style={{ marginTop: 40, borderTop: "1px solid var(--card-border)", paddingTop: 24 }} aria-labelledby="ingestion-review-heading">

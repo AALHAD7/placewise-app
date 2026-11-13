@@ -5,6 +5,68 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-13 — Admin engagement dashboard (live replacement for the manual Sheets rollup)
+
+**Phase:** ad-hoc (admin tooling) · **Type:** code change (new read-only route + admin page) + tests
+
+**What changed:** Added `GET /api/admin/engagement` to `backend/src/routes/admin.js`,
+gated by the existing `requireAdmin`/`adminLimiter` (same 404-only-on-failure posture as
+`/usage`). Takes `windowHours` (default 168, clamped to 2160) and `topN` (default 15,
+capped 100). Pages through `ui_events` the same way `scripts/rollupUiEvents.js`'s
+`fetchAllEvents` does, then returns `topClicks`/`topViews` (grouped by event_type + page +
+section, null/empty section shown as the literal `"(no section)"`), `byPage` (combined
+click+view totals per page, answering "which feature is used most"), and `dailyTotals`
+(per-UTC-day click/view split for a trend line). Read-only — no writes, no admin-action
+log entry (same as `/usage`, which doesn't log either since nothing changes state).
+`rollupUiEvents.js` and its Google Sheets tab are untouched; this is a separate consumption
+path over the same raw rows.
+
+New "Engagement" tab on `/admin` (`frontend-react/src/pages/admin/EngagementDashboard.tsx`,
+wired into `AdminPage.tsx` between Usage and the R5 review queue): a 24h/7d/30d window
+picker, a ranked horizontal-bar chart of `byPage` (the headline "what's used most" view),
+an SVG daily-activity trend line (clicks vs. views), and two compact ranked tables for
+`topClicks`/`topViews` — each chart has a "view as table" fallback per the dataviz skill's
+accessibility rule. Matches `AdminPage.tsx`'s existing card/token styling. `/admin` itself
+stays unlinked from site nav and gated the same way as ever (`requireAdmin`'s email
+allowlist, 404 for anyone not on it) — this is additive to an already-hidden page, not a
+new exposure surface.
+
+**Why:** Aalhad finds the Sheets snapshot hard to use (no filtering, no live update, has to
+be run by hand). This gives a live, queryable, visual view instead, without touching the
+existing script/Sheets flow anyone else may still depend on. `ADMIN_EMAILS` (both local
+`.env` and the live Render service) was separately updated in this session to include
+Aalhad's own login email, so this page is actually reachable by him once deployed.
+
+**Files:** `backend/src/routes/admin.js`, `backend/test/api.test.js`,
+`frontend-react/src/pages/admin/EngagementDashboard.tsx` (new), `frontend-react/src/pages/AdminPage.tsx`,
+`frontend-react/src/types/api.ts`
+
+**Proof:** `npm test` → `291 pass / 1 fail` (the pre-existing unrelated
+`sandbox.test.js:23` flake — "generated Python sees an empty environment" — not touched by
+this change); all 4 new `admin engagement:` tests pass, including a seeded-rows test that
+asserts exact counts and ranking order against known click/view combos. Manual curl against
+a running dev server (real `ui_events` data, 135 events in the 168h window) confirmed the
+documented response shape, correct ranking, `byPage` and `dailyTotals` — see session
+transcript for the full response. No-token/garbage-token requests confirmed 404 (empty
+body, same as the other admin routes).
+
+**Cost:** none (no Gemini calls — pure Supabase read + in-process aggregation).
+
+Frontend: `npx tsc --noEmit` and `npm run build` clean, `npm run lint` exits 0 (one
+pre-existing-pattern warning, same as `ReviewQueue.tsx`'s own fetch effects, not new).
+Verified structurally in a real browser (gstack's `$B`) at 1280px and 375px via a temporary
+mocked-fetch preview route, reverted cleanly afterward (`git status` showed only the
+intended files) — no real admin token was available in that environment to hit the live
+endpoint end to end from the browser, so this half is UI/contract-verified, not full E2E;
+the backend half's own curl proof (135 real events, correct shape) is the end-to-end check.
+
+**Undo:** revert this diff; nothing else depends on the route or the page yet, and `/admin`
+has no nav link regardless.
+
+**Open issues:** None blocking. Not committed; left for review before committing.
+
+---
+
 ## 2026-11-13 — FIN2 closed: Frameworks + Role pages wired to the Finance compendium (flag off)
 **Phase:** FIN2 (side-quest off the main M2 domain sequence) · **Type:** code change (retrieval gate) + tests + read-only eval probe
 
