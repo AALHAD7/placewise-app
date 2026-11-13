@@ -651,6 +651,14 @@ export interface CurrentPlanResponse {
   sectionRoutes: Record<string, string>;
 }
 
+// GET /api/admin/whoami - backend/src/routes/admin.js. 200 + this body for an
+// admin email, a bare 404 for anyone else (consumed by AuthContext.tsx to
+// decide whether to show the nav's Admin entry - never a client-side-only
+// gate, the real check is server-side against ADMIN_EMAILS).
+export interface AdminWhoamiResponse {
+  success: true;
+}
+
 // GET /api/admin/usage - backend/src/routes/admin.js (Phase 1.6 item 1)
 export interface AdminAlert {
   id: string;

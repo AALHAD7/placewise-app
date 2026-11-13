@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useExitTransition } from "../../hooks/useExitTransition";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../hooks/useDashboard";
@@ -105,6 +105,17 @@ const NAV: NavEntry[] = [
   }
 ];
 
+// Shown only when AuthContext's isAdmin resolves true (one `/api/admin/whoami`
+// call per signed-in identity - see AuthContext.tsx) - appended to the NAV
+// list at render time, never part of the static array above, so this entry
+// genuinely never renders into the DOM for the other ~100% of users, not
+// just hidden with CSS.
+const ADMIN_NAV_ENTRY: NavEntry = {
+  to: "/admin",
+  label: "Admin",
+  paths: ["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"]
+};
+
 // Same match rule as each NavLink's own `end={entry.to === "/"}` below - kept
 // here too so the slider can independently figure out which entry is active
 // (for measuring its position) without reading it back off the DOM's class
@@ -141,7 +152,14 @@ function formatCountdown(msLeft: number): string {
 export default function TopNav() {
   const navigate = useNavigate();
   const { data, sessionName, reload } = useDashboard();
-  const { isGuest, guestExpiresAt, signOut } = useAuth();
+  const { isGuest, guestExpiresAt, isAdmin, signOut } = useAuth();
+  // Built fresh each render, not stored in NAV itself - the whole point is
+  // that non-admins never have this entry in memory or markup, only ever
+  // computed and discarded for them as `false` short-circuits the spread.
+  // Memoized so it's only a new array when isAdmin actually flips, not on
+  // every render - otherwise the slider-measuring effects below would see a
+  // "changed" dependency and re-run every render once isAdmin is true.
+  const navEntries = useMemo(() => (isAdmin ? [...NAV, ADMIN_NAV_ENTRY] : NAV), [isAdmin]);
   const streak = data?.streak || 0;
   const hasStreak = streak > 0;
   const initials =
@@ -193,15 +211,20 @@ export default function TopNav() {
   const [sliderRect, setSliderRect] = useState<{ x: number; width: number } | null>(null);
   const location = useLocation();
   const measureSlider = () => {
-    const activeEntry = NAV.find((entry) => isNavEntryActive(entry, location.pathname));
+    const activeEntry = navEntries.find((entry) => isNavEntryActive(entry, location.pathname));
     const el = activeEntry ? navItemRefs.current[activeEntry.to] : null;
     setSliderRect(el ? { x: el.offsetLeft, width: el.offsetWidth } : null);
   };
-  useLayoutEffect(measureSlider, [location.pathname]);
+  // navEntries in both dep arrays too - isAdmin resolves asynchronously after
+  // mount (the /api/admin/whoami check), so a direct refresh on /admin would
+  // otherwise measure the slider once against the pre-admin NAV list and
+  // never re-measure once the Admin entry appears, since pathname itself
+  // doesn't change.
+  useLayoutEffect(measureSlider, [location.pathname, navEntries]);
   useEffect(() => {
     window.addEventListener("resize", measureSlider);
     return () => window.removeEventListener("resize", measureSlider);
-  }, [location.pathname]);
+  }, [location.pathname, navEntries]);
 
   const goHome = () => navigate("/");
   const viewStats = () => {
@@ -270,7 +293,7 @@ export default function TopNav() {
             {sliderRect && (
               <div className="nav-slider" style={{ transform: `translateX(${sliderRect.x}px)`, width: sliderRect.width }} />
             )}
-            {NAV.map((entry, i) => (
+            {navEntries.map((entry, i) => (
               <Fragment key={entry.to}>
                 <NavLink
                   to={entry.to}
@@ -281,7 +304,7 @@ export default function TopNav() {
                   <NavIcon entry={entry} />
                   <span>{entry.label}</span>
                 </NavLink>
-                {(i === 0 || i === NAV.length - 2) && <span className="topnav-divider"></span>}
+                {(i === 0 || i === navEntries.length - 2) && <span className="topnav-divider"></span>}
               </Fragment>
             ))}
           </nav>
@@ -436,7 +459,7 @@ export default function TopNav() {
             From Prep to Placement
           </span>
         </div>
-        {NAV.map((entry) => (
+        {navEntries.map((entry) => (
           <NavLink
             key={entry.to}
             to={entry.to}

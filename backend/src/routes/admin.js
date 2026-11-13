@@ -183,6 +183,14 @@ router.get("/engagement", async (req, res) => {
   }
 });
 
+// Frontend's only way to know if the logged-in user is an admin, so the admin nav link
+// can be shown/hidden correctly instead of requiring Aalhad to type /admin by hand.
+// No body beyond success - requireAdmin above already did the real work (token validation
+// + ADMIN_EMAILS check, bare 404 on any failure); this route just needs to exist and 200.
+router.get("/whoami", (req, res) => {
+  res.json({ success: true });
+});
+
 router.post("/alerts/:id/resolve", async (req, res) => {
   try {
     const { error } = await supabase.from("admin_alerts").update({ acknowledged: true }).eq("id", req.params.id);

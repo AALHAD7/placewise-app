@@ -459,6 +459,24 @@ test("events/track accepts a real authenticated batch end to end", async () => {
   assert.equal(data.accepted, 2);
 });
 
+// ---- Admin whoami (GET /api/admin/whoami) ---------------------------------------------
+// Same gating posture as /api/admin/review and /api/admin/engagement above - requireAdmin
+// does all the real work; this just confirms the route is wired up with the minimal body.
+test("admin whoami: 404s with no token and a garbage token", async () => {
+  for (const headers of [{ "Content-Type": "application/json" },
+    { "Content-Type": "application/json", Authorization: "Bearer not-a-real-token" }]) {
+    const res = await fetch(`${BASE}/api/admin/whoami`, { headers });
+    assert.equal(res.status, 404);
+  }
+});
+
+test("admin whoami: returns {success:true} for a valid admin token", async () => {
+  const res = await fetch(`${BASE}/api/admin/whoami`, { headers: authHeaders() });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.deepEqual(data, { success: true });
+});
+
 // ---- Admin engagement dashboard (GET /api/admin/engagement) ---------------------------
 // Same gating posture as /api/admin/review above (dev-test user is in ADMIN_EMAILS).
 // Seeds a few known events through the real /api/events/track endpoint, using a unique

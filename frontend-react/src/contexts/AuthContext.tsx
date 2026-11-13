@@ -1,6 +1,8 @@
 import { createContext, createElement, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
+import { apiFetch } from "../lib/apiClient";
+import type { AdminWhoamiResponse } from "../types/api";
 
 // Guest sessions (Supabase anonymous auth) are real sessions with no time
 // limit of their own - Supabase doesn't have a "3 hour guest" concept, so
@@ -23,6 +25,7 @@ interface AuthValue {
   loading: boolean;
   isGuest: boolean;
   guestExpiresAt: number | null; // epoch ms, null when not a guest
+  isAdmin: boolean;
   error: string;
   clearError: () => void;
   signInWithGoogle: () => Promise<void>;
@@ -38,7 +41,12 @@ function useAuthState(): AuthValue {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Tracks which user id the admin check has already run for, so a token
+  // refresh (onAuthStateChange fires again with the same user) doesn't
+  // re-fire the request every time - only a genuine identity change does.
+  const adminCheckedForUserId = useRef<string | null>(null);
 
   const clearError = () => setError("");
 
@@ -49,6 +57,8 @@ function useAuthState(): AuthValue {
     }
     await supabase.auth.signOut();
     setSession(null);
+    setIsAdmin(false);
+    adminCheckedForUserId.current = null;
     if (reason) setError(reason);
   }
 
@@ -93,6 +103,24 @@ function useAuthState(): AuthValue {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // One-time admin check per signed-in identity (never for guests - there's
+  // no admin guest scenario, so skip the request entirely rather than fire
+  // it for every guest visit). `/api/admin/whoami` 404s for non-admins -
+  // the overwhelmingly common case - so that's treated as the normal
+  // "not an admin" outcome, not an error to surface.
+  useEffect(() => {
+    const userId = session?.user?.id ?? null;
+    if (!userId || isAnonymousSession(session)) {
+      setIsAdmin(false);
+      return;
+    }
+    if (adminCheckedForUserId.current === userId) return;
+    adminCheckedForUserId.current = userId;
+    apiFetch<AdminWhoamiResponse>("/api/admin/whoami", {}, "")
+      .then(() => setIsAdmin(true))
+      .catch(() => setIsAdmin(false));
+  }, [session]);
+
   async function signInWithGoogle() {
     setError("");
     const { error: err } = await supabase.auth.signInWithOAuth({
@@ -130,6 +158,7 @@ function useAuthState(): AuthValue {
     loading,
     isGuest,
     guestExpiresAt,
+    isAdmin,
     error,
     clearError,
     signInWithGoogle,
