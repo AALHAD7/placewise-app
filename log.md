@@ -5,6 +5,47 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-13 — Removed the R5 admin review queue feature (Aalhad's call)
+**Phase:** R5 (retired) · **Type:** feature removal, code only — no data deleted
+
+**What changed:** Aalhad asked "will approving this make any difference to the database?"
+while using the review queue. Checked the actual RPC (`ingest_review_page`,
+migration_041): every action — approve, mark_wrong, edit_approve, reopen — only ever
+writes `ingest_pages.review_status` plus a history row. The migration's own comment says
+it outright: "Only review_status changes. markdown, diagrams, needs_review, review_reasons
+stay original." Even `edit_approve`'s corrected text goes into the history table only,
+never back into what's actually served — so `mark_wrong` doesn't pull bad content out of
+rotation and `edit_approve` doesn't fix it either. The whole feature had been a
+tracking/audit layer with zero enforcement since it shipped. Aalhad's verdict: "remove this
+feature, i don't find any value in this."
+
+Removed: `backend/src/routes/adminReview.js`, `backend/src/lib/reviewQueue.js`,
+`backend/src/lib/diagramBlocks.js` (orphaned once reviewQueue.js was gone — nothing else
+in `backend/src` imported it), `backend/test/reviewQueue.test.js`, the ~210-line
+"admin review" test block in `backend/test/api.test.js`, `frontend-react/src/pages/admin/ReviewQueue.tsx`,
+`frontend-react/src/styles/admin-review.css`, the `AdminReview*`/`ReviewStatus`/`ReviewAction`
+type block in `frontend-react/src/types/api.ts`, the `/api/admin/review` mount + `adminReviewLimiter`
+in `backend/src/server.js`/`middleware/rateLimit.js`, and the "Ingestion review" section +
+import on `AdminPage.tsx`.
+
+**What was deliberately NOT touched:** the `ingest_page_reviews`/`ingest_page_findings`
+tables and `ingest_review_page` RPC from migration_041, and `ingest_pages.review_status`
+itself — no data was deleted, only the code path that read/wrote it through the UI. If
+this is ever rebuilt properly (with `mark_wrong` actually setting `is_active = false` and
+`edit_approve` actually propagating corrected text into chunks/embeddings, which is what
+it would take to have real teeth), the existing review history is still there to build on.
+
+**Proof:** `npx tsc --noEmit` clean; `npm run build` succeeds (AdminPage bundle dropped
+44.8kB → 22.9kB); `npm run lint` shows no new warnings. `npm test`: 291/292 (1 pre-existing
+unrelated `sandbox.test.js` flake) — the only other failure before removing
+`reviewQueue.test.js` was that file itself erroring on load (expected, since its target
+module was deleted; fixed by removing the test too, not by keeping the module alive).
+
+**Undo:** `git revert` this commit restores all the removed files; nothing about the
+underlying review data was changed, so a revert fully restores prior behavior.
+
+---
+
 ## 2026-11-13 — Cleared 4 of 16 Finance frameworks' broken v1 cached examples
 **Phase:** ad-hoc (data quality) · **Type:** cache invalidation, no code change
 

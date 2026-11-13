@@ -92,19 +92,6 @@ export const adminLimiter = rateLimit({
   message: { error: "Too many admin requests. Please wait a few minutes and try again." }
 });
 
-// R5 admin review queue (/api/admin/review/*). Same gate as adminLimiter, but sized for
-// paging through ~170 flagged pages (detail + image + action per page). The global
-// generalLimiter (3000 / 15 min per IP) still applies first, so this is the real ceiling
-// only together with it.
-export const adminReviewLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 300,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: userOrIpKey,
-  message: { error: "Too many review requests. Please wait a few minutes and try again." }
-});
-
 // Dev-only test-login bypass (blocked outright in production - see dev.js).
 // No credentials are checked, so there's nothing to brute-force here; this
 // budget just needs to survive normal local development traffic (every
