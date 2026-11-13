@@ -38,26 +38,41 @@ function installFakeFetch(t, { ingestRows = [], documentRows = [] } = {}) {
   return { ingestCalls, documentCalls };
 }
 
-test("RAG_V2_DOMAINS: includes both Consulting and Prodman", () => {
+test("RAG_V2_DOMAINS: includes Consulting, Prodman and Finance", () => {
   assert.ok(RAG_V2_DOMAINS.includes("Consulting"));
   assert.ok(RAG_V2_DOMAINS.includes("Prodman"));
+  assert.ok(RAG_V2_DOMAINS.includes("Finance"));
 });
 
 test("isV2EnabledForDomain: off by default for every domain when env vars are unset", () => {
   delete process.env.ENABLE_CONSULTING_RAG_V2;
   delete process.env.ENABLE_PM_RAG_V2;
+  delete process.env.ENABLE_FINANCE_RAG_V2;
   assert.equal(isV2EnabledForDomain("Consulting"), false);
   assert.equal(isV2EnabledForDomain("Prodman"), false);
   assert.equal(isV2EnabledForDomain("Finance"), false);
   assert.equal(isV2EnabledForDomain(null), false);
 });
 
-test("isV2EnabledForDomain: Finance is never v2-enabled regardless of flags (not in RAG_V2_DOMAINS)", () => {
+// FIN2 (2026-11-13): Finance moved from "not in RAG_V2_DOMAINS" (never v2-eligible) to
+// "in RAG_V2_DOMAINS, gated on its own dedicated flag" - same shape as Prodman got in D1.
+// This proves the three flags are fully independent: turning on Consulting's and PM's
+// flags must never also turn on Finance's (the exact piggybacking bug D1 caught for PM),
+// and Finance's own flag must never leak into the other two domains either.
+test("isV2EnabledForDomain: Finance requires its own ENABLE_FINANCE_RAG_V2 flag, independent of Consulting's/PM's", () => {
   process.env.ENABLE_CONSULTING_RAG_V2 = "true";
   process.env.ENABLE_PM_RAG_V2 = "true";
-  assert.equal(isV2EnabledForDomain("Finance"), false);
+  delete process.env.ENABLE_FINANCE_RAG_V2;
+  assert.equal(isV2EnabledForDomain("Finance"), false, "Finance must stay off even with both other flags on");
+
   delete process.env.ENABLE_CONSULTING_RAG_V2;
   delete process.env.ENABLE_PM_RAG_V2;
+  process.env.ENABLE_FINANCE_RAG_V2 = "true";
+  assert.equal(isV2EnabledForDomain("Finance"), true);
+  assert.equal(isV2EnabledForDomain("Consulting"), false, "Finance's flag must not leak into Consulting");
+  assert.equal(isV2EnabledForDomain("Prodman"), false, "Finance's flag must not leak into Prodman");
+
+  delete process.env.ENABLE_FINANCE_RAG_V2;
 });
 
 test("retrieveDomainChunks: v2-disabled domain goes straight to v1 (match_document_chunks), never calls match_ingest_chunks", async t => {
@@ -103,6 +118,40 @@ test("retrieveDomainChunks: v2-enabled domain with an empty v2 result falls thro
   assert.equal(documentCalls.length, 1, "empty v2 result falls through to v1");
   assert.deepEqual(chunks, [{ content: "v1 fallback", source_file: "v1.pdf" }]);
   delete process.env.ENABLE_PM_RAG_V2;
+});
+
+test("retrieveDomainChunks: Finance stays on v1 when ENABLE_FINANCE_RAG_V2 is off, even with the other two flags on", async t => {
+  process.env.ENABLE_CONSULTING_RAG_V2 = "true";
+  process.env.ENABLE_PM_RAG_V2 = "true";
+  delete process.env.ENABLE_FINANCE_RAG_V2;
+  const { ingestCalls, documentCalls } = installFakeFetch(t, {
+    documentRows: [{ content: "finance v1 content", source_file: "finance-v1.pdf" }]
+  });
+
+  const { chunks, usedV2 } = await retrieveDomainChunks("some finance query", "Finance", { matchCount: 4 });
+  assert.equal(usedV2, false);
+  assert.equal(ingestCalls.length, 0, "Finance must never call match_ingest_chunks while its own flag is off");
+  assert.equal(documentCalls.length, 1);
+  assert.equal(documentCalls[0].filter_domain, "Finance");
+  assert.deepEqual(chunks, [{ content: "finance v1 content", source_file: "finance-v1.pdf" }]);
+  delete process.env.ENABLE_CONSULTING_RAG_V2;
+  delete process.env.ENABLE_PM_RAG_V2;
+});
+
+test("retrieveDomainChunks: Finance uses v2 with both source classes once ENABLE_FINANCE_RAG_V2 is on", async t => {
+  process.env.ENABLE_FINANCE_RAG_V2 = "true";
+  const { ingestCalls, documentCalls } = installFakeFetch(t, {
+    ingestRows: [{ content: "finance compendium content", source_file: "finance_compendium.md" }]
+  });
+
+  const { chunks, usedV2 } = await retrieveDomainChunks("some finance query", "Finance", { matchCount: 4 });
+  assert.equal(usedV2, true);
+  assert.equal(ingestCalls.length, 1);
+  assert.equal(ingestCalls[0].filter_domain, "Finance");
+  assert.deepEqual(ingestCalls[0].filter_source_classes, ["club_casebook", "placewise_reference"]);
+  assert.equal(documentCalls.length, 0, "v2 found results, v1 should never be called");
+  assert.deepEqual(chunks, [{ content: "finance compendium content", source_file: "finance_compendium.md" }]);
+  delete process.env.ENABLE_FINANCE_RAG_V2;
 });
 
 test("retrieveDomainChunks: null domain never tries v2, goes straight to v1", async t => {

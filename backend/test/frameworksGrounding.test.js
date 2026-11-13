@@ -14,19 +14,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-// ENABLE_CONSULTING_RAG_V2=true and ENABLE_PM_RAG_V2=true for this whole file (same
-// pattern as consultingParaphraseFlagOn.test.js) so the D1.3 tests below can exercise
-// the v2 gate for both domains - module-level flags are read once at import time, so
-// this must be set before the dynamic import, not inside an individual test. The
-// pre-existing pickTopTextAndImage/isStale tests are pure functions, unaffected by
-// either flag. A separate file (frameworksGroundingPmFlagOff.test.js) imports the module
-// fresh with ENABLE_PM_RAG_V2 left off to prove the opposite case - see the review this
-// locks in, below.
+// ENABLE_CONSULTING_RAG_V2=true, ENABLE_PM_RAG_V2=true and ENABLE_FINANCE_RAG_V2=true for
+// this whole file (same pattern as consultingParaphraseFlagOn.test.js) so the D1.3/FIN2
+// tests below can exercise the v2 gate for all three domains - module-level flags are read
+// once at import time, so this must be set before the dynamic import, not inside an
+// individual test. The pre-existing pickTopTextAndImage/isStale tests are pure functions,
+// unaffected by any flag. Separate files (frameworksGroundingPmFlagOff.test.js,
+// frameworksGroundingFinanceFlagOff.test.js) import the module fresh with their own flag
+// left off to prove the opposite case - see the reviews these lock in, below.
 process.env.GEMINI_API_KEY = process.env.GEMINI_API_KEY || "test-gemini-key";
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://fake-supabase.test";
 process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "test-supabase-key";
 process.env.ENABLE_CONSULTING_RAG_V2 = "true";
 process.env.ENABLE_PM_RAG_V2 = "true";
+process.env.ENABLE_FINANCE_RAG_V2 = "true";
 
 const { pickTopTextAndImage, isStale, withGroundedExamples, RAG_V2_DOMAINS } = await import("../src/lib/frameworksGrounding.js");
 
@@ -134,9 +135,10 @@ function installFrameworksFakeFetch(t, { ingestRows = [], documentRows = [] } = 
   return { ingestCalls, documentCalls };
 }
 
-test("RAG_V2_DOMAINS: includes both Consulting and Prodman", () => {
+test("RAG_V2_DOMAINS: includes Consulting, Prodman and Finance", () => {
   assert.ok(RAG_V2_DOMAINS.includes("Consulting"));
   assert.ok(RAG_V2_DOMAINS.includes("Prodman"));
+  assert.ok(RAG_V2_DOMAINS.includes("Finance"));
 });
 
 test("withGroundedExamples: with ENABLE_PM_RAG_V2 on, a Prodman row calls match_ingest_chunks with domain Prodman and both source classes", async t => {
@@ -162,6 +164,33 @@ test("withGroundedExamples: with ENABLE_PM_RAG_V2 on, a Prodman row calls match_
   assert.equal(documentCalls.length, 0, "a Prodman row should never fall through to the v1 document_chunks path");
   assert.ok(result.grounded_example, "a covering row should produce a grounded_example");
   assert.ok(result.grounded_example.excerpt.includes("AARRR"));
+});
+
+// FIN2 (2026-11-13): same shape as the Prodman test above, proving Finance's own flag
+// (not Consulting's/PM's) actually drives its v2 lookup once Finance joined RAG_V2_DOMAINS.
+test("withGroundedExamples: with ENABLE_FINANCE_RAG_V2 on, a Finance row calls match_ingest_chunks with domain Finance and both source classes", async t => {
+  const row = {
+    content: "WACC blends the cost of equity and after-tax cost of debt, weighted by each source's share of capital.",
+    has_diagram: false,
+    similarity: 0.88,
+    source_file: "finance_compendium.md",
+    page_start: null,
+    page_end: null,
+    school: null,
+    club: null,
+    year: null
+  };
+  const { ingestCalls, documentCalls } = installFrameworksFakeFetch(t, { ingestRows: [row] });
+
+  const fw = { id: "fw-wacc", domain: "Finance", name: "WACC", grounded_checked_at: null };
+  const [result] = await withGroundedExamples([fw]);
+
+  assert.equal(ingestCalls.length, 1);
+  assert.equal(ingestCalls[0].filter_domain, "Finance");
+  assert.deepEqual(ingestCalls[0].filter_source_classes, ["club_casebook", "placewise_reference"]);
+  assert.equal(documentCalls.length, 0, "a Finance row should never fall through to the v1 document_chunks path");
+  assert.ok(result.grounded_example, "a covering row should produce a grounded_example");
+  assert.ok(result.grounded_example.excerpt.includes("WACC"));
 });
 
 test("withGroundedExamples: an HR row (not in RAG_V2_DOMAINS) falls back to the v1 document_chunks path", async t => {

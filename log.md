@@ -5,6 +5,104 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-13 — FIN2 closed: Frameworks + Role pages wired to the Finance compendium (flag off)
+**Phase:** FIN2 (side-quest off the main M2 domain sequence) · **Type:** code change (retrieval gate) + tests + read-only eval probe
+
+**What changed:** `backend/src/lib/domainGrounding.js` — added `"Finance"` to
+`RAG_V2_DOMAINS` and a new, dedicated `ENABLE_FINANCE_RAG_V2` flag (default/missing = off) to
+`isV2EnabledForDomain`, separate from `ENABLE_CONSULTING_RAG_V2`/`ENABLE_PM_RAG_V2`.
+`frameworksGrounding.js`'s `findGroundingV2` already passed `sourceClasses: ["club_casebook",
+"placewise_reference"]` from D1 — no change needed there. Read `roleTopics.js` and
+`roleCompanyTopicNotes.js` myself: both already call `isV2EnabledForDomain(domain)`
+generically with no domain-specific gate of their own, and `roles.js`'s
+`ingestDomainForRole` already maps "Finance and Banking" → "Finance" — so Roles needed zero
+code change, only the domain-recognition fix above, exactly as flagged going in.
+
+**Why:** FIN1 (2026-11-06) wired Q&A to retrieve the Finance compendium
+(`source_class='placewise_reference'`), but Frameworks and Roles were still hard-gated to
+Consulting/Prodman only, so Finance fell through to the old v1 `document_chunks` cache on
+those two surfaces with no way to turn v2 on even deliberately. Same shape as D1's PM
+Frameworks wiring.
+
+**Regression risk checked (same class D1 caught for PM):** Finance already has 3 seeded
+framework subdomains (Corporate Finance & M&A, Financial Statements & Accounting, Valuation)
+with a live v1 cache — confirmed by querying the live `frameworks` table directly: 16
+Finance rows carry a real `grounded_example` sourced from `.txt`-named v1 casebook files
+(WACC, DCF, LBO, DuPont, etc.), each with its own `grounded_checked_at` 7-day TTL.
+Piggybacking Finance's v2 gate on an already-on flag (Consulting's or PM's) would have let
+`findGroundingV2` start intercepting Finance frameworks the moment each one's cache goes
+stale, getting a clean `{covered: false}` (correctly — no active Finance `ingest_chunks`
+rows exist, `is_active=false` since FIN1) and silently overwriting the good v1 cache with
+`null`, as an unplanned side effect of time passing rather than a deliberate switch-over.
+Finance's own dedicated flag, left off, closes this before it could ever happen.
+
+**Proof:**
+- New/updated tests, same pattern as D1's PM tests: `backend/test/domainGrounding.test.js`
+  (Finance's flag is independent of the other two, both directions — on with the others off,
+  and off with the others on), `backend/test/frameworksGrounding.test.js` (a Finance
+  framework row calls `match_ingest_chunks` with `filter_domain: "Finance"` and both source
+  classes once `ENABLE_FINANCE_RAG_V2` is on), and a new
+  `backend/test/frameworksGroundingFinanceFlagOff.test.js` (mirrors
+  `frameworksGroundingPmFlagOff.test.js` — proves a Finance row stays on the v1
+  `document_chunks` path, live cache intact, even with `ENABLE_CONSULTING_RAG_V2` AND
+  `ENABLE_PM_RAG_V2` both on). `npm test`: 287/288 pass (the 1 failure is the pre-existing,
+  unrelated sandbox env-leak flake carried across every prior session's runs).
+- Bounded, read-only eval probe: `backend/eval/run_eval_finance_frameworks_preview.js`
+  (new, mirrors FIN1's own preview-eval mechanics — local cosine retrieval directly over the
+  inactive Finance `ingest_chunks` pool by `document_id`, calling the real production
+  `decideCoverage`/`judgeRelevanceOnce` from `consultingRetrieval.js`, never through the live
+  `match_ingest_chunks` RPC, no `is_active` touched, no table writes). Built the exact
+  Frameworks-shaped query `findGroundingV2` constructs (`"${fw.name} framework diagram case
+  study real example application ${fw.subdomain}"`) for 5 real Finance framework names (WACC,
+  DCF, LBO Basics, DuPont Analysis, Working Capital & Cash Conversion Cycle) — **5/5**
+  retrieved a relevant, correctly on-topic compendium section (similarity 0.74-0.77, passed
+  the 3-vote relevance judge). Confirms the Frameworks query shape, not just Q&A's
+  question-shaped queries, retrieves real Finance content once the flag is on. Only Gemini
+  calls: 5 embeddings + up to 15 relevance-judge calls (flash-lite tier, well under a cent).
+- Gemini cost this task: 5 embedding calls + ~15 relevance-judge calls for the probe above,
+  plus the normal free-tier test-suite mocked calls (no real API cost). Negligible against
+  the $20/month budget.
+
+**Files:** `backend/src/lib/domainGrounding.js`, `backend/test/domainGrounding.test.js`,
+`backend/test/frameworksGrounding.test.js`, `backend/test/frameworksGroundingFinanceFlagOff.test.js`
+(new), `backend/eval/run_eval_finance_frameworks_preview.js` (new), `.gsd/ROADMAP.md`,
+`.gsd/STATE.md`.
+
+**Undo:** revert `domainGrounding.js`'s diff (two lines: the `RAG_V2_DOMAINS` array entry and
+the `isV2EnabledForDomain` branch) to put Finance back behind the Consulting/Prodman-only
+gate; no data or `is_active` changes were made, so there is nothing else to roll back.
+
+**Switch-over status:** `ENABLE_FINANCE_RAG_V2` is confirmed NOT set in `backend/.env` or
+anywhere live (checked directly) — it stays off by default. Flipping it on, together with
+Finance's `ingest_chunks.is_active`, is a separate, later, Aalhad-gated step, same shape as
+D1's PM switch-over and R9's Consulting switch-over, not done here.
+
+---
+
+## 2026-11-13 — D2 (Finance club casebooks) closed as not applicable
+**Phase:** D2 · **Type:** scoping decision, no code/data change
+
+**What changed:** `.gsd/ROADMAP.md` and `.gsd/STATE.md` updated: D2 marked
+`done (2026-11-13) — n/a`, roadmap pointer moved to ▶ D3 (Marketing / Sales).
+
+**Why:** D2 was scoped to re-ingest Finance's club casebook PDFs, same shape as Consulting's
+R1-R6. `Data/Finance Files/PDF Files/` has 70 files, but unlike Consulting's folder (13 files,
+all plainly club casebooks) most of them are certification modules (NSE/NCFM), Vault guides,
+"Breaking Into Wall Street," "Heard on the Street," and generic primers — excluded source
+classes per CLAUDE.md's Sources rule (only `club_casebook` feeds the RAG). Asked Aalhad which
+files qualify; his call: none of the 70 do — only FIN1's `finance_compendium.md` counts as
+Finance's RAG source, and FIN1 is already done (2026-11-06). No ingestion work to do.
+
+**Files:** `.gsd/ROADMAP.md`, `.gsd/STATE.md`.
+**Proof:** n/a — documentation-only change, no code or data touched.
+**Undo:** Revert the two file edits; re-open D2 if Aalhad later identifies a genuine Finance
+club casebook to ingest (e.g. a new PDF drop).
+**Open issues:** FIN1's Frameworks-page taxonomy expansion (26 compendium modules) is still
+open follow-up work — it's no longer tied to a "D2" row, just a standalone backlog item for
+whenever Aalhad wants it.
+
+---
+
 ## 2026-11-13 — Deleted the entire casebook-images bucket (275MB) - unused by any live code path
 
 **Phase:** ad-hoc (storage maintenance) · **Type:** Storage deletion, verified unused before and confirmed empty after

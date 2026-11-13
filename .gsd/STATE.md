@@ -1,8 +1,45 @@
 # STATE
 
-**Position:** ▶ D2 (Finance club casebooks). D1 is done (2026-11-11); FIN1 was found already
-done (2026-11-06) but still marked `todo` — corrected in `.gsd/ROADMAP.md`. R9 is also done
+**Position:** ▶ D3 (Marketing / Sales). FIN2 closed out 2026-11-13 (side-quest off the main
+M2 sequence, see below). D2 is closed n/a (2026-11-13) — Aalhad reviewed the 70
+files in `Data/Finance Files/PDF Files/` and confirmed none are genuine club casebooks
+(certification modules, Vault guides, generic primers, etc.); only FIN1's compendium counts
+for Finance, and FIN1 is already done, so there was nothing for D2 to ingest. D1 is done
+(2026-11-11); FIN1 was found already done (2026-11-06) but still marked `todo` — corrected in
+`.gsd/ROADMAP.md`. R9 is also done
 (2026-11-11) — see `.gsd/ROADMAP.md`.
+
+FIN2 closed out 2026-11-13: `domainGrounding.js`'s `RAG_V2_DOMAINS`/`isV2EnabledForDomain`
+only recognized Consulting/Prodman, so Frameworks and Roles fell through to the v1
+`document_chunks` cache for Finance even though Q&A has retrieved the FIN1 compendium
+(`placewise_reference`) since 2026-11-06. Added `"Finance"` to `RAG_V2_DOMAINS` and a new,
+dedicated `ENABLE_FINANCE_RAG_V2` flag (default off) to `isV2EnabledForDomain` — deliberately
+NOT sharing `ENABLE_CONSULTING_RAG_V2`/`ENABLE_PM_RAG_V2`, same D1 regression this guards
+against: Finance's 3 seeded framework subdomains (Corporate Finance & M&A, Financial
+Statements & Accounting, Valuation) already have a live v1 cache (confirmed by querying the
+live `frameworks` table: ~16 Finance rows carry a real `grounded_example` sourced from
+`.txt`-named v1 casebook files). Read `roleTopics.js`/`roleCompanyTopicNotes.js` myself and
+confirmed both already call `isV2EnabledForDomain(domain)` generically with no Finance-
+specific gate of their own, and `roles.js`'s `ingestDomainForRole` already maps "Finance and
+Banking" → "Finance" — so Roles needed zero code change beyond the domain-recognition fix
+above. Proof: a new, read-only, bounded probe script
+(`backend/eval/run_eval_finance_frameworks_preview.js`, mirrors FIN1's own preview-eval
+mechanics — local cosine retrieval over the inactive Finance `ingest_chunks` pool by
+`document_id`, the real production `decideCoverage`/`judgeRelevanceOnce`, no `is_active`
+touched, no table writes) ran the same Frameworks-shaped query `findGroundingV2` actually
+builds (`"${fw.name} framework diagram case study real example application ${fw.subdomain}"`)
+against 5 real Finance framework names (WACC, DCF, LBO, DuPont, Working Capital): 5/5
+retrieved relevant, correctly-matched compendium sections. New/updated tests mirror D1's own
+PM-flag pattern: `domainGrounding.test.js` (Finance flag independence from the other two,
+both directions), `frameworksGrounding.test.js` (Finance v2 lookup fires with both source
+classes once its flag is on), and a new `frameworksGroundingFinanceFlagOff.test.js` (mirrors
+`frameworksGroundingPmFlagOff.test.js` — proves Finance stays on the v1 `document_chunks`
+path, live cache untouched, even with `ENABLE_CONSULTING_RAG_V2`/`ENABLE_PM_RAG_V2` both on).
+`npm test`: 287/288 (1 pre-existing, unrelated sandbox env-leak failure, same one carried
+through every prior session). Confirmed `ENABLE_FINANCE_RAG_V2` is NOT set in `backend/.env`
+or anywhere live — stays off pending Aalhad's own deliberate switch-over (flag +
+`is_active`), same shape as D1's PM switch-over, not done here. See log.md's 2026-11-13
+"FIN2 closed" entry.
 
 D1 closed out 2026-11-11: ingested `Data/Prodman Files/PM_Compendium.md` only, per Aalhad's
 call (not the raw PM casebook PDFs) — 159 `ingest_chunks` rows (`source_class
