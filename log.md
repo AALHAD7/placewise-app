@@ -5,6 +5,66 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-13 — Fix: mobile avatar dropdown off-screen, and guests couldn't actually sign in
+
+**Phase:** ad-hoc (frontend bug fix) · **Type:** CSS fix + functional bug fix
+
+**Part 1 — CSS: dropdown positioned off-screen on mobile.**
+**What changed:** On mobile (≤640px), `.topnav-capsule-wrapper` (the desktop center nav,
+whose `flex:1 1 auto` pushes `.topbar-right` — streak pill + avatar — to the right edge of
+the header) is hidden entirely and replaced by the hamburger menu. With no flex-growing
+spacer left in `.topnav-row`, its remaining children (brand-left, hamburger button,
+topbar-right) collapsed flush left in DOM order instead of spreading to the row's edges,
+stranding the hamburger and avatar near the logo. The avatar's account popover
+(`TopNav.tsx`, `position:absolute; right:0` relative to the avatar) was positioned
+correctly relative to the avatar, but the avatar itself was in the wrong place, so the
+popover rendered mostly off the left edge of the screen — making "Sign in" unreachable for
+guest users on phones. Added `margin-left:auto` to `.bell-btn.mobile-menu-btn` inside the
+`@media (max-width:640px)` block in `global.css`, so it (and `.topbar-right`/the avatar
+after it in DOM order) absorbs the row's leftover space and sits flush against the right
+edge, restoring "logo far left, hamburger+avatar grouped far right."
+
+**Part 2 — functional bug: "Sign in" was unreachable for guests on *any* width, not just
+mobile.** Found while explaining the Part 1 fix to Aalhad. `LoginPage.tsx`'s guard
+(`if (!loading && session) return <Navigate to="/" />`) treated a guest's Supabase
+anonymous session as "already signed in" and bounced every visit to `/login` straight back
+to `/` — so even with the dropdown positioned correctly, tapping "Sign in" never actually
+showed the login form; it silently no-opped back to the page the guest was already on. Guests
+had no way to create a real account or sign in with Google at all, on desktop or mobile.
+Fixed the guard to `if (!loading && session && !isGuest)`, using the existing `isGuest`
+flag from `useAuth()` (the same flag `isAnonymousSession()` in `AuthContext.tsx` already
+exposes elsewhere), so a guest session no longer counts as "signed in" for this page's
+purposes. Also added a "Sign out" row to the guest branch of the avatar menu in
+`TopNav.tsx` (previously guests only saw "Sign in"; now they see both "Sign in" and "Sign
+out" as separate rows, matching the signed-in branch's list style) — reusing the existing
+confirm-sign-out dialog unchanged, including its already-guest-aware copy ("This is a guest
+session - your work here is not saved to an account and cannot be recovered.").
+**Why:** Aalhad reported (with screenshot) that guest users on phones could not sign in.
+Investigating the dropdown-position fix (Part 1) surfaced a second, deeper bug: even with
+the dropdown reachable, "Sign in" didn't work at all, on any screen size — a guest tapping
+it just bounced straight back to the page they were on, with no way to reach the actual
+login form.
+**Files:** `frontend-react/src/styles/global.css` (Part 1, one property added, scoped to
+the 640px media query), `frontend-react/src/pages/LoginPage.tsx` (Part 2, guard now checks
+`!isGuest`), `frontend-react/src/components/shell/TopNav.tsx` (Part 2, guest menu now
+renders a "Sign out" row alongside "Sign in", reusing the existing confirm dialog).
+**Proof:** `npm run build` and `npm run lint` pass after both parts (lint: pre-existing
+warnings only, exit 0 both times). Verified in a real browser (gstack headless `$B`, Aside
+unavailable on this machine) as a guest session, both 390×844 and 1280×900: avatar sits at
+the header's right edge; opening it shows both "Sign in" and "Sign out" rows, both fully
+visible and tappable; tapping "Sign in" now actually reaches the login form (Google button
++ email/password fields rendered, confirmed via snapshot and screenshot — this was the main
+regression test for the LoginPage fix); tapping "Sign out" shows the guest-specific confirm
+copy, and confirming actually signs the guest out and lands cleanly on `/login`. Desktop
+header/dropdown/login page all pixel-identical to before except for the added "Sign out"
+row — no other regression.
+**Undo:** Remove the `margin-left:auto` from `.bell-btn.mobile-menu-btn` in the 640px media
+query (Part 1); revert the `!isGuest` guard in `LoginPage.tsx` and the guest "Sign out" row
+in `TopNav.tsx` (Part 2).
+**Open issues:** None. Left uncommitted in the working tree per instruction.
+
+---
+
 ## 2026-11-13 — Admin engagement dashboard (live replacement for the manual Sheets rollup)
 
 **Phase:** ad-hoc (admin tooling) · **Type:** code change (new read-only route + admin page) + tests

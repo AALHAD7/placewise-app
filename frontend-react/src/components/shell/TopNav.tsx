@@ -359,7 +359,7 @@ export default function TopNav() {
                   <div style={{ fontSize: "0.75rem", color: "var(--text-gray2)", marginTop: 2 }}>{isGuest ? "Guest session" : "Signed in"}</div>
                 </div>
                 <div>
-                  {isGuest ? (
+                  {isGuest && (
                     <button
                       type="button"
                       role="menuitem"
@@ -368,14 +368,19 @@ export default function TopNav() {
                         navigate("/login");
                       }}
                       className="unbutton menu-row"
+                      style={{ marginBottom: 4, paddingBottom: 10, borderBottom: "1px solid var(--card-border)" }}
                     >
                       Sign in
                     </button>
-                  ) : (
-                    <button type="button" role="menuitem" onClick={() => setConfirmOpen(true)} className="unbutton menu-row">
-                      Sign out
-                    </button>
                   )}
+                  {/* Guests get both rows: "Sign in" to upgrade out of the guest
+                      session, and "Sign out" to end it - same confirm-sign-out
+                      dialog (with its existing guest-aware copy) as the signed-in
+                      branch below, not a separate flow. A divider (above) keeps
+                      the two consequence-asymmetric actions visually distinct. */}
+                  <button type="button" role="menuitem" onClick={() => setConfirmOpen(true)} className="unbutton menu-row">
+                    Sign out
+                  </button>
                 </div>
               </div>
             )}

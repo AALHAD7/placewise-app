@@ -576,7 +576,17 @@ button[disabled]:active, .btn[disabled]:active{ transform:none; }
 
 @media (max-width:640px){
   .topnav-capsule-wrapper, .topnav-links{ display:none; }
-  .bell-btn.mobile-menu-btn{ display:flex; }
+  /* With the capsule-wrapper (the flex:1 1 auto spacer that pushes
+     .topbar-right to the right edge on desktop) hidden above, .topnav-row's
+     remaining children (brand-left, mobile-menu-btn, topbar-right) have no
+     flex-growing element between them and collapse flush left in DOM order -
+     stranding the hamburger + avatar near the logo instead of the right
+     edge, and pushing the avatar's own popover (position:absolute;right:0
+     relative to the avatar) off the left side of the screen with it. Giving
+     the hamburger button margin-left:auto makes it (and everything after it,
+     i.e. topbar-right/avatar) absorb the leftover row space instead, which
+     restores "logo far left, hamburger+avatar grouped far right". */
+  .bell-btn.mobile-menu-btn{ display:flex; margin-left:auto; }
   .topnav{ background:#101216; backdrop-filter:none; -webkit-backdrop-filter:none; }
   :root[data-theme="dark"] .topnav{ background:#101216; backdrop-filter:none; -webkit-backdrop-filter:none; }
 

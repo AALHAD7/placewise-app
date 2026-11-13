@@ -9,7 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 type Mode = "signin" | "signup";
 
 export default function LoginPage() {
-  const { session, loading, error, clearError, signInWithGoogle, signInWithEmail, signUpWithEmail, continueAsGuest } = useAuth();
+  const { session, isGuest, loading, error, clearError, signInWithGoogle, signInWithEmail, signUpWithEmail, continueAsGuest } = useAuth();
   const location = useLocation();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -17,9 +17,13 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [signupMessage, setSignupMessage] = useState("");
 
-  // Already signed in (incl. a guest session that hasn't expired) - bounce
-  // back to wherever the auth guard redirected from, or Home.
-  if (!loading && session) {
+  // Already signed in with a *real* account - bounce back to wherever the
+  // auth guard redirected from, or Home. A guest (Supabase anonymous auth)
+  // session is still a truthy `session`, but it must NOT bounce here - a
+  // guest tapping "Sign in" from the avatar menu needs to actually reach
+  // this form (Google/email) to upgrade out of the guest session, not get
+  // redirected straight back to where they started.
+  if (!loading && session && !isGuest) {
     const from = (location.state as { from?: Location })?.from;
     return <Navigate to={from ? from.pathname + from.search : "/"} replace />;
   }
