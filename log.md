@@ -5,6 +5,48 @@ Pre-rebuild history: `Mark Down Files/DOCUMENT.md`.
 
 ---
 
+## 2026-11-13 — Cleared 4 of 16 Finance frameworks' broken v1 cached examples
+**Phase:** ad-hoc (data quality) · **Type:** cache invalidation, no code change
+
+**What changed:** Aalhad spotted a malformed "From the casebooks" card on Comparable
+Company Analysis (excerpt started with a stray `"n)"` list-marker fragment, literal `>`
+blockquote characters baked into the source text). Investigating turned up 3 more broken
+rows in the same `frameworks.grounded_example`/`grounded_image` v1 cache: "3 Financial
+Statements Integration" started with a PDF table-of-contents dot-leader line
+(`"..................... 9"`), and both "Beta & Capital Asset Pricing Model (CAPM)" and
+"Dividend Discount Model (Gordon Growth Model)" literally started with
+`"[NOTE: Gemini vision transcription was blocked for this page..."` - an internal pipeline-
+failure placeholder shown to students as if it were real casebook content. 4 of 16 Finance
+frameworks (25%) affected.
+
+Cleared `grounded_example`/`grounded_image`/`grounded_checked_at` to `null` on all 4 rows
+via direct SQL. `frameworksGrounding.js`'s existing `isStale()`/`withGroundedExamples()`
+mechanism (7-day TTL, re-checks on next request when `grounded_checked_at` is null) will
+re-populate them on next page view - no code change needed for that part.
+
+**Why:** These are v1 (`document_chunks`-era) cached excerpts, picked by plain similarity
+search with no quality gate (no relevance judge, no fidelity review) - unlike the newer v2
+pipeline Consulting/PM already use. This is exactly the class of problem the systematic
+rebuild exists to fix.
+
+**Caveat, told to Aalhad directly:** re-checking has no guarantee of picking clean content
+- the v1 path could resurface the same or a similarly flawed chunk, since there's no
+quality filter on that path. The durable fix is FIN2 (done earlier today, `ENABLE_FINANCE_RAG_V2`,
+currently off), which routes Finance frameworks onto the same quality-gated pipeline
+instead. Not flipped here - that's Aalhad's switch-over call, offered but not decided yet.
+
+**Files:** none (database-only, direct SQL via Supabase MCP).
+**Proof:** `select ... from frameworks where domain='Finance'` before/after, all 4 rows
+confirmed cleared.
+**Undo:** n/a - nothing was deleted, only a regenerable cache field nulled; the next
+request recomputes it from the same source chunks as before.
+**Open issues:** Only Finance's 16 rows were scanned for this artifact class; Consulting
+(R9) and Prodman (D1) already went through v2's stricter pipeline so are less likely to
+have the same issue, but weren't re-audited here. Flipping `ENABLE_FINANCE_RAG_V2` would
+make this whole class of problem moot for Finance; still open, Aalhad-gated.
+
+---
+
 ## 2026-11-13 — New: structured question log + admin "what students ask" view
 
 **Phase:** ad-hoc (backend) · **Type:** migration + new data path + new admin endpoint
